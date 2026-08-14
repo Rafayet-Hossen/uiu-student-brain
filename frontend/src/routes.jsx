@@ -1,9 +1,16 @@
-import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+} from "react-router-dom";
 import Spinner from "./components/Spinner";
 import { useAuth } from "./features/auth/useAuth";
 import LoginPage from "./features/auth/pages/LoginPage";
 import RegisterPage from "./features/auth/pages/RegisterPage";
 import DashboardPage from "./features/dashboard/DashboardPage";
+import PlannerPage from "./features/planner/PlannerPage";
 
 function PageLoading() {
   return (
@@ -18,7 +25,8 @@ function ProtectedRoute({ children }) {
   const location = useLocation();
 
   if (loading) return <PageLoading />;
-  if (!user) return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+  if (!user)
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   return children;
 }
 
@@ -63,6 +71,14 @@ export default function AppRoutes() {
           element={
             <ProtectedRoute>
               <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/planner"
+          element={
+            <ProtectedRoute>
+              <PlannerPage />
             </ProtectedRoute>
           }
         />
