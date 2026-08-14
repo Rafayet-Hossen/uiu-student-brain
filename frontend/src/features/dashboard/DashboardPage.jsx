@@ -28,6 +28,10 @@ export default function DashboardPage() {
         <Link to="/planner">
           <Button>Study Planner</Button>
         </Link>
+
+        <Link to="/grades">
+          <Button>Grade Planner</Button>
+        </Link>
       </main>
     </div>
   );

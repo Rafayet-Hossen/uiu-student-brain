@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'accounts',
     'corsheaders',
     'planner',
+    'grades',
 ]
 
 MIDDLEWARE = [
