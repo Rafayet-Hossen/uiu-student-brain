@@ -11,6 +11,7 @@ import LoginPage from "./features/auth/pages/LoginPage";
 import RegisterPage from "./features/auth/pages/RegisterPage";
 import DashboardPage from "./features/dashboard/DashboardPage";
 import PlannerPage from "./features/planner/PlannerPage";
+import GradePlannerPage from "./features/grades/GradePlannerPage";
 
 function PageLoading() {
   return (
@@ -79,6 +80,14 @@ export default function AppRoutes() {
           element={
             <ProtectedRoute>
               <PlannerPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/grades"
+          element={
+            <ProtectedRoute>
+              <GradePlannerPage />
             </ProtectedRoute>
           }
         />
