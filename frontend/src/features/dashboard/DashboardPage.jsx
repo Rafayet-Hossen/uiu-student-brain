@@ -32,6 +32,10 @@ export default function DashboardPage() {
         <Link to="/grades">
           <Button>Grade Planner</Button>
         </Link>
+
+        <Link to="/tracker">
+          <Button>Study Tracker</Button>
+        </Link>
       </main>
     </div>
   );
