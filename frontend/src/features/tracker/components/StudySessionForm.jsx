@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
+import Button from "../../../components/Button";
+import FormError from "../../../components/FormError";
+import Input from "../../../components/Input";
 
 function getInitialForm() {
   return {
     subject: "",
-    duration_minutes: "",
+    duration_minutes: "60",
     session_date: new Date().toISOString().split("T")[0],
     notes: "",
   };
@@ -33,14 +36,15 @@ export default function StudySessionForm({
   submitting,
 }) {
   const [form, setForm] = useState(() => sessionToForm(session));
+  const [error, setError] = useState("");
 
   useEffect(() => {
     setForm(sessionToForm(session));
+    setError("");
   }, [session]);
 
   function handleChange(event) {
     const { name, value } = event.target;
-
     setForm((current) => ({
       ...current,
       [name]: value,
@@ -49,10 +53,27 @@ export default function StudySessionForm({
 
   async function handleSubmit(event) {
     event.preventDefault();
+    setError("");
+
+    if (!form.subject.trim()) {
+      setError("Subject is required.");
+      return;
+    }
+
+    const duration = parseInt(form.duration_minutes, 10);
+    if (isNaN(duration) || duration <= 0) {
+      setError("Duration must be a positive number of minutes (e.g. 45).");
+      return;
+    }
+
+    if (!form.session_date) {
+      setError("Study session date is required.");
+      return;
+    }
 
     const payload = {
       subject: form.subject.trim(),
-      duration_minutes: Number(form.duration_minutes),
+      duration_minutes: duration,
       session_date: form.session_date,
       notes: form.notes.trim(),
     };
@@ -60,108 +81,93 @@ export default function StudySessionForm({
     try {
       if (session) {
         const result = await updateSession(session.id, payload);
-
         onUpdated(result);
       } else {
         const result = await createSession(payload);
-
+        setForm(getInitialForm());
         onCreated(result);
       }
-    } catch (error) {
-      console.error("Study session save failed:", error);
+    } catch (err) {
+      console.error("Study session save failed:", err);
     }
-  }
-
-  function handleCancelClick() {
-    if (submitting) return;
-
-    setForm(session ? sessionToForm(session) : getInitialForm());
-
-    onCancel();
   }
 
   const isEditing = Boolean(session);
 
   return (
-    <form id="study-session-form" onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label htmlFor="tracker-subject">Subject</label>
+    <form id="study-session-form" onSubmit={handleSubmit} noValidate>
+      <Input
+        id="tracker-subject"
+        name="subject"
+        label="Subject / Topic Studied"
+        type="text"
+        placeholder="e.g. Linear Algebra, Neural Networks"
+        value={form.subject}
+        onChange={handleChange}
+        disabled={submitting}
+        required
+      />
 
-        <input
-          id="tracker-subject"
-          name="subject"
-          type="text"
-          value={form.subject}
-          onChange={handleChange}
-          placeholder="e.g. Database Systems"
-          required
-          disabled={submitting}
-        />
-      </div>
-
-      <div>
-        <label htmlFor="tracker-duration">Duration (minutes)</label>
-
-        <input
+      <div className="planner-time-row">
+        <Input
           id="tracker-duration"
           name="duration_minutes"
+          label="Duration (Minutes)"
           type="number"
           min="1"
-          step="1"
+          step="5"
+          placeholder="e.g. 60"
           value={form.duration_minutes}
           onChange={handleChange}
-          placeholder="e.g. 60"
-          required
           disabled={submitting}
+          required
         />
-      </div>
 
-      <div>
-        <label htmlFor="tracker-date">Study date</label>
-
-        <input
+        <Input
           id="tracker-date"
           name="session_date"
+          label="Session Date"
           type="date"
           value={form.session_date}
           onChange={handleChange}
-          required
           disabled={submitting}
+          required
         />
       </div>
 
-      <div>
-        <label htmlFor="tracker-notes">Notes</label>
-
+      <div className="field">
+        <label htmlFor="tracker-notes" className="field-label">
+          Notes & Covered Topics (Optional)
+        </label>
         <textarea
           id="tracker-notes"
           name="notes"
+          className="field-input"
           value={form.notes}
           onChange={handleChange}
           rows="3"
-          placeholder="What did you study?"
+          placeholder="Summarize key concepts reviewed, problems solved, or insights..."
           disabled={submitting}
         />
       </div>
 
-      <div className="planner-card-actions">
-        <button type="submit" disabled={submitting}>
-          {submitting
-            ? "Saving..."
-            : isEditing
-              ? "Update Session"
-              : "Log Session"}
-        </button>
+      <FormError message={error} className="form-error-block" />
 
-        {isEditing && (
-          <button
+      <div className="card-actions-row">
+        {onCancel && (
+          <Button
             type="button"
-            onClick={handleCancelClick}
+            variant="secondary"
+            onClick={onCancel}
             disabled={submitting}
           >
             Cancel
-          </button>
+          </Button>
         )}
+
+        <Button type="submit" loading={submitting} disabled={submitting}>
+          {isEditing ? "Update Session" : "Log Session"}
+        </Button>
       </div>
     </form>
   );

@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import Badge from "../../../components/Badge";
 import Button from "../../../components/Button";
 import Card from "../../../components/Card";
 import FormError from "../../../components/FormError";
 import Input from "../../../components/Input";
+import ThemeToggle from "../../../components/ThemeToggle";
 import { extractErrorMessage } from "../api";
 import { useAuth } from "../useAuth";
 import { validateEmail, validatePassword } from "../validators";
@@ -48,39 +50,65 @@ export default function LoginPage() {
 
   return (
     <div className="auth-screen">
+      <div style={{ position: "absolute", top: "20px", right: "20px" }}>
+        <ThemeToggle />
+      </div>
+
+      <div className="auth-brand-badge">
+        <span>🎓</span>
+        <span>Student<span style={{ color: "var(--color-accent)" }}>Brain</span></span>
+      </div>
+
       <Card className="auth-card">
-        <h1 className="auth-title">Welcome back</h1>
-        <p className="auth-subtitle">Log in to continue.</p>
+        <div style={{ textAlign: "center", marginBottom: "20px" }}>
+          <Badge variant="accent" style={{ marginBottom: "8px" }}>Academic Portal</Badge>
+          <h1 className="auth-title">Welcome Back</h1>
+          <p className="auth-subtitle">Sign in to your academic workspace to continue.</p>
+        </div>
+
         <form onSubmit={handleSubmit} noValidate>
           <Input
             id="email"
-            label="Email"
+            label="University / Student Email"
             type="email"
             autoComplete="email"
-            placeholder="you@example.com"
+            placeholder="student@university.edu"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             onBlur={() => markTouched("email")}
             error={touched.email ? errors.email : ""}
+            disabled={submitting}
+            required
           />
+
           <Input
             id="password"
             label="Password"
             type="password"
             autoComplete="current-password"
-            placeholder="Your password"
+            placeholder="••••••••"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             onBlur={() => markTouched("password")}
             error={touched.password ? errors.password : ""}
+            disabled={submitting}
+            required
           />
+
           <FormError message={formError} className="form-error-block" />
-          <Button type="submit" loading={submitting} disabled={!isValid || submitting}>
-            Log in
+
+          <Button
+            type="submit"
+            className="btn-block"
+            loading={submitting}
+            disabled={!isValid || submitting}
+          >
+            Sign In to Workspace
           </Button>
         </form>
+
         <p className="auth-switch">
-          Don&apos;t have an account? <Link to="/register">Create one</Link>
+          New to Student Brain? <Link to="/register">Create an account</Link>
         </p>
       </Card>
     </div>
