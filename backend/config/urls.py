@@ -23,4 +23,5 @@ urlpatterns = [
     path('api/planner/', include('planner.urls')),
     path('api/grades/', include('grades.urls')),
     path('api/tracker/', include('tracker.urls')),
+    path('api/community/', include('community.urls')),
 ]

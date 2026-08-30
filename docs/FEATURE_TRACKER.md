@@ -41,7 +41,7 @@ A feature is only ✅ when **all** of these are true:
 | 2   | Study Schedule Maker (`planner`)                          | Accounts                         | MUST         | ✅      | ✅       | ✅     | Sourav  | Routine from time + subjects + deadlines                   |
 | 3   | Grade Planner (`grades`)                                  | Accounts                         | MUST         | ✅      | ✅       | ✅     | Rafayet | Target GPA, grades, required scores + projection           |
 | 4   | Study Tracker (`tracker`)                                 | Accounts                         | MUST         | ✅      | ✅       | ✅     | Rafayet | Log sessions, habits, streaks                              |
-| 5   | Community (`community`)                                   | Accounts                         | MUST         | ⬜      | ⬜       | ⬜     |         | Posts, comments, reactions, follow, events + RSVP          |
+| 5   | Community (`community`)                                   | Accounts                         | MUST         | ✅      | ✅       | ✅     | Sourav  | Posts, comments, reactions, follow, events + RSVP          |
 | 6   | AI service (`ai`)                                         | Accounts                         | MUST         | ⬜      | N/A      | ⬜     |         | Gemini + LangChain wrapper — shared backend service, no UI |
 | 7   | Material Upload & Analyze (`materials`)                   | AI service                       | MUST         | ⬜      | ⬜       | ⬜     |         | Upload notes/PDF, AI extracts topics                       |
 | 8   | Study Session Test + Weak Topic Detection (`assessments`) | AI service, Materials            | MUST         | ⬜      | ⬜       | ⬜     |         | AI quiz, score, weak areas                                 |
@@ -68,6 +68,7 @@ frontend screen by design, so its Frontend cell is `N/A` instead of ⬜.
 | 2026-08-30 | Grade Planner (`grades`)         | Completed backend and frontend      | Rafayet |
 | 2026-08-30 | Study Tracker (`tracker`)        | Completed backend and frontend      | Rafayet |
 | 2026-08-30 | Academic UI Redesign             | Modern academic theme & UI overhaul | Rafayet |
+| 2026-08-30 | Community (`community`)          | Completed backend and frontend      | Sourav  |
 
 Add one row here every time a feature's status changes — keep the newest
 entry at the bottom.

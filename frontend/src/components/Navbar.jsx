@@ -12,6 +12,7 @@ export default function Navbar() {
     { to: "/planner", label: "Study Planner", icon: "📅" },
     { to: "/grades", label: "Grade Planner", icon: "🎓" },
     { to: "/tracker", label: "Study Tracker", icon: "⏱️" },
+    { to: "/community", label: "Community", icon: "💬" },
   ];
 
   const getInitials = (name) => {
@@ -70,4 +71,3 @@ export default function Navbar() {
     </header>
   );
 }
-
