@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-
+import Badge from "../../components/Badge";
 import Button from "../../components/Button";
 import Card from "../../components/Card";
 import FormError from "../../components/FormError";
+import Navbar from "../../components/Navbar";
 import Spinner from "../../components/Spinner";
-
 import {
   createStudySession,
   deleteStudySession,
@@ -13,7 +12,6 @@ import {
   getStudySessions,
   updateStudySession,
 } from "./api";
-
 import StudySessionForm from "./components/StudySessionForm";
 
 export default function TrackerPage() {
@@ -74,7 +72,6 @@ export default function TrackerPage() {
 
   function handleCreated(session) {
     setSessions((current) => [session, ...current]);
-
     setEditingSession(null);
     setShowForm(false);
     setError("");
@@ -84,20 +81,16 @@ export default function TrackerPage() {
     setSessions((current) =>
       current.map((item) => (item.id === session.id ? session : item)),
     );
-
     setEditingSession(null);
     setShowForm(false);
     setError("");
   }
 
   function handleEdit(session) {
-    console.log("EDIT CLICKED:", session);
-
     setEditingSession(session);
     setShowForm(true);
     setError("");
 
-    // Scroll to the edit form after React renders it
     setTimeout(() => {
       document.getElementById("study-session-form")?.scrollIntoView({
         behavior: "smooth",
@@ -116,15 +109,6 @@ export default function TrackerPage() {
     setEditingSession(null);
     setShowForm((current) => !current);
     setError("");
-
-    if (!showForm) {
-      setTimeout(() => {
-        document.getElementById("study-session-form")?.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-      }, 100);
-    }
   }
 
   async function handleDelete(sessionId) {
@@ -136,9 +120,7 @@ export default function TrackerPage() {
 
     try {
       setError("");
-
       await deleteStudySession(sessionId);
-
       setSessions((current) =>
         current.filter((session) => session.id !== sessionId),
       );
@@ -152,7 +134,7 @@ export default function TrackerPage() {
   }
 
   const totalMinutes = sessions.reduce(
-    (total, session) => total + Number(session.duration_minutes),
+    (total, session) => total + Number(session.duration_minutes || 0),
     0,
   );
 
@@ -160,26 +142,59 @@ export default function TrackerPage() {
   const remainingMinutes = totalMinutes % 60;
 
   return (
-    <div className="dashboard-screen">
-      <header className="dashboard-header">
-        <Link to="/dashboard" className="dashboard-brand">
-          Student Brain
-        </Link>
-      </header>
+    <div className="app-screen">
+      <Navbar />
 
-      <main className="dashboard-main">
-        <h1>Study Tracker</h1>
+      <main className="main-content">
+        {/* Page Header */}
+        <div className="page-header">
+          <div className="page-header-row">
+            <div>
+              <h1 className="page-title">
+                <span>⏱️</span>
+                <span>Study Session Tracker</span>
+              </h1>
+              <p className="page-description">
+                Log and analyze time spent per subject to build consistent academic habits.
+              </p>
+            </div>
 
-        <p className="auth-subtitle">
-          Log your study sessions and keep track of your progress.
-        </p>
+            <Button onClick={handleAddSession}>
+              {showForm && !editingSession ? "✕ Close Form" : "➕ Log Study Session"}
+            </Button>
+          </div>
+        </div>
 
-        <Button onClick={handleAddSession}>
-          {showForm && !editingSession ? "Close Form" : "Log Study Session"}
-        </Button>
+        {/* Study Time Hero Banner */}
+        {!loading && !error && (
+          <div className="tracker-hero-stat">
+            <div>
+              <Badge variant="accent">Cumulative Academic Focus</Badge>
+              <div className="tracker-hero-total">
+                {totalHours > 0 ? `${totalHours} hrs ` : ""}
+                {remainingMinutes} mins
+              </div>
+              <p style={{ color: "var(--color-text-muted)", fontSize: "0.875rem", marginTop: "4px" }}>
+                Total recorded study duration across {sessions.length} logged sessions
+              </p>
+            </div>
 
+            <Button variant="secondary" onClick={handleAddSession}>
+              ⚡ Log Today's Session
+            </Button>
+          </div>
+        )}
+
+        {/* Study Session Form Modal/Card */}
         {showForm && (
-          <Card>
+          <Card style={{ marginBottom: "28px" }}>
+            <div className="card-header">
+              <h2 className="card-title">
+                <span>{editingSession ? "✏️" : "📝"}</span>
+                <span>{editingSession ? "Edit Logged Session" : "Log New Study Session"}</span>
+              </h2>
+            </div>
+
             <StudySessionForm
               session={editingSession}
               onCreated={handleCreated}
@@ -192,74 +207,84 @@ export default function TrackerPage() {
           </Card>
         )}
 
-        {!loading && !error && sessions.length > 0 && (
-          <Card>
-            <h2>Total Study Time</h2>
-
-            <p>
-              {totalHours > 0 &&
-                `${totalHours} hour${totalHours !== 1 ? "s" : ""}`}
-
-              {totalHours > 0 && remainingMinutes > 0 && " "}
-
-              {remainingMinutes > 0 &&
-                `${remainingMinutes} minute${
-                  remainingMinutes !== 1 ? "s" : ""
-                }`}
-
-              {totalMinutes === 0 && "0 minutes"}
-            </p>
-          </Card>
-        )}
-
+        {/* Loading Spinner */}
         {loading && (
-          <Card>
+          <Card className="empty-state-card">
             <Spinner standalone />
-            <p>Loading your study sessions...</p>
+            <p className="page-loading-text">Loading your study sessions...</p>
           </Card>
         )}
 
+        {/* Error Alert */}
         {!loading && error && (
-          <Card>
+          <Card className="empty-state-card">
             <FormError message={error} className="form-error-block" />
+            <Button onClick={loadSessions}>Try Again</Button>
           </Card>
         )}
 
-        {!loading && !error && sessions.length === 0 && (
-          <Card>
-            <h2>No Study Sessions</h2>
-
-            <p>You have not logged any study sessions yet.</p>
+        {/* Empty State */}
+        {!loading && !error && sessions.length === 0 && !showForm && (
+          <Card className="empty-state-card">
+            <div className="empty-state-icon">⏱️</div>
+            <h2 className="empty-state-title">No study sessions logged yet</h2>
+            <p className="empty-state-desc">
+              Track your daily study blocks, record notes and topic coverage, and monitor your focus over time.
+            </p>
+            <Button onClick={handleAddSession}>Log Your First Session</Button>
           </Card>
         )}
 
+        {/* Sessions Grid */}
         {!loading && !error && sessions.length > 0 && (
-          <div className="planner-grid">
-            {sessions.map((session) => (
-              <Card key={session.id}>
-                <h2>{session.subject}</h2>
+          <div className="sessions-grid">
+            {sessions.map((session) => {
+              const sessionHours = Math.floor(session.duration_minutes / 60);
+              const sessionMins = session.duration_minutes % 60;
+              const formattedDuration =
+                sessionHours > 0
+                  ? `${sessionHours}h ${sessionMins > 0 ? `${sessionMins}m` : ""}`
+                  : `${sessionMins} mins`;
 
-                <p>Duration: {session.duration_minutes} minutes</p>
+              return (
+                <Card key={session.id} className="session-card">
+                  <div>
+                    <div className="session-header">
+                      <div>
+                        <h3 className="session-subject">{session.subject}</h3>
+                        <span style={{ fontSize: "0.8125rem", color: "var(--color-text-muted)" }}>
+                          📅 {session.session_date}
+                        </span>
+                      </div>
+                      <Badge variant="accent">{formattedDuration}</Badge>
+                    </div>
 
-                <p>Date: {session.session_date}</p>
+                    {session.notes && (
+                      <div style={{ marginTop: "12px" }}>
+                        <p className="session-notes">{session.notes}</p>
+                      </div>
+                    )}
+                  </div>
 
-                {session.notes && <p>Notes: {session.notes}</p>}
-
-                <div className="planner-card-actions">
-                  <Button type="button" onClick={() => handleEdit(session)}>
-                    Edit
-                  </Button>
-
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={() => handleDelete(session.id)}
-                  >
-                    Delete
-                  </Button>
-                </div>
-              </Card>
-            ))}
+                  <div className="card-actions-row">
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => handleEdit(session)}
+                    >
+                      ✏️ Edit
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      onClick={() => handleDelete(session.id)}
+                    >
+                      🗑️ Delete
+                    </Button>
+                  </div>
+                </Card>
+              );
+            })}
           </div>
         )}
       </main>

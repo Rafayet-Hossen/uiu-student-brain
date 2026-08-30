@@ -1,13 +1,21 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import Badge from "../../../components/Badge";
 import Button from "../../../components/Button";
 import Card from "../../../components/Card";
 import FormError from "../../../components/FormError";
 import Input from "../../../components/Input";
-import { extractErrorMessage, register } from "../api";
-import { validateEmail, validateFullName, validatePassword } from "../validators";
+import ThemeToggle from "../../../components/ThemeToggle";
+import { extractErrorMessage, register as registerRequest } from "../api";
+import { useAuth } from "../useAuth";
+import {
+  validateEmail,
+  validateFullName,
+  validatePassword,
+} from "../validators";
 
 export default function RegisterPage() {
+  const { login } = useAuth();
   const navigate = useNavigate();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -15,20 +23,13 @@ export default function RegisterPage() {
   const [touched, setTouched] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
-  const [success, setSuccess] = useState(false);
 
   const errors = {
-    full_name: validateFullName(fullName),
+    fullName: validateFullName(fullName),
     email: validateEmail(email),
     password: validatePassword(password),
   };
-  const isValid = !errors.full_name && !errors.email && !errors.password;
-
-  useEffect(() => {
-    if (!success) return undefined;
-    const timer = setTimeout(() => navigate("/login"), 1500);
-    return () => clearTimeout(timer);
-  }, [success, navigate]);
+  const isValid = !errors.fullName && !errors.email && !errors.password;
 
   function markTouched(field) {
     setTouched((current) => ({ ...current, [field]: true }));
@@ -36,14 +37,19 @@ export default function RegisterPage() {
 
   async function handleSubmit(event) {
     event.preventDefault();
-    setTouched({ full_name: true, email: true, password: true });
+    setTouched({ fullName: true, email: true, password: true });
     if (!isValid) return;
 
     setSubmitting(true);
     setFormError("");
     try {
-      await register({ email, password, full_name: fullName });
-      setSuccess(true);
+      await registerRequest({
+        email,
+        password,
+        full_name: fullName.trim(),
+      });
+      await login({ email, password });
+      navigate("/dashboard", { replace: true });
     } catch (error) {
       setFormError(extractErrorMessage(error));
     } finally {
@@ -51,64 +57,82 @@ export default function RegisterPage() {
     }
   }
 
-  if (success) {
-    return (
-      <div className="auth-screen">
-        <Card className="auth-card">
-          <h1 className="auth-title">Account created</h1>
-          <p className="auth-subtitle">Redirecting you to login…</p>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <div className="auth-screen">
+      <div style={{ position: "absolute", top: "20px", right: "20px" }}>
+        <ThemeToggle />
+      </div>
+
+      <div className="auth-brand-badge">
+        <span>🎓</span>
+        <span>Student<span style={{ color: "var(--color-accent)" }}>Brain</span></span>
+      </div>
+
       <Card className="auth-card">
-        <h1 className="auth-title">Create your account</h1>
-        <p className="auth-subtitle">Start building your student brain.</p>
+        <div style={{ textAlign: "center", marginBottom: "20px" }}>
+          <Badge variant="accent" style={{ marginBottom: "8px" }}>New Student Registration</Badge>
+          <h1 className="auth-title">Join Student Brain</h1>
+          <p className="auth-subtitle">Create your account to start planning routines and tracking grades.</p>
+        </div>
+
         <form onSubmit={handleSubmit} noValidate>
           <Input
-            id="full_name"
-            label="Full name"
+            id="fullName"
+            label="Full Name"
             type="text"
             autoComplete="name"
-            placeholder="Ada Lovelace"
+            placeholder="e.g. Jane Doe"
             value={fullName}
             onChange={(event) => setFullName(event.target.value)}
-            onBlur={() => markTouched("full_name")}
-            error={touched.full_name ? errors.full_name : ""}
+            onBlur={() => markTouched("fullName")}
+            error={touched.fullName ? errors.fullName : ""}
+            disabled={submitting}
+            required
           />
+
           <Input
             id="email"
-            label="Email"
+            label="University / Student Email"
             type="email"
             autoComplete="email"
-            placeholder="you@example.com"
+            placeholder="student@university.edu"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             onBlur={() => markTouched("email")}
             error={touched.email ? errors.email : ""}
+            disabled={submitting}
+            required
           />
+
           <Input
             id="password"
             label="Password"
             type="password"
             autoComplete="new-password"
             placeholder="At least 8 characters"
-            hint="Use at least 8 characters."
+            hint="Must be at least 8 characters long."
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             onBlur={() => markTouched("password")}
             error={touched.password ? errors.password : ""}
+            disabled={submitting}
+            required
           />
+
           <FormError message={formError} className="form-error-block" />
-          <Button type="submit" loading={submitting} disabled={!isValid || submitting}>
-            Create account
+
+          <Button
+            type="submit"
+            className="btn-block"
+            loading={submitting}
+            disabled={!isValid || submitting}
+          >
+            Create Workspace Account
           </Button>
         </form>
+
         <p className="auth-switch">
-          Already have an account? <Link to="/login">Log in</Link>
+          Already have an account? <Link to="/login">Sign in</Link>
         </p>
       </Card>
     </div>

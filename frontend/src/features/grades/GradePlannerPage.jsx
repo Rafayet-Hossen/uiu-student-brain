@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import Badge from "../../components/Badge";
 import Button from "../../components/Button";
 import Card from "../../components/Card";
 import FormError from "../../components/FormError";
+import Navbar from "../../components/Navbar";
 import Spinner from "../../components/Spinner";
 import {
   createGradePlan,
@@ -43,7 +44,6 @@ export default function GradePlannerPage() {
 
     try {
       const createdPlan = await createGradePlan(plan);
-
       setPlans((current) => [createdPlan, ...current]);
       setShowForm(false);
     } catch (err) {
@@ -63,7 +63,6 @@ export default function GradePlannerPage() {
     try {
       setError("");
       await deleteGradePlan(planId);
-
       setPlans((current) => current.filter((plan) => plan.id !== planId));
     } catch (err) {
       setError(extractGradeErrorMessage(err));
@@ -88,6 +87,7 @@ export default function GradePlannerPage() {
         remainingCredits: 0,
         requiredGpa: null,
         possible: currentGpa >= targetGpa,
+        percentComplete: 100,
       };
     }
 
@@ -95,107 +95,207 @@ export default function GradePlannerPage() {
       (targetGpa * totalCredits - currentGpa * completedCredits) /
       remainingCredits;
 
+    const percentComplete = Math.min(
+      100,
+      Math.max(0, Math.round((completedCredits / totalCredits) * 100)),
+    );
+
     return {
       remainingCredits,
       requiredGpa,
       possible: requiredGpa <= 4,
+      percentComplete,
     };
   }
 
   return (
-    <div className="dashboard-screen">
-      <header className="dashboard-header">
-        <Link to="/dashboard" className="dashboard-brand">
-          Student Brain
-        </Link>
-      </header>
+    <div className="app-screen">
+      <Navbar />
 
-      <main className="dashboard-main">
-        <h1>Grade Planner</h1>
+      <main className="main-content">
+        {/* Page Header */}
+        <div className="page-header">
+          <div className="page-header-row">
+            <div>
+              <h1 className="page-title">
+                <span>🎓</span>
+                <span>Grade Planner & GPA Projection</span>
+              </h1>
+              <p className="page-description">
+                Model target GPAs, analyze credit completion progress, and project required scores for graduation honors.
+              </p>
+            </div>
 
-        <p className="auth-subtitle">
-          Set your target GPA and see what you need in your remaining credits.
-        </p>
+            <Button onClick={handleAddPlan}>
+              {showForm ? "✕ Close Form" : "➕ New Grade Plan"}
+            </Button>
+          </div>
+        </div>
 
-        <Button onClick={handleAddPlan}>
-          {showForm ? "Close Form" : "Add Grade Plan"}
-        </Button>
-
+        {/* Form Modal/Card */}
         {showForm && (
-          <Card>
-            <GradePlanForm onSubmit={handleCreate} submitting={submitting} />
+          <Card style={{ marginBottom: "28px" }}>
+            <div className="card-header">
+              <h2 className="card-title">
+                <span>🎯</span>
+                <span>Create Grade Goal Plan</span>
+              </h2>
+            </div>
+            <GradePlanForm
+              onSubmit={handleCreate}
+              submitting={submitting}
+              onCancel={() => setShowForm(false)}
+            />
           </Card>
         )}
 
+        {/* Error Alert */}
         {!loading && error && (
-          <Card>
+          <Card className="empty-state-card">
             <FormError message={error} className="form-error-block" />
-            <Button onClick={loadPlans}>Try again</Button>
+            <Button onClick={loadPlans}>Try Again</Button>
           </Card>
         )}
 
+        {/* Loading Spinner */}
         {loading && (
-          <Card>
+          <Card className="empty-state-card">
             <Spinner standalone />
-            <p>Loading your grade plans...</p>
+            <p className="page-loading-text">Loading your grade plans...</p>
           </Card>
         )}
 
-        {!loading && !error && plans.length === 0 && (
-          <Card>
-            <h2>No grade plans yet</h2>
-
-            <p className="auth-subtitle">
-              Create your first grade plan to start tracking your GPA target.
+        {/* Empty State */}
+        {!loading && !error && plans.length === 0 && !showForm && (
+          <Card className="empty-state-card">
+            <div className="empty-state-icon">🎓</div>
+            <h2 className="empty-state-title">No grade plans created yet</h2>
+            <p className="empty-state-desc">
+              Create your first degree or semester grade plan to calculate what GPA you need in your remaining credits.
             </p>
+            <Button onClick={handleAddPlan}>Create Grade Plan Now</Button>
           </Card>
         )}
 
+        {/* Grade Plans Grid */}
         {!loading && !error && plans.length > 0 && (
-          <div className="planner-list">
+          <div className="grades-grid">
             {plans.map((plan) => {
               const projection = calculateProjection(plan);
 
+              let statusVariant = "default";
+              let statusLabel = "In Progress";
+
+              if (projection.remainingCredits === 0) {
+                if (projection.possible) {
+                  statusVariant = "success";
+                  statusLabel = "Target Met";
+                } else {
+                  statusVariant = "danger";
+                  statusLabel = "Target Missed";
+                }
+              } else if (!projection.possible) {
+                statusVariant = "danger";
+                statusLabel = "Unachievable (>4.0 GPA)";
+              } else if (projection.requiredGpa <= 3.0) {
+                statusVariant = "success";
+                statusLabel = "Easily Achievable";
+              } else if (projection.requiredGpa <= 3.8) {
+                statusVariant = "accent";
+                statusLabel = "Achievable";
+              } else {
+                statusVariant = "warning";
+                statusLabel = "High Effort Required";
+              }
+
               return (
-                <Card key={plan.id}>
-                  <h2>{plan.name}</h2>
+                <Card key={plan.id} className="grade-plan-card">
+                  <div>
+                    <div className="card-header">
+                      <h3 className="card-title">{plan.name}</h3>
+                      <Badge variant={statusVariant}>{statusLabel}</Badge>
+                    </div>
 
-                  <p>Current GPA: {plan.current_gpa}</p>
-                  <p>Target GPA: {plan.target_gpa}</p>
-                  <p>
-                    Credits: {plan.completed_credits} / {plan.total_credits}
-                  </p>
+                    {/* GPA Comparison Row */}
+                    <div className="gpa-metrics-row">
+                      <div className="gpa-metric-box">
+                        <p className="gpa-metric-label">Current GPA</p>
+                        <p className="gpa-metric-value">{Number(plan.current_gpa).toFixed(2)}</p>
+                      </div>
 
-                  <hr />
+                      <div className="gpa-metric-box">
+                        <p className="gpa-metric-label">Target GPA</p>
+                        <p className="gpa-metric-value" style={{ color: "var(--color-accent)" }}>
+                          {Number(plan.target_gpa).toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
 
-                  <h3>Projection</h3>
+                  {/* Credit Progress */}
+                  <div className="progress-container">
+                    <div className="progress-header">
+                      <span>Credits Completed</span>
+                      <span>
+                        {plan.completed_credits} / {plan.total_credits} credits ({projection.percentComplete}%)
+                      </span>
+                    </div>
 
-                  <p>Remaining credits: {projection.remainingCredits}</p>
+                    <div className="progress-bar-track">
+                      <div
+                        className="progress-bar-fill"
+                        style={{ width: `${projection.percentComplete}%` }}
+                      />
+                    </div>
+                  </div>
 
-                  {projection.requiredGpa !== null ? (
-                    <>
-                      <p>Required GPA: {projection.requiredGpa.toFixed(2)}</p>
+                  {/* Projection Box */}
+                  <div className="projection-box">
+                    <div className="projection-header">
+                      <span className="projection-title">Academic Projection</span>
+                      <span style={{ fontSize: "0.8125rem", color: "var(--color-text-muted)" }}>
+                        {projection.remainingCredits} credits remaining
+                      </span>
+                    </div>
 
-                      <p>
+                    {projection.requiredGpa !== null ? (
+                      <div>
+                        <p className="projection-message" style={{ fontWeight: 600, marginBottom: "4px" }}>
+                          Required Remaining GPA:{" "}
+                          <span
+                            style={{
+                              color: projection.possible
+                                ? "var(--color-accent)"
+                                : "var(--color-rose-text)",
+                              fontSize: "1.0625rem",
+                            }}
+                          >
+                            {projection.requiredGpa.toFixed(2)}
+                          </span>
+                        </p>
+
+                        <p className="projection-message" style={{ color: "var(--color-text-muted)", fontSize: "0.8125rem" }}>
+                          {projection.possible
+                            ? "Maintain this minimum GPA across your remaining courses to hit your cumulative target."
+                            : "This target requires higher than a 4.00 average on remaining courses."}
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="projection-message">
                         {projection.possible
-                          ? "Target is achievable within a 4.00 GPA."
-                          : "Target is not achievable with the remaining credits."}
+                          ? "Congratulations! You have completed all credits and reached your target GPA."
+                          : "Credit limit reached. Target GPA is no longer achievable."}
                       </p>
-                    </>
-                  ) : (
-                    <p>
-                      {projection.possible
-                        ? "You have already reached your target GPA."
-                        : "The target GPA is no longer achievable."}
-                    </p>
-                  )}
+                    )}
+                  </div>
 
-                  <div className="planner-card-actions">
+                  <div className="card-actions-row">
                     <Button
-                      variant="secondary"
+                      size="sm"
+                      variant="danger"
                       onClick={() => handleDelete(plan.id)}
                     >
-                      Delete
+                      🗑️ Delete Plan
                     </Button>
                   </div>
                 </Card>

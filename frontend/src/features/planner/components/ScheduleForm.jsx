@@ -103,7 +103,7 @@ export default function ScheduleForm({
     }
 
     if (form.days.length === 0) {
-      setError("Select at least one day.");
+      setError("Select at least one study day.");
       return;
     }
 
@@ -120,18 +120,11 @@ export default function ScheduleForm({
 
       if (isEditing) {
         const updatedSchedule = await updateSchedule(schedule.id, payload);
-
-        if (onUpdated) {
-          onUpdated(updatedSchedule);
-        }
+        if (onUpdated) onUpdated(updatedSchedule);
       } else {
         const createdSchedule = await createSchedule(payload);
-
         setForm(INITIAL_FORM);
-
-        if (onCreated) {
-          onCreated(createdSchedule);
-        }
+        if (onCreated) onCreated(createdSchedule);
       }
     } catch (err) {
       setError(extractPlannerErrorMessage(err));
@@ -141,83 +134,97 @@ export default function ScheduleForm({
   }
 
   return (
-    <Card className="planner-form-card">
-      <h2>{isEditing ? "Edit Study Schedule" : "Add Study Schedule"}</h2>
+    <Card className="planner-form-card" style={{ marginBottom: "28px" }}>
+      <div className="card-header">
+        <h2 className="card-title">
+          <span>{isEditing ? "✏️" : "➕"}</span>
+          <span>{isEditing ? "Edit Study Routine" : "Create New Study Routine"}</span>
+        </h2>
+      </div>
 
       <form onSubmit={handleSubmit} noValidate>
         <Input
           id="subject"
           name="subject"
-          label="Subject"
+          label="Subject / Course Name"
           type="text"
-          placeholder="e.g. Data Structures"
+          placeholder="e.g. Advanced Algorithms, Organic Chemistry"
           value={form.subject}
           onChange={handleChange}
+          disabled={submitting}
+          required
         />
 
         <div className="planner-time-row">
           <Input
             id="start_time"
             name="start_time"
-            label="Start time"
+            label="Start Time"
             type="time"
             value={form.start_time}
             onChange={handleChange}
+            disabled={submitting}
+            required
           />
 
           <Input
             id="end_time"
             name="end_time"
-            label="End time"
+            label="End Time"
             type="time"
             value={form.end_time}
             onChange={handleChange}
+            disabled={submitting}
+            required
           />
         </div>
 
         <Input
           id="deadline"
           name="deadline"
-          label="Deadline"
+          label="Target / Exam Deadline"
           type="date"
           value={form.deadline}
           onChange={handleChange}
+          disabled={submitting}
+          required
         />
 
-        <div className="planner-days">
-          <p className="planner-field-label">Study days</p>
-
-          <div className="planner-day-list">
-            {DAYS.map((day) => (
-              <label key={day} className="planner-day-option">
-                <input
-                  type="checkbox"
-                  checked={form.days.includes(day)}
-                  onChange={() => toggleDay(day)}
-                />
-                <span>{day}</span>
-              </label>
-            ))}
+        <div className="planner-days-container">
+          <label className="planner-days-label">Weekly Study Days</label>
+          <div className="day-chips-grid">
+            {DAYS.map((day) => {
+              const isSelected = form.days.includes(day);
+              return (
+                <button
+                  type="button"
+                  key={day}
+                  className={`day-chip ${isSelected ? "day-chip-active" : ""}`}
+                  onClick={() => toggleDay(day)}
+                  disabled={submitting}
+                >
+                  {day}
+                </button>
+              );
+            })}
           </div>
         </div>
 
         <FormError message={error} className="form-error-block" />
 
-        <div className="planner-form-actions">
-          <Button type="submit" loading={submitting} disabled={submitting}>
-            {isEditing ? "Update Schedule" : "Add Schedule"}
+        <div className="card-actions-row">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={onCancel}
+            disabled={submitting}
+          >
+            Cancel
           </Button>
 
-          {isEditing && (
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={onCancel}
-              disabled={submitting}
-            >
-              Cancel
-            </Button>
-          )}
+          <Button type="submit" loading={submitting} disabled={submitting}>
+            {isEditing ? "Save Changes" : "Save Routine"}
+          </Button>
         </div>
       </form>
     </Card>
