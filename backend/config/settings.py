@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "planner",
     "grades",
     "tracker",
+    "community",
 ]
 
 
