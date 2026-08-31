@@ -24,4 +24,5 @@ urlpatterns = [
     path('api/grades/', include('grades.urls')),
     path('api/tracker/', include('tracker.urls')),
     path('api/community/', include('community.urls')),
+    path('api/analytics/', include('analytics.urls')),
 ]

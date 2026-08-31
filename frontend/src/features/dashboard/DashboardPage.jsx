@@ -210,6 +210,26 @@ export default function DashboardPage() {
             </Link>
           </Card>
 
+          {/* Study Analytics Hub */}
+          <Card className="feature-hub-card">
+            <div>
+              <div className="feature-hub-header">
+                <div className="feature-hub-icon">📊</div>
+                <div className="feature-hub-body">
+                  <Badge variant="accent">Intelligence</Badge>
+                  <h3>Study & Academic Analytics</h3>
+                  <p>
+                    Inspect visual weekly study trends, subject distributions, GPA forecasts, and routine adherence metrics.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <Link to="/analytics">
+              <Button className="btn-block">Open Analytics Dashboard →</Button>
+            </Link>
+          </Card>
+
           {/* Community Hub */}
           <Card className="feature-hub-card">
             <div>

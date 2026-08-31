@@ -988,6 +988,320 @@
   margin: 0;
 }
 
+/* ==========================================================================
+   FEATURE #11: STUDY & ACADEMIC ANALYTICS STYLES
+   ========================================================================== */
+
+.analytics-layout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+  gap: 24px;
+}
+
+.analytics-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.analytics-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.analytics-card-title {
+  font-size: 1.1875rem;
+  font-weight: 700;
+  margin: 0 0 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.analytics-card-desc {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* Weekly Trend Histogram */
+.trend-bar-chart {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 12px;
+  align-items: flex-end;
+  height: 200px;
+  padding: 16px 8px 4px;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.trend-bar-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.trend-bar-track {
+  width: 100%;
+  max-width: 38px;
+  height: 150px;
+  background: var(--color-surface-subtle);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  border: 1px solid var(--color-border-subtle);
+}
+
+.trend-bar-fill {
+  width: 100%;
+  background: linear-gradient(180deg, var(--color-accent) 0%, #1d4ed8 100%);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 4px;
+  transition: height 0.4s ease;
+}
+
+.trend-bar-peak {
+  background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%) !important;
+}
+
+.trend-bar-value {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.trend-bar-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+/* Subject Distribution Multi-bar & List */
+.distribution-multi-bar {
+  display: flex;
+  height: 14px;
+  border-radius: 9999px;
+  overflow: hidden;
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.distribution-segment {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.distribution-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.distribution-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--color-surface-subtle);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.distribution-subject-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.distribution-color-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+.distribution-subject-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.distribution-sessions-pill {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.distribution-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.distribution-duration {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.distribution-pct-badge {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--color-accent-text);
+  background: var(--color-accent-subtle);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+}
+
+/* GPA Forecast Grid */
+.gpa-comparison-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.gpa-comparison-box {
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-border-subtle);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+}
+
+.gpa-target-box {
+  background: linear-gradient(135deg, var(--color-surface-subtle) 0%, var(--color-accent-subtle) 100%);
+  border-color: rgba(37, 99, 235, 0.2);
+}
+
+.gpa-comp-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+
+.gpa-comp-val {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.gpa-comp-sub {
+  font-size: 0.8125rem;
+  color: var(--color-text-subtle);
+}
+
+.gpa-forecast-footer {
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.forecast-message {
+  font-size: 0.875rem;
+  color: var(--color-text);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.forecast-warning {
+  color: var(--color-danger);
+}
+
+/* Routine Adherence */
+.adherence-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.adherence-subjects-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.adherence-chip {
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chip-covered {
+  background: var(--color-emerald-bg);
+  color: var(--color-emerald-text);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.chip-missed {
+  background: var(--color-surface-subtle);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+}
+
+/* Insights Feed Banner */
+.analytics-insights-banner {
+  background: linear-gradient(135deg, var(--color-accent-subtle) 0%, var(--color-surface) 100%);
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  border-radius: var(--radius-xl);
+  padding: 20px 24px;
+  margin-bottom: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.insights-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.insights-title {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+}
+
+.insights-list {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.insight-item {
+  font-size: 0.9375rem;
+  color: var(--color-text);
+  line-height: 1.4;
+}
+
 /* Responsive adjust */
 @media (max-width: 640px) {
   .main-content {
@@ -1004,5 +1318,8 @@
   }
   .weekly-dots-container {
     grid-template-columns: repeat(4, 1fr);
+  }
+  .analytics-layout-grid {
+    grid-template-columns: 1fr;
   }
 }

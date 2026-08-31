@@ -14,6 +14,7 @@ import PlannerPage from "./features/planner/PlannerPage";
 import GradePlannerPage from "./features/grades/GradePlannerPage";
 import TrackerPage from "./features/tracker/TrackerPage";
 import CommunityPage from "./features/community/CommunityPage";
+import AnalyticsPage from "./features/analytics/AnalyticsPage";
 
 function PageLoading() {
   return (
@@ -98,6 +99,14 @@ export default function AppRoutes() {
           element={
             <ProtectedRoute>
               <TrackerPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            <ProtectedRoute>
+              <AnalyticsPage />
             </ProtectedRoute>
           }
         />
