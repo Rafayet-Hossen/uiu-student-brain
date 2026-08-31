@@ -98,3 +98,4 @@ export default function LeaderboardPodium({ topThree, timeframe, onToggleFollow 
     </div>
   );
 }
+

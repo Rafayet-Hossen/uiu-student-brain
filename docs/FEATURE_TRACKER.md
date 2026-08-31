@@ -73,6 +73,5 @@ frontend screen by design, so its Frontend cell is `N/A` instead of ⬜.
 | 2026-08-31 | Study Analytics (`analytics`)    | Completed backend and frontend      | Rafayet |
 | 2026-08-31 | Leaderboard (`community`)        | Completed backend and frontend      | Sourav  |
 
-
 Add one row here every time a feature's status changes — keep the newest
 entry at the bottom.
