@@ -399,5 +399,7 @@ graph LR
 ---
 
 ### 👨‍💻 Team & Contributors
-* **Rafayet Hossen** — Lead Architecture, Study Tracker & Rewards Engine, Grade Planner Engine, Academic Analytics Dashboard, Academic UI Design System.
-* **Sourav Shah** — Study Schedule Maker, Community Discussions & Events, Study Leaderboard Engine.
+* **Rafayet Hossen** — Team Lead, Study Tracker & Rewards Engine, Academic Analytics Dashboard.
+* **Sourav Shah** — Sub Lead, Community Discussions & Events, Study Leaderboard Engine.
+* **Baitun Nahar Bithy** - Academic UI Design System, Grade Planner Engine.
+* **Saptarshi Biswas Supty** - Academic UI Design System,Study Schedule Maker. 
