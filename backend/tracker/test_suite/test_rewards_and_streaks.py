@@ -107,3 +107,4 @@ class RewardsAndStreaksTests(APITestCase):
         patch_res = self.client.patch(self.goal_url, {"daily_goal_minutes": 90})
         self.assertEqual(patch_res.status_code, status.HTTP_200_OK)
         self.assertEqual(patch_res.data["daily_goal_minutes"], 90)
+
