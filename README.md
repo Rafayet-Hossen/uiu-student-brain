@@ -369,7 +369,7 @@ All demo accounts share the password: **`Password123!`**
 | 1 | **Baitun Nahar Bithy** | `baitun.bithy@example.com` | Biochemistry & Molecular Biology | 🥇 **Rank #1 Leaderboard** (48h focus, 10-day streak, 3.98 Target GPA, hosts Organic Review) |
 | 2 | **Jamil Hossain** | `jamil.hossain@example.com` | Computer Science & Engineering (CSE) | 🥈 **Rank #2 Leaderboard** (38h focus, 8-day streak, 3.95 Target GPA, hosts LeetCode Bootcamp) |
 | 3 | **Saptarshi Biswas Supty** | `saptarshi.supty@example.com` | Applied Mathematics & Statistics | 🥉 **Rank #3 Leaderboard** (29h focus, 6-day streak, 3.96 Target GPA, Real Analysis proofs) |
-| 4 | **Shourav Shah** | `shourav.shah@example.com` | Software Engineering (SWE) | 🏅 **Rank #4 Leaderboard** (21h focus, 5-day streak, Distributed Systems & Cloud) |
+| 4 | **Sourav Saha** | `souravs.aha@example.com` | Software Engineering (SWE) | 🏅 **Rank #4 Leaderboard** (21h focus, 5-day streak, Distributed Systems & Cloud) |
 | 5 | **Rayhan Chowdhury** | `rayhan.chowdhury@example.com` | Mechanical & Mechatronics Engineering | 🏅 **Rank #5 Leaderboard** (17h focus, Robotics & Microcontrollers, CAD FEA) |
 | 6 | **Rafiq Al Mustafa** | `rafiq.mustafa@example.com` | Electrical & Electronic Engineering (EEE) | 🏅 **Rank #6 Leaderboard** (12h focus, Signals & Linear Systems, Semiconductors) |
 | 7 | **Shofiqur Rahaman** | `shofiqur.rahaman@example.com` | Economics & Quantitative Finance | 🏅 **Rank #7 Leaderboard** (8h focus, Econometrics & OLS Regression) |
