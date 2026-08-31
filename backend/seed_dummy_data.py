@@ -16,24 +16,24 @@ from tracker.models import StudyGoal, StudySession
 
 
 def seed():
-    print("🌱 Starting database seeding with realistic academic demo accounts...")
+    print("🌱 Seeding database with authentic Bangladeshi scholar demo accounts...")
 
     today = date.today()
 
     users_data = [
         {
-            "email": "alex.rivera@example.com",
+            "email": "jamil.hossain@example.com",
             "password": "Password123!",
-            "full_name": "Alex Rivera",
-            "quote": "Code, debug, repeat until mastery.",
+            "full_name": "Jamil Hossain",
+            "quote": "পরিশ্রম কখনো বৃথা যায় না। Consistency is key.",
             "opt_in": True,
-            "goal": 90,
+            "goal": 120,
             "grade_plan": {
-                "name": "Computer Science B.S.",
-                "current_gpa": "3.72",
-                "target_gpa": "3.85",
-                "completed_credits": 78,
-                "total_credits": 120,
+                "name": "Computer Science & Engineering B.Sc.",
+                "current_gpa": "3.88",
+                "target_gpa": "3.95",
+                "completed_credits": 92,
+                "total_credits": 140,
             },
             "schedules": [
                 {
@@ -41,60 +41,59 @@ def seed():
                     "start_time": time(9, 0),
                     "end_time": time(11, 0),
                     "days": ["Monday", "Wednesday", "Friday"],
-                    "deadline": today + timedelta(days=14),
+                    "deadline": today + timedelta(days=12),
                 },
                 {
-                    "subject": "Operating Systems",
+                    "subject": "Operating Systems & System Programming",
                     "start_time": time(14, 0),
                     "end_time": time(16, 0),
                     "days": ["Tuesday", "Thursday"],
-                    "deadline": today + timedelta(days=21),
+                    "deadline": today + timedelta(days=20),
                 },
                 {
                     "subject": "Database Management Systems",
                     "start_time": time(16, 30),
                     "end_time": time(18, 0),
                     "days": ["Monday", "Wednesday"],
-                    "deadline": today + timedelta(days=28),
+                    "deadline": today + timedelta(days=26),
                 },
             ],
             "sessions": [
-                {"subject": "Data Structures & Algorithms", "mins": 120, "days_ago": 0, "notes": "Solved dynamic programming graph problems."},
-                {"subject": "Operating Systems", "mins": 90, "days_ago": 0, "notes": "Implemented process scheduling algorithms in C."},
-                {"subject": "Data Structures & Algorithms", "mins": 100, "days_ago": 1, "notes": "Tree traversals and Dijkstra shortest paths."},
-                {"subject": "Database Management Systems", "mins": 80, "days_ago": 2, "notes": "SQL indexing and B-tree optimization analysis."},
-                {"subject": "Operating Systems", "mins": 110, "days_ago": 3, "notes": "Virtual memory paging simulation."},
-                {"subject": "Data Structures & Algorithms", "mins": 90, "days_ago": 4, "notes": "Red-Black tree rebalancing and rotations."},
-                {"subject": "Database Management Systems", "mins": 75, "days_ago": 5, "notes": "ACID transaction isolation levels."},
-                {"subject": "Data Structures & Algorithms", "mins": 120, "days_ago": 6, "notes": "Competitive programming weekly contest."},
-                {"subject": "Operating Systems", "mins": 90, "days_ago": 7, "notes": "Kernel thread synchronization with semaphores."},
-                {"subject": "Machine Learning", "mins": 150, "days_ago": 9, "notes": "Gradient descent and neural net backpropagation."},
+                {"subject": "Data Structures & Algorithms", "mins": 140, "days_ago": 0, "notes": "Dynamic Programming, DP on Trees, and Graph BFS/DFS drills."},
+                {"subject": "Operating Systems & System Programming", "mins": 110, "days_ago": 0, "notes": "Thread synchronization with Mutex locks and semaphores."},
+                {"subject": "Data Structures & Algorithms", "mins": 120, "days_ago": 1, "notes": "Dijkstra and Bellman-Ford shortest path algorithms."},
+                {"subject": "Database Management Systems", "mins": 95, "days_ago": 2, "notes": "B-Tree indexing and query execution plan tuning."},
+                {"subject": "Operating Systems & System Programming", "mins": 130, "days_ago": 3, "notes": "Page replacement algorithms (LRU, Clock) simulation."},
+                {"subject": "Data Structures & Algorithms", "mins": 110, "days_ago": 4, "notes": "Segment Tree with Lazy Propagation implementation."},
+                {"subject": "Database Management Systems", "mins": 85, "days_ago": 5, "notes": "Transaction isolation levels (Serializable, Snapshot)."},
+                {"subject": "Data Structures & Algorithms", "mins": 150, "days_ago": 6, "notes": "Codeforces Div 2 weekly contest problem solving."},
+                {"subject": "Machine Learning", "mins": 120, "days_ago": 8, "notes": "Linear Regression and Stochastic Gradient Descent."},
             ],
         },
         {
-            "email": "sarah.chen@example.com",
+            "email": "baitun.bithy@example.com",
             "password": "Password123!",
-            "full_name": "Sarah Chen",
-            "quote": "Small daily steps lead to huge academic leaps.",
+            "full_name": "Baitun Nahar Bithy",
+            "quote": "Success is the sum of small efforts repeated daily.",
             "opt_in": True,
-            "goal": 120,
+            "goal": 150,
             "grade_plan": {
-                "name": "Pre-Med & Neurobiology",
-                "current_gpa": "3.91",
-                "target_gpa": "3.95",
-                "completed_credits": 96,
-                "total_credits": 120,
+                "name": "Biochemistry & Molecular Biology",
+                "current_gpa": "3.94",
+                "target_gpa": "3.98",
+                "completed_credits": 105,
+                "total_credits": 140,
             },
             "schedules": [
                 {
-                    "subject": "Organic Chemistry II",
+                    "subject": "Organic Chemistry & Synthesis",
                     "start_time": time(8, 30),
                     "end_time": time(10, 30),
                     "days": ["Monday", "Wednesday", "Friday"],
                     "deadline": today + timedelta(days=10),
                 },
                 {
-                    "subject": "Molecular Neurobiology",
+                    "subject": "Molecular Genetics",
                     "start_time": time(11, 0),
                     "end_time": time(13, 0),
                     "days": ["Tuesday", "Thursday"],
@@ -102,79 +101,41 @@ def seed():
                 },
             ],
             "sessions": [
-                {"subject": "Organic Chemistry II", "mins": 150, "days_ago": 0, "notes": "Reaction mechanisms for aromatic substitution."},
-                {"subject": "Molecular Neurobiology", "mins": 120, "days_ago": 0, "notes": "Synaptic transmission and neurotransmitter receptors."},
-                {"subject": "Organic Chemistry II", "mins": 140, "days_ago": 1, "notes": "Aldol condensation synthesis pathways."},
-                {"subject": "Molecular Neurobiology", "mins": 130, "days_ago": 2, "notes": "Action potential propagation and patch-clamp recording."},
-                {"subject": "Genetics", "mins": 100, "days_ago": 3, "notes": "CRISPR gene editing mechanisms."},
-                {"subject": "Organic Chemistry II", "mins": 160, "days_ago": 4, "notes": "NMR Spectroscopy interpretation drills."},
-                {"subject": "Molecular Neurobiology", "mins": 120, "days_ago": 5, "notes": "Neural plasticity and long-term potentiation."},
-                {"subject": "Genetics", "mins": 90, "days_ago": 6, "notes": "Population genetics and Hardy-Weinberg equilibrium."},
-                {"subject": "Organic Chemistry II", "mins": 180, "days_ago": 8, "notes": "Comprehensive mid-semester exam review."},
+                {"subject": "Organic Chemistry & Synthesis", "mins": 160, "days_ago": 0, "notes": "Electrophilic aromatic substitution reaction mechanisms."},
+                {"subject": "Molecular Genetics", "mins": 130, "days_ago": 0, "notes": "CRISPR-Cas9 gene editing and RNA interference."},
+                {"subject": "Organic Chemistry & Synthesis", "mins": 150, "days_ago": 1, "notes": "Aldol and Claisen condensation pathways."},
+                {"subject": "Molecular Genetics", "mins": 140, "days_ago": 2, "notes": "DNA replication fork machinery and proofreading."},
+                {"subject": "Cellular Biology", "mins": 110, "days_ago": 3, "notes": "Mitochondrial electron transport chain complexes."},
+                {"subject": "Organic Chemistry & Synthesis", "mins": 170, "days_ago": 4, "notes": "Proton and Carbon-13 NMR spectra interpretation drills."},
+                {"subject": "Molecular Genetics", "mins": 125, "days_ago": 5, "notes": "Lac operon and eukaryotic transcription factors."},
+                {"subject": "Cellular Biology", "mins": 95, "days_ago": 6, "notes": "Signal transduction via G-protein coupled receptors."},
+                {"subject": "Organic Chemistry & Synthesis", "mins": 180, "days_ago": 7, "notes": "Comprehensive mid-semester organic chemistry review."},
             ],
         },
         {
-            "email": "marcus.vance@example.com",
+            "email": "saptarshi.supty@example.com",
             "password": "Password123!",
-            "full_name": "Marcus Vance",
-            "quote": "Measure twice, optimize once.",
-            "opt_in": True,
-            "goal": 60,
-            "grade_plan": {
-                "name": "Mechanical Engineering B.S.",
-                "current_gpa": "3.45",
-                "target_gpa": "3.65",
-                "completed_credits": 52,
-                "total_credits": 128,
-            },
-            "schedules": [
-                {
-                    "subject": "Thermodynamics & Heat Transfer",
-                    "start_time": time(10, 0),
-                    "end_time": time(12, 0),
-                    "days": ["Tuesday", "Thursday"],
-                    "deadline": today + timedelta(days=12),
-                },
-                {
-                    "subject": "CAD & Engineering Design",
-                    "start_time": time(14, 0),
-                    "end_time": time(17, 0),
-                    "days": ["Monday", "Wednesday"],
-                    "deadline": today + timedelta(days=25),
-                },
-            ],
-            "sessions": [
-                {"subject": "Thermodynamics & Heat Transfer", "mins": 90, "days_ago": 0, "notes": "Rankine and Brayton cycle efficiency calculations."},
-                {"subject": "CAD & Engineering Design", "mins": 110, "days_ago": 1, "notes": "Parametric solid modeling of gearbox assembly."},
-                {"subject": "Thermodynamics & Heat Transfer", "mins": 80, "days_ago": 2, "notes": "Entropy balance equations for open systems."},
-                {"subject": "Calculus III", "mins": 75, "days_ago": 3, "notes": "Triple integrals in cylindrical coordinates."},
-                {"subject": "CAD & Engineering Design", "mins": 120, "days_ago": 5, "notes": "Stress analysis with FEA simulation."},
-            ],
-        },
-        {
-            "email": "elena.rostova@example.com",
-            "password": "Password123!",
-            "full_name": "Elena Rostova",
-            "quote": "Mathematics is the poetry of logical ideas.",
+            "full_name": "Saptarshi Biswas Supty",
+            "quote": "Mathematics is not about numbers, it is about understanding.",
             "opt_in": True,
             "goal": 90,
             "grade_plan": {
-                "name": "Pure Mathematics & Statistics",
-                "current_gpa": "3.96",
-                "target_gpa": "3.98",
-                "completed_credits": 88,
-                "total_credits": 120,
+                "name": "Applied Mathematics & Statistics",
+                "current_gpa": "3.92",
+                "target_gpa": "3.96",
+                "completed_credits": 84,
+                "total_credits": 130,
             },
             "schedules": [
                 {
-                    "subject": "Abstract Algebra",
+                    "subject": "Real Analysis & Topology",
                     "start_time": time(9, 30),
                     "end_time": time(11, 30),
                     "days": ["Monday", "Wednesday"],
                     "deadline": today + timedelta(days=15),
                 },
                 {
-                    "subject": "Real Analysis",
+                    "subject": "Abstract Algebra",
                     "start_time": time(13, 0),
                     "end_time": time(15, 0),
                     "days": ["Tuesday", "Thursday"],
@@ -182,12 +143,144 @@ def seed():
                 },
             ],
             "sessions": [
-                {"subject": "Abstract Algebra", "mins": 110, "days_ago": 0, "notes": "Sylow theorems and group homomorphism kernels."},
-                {"subject": "Real Analysis", "mins": 100, "days_ago": 1, "notes": "Lebesgue integration and dominated convergence theorem."},
-                {"subject": "Abstract Algebra", "mins": 95, "days_ago": 2, "notes": "Ring isomorphism theorems and maximal ideals."},
-                {"subject": "Real Analysis", "mins": 120, "days_ago": 3, "notes": "Metric space compactness and Heine-Borel theorem."},
-                {"subject": "Probability Theory", "mins": 85, "days_ago": 4, "notes": "Measure-theoretic probability and martingales."},
-                {"subject": "Abstract Algebra", "mins": 105, "days_ago": 5, "notes": "Galois theory and polynomial solvability by radicals."},
+                {"subject": "Real Analysis & Topology", "mins": 120, "days_ago": 0, "notes": "Lebesgue measure and Dominated Convergence Theorem."},
+                {"subject": "Abstract Algebra", "mins": 105, "days_ago": 1, "notes": "Sylow p-subgroups and simple group classifications."},
+                {"subject": "Real Analysis & Topology", "mins": 115, "days_ago": 2, "notes": "Compactness, Heine-Borel theorem in metric spaces."},
+                {"subject": "Abstract Algebra", "mins": 130, "days_ago": 3, "notes": "Ring isomorphism theorems, prime and maximal ideals."},
+                {"subject": "Probability & Stochastic Processes", "mins": 90, "days_ago": 4, "notes": "Markov chains and stationary transition matrices."},
+                {"subject": "Real Analysis & Topology", "mins": 110, "days_ago": 5, "notes": "Uniform convergence and equicontinuity (Arzelà-Ascoli)."},
+            ],
+        },
+        {
+            "email": "shourav.shah@example.com",
+            "password": "Password123!",
+            "full_name": "Shourav Shah",
+            "quote": "Dream big, study focused, execute daily.",
+            "opt_in": True,
+            "goal": 80,
+            "grade_plan": {
+                "name": "Software Engineering B.Sc.",
+                "current_gpa": "3.65",
+                "target_gpa": "3.80",
+                "completed_credits": 70,
+                "total_credits": 140,
+            },
+            "schedules": [
+                {
+                    "subject": "Web Architectures & Cloud Computing",
+                    "start_time": time(10, 0),
+                    "end_time": time(12, 0),
+                    "days": ["Monday", "Wednesday"],
+                    "deadline": today + timedelta(days=16),
+                },
+                {
+                    "subject": "Distributed Systems",
+                    "start_time": time(15, 0),
+                    "end_time": time(17, 0),
+                    "days": ["Tuesday", "Thursday"],
+                    "deadline": today + timedelta(days=24),
+                },
+            ],
+            "sessions": [
+                {"subject": "Web Architectures & Cloud Computing", "mins": 100, "days_ago": 0, "notes": "Microservices communication with gRPC and REST APIs."},
+                {"subject": "Distributed Systems", "mins": 90, "days_ago": 1, "notes": "Raft consensus protocol leader election implementation."},
+                {"subject": "Web Architectures & Cloud Computing", "mins": 110, "days_ago": 2, "notes": "PostgreSQL replication and connection pooling with PgBouncer."},
+                {"subject": "Distributed Systems", "mins": 85, "days_ago": 3, "notes": "CAP theorem and eventual consistency tradeoffs."},
+                {"subject": "Cloud Computing", "mins": 95, "days_ago": 5, "notes": "Kubernetes Pod lifecycle and service mesh ingress."},
+            ],
+        },
+        {
+            "email": "rayhan.chowdhury@example.com",
+            "password": "Password123!",
+            "full_name": "Rayhan Chowdhury",
+            "quote": "Building machines that shape the future.",
+            "opt_in": True,
+            "goal": 75,
+            "grade_plan": {
+                "name": "Mechanical & Mechatronics Engineering",
+                "current_gpa": "3.52",
+                "target_gpa": "3.70",
+                "completed_credits": 64,
+                "total_credits": 144,
+            },
+            "schedules": [
+                {
+                    "subject": "Thermodynamics & Fluid Mechanics",
+                    "start_time": time(9, 0),
+                    "end_time": time(11, 0),
+                    "days": ["Tuesday", "Thursday"],
+                    "deadline": today + timedelta(days=14),
+                },
+                {
+                    "subject": "Robotics & Microcontroller Systems",
+                    "start_time": time(14, 0),
+                    "end_time": time(17, 0),
+                    "days": ["Monday", "Wednesday"],
+                    "deadline": today + timedelta(days=28),
+                },
+            ],
+            "sessions": [
+                {"subject": "Thermodynamics & Fluid Mechanics", "mins": 95, "days_ago": 0, "notes": "Navier-Stokes equations and boundary layer separation."},
+                {"subject": "Robotics & Microcontroller Systems", "mins": 120, "days_ago": 1, "notes": "PID controller tuning for quadcopter attitude stabilization."},
+                {"subject": "Thermodynamics & Fluid Mechanics", "mins": 80, "days_ago": 2, "notes": "Brayton cycle regenerative gas turbine efficiency."},
+                {"subject": "Robotics & Microcontroller Systems", "mins": 100, "days_ago": 4, "notes": "Forward and inverse kinematics for 6-DOF robotic arm."},
+            ],
+        },
+        {
+            "email": "rafiq.mustafa@example.com",
+            "password": "Password123!",
+            "full_name": "Rafiq Al Mustafa",
+            "quote": "Knowledge is power, but focus is superpowers.",
+            "opt_in": True,
+            "goal": 60,
+            "grade_plan": {
+                "name": "Electrical & Electronic Engineering (EEE)",
+                "current_gpa": "3.60",
+                "target_gpa": "3.75",
+                "completed_credits": 60,
+                "total_credits": 144,
+            },
+            "schedules": [
+                {
+                    "subject": "Signals & Linear Systems",
+                    "start_time": time(10, 30),
+                    "end_time": time(12, 30),
+                    "days": ["Monday", "Wednesday"],
+                    "deadline": today + timedelta(days=12),
+                },
+            ],
+            "sessions": [
+                {"subject": "Signals & Linear Systems", "mins": 85, "days_ago": 0, "notes": "Fourier Transform and Laplace domain filter design."},
+                {"subject": "Signals & Linear Systems", "mins": 90, "days_ago": 1, "notes": "Z-transform and discrete-time convolution."},
+                {"subject": "Semiconductor Devices", "mins": 75, "days_ago": 3, "notes": "MOSFET I-V characteristic curves and bandgap physics."},
+            ],
+        },
+        {
+            "email": "shofiqur.rahaman@example.com",
+            "password": "Password123!",
+            "full_name": "Shofiqur Rahaman",
+            "quote": "Every master was once a beginner. Keep learning.",
+            "opt_in": True,
+            "goal": 60,
+            "grade_plan": {
+                "name": "Economics & Data Analytics",
+                "current_gpa": "3.48",
+                "target_gpa": "3.65",
+                "completed_credits": 48,
+                "total_credits": 120,
+            },
+            "schedules": [
+                {
+                    "subject": "Econometrics & Quantitative Finance",
+                    "start_time": time(11, 0),
+                    "end_time": time(13, 0),
+                    "days": ["Sunday", "Tuesday"],
+                    "deadline": today + timedelta(days=15),
+                },
+            ],
+            "sessions": [
+                {"subject": "Econometrics & Quantitative Finance", "mins": 70, "days_ago": 0, "notes": "Ordinary Least Squares (OLS) regression assumptions."},
+                {"subject": "Microeconomic Theory", "mins": 80, "days_ago": 2, "notes": "Consumer utility maximization and Lagrange multipliers."},
             ],
         },
     ]
@@ -195,7 +288,6 @@ def seed():
     created_users = []
 
     for udata in users_data:
-        # Create or update user
         user, created = User.objects.get_or_create(
             email=udata["email"],
             defaults={"full_name": udata["full_name"]},
@@ -254,93 +346,133 @@ def seed():
                 notes=sess["notes"],
             )
 
-    # Setup Social Graph / Follows
+    # Social Graph / Network
     Follow.objects.all().delete()
-    if len(created_users) >= 4:
-        alex, sarah, marcus, elena = created_users[0], created_users[1], created_users[2], created_users[3]
-        Follow.objects.create(follower=alex, following=sarah)
-        Follow.objects.create(follower=alex, following=elena)
-        Follow.objects.create(follower=sarah, following=alex)
-        Follow.objects.create(follower=sarah, following=elena)
-        Follow.objects.create(follower=marcus, following=alex)
-        Follow.objects.create(follower=elena, following=sarah)
+    jamil, bithy, supty, shourav, rayhan, rafiq, shofiqur = created_users
+    Follow.objects.create(follower=jamil, following=bithy)
+    Follow.objects.create(follower=jamil, following=supty)
+    Follow.objects.create(follower=jamil, following=shourav)
+    Follow.objects.create(follower=bithy, following=jamil)
+    Follow.objects.create(follower=bithy, following=supty)
+    Follow.objects.create(follower=supty, following=jamil)
+    Follow.objects.create(follower=supty, following=bithy)
+    Follow.objects.create(follower=shourav, following=jamil)
+    Follow.objects.create(follower=rayhan, following=shourav)
+    Follow.objects.create(follower=rafiq, following=rayhan)
+    Follow.objects.create(follower=shofiqur, following=jamil)
 
-    # Setup Community Discussions
+    # Community Discussions
     Post.objects.all().delete()
     p1 = Post.objects.create(
-        author=created_users[1], # Sarah
-        title="Best strategies for mastering Organic Synthesis reactions?",
-        content="I find drawing the full electron-pushing arrows and practicing 5 synthesis roadmaps every morning makes a massive difference. What is everyone else's favorite technique?",
-        category="Exam Prep",
-    )
-    p2 = Post.objects.create(
-        author=created_users[0], # Alex
-        title="Curated list of Algorithm visualization and practice tools",
-        content="Hey everyone! For DSA prep, visualgo.net and NeetCode roadmaps are incredible. Let me know if you want to organize a weekend LeetCode mock interview session!",
+        author=bithy,
+        title="Best resources for Organic Chemistry mechanism visualization?",
+        content="আমি Organic Chemistry-এর Reaction Mechanisms মনে রাখার জন্য 3D molecular visualization টুলস এবং প্রতিদিন সকালে ৫টা সিন্থেসিস প্র্যাকটিস করছি। কারো ভালো কোনো অ্যানিমেশন সাইটের লিংক থাকলে শেয়ার করবেন?",
         category="Resources",
     )
-    p3 = Post.objects.create(
-        author=created_users[2], # Marcus
-        title="SolidWorks vs Fusion 360 for mechanical design projects?",
-        content="Starting our robotics capstone design. Which CAD package do you find more intuitive for FEA simulations and complex assemblies?",
+    p2 = Post.objects.create(
+        author=jamil,
+        title="Weekly LeetCode & DSA Problem Solving Group",
+        content="Hello everyone! We are organizing a weekly competitive programming problem solving session covering Dynamic Programming, Segment Trees, and Graph Algorithms. Let me know if you want to join our live session!",
         category="Study Group",
+    )
+    p3 = Post.objects.create(
+        author=supty,
+        title="Tips for tackling Real Analysis proofs and topological concepts",
+        content="Real Analysis-এ epsilon-delta ডেফিনিশন এবং compactness কনসেপ্ট ভিজ্যুয়ালাইজ করার জন্য Abbott-এর Understanding Analysis বইটা খুবই হেল্পফুল। কারো কোনো পার্টিকুলার প্রুফে সমস্যা হলে ডিসকাস করতে পারেন!",
+        category="Course Help",
+    )
+    p4 = Post.objects.create(
+        author=rayhan,
+        title="SolidWorks vs Fusion 360 for Robotics & Mechatronics Projects?",
+        content="Looking for recommendations on mechanical CAD modeling. Which software gives smoother FEA stress simulations for robot arm joints?",
+        category="General",
     )
 
     # Reactions & Comments
-    Reaction.objects.create(post=p1, user=created_users[0])
-    Reaction.objects.create(post=p1, user=created_users[3])
-    Reaction.objects.create(post=p2, user=created_users[1])
-    Reaction.objects.create(post=p2, user=created_users[2])
-    Reaction.objects.create(post=p2, user=created_users[3])
+    Reaction.objects.create(post=p1, user=jamil)
+    Reaction.objects.create(post=p1, user=supty)
+    Reaction.objects.create(post=p1, user=shourav)
+    Reaction.objects.create(post=p2, user=bithy)
+    Reaction.objects.create(post=p2, user=supty)
+    Reaction.objects.create(post=p2, user=shourav)
+    Reaction.objects.create(post=p2, user=rayhan)
+    Reaction.objects.create(post=p3, user=jamil)
+    Reaction.objects.create(post=p4, user=shourav)
 
     Comment.objects.create(
         post=p1,
-        author=created_users[0],
-        content="Flashcards with reaction mechanisms on Anki helped me memorize the reagents!",
+        author=jamil,
+        content="Anki flashcards দিয়ে reaction reagent মনে রাখা অনেক সহজ হয়! Visualising electron-pushing arrows with MolView website also helps a lot.",
     )
     Comment.objects.create(
         post=p2,
-        author=created_users[3],
-        content="Count me in for the LeetCode mock interviews! Graph algorithms especially.",
+        author=supty,
+        content="I am in! Especially for graph traversal algorithms and shortest paths problem solving.",
+    )
+    Comment.objects.create(
+        post=p2,
+        author=shourav,
+        content="Count me in too! Weekend evenings suit best.",
+    )
+    Comment.objects.create(
+        post=p4,
+        author=shourav,
+        content="For quick assemblies and cloud collaboration, Fusion 360 is great. For heavy FEA simulation, SolidWorks is standard.",
     )
 
     # Study Events
     StudyEvent.objects.all().delete()
     e1 = StudyEvent.objects.create(
-        creator=created_users[0], # Alex
-        title="Weekly LeetCode & Algorithms Problem Solving",
-        description="We will solve 3 medium problems together on dynamic programming and graphs with live code review.",
-        subject="Computer Science",
+        creator=jamil,
+        title="Weekly LeetCode & Competitive Programming Bootcamp",
+        description="Live collaborative problem solving on Dynamic Programming, Graph Theory, and Tree algorithms with code optimization analysis.",
+        subject="Computer Science & Engineering",
         event_date=today + timedelta(days=2),
         start_time=time(17, 0),
-        end_time=time(19, 0),
-        location="Science & Tech Library - Study Room 402 / Discord",
+        end_time=time(19, 30),
+        location="CSE Seminar Hall / Discord Voice Room",
     )
     e2 = StudyEvent.objects.create(
-        creator=created_users[1], # Sarah
-        title="Organic Chemistry Midterm Rapid Fire Review",
-        description="High-yield synthesis problem solving and NMR spectra interpretation session.",
-        subject="Chemistry",
+        creator=bithy,
+        title="Biochemistry & Organic Reaction Synthesis Review",
+        description="High-yield synthesis problem solving, NMR spectra interpretation, and group discussion.",
+        subject="Biochemistry",
         event_date=today + timedelta(days=4),
         start_time=time(15, 0),
-        end_time=time(17, 30),
-        location="Life Sciences Building - Hall B",
+        end_time=time(17, 0),
+        location="Science Faculty Library - Room 304",
+    )
+    e3 = StudyEvent.objects.create(
+        creator=rayhan,
+        title="Robotics & Arduino Microcontroller Hands-on Workshop",
+        description="Building sensor telemetry pipelines and PID motor control algorithms.",
+        subject="Mechatronics Engineering",
+        event_date=today + timedelta(days=6),
+        start_time=time(14, 0),
+        end_time=time(17, 0),
+        location="Engineering Innovation Lab",
     )
 
-    EventRSVP.objects.create(event=e1, user=created_users[0], status="going")
-    EventRSVP.objects.create(event=e1, user=created_users[1], status="going")
-    EventRSVP.objects.create(event=e1, user=created_users[3], status="going")
-    EventRSVP.objects.create(event=e2, user=created_users[1], status="going")
-    EventRSVP.objects.create(event=e2, user=created_users[0], status="going")
+    EventRSVP.objects.create(event=e1, user=jamil, status="going")
+    EventRSVP.objects.create(event=e1, user=bithy, status="going")
+    EventRSVP.objects.create(event=e1, user=supty, status="going")
+    EventRSVP.objects.create(event=e1, user=shourav, status="going")
+    EventRSVP.objects.create(event=e2, user=bithy, status="going")
+    EventRSVP.objects.create(event=e2, user=jamil, status="going")
+    EventRSVP.objects.create(event=e3, user=rayhan, status="going")
+    EventRSVP.objects.create(event=e3, user=shourav, status="going")
 
-    print("✨ Successfully generated 4 demo accounts with full study tracker, streaks, routines, grades, and community data!")
-    print("----------------------------------------------------------------------")
+    print("✨ Successfully generated 7 Bangladeshi scholar demo accounts with complete data across all features!")
+    print("--------------------------------------------------------------------------------------------------")
     print("Demo Account Logins (Password for all: 'Password123!'):")
-    print("1. Sarah Chen     -> sarah.chen@example.com    (Top Leaderboard / Pre-Med)")
-    print("2. Alex Rivera    -> alex.rivera@example.com   (CS / Algorithms Scholar)")
-    print("3. Elena Rostova  -> elena.rostova@example.com  (Pure Math / 4.0 GPA)")
-    print("4. Marcus Vance   -> marcus.vance@example.com  (Engineering Builder)")
-    print("----------------------------------------------------------------------")
+    print("1. Baitun Nahar Bithy      -> baitun.bithy@example.com      (Rank #1 Leaderboard / Biochemistry)")
+    print("2. Jamil Hossain           -> jamil.hossain@example.com     (Rank #2 Leaderboard / CSE & DSA)")
+    print("3. Saptarshi Biswas Supty  -> saptarshi.supty@example.com   (Rank #3 Leaderboard / Mathematics)")
+    print("4. Shourav Shah            -> shourav.shah@example.com      (Software Engineering & Cloud)")
+    print("5. Rayhan Chowdhury        -> rayhan.chowdhury@example.com  (Mechanical & Robotics)")
+    print("6. Rafiq Al Mustafa        -> rafiq.mustafa@example.com     (EEE & Circuit Signals)")
+    print("7. Shofiqur Rahaman        -> shofiqur.rahaman@example.com  (Economics & Quantitative Finance)")
+    print("--------------------------------------------------------------------------------------------------")
 
 
 if __name__ == "__main__":
