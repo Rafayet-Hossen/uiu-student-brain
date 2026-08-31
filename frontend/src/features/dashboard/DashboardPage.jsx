@@ -4,11 +4,10 @@ import Badge from "../../components/Badge";
 import Button from "../../components/Button";
 import Card from "../../components/Card";
 import Navbar from "../../components/Navbar";
-import Spinner from "../../components/Spinner";
 import { useAuth } from "../auth/useAuth";
 import { getSchedules } from "../planner/api";
 import { getGradePlans } from "../grades/api";
-import { getStudySessions } from "../tracker/api";
+import { getStreakSummary, getStudySessions } from "../tracker/api";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -16,16 +15,18 @@ export default function DashboardPage() {
   const [schedules, setSchedules] = useState([]);
   const [gradePlans, setGradePlans] = useState([]);
   const [sessions, setSessions] = useState([]);
+  const [streakData, setStreakData] = useState(null);
 
   useEffect(() => {
     async function loadDashboardData() {
       setLoading(true);
       try {
-        const [schedulesData, gradesData, sessionsData] =
+        const [schedulesData, gradesData, sessionsData, streakRes] =
           await Promise.allSettled([
             getSchedules(),
             getGradePlans(),
             getStudySessions(),
+            getStreakSummary(),
           ]);
 
         if (schedulesData.status === "fulfilled")
@@ -33,6 +34,7 @@ export default function DashboardPage() {
         if (gradesData.status === "fulfilled") setGradePlans(gradesData.value);
         if (sessionsData.status === "fulfilled")
           setSessions(sessionsData.value);
+        if (streakRes.status === "fulfilled") setStreakData(streakRes.value);
       } catch (err) {
         console.error("Error loading dashboard data:", err);
       } finally {
@@ -59,6 +61,8 @@ export default function DashboardPage() {
     day: "numeric",
   });
 
+  const currentStreak = streakData?.current_streak || 0;
+
   return (
     <div className="app-screen">
       <Navbar />
@@ -68,20 +72,27 @@ export default function DashboardPage() {
         <section className="academic-hero">
           <div className="hero-text-col">
             <div className="hero-badge">
-              <Badge variant="accent">Academic Workspace</Badge>
+              <Badge variant="accent">Academic Command Center</Badge>
             </div>
             <h1 className="hero-title">
               Welcome back, {user?.full_name || "Scholar"}!
             </h1>
             <p className="hero-subtitle">
-              Track routines, project GPA targets, and manage your academic
-              performance from one unified dashboard.
+              Track routines, monitor active streaks, project GPA targets, and manage academic performance.
             </p>
           </div>
 
-          <div className="hero-date-badge">
-            <span>🗓️</span>
-            <span>{currentDate}</span>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px", alignItems: "flex-end" }}>
+            <div className="hero-date-badge">
+              <span>🗓️</span>
+              <span>{currentDate}</span>
+            </div>
+
+            {currentStreak > 0 && (
+              <Badge variant="warning" style={{ fontSize: "0.875rem", padding: "6px 12px" }}>
+                🔥 {currentStreak} Day Study Streak Active
+              </Badge>
+            )}
           </div>
         </section>
 
@@ -109,8 +120,8 @@ export default function DashboardPage() {
               {loading
                 ? "..."
                 : topGradePlan
-                  ? Number(topGradePlan.target_gpa).toFixed(2)
-                  : "N/A"}
+                ? Number(topGradePlan.target_gpa).toFixed(2)
+                : "N/A"}
             </p>
             <p className="stat-subtext">
               {topGradePlan
@@ -121,16 +132,16 @@ export default function DashboardPage() {
 
           <div className="stat-card">
             <div className="stat-card-header">
-              <span className="stat-label">Total Time Studied</span>
-              <div className="stat-icon">⏱️</div>
+              <span className="stat-label">Study Streak & Focus</span>
+              <div className="stat-icon">🔥</div>
             </div>
             <p className="stat-number">
-              {loading ? "..." : `${totalHours}h ${remainingMins}m`}
+              {loading ? "..." : `${currentStreak} Days`}
             </p>
             <p className="stat-subtext">
-              {sessions.length === 1
-                ? "Across 1 session"
-                : `Across ${sessions.length} logged sessions`}
+              {streakData?.today_minutes > 0
+                ? `⚡ ${streakData.today_minutes}m studied today (${totalHours}h ${remainingMins}m total)`
+                : `Total ${totalHours}h ${remainingMins}m logged`}
             </p>
           </div>
         </div>
@@ -148,8 +159,7 @@ export default function DashboardPage() {
                   <Badge variant="accent">Schedule</Badge>
                   <h3>Study Schedule Maker</h3>
                   <p>
-                    Build structured weekly routines, organize course workloads,
-                    and track assignment deadlines.
+                    Build structured weekly routines, organize course workloads, and track assignment deadlines.
                   </p>
                 </div>
               </div>
@@ -169,8 +179,7 @@ export default function DashboardPage() {
                   <Badge variant="success">Performance</Badge>
                   <h3>Grade Planner & Projection</h3>
                   <p>
-                    Calculate required GPAs on remaining credit hours to achieve
-                    degree honors and target cumulative GPAs.
+                    Calculate required GPAs on remaining credit hours to achieve degree honors and target cumulative GPAs.
                   </p>
                 </div>
               </div>
@@ -187,18 +196,17 @@ export default function DashboardPage() {
               <div className="feature-hub-header">
                 <div className="feature-hub-icon">⏱️</div>
                 <div className="feature-hub-body">
-                  <Badge variant="warning">Focus</Badge>
-                  <h3>Study Session Tracker</h3>
+                  <Badge variant="warning">Focus & Rewards</Badge>
+                  <h3>Study Tracker & Rewards</h3>
                   <p>
-                    Log dedicated study hours by subject, track your focus
-                    history, and maintain consistent study habits.
+                    Log study sessions, maintain consecutive day streaks, and earn academic achievement milestone badges.
                   </p>
                 </div>
               </div>
             </div>
 
             <Link to="/tracker">
-              <Button className="btn-block">Open Study Tracker →</Button>
+              <Button className="btn-block">Open Study Tracker & Streaks →</Button>
             </Link>
           </Card>
 
@@ -206,20 +214,19 @@ export default function DashboardPage() {
           <Card className="feature-hub-card">
             <div>
               <div className="feature-hub-header">
-                <div className="feature-hub-icon">💬</div>
+                <div className="feature-hub-icon">👥</div>
                 <div className="feature-hub-body">
-                  <Badge variant="accent">Social</Badge>
-                  <h3>Academic Community</h3>
+                  <Badge variant="default">Community</Badge>
+                  <h3>Student Community</h3>
                   <p>
-                    Connect with peer scholars, discuss exam topics, collaborate
-                    in study groups, and schedule meetups.
+                    Connect with fellow scholars, join academic study groups, share insights, and RSVP for campus events.
                   </p>
                 </div>
               </div>
             </div>
 
             <Link to="/community">
-              <Button className="btn-block">Open Community Hub →</Button>
+              <Button className="btn-block">Open Community →</Button>
             </Link>
           </Card>
         </div>

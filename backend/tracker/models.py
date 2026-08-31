@@ -21,3 +21,17 @@ class StudySession(models.Model):
 
     def __str__(self):
         return f"{self.subject} - {self.duration_minutes} min"
+
+
+class StudyGoal(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="study_goal",
+    )
+    daily_goal_minutes = models.PositiveIntegerField(default=60)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user} - {self.daily_goal_minutes} min/day"

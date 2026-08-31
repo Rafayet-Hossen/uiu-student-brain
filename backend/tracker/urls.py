@@ -1,6 +1,12 @@
 from django.urls import path
 
-from .views import StudySessionDetailView, StudySessionListCreateView
+from .views import (
+    RewardsListView,
+    StreakSummaryView,
+    StudyGoalView,
+    StudySessionDetailView,
+    StudySessionListCreateView,
+)
 
 urlpatterns = [
     path(
@@ -12,5 +18,20 @@ urlpatterns = [
         "sessions/<int:pk>/",
         StudySessionDetailView.as_view(),
         name="study-session-detail",
+    ),
+    path(
+        "streaks/",
+        StreakSummaryView.as_view(),
+        name="tracker-streaks",
+    ),
+    path(
+        "rewards/",
+        RewardsListView.as_view(),
+        name="tracker-rewards",
+    ),
+    path(
+        "goal/",
+        StudyGoalView.as_view(),
+        name="tracker-goal",
     ),
 ]

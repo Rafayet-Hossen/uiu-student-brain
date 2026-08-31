@@ -505,28 +505,423 @@
   margin: 0;
 }
 
-/* Study Tracker Timeline / List */
-.tracker-hero-stat {
-  background: linear-gradient(135deg, var(--color-accent-subtle) 0%, var(--color-surface) 100%);
-  border: 1px solid rgba(37, 99, 235, 0.2);
+/* ==========================================================================
+   FEATURE #10: REWARDS & STREAKS STYLES
+   ========================================================================== */
+
+.streak-hero-card {
+  background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-surface-subtle) 100%);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
-  padding: 28px;
+  padding: 24px;
   margin-bottom: 28px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.streak-main-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  gap: 24px;
   flex-wrap: wrap;
 }
 
-.tracker-hero-total {
-  font-size: 2.25rem;
-  font-weight: 800;
-  color: var(--color-accent-text);
-  margin: 4px 0 0;
-  letter-spacing: -0.03em;
+.streak-flame-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 240px;
 }
 
+.streak-flame-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.streak-flame-icon {
+  font-size: 2.75rem;
+  animation: pulse-flame 2s infinite ease-in-out;
+}
+
+@keyframes pulse-flame {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.streak-flame-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.streak-flame-number {
+  font-size: 2.25rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--color-text);
+  line-height: 1;
+}
+
+.streak-flame-label {
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-amber-text);
+}
+
+.streak-status-text {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin: 0;
+  font-weight: 500;
+}
+
+.daily-goal-section {
+  flex: 1;
+  min-width: 280px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+}
+
+.daily-goal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.daily-goal-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.daily-goal-label {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.goal-edit-toggle {
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s ease;
+}
+
+.goal-edit-toggle:hover {
+  color: var(--color-accent);
+  background: var(--color-accent-subtle);
+}
+
+.goal-edit-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.goal-edit-form .field {
+  margin-bottom: 0;
+  flex: 1;
+}
+
+.goal-progress-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.goal-progress-bar-track {
+  width: 100%;
+  height: 10px;
+  background: var(--color-surface-subtle);
+  border-radius: 9999px;
+  overflow: hidden;
+  border: 1px solid var(--color-border-subtle);
+}
+
+.goal-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f59e0b 0%, #10b981 100%);
+  border-radius: 9999px;
+  transition: width 0.4s ease;
+}
+
+.goal-progress-footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+/* Weekly Consistency Dots Strip */
+.weekly-streak-strip {
+  border-top: 1px solid var(--color-border-subtle);
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.weekly-strip-title {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+
+.weekly-dots-container {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.weekly-day-dot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  transition: all 0.15s ease;
+}
+
+.dot-day-name {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.dot-indicator {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.dot-mins {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-text-subtle);
+}
+
+.dot-goal-met {
+  border-color: rgba(16, 185, 129, 0.4);
+  background: var(--color-emerald-bg);
+  color: var(--color-emerald-text);
+}
+
+.dot-studied {
+  border-color: rgba(245, 158, 11, 0.4);
+  background: var(--color-amber-bg);
+  color: var(--color-amber-text);
+}
+
+.dot-empty {
+  opacity: 0.65;
+}
+
+/* Subnav Tabs in Tracker */
+.tracker-subnav-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 8px;
+}
+
+.tracker-subnav-tab {
+  padding: 10px 18px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tracker-subnav-tab:hover {
+  color: var(--color-text);
+  background: var(--color-surface-subtle);
+}
+
+.tracker-subnav-tab.tab-active {
+  color: var(--color-accent);
+  background: var(--color-accent-subtle);
+  border-color: rgba(37, 99, 235, 0.2);
+}
+
+/* Rewards Shelf */
+.rewards-shelf-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.rewards-shelf-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.rewards-filter-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.rewards-filter-tab {
+  padding: 6px 14px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.rewards-filter-tab:hover {
+  color: var(--color-text);
+  border-color: var(--color-text-muted);
+}
+
+.rewards-filter-tab.tab-active {
+  background: var(--color-accent);
+  color: #ffffff;
+  border-color: var(--color-accent);
+}
+
+.rewards-trophy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.trophy-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.trophy-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.trophy-unlocked {
+  border-color: rgba(245, 158, 11, 0.35);
+  background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-amber-bg) 100%);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.08);
+}
+
+.trophy-locked {
+  opacity: 0.78;
+}
+
+.trophy-icon-wrapper {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.trophy-icon {
+  font-size: 1.875rem;
+}
+
+.trophy-check {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 18px;
+  height: 18px;
+  background: var(--color-emerald);
+  color: #ffffff;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--color-surface);
+}
+
+.trophy-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.trophy-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.trophy-name {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--color-text);
+}
+
+.trophy-desc {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.trophy-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--color-surface-subtle);
+  border-radius: 9999px;
+  overflow: hidden;
+  margin-top: 4px;
+  border: 1px solid var(--color-border-subtle);
+}
+
+.trophy-progress-fill {
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+
+/* Study Tracker Sessions Grid */
 .sessions-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -606,5 +1001,8 @@
   }
   .planner-time-row {
     grid-template-columns: 1fr;
+  }
+  .weekly-dots-container {
+    grid-template-columns: repeat(4, 1fr);
   }
 }

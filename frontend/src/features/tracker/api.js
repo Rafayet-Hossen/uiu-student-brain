@@ -16,6 +16,22 @@ export function deleteStudySession(id) {
   return api.delete(`/tracker/sessions/${id}/`).then((res) => res.data);
 }
 
+export function getStreakSummary() {
+  return api.get("/tracker/streaks/").then((res) => res.data);
+}
+
+export function getRewards() {
+  return api.get("/tracker/rewards/").then((res) => res.data);
+}
+
+export function getStudyGoal() {
+  return api.get("/tracker/goal/").then((res) => res.data);
+}
+
+export function updateStudyGoal(goalData) {
+  return api.patch("/tracker/goal/", goalData).then((res) => res.data);
+}
+
 export function extractTrackerErrorMessage(error) {
   const data = error?.response?.data;
 
