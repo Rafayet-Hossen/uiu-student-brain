@@ -8,13 +8,18 @@ import Spinner from "../../components/Spinner";
 import {
   extractCommunityErrorMessage,
   getEvents,
+  getLeaderboard,
+  getLeaderboardStatus,
   getPosts,
   getStudents,
+  toggleLeaderboardOptIn,
 } from "./api";
 import PostCard from "./components/PostCard";
 import PostForm from "./components/PostForm";
 import EventCard from "./components/EventCard";
 import EventForm from "./components/EventForm";
+import LeaderboardPodium from "./components/LeaderboardPodium";
+import LeaderboardTable from "./components/LeaderboardTable";
 import StudentCard from "./components/StudentCard";
 
 const CATEGORIES = [
@@ -48,6 +53,13 @@ export default function CommunityPage() {
   const [studentsLoading, setStudentsLoading] = useState(false);
   const [studentsError, setStudentsError] = useState("");
   const [studentSearch, setStudentSearch] = useState("");
+  // Leaderboard state
+  const [leaderboardData, setLeaderboardData] = useState([]);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
+  const [leaderboardError, setLeaderboardError] = useState("");
+  const [leaderboardTimeframe, setLeaderboardTimeframe] = useState("weekly");
+  const [optInStatus, setOptInStatus] = useState(null);
+  const [optInLoading, setOptInLoading] = useState(false);
 
   // Load posts
   async function loadPosts() {
@@ -94,6 +106,31 @@ export default function CommunityPage() {
     } finally {
       setStudentsLoading(false);
     }
+
+  // Load leaderboard
+  async function loadLeaderboard() {
+    setLeaderboardLoading(true);
+    setLeaderboardError("");
+    try {
+      const data = await getLeaderboard(leaderboardTimeframe);
+      setLeaderboardData(data);
+    } catch (err) {
+      setLeaderboardError(extractCommunityErrorMessage(err));
+    } finally {
+      setLeaderboardLoading(false);
+    }
+  }
+
+  // Load opt‑in status
+  async function loadLeaderboardStatus() {
+    try {
+      const status = await getLeaderboardStatus();
+      setOptInStatus(status.is_opted_in);
+    } catch (err) {
+      console.error("Failed to load leaderboard status", err);
+    }
+  }
+
   }
 
   useEffect(() => {
@@ -197,6 +234,12 @@ export default function CommunityPage() {
             onClick={() => setActiveTab("students")}
           >
             👥 Student Network
+          </Button>
+          <Button
+            variant={activeTab === "leaderboard" ? "primary" : "secondary"}
+            onClick={() => setActiveTab("leaderboard")}
+          >
+            🏆 Leaderboard
           </Button>
         </div>
 

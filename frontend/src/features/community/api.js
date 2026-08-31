@@ -22,6 +22,8 @@ export function togglePostReaction(id) {
 }
 
 // Comments
+
+
 export function getComments(postId) {
   return api
     .get(`/community/posts/${postId}/comments/`)
@@ -66,14 +68,14 @@ export function toggleFollowStudent(id) {
   return api.post(`/community/students/${id}/follow/`).then((res) => res.data);
 }
 
-export function extractCommunityErrorMessage(error) {
-  const data = error?.response?.data;
-  if (!data) return "An unexpected error occurred. Please try again.";
-  if (typeof data === "string") return data;
-  if (data.detail) return data.detail;
-  const firstKey = Object.keys(data)[0];
-  if (firstKey && Array.isArray(data[firstKey]) && data[firstKey].length > 0) {
-    return `${firstKey}: ${data[firstKey][0]}`;
-  }
-  return "An unexpected error occurred. Please try again.";
+export function getLeaderboard(timeframe = "weekly") {
+  return api.get(`/community/leaderboard/${timeframe}/`).then((res) => res.data);
+}
+
+export function getLeaderboardStatus() {
+  return api.get(`/community/leaderboard/status/`).then((res) => res.data);
+}
+
+export function toggleLeaderboardOptIn(payload) {
+  return api.post(`/community/leaderboard/opt-in/`, payload).then((res) => res.data);
 }
