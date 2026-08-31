@@ -119,3 +119,26 @@ class StudentProfileSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = fields
 
+
+class LeaderboardProfileSerializer(serializers.Serializer):
+    is_opted_in = serializers.BooleanField()
+    custom_quote = serializers.CharField(max_length=255, required=False, allow_blank=True)
+
+
+class LeaderboardEntrySerializer(serializers.Serializer):
+    rank = serializers.IntegerField()
+    user_id = serializers.IntegerField()
+    full_name = serializers.CharField()
+    email = serializers.CharField()
+    display_name = serializers.CharField()
+    custom_quote = serializers.CharField(allow_blank=True)
+    study_minutes = serializers.IntegerField()
+    study_hours = serializers.FloatField()
+    current_streak = serializers.IntegerField()
+    longest_streak = serializers.IntegerField()
+    total_sessions = serializers.IntegerField()
+    trophies_count = serializers.IntegerField()
+    is_following = serializers.BooleanField()
+    is_current_user = serializers.BooleanField()
+
+

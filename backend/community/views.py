@@ -5,11 +5,14 @@ from rest_framework.views import APIView
 
 from .serializers import (
     CommentSerializer,
+    LeaderboardEntrySerializer,
+    LeaderboardProfileSerializer,
     PostSerializer,
     StudentProfileSerializer,
     StudyEventSerializer,
 )
 from . import services
+
 
 
 class PostListCreateView(generics.ListCreateAPIView):
@@ -142,3 +145,41 @@ class StudentFollowToggleView(APIView):
             target_user_id=pk,
         )
         return Response(result, status=status.HTTP_200_OK)
+
+
+class LeaderboardView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        timeframe = request.query_params.get("timeframe", "weekly")
+        data = services.get_leaderboard(user=request.user, timeframe=timeframe)
+        return Response(data, status=status.HTTP_200_OK)
+
+
+class LeaderboardStatusView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        data = services.get_leaderboard_status(user=request.user)
+        return Response(data, status=status.HTTP_200_OK)
+
+
+class LeaderboardOptInToggleView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = LeaderboardProfileSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        profile = services.toggle_leaderboard_opt_in(
+            user=request.user,
+            is_opted_in=serializer.validated_data["is_opted_in"],
+            custom_quote=serializer.validated_data.get("custom_quote"),
+        )
+        return Response(
+            {
+                "is_opted_in": profile.is_opted_in,
+                "custom_quote": profile.custom_quote,
+            },
+            status=status.HTTP_200_OK,
+        )
+

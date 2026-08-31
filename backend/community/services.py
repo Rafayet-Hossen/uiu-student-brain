@@ -1,10 +1,15 @@
+from datetime import date, timedelta
+from typing import Any, Dict, List
 from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db.models import Count, Exists, OuterRef, Q, QuerySet
+from django.db.models import Count, Exists, OuterRef, Q, QuerySet, Sum
 
-from .models import Comment, EventRSVP, Follow, Post, Reaction, StudyEvent
+from tracker.models import StudySession
+from tracker.services import calculate_user_streaks, get_user_rewards
+from .models import Comment, EventRSVP, Follow, LeaderboardProfile, Post, Reaction, StudyEvent
 
 User = get_user_model()
+
 
 
 # ============================================================
@@ -172,4 +177,189 @@ def toggle_follow_student(*, follower, target_user_id: int) -> dict:
 
     followers_count = Follow.objects.filter(following=target_user).count()
     return {"following": following, "followers_count": followers_count}
+
+
+# ============================================================
+# LEADERBOARD SERVICES
+# ============================================================
+
+def get_or_create_leaderboard_profile(*, user) -> LeaderboardProfile:
+    profile, _ = LeaderboardProfile.objects.get_or_create(
+        user=user,
+        defaults={"is_opted_in": False, "custom_quote": ""},
+    )
+    return profile
+
+
+def toggle_leaderboard_opt_in(*, user, is_opted_in: bool, custom_quote: str = None) -> LeaderboardProfile:
+    profile = get_or_create_leaderboard_profile(user=user)
+    profile.is_opted_in = is_opted_in
+    if custom_quote is not None:
+        profile.custom_quote = custom_quote.strip()
+    profile.save()
+    return profile
+
+
+def get_leaderboard_status(*, user) -> Dict[str, Any]:
+    profile = get_or_create_leaderboard_profile(user=user)
+    return {
+        "is_opted_in": profile.is_opted_in,
+        "custom_quote": profile.custom_quote,
+        "user_id": user.id,
+    }
+
+
+def get_leaderboard(
+    *,
+    user,
+    timeframe: str = "weekly",
+    limit: int = 50,
+    reference_date: date = None,
+) -> Dict[str, Any]:
+    if reference_date is None:
+        reference_date = date.today()
+
+    user_profile = get_or_create_leaderboard_profile(user=user)
+
+    opted_in_profiles = LeaderboardProfile.objects.filter(is_opted_in=True).select_related("user")
+    opted_in_user_ids = set(opted_in_profiles.values_list("user_id", flat=True))
+
+    if user_profile.is_opted_in:
+        opted_in_user_ids.add(user.id)
+
+    following_ids = set(
+        Follow.objects.filter(follower=user).values_list("following_id", flat=True)
+    )
+
+    quotes_map = {p.user_id: p.custom_quote for p in opted_in_profiles}
+    if user_profile.is_opted_in:
+        quotes_map[user.id] = user_profile.custom_quote
+
+    week_start = reference_date - timedelta(days=6)
+    users = User.objects.filter(id__in=opted_in_user_ids)
+
+    entries: List[Dict[str, Any]] = []
+    for u in users:
+        sessions = StudySession.objects.filter(user=u)
+        total_sessions = sessions.count()
+        total_mins = sessions.aggregate(total=Sum("duration_minutes"))["total"] or 0
+
+        weekly_mins = (
+            sessions.filter(session_date__gte=week_start, session_date__lte=reference_date)
+            .aggregate(total=Sum("duration_minutes"))["total"]
+            or 0
+        )
+
+        streaks = calculate_user_streaks(user=u, reference_date=reference_date)
+        current_streak = streaks["current_streak"]
+        longest_streak = streaks["longest_streak"]
+
+        rewards = get_user_rewards(user=u, reference_date=reference_date)
+        trophies_count = sum(1 for r in rewards if r.get("unlocked", False))
+
+        d_name = u.full_name.strip() if u.full_name else u.email.split("@")[0]
+
+        entry = {
+            "user_id": u.id,
+            "full_name": u.full_name or "",
+            "email": u.email,
+            "display_name": d_name,
+            "custom_quote": quotes_map.get(u.id, ""),
+            "weekly_minutes": weekly_mins,
+            "total_minutes": total_mins,
+            "study_minutes": weekly_mins if timeframe == "weekly" else total_mins,
+            "study_hours": round((weekly_mins if timeframe == "weekly" else total_mins) / 60, 1),
+            "current_streak": current_streak,
+            "longest_streak": longest_streak,
+            "total_sessions": total_sessions,
+            "trophies_count": trophies_count,
+            "is_following": u.id in following_ids,
+            "is_current_user": u.id == user.id,
+        }
+        entries.append(entry)
+
+    # Sort based on selected timeframe
+    if timeframe == "streak":
+        entries.sort(
+            key=lambda x: (
+                -x["current_streak"],
+                -x["longest_streak"],
+                -x["weekly_minutes"],
+                x["display_name"].lower(),
+            )
+        )
+    elif timeframe == "all_time":
+        entries.sort(
+            key=lambda x: (
+                -x["total_minutes"],
+                -x["total_sessions"],
+                -x["current_streak"],
+                x["display_name"].lower(),
+            )
+        )
+    else:
+        timeframe = "weekly"
+        entries.sort(
+            key=lambda x: (
+                -x["weekly_minutes"],
+                -x["current_streak"],
+                -x["total_minutes"],
+                x["display_name"].lower(),
+            )
+        )
+
+    rankings: List[Dict[str, Any]] = []
+    current_user_rank = None
+    current_user_entry = None
+
+    for idx, e in enumerate(entries, start=1):
+        ranked_entry = {**e, "rank": idx}
+        rankings.append(ranked_entry)
+        if e["is_current_user"]:
+            current_user_rank = idx
+            current_user_entry = ranked_entry
+
+    if not user_profile.is_opted_in:
+        user_sessions = StudySession.objects.filter(user=user)
+        total_sessions = user_sessions.count()
+        total_mins = user_sessions.aggregate(total=Sum("duration_minutes"))["total"] or 0
+        weekly_mins = (
+            user_sessions.filter(session_date__gte=week_start, session_date__lte=reference_date)
+            .aggregate(total=Sum("duration_minutes"))["total"]
+            or 0
+        )
+        streaks = calculate_user_streaks(user=user, reference_date=reference_date)
+        rewards = get_user_rewards(user=user, reference_date=reference_date)
+        trophies_count = sum(1 for r in rewards if r.get("unlocked", False))
+        d_name = user.full_name.strip() if user.full_name else user.email.split("@")[0]
+
+        current_user_entry = {
+            "rank": None,
+            "user_id": user.id,
+            "full_name": user.full_name or "",
+            "email": user.email,
+            "display_name": d_name,
+            "custom_quote": user_profile.custom_quote,
+            "weekly_minutes": weekly_mins,
+            "total_minutes": total_mins,
+            "study_minutes": weekly_mins if timeframe == "weekly" else total_mins,
+            "study_hours": round((weekly_mins if timeframe == "weekly" else total_mins) / 60, 1),
+            "current_streak": streaks["current_streak"],
+            "longest_streak": streaks["longest_streak"],
+            "total_sessions": total_sessions,
+            "trophies_count": trophies_count,
+            "is_following": False,
+            "is_current_user": True,
+        }
+
+    return {
+        "timeframe": timeframe,
+        "is_opted_in": user_profile.is_opted_in,
+        "custom_quote": user_profile.custom_quote,
+        "current_user_rank": current_user_rank,
+        "current_user_entry": current_user_entry,
+        "total_participants": len(rankings),
+        "rankings": rankings[:limit],
+    }
+
 

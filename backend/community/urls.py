@@ -3,6 +3,9 @@ from django.urls import path
 from .views import (
     CommentDetailView,
     CommentListCreateView,
+    LeaderboardOptInToggleView,
+    LeaderboardStatusView,
+    LeaderboardView,
     PostDetailView,
     PostListCreateView,
     PostReactionToggleView,
@@ -29,5 +32,11 @@ urlpatterns = [
     # Student Network
     path("students/", StudentListView.as_view(), name="community-student-list"),
     path("students/<int:pk>/follow/", StudentFollowToggleView.as_view(), name="community-student-follow"),
+
+    # Leaderboard & Opt-in
+    path("leaderboard/", LeaderboardView.as_view(), name="community-leaderboard"),
+    path("leaderboard/status/", LeaderboardStatusView.as_view(), name="community-leaderboard-status"),
+    path("leaderboard/opt-in/", LeaderboardOptInToggleView.as_view(), name="community-leaderboard-opt-in"),
 ]
+
 

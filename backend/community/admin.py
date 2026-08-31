@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Comment, EventRSVP, Follow, Post, Reaction, StudyEvent
+from .models import Comment, EventRSVP, Follow, LeaderboardProfile, Post, Reaction, StudyEvent
 
 
 @admin.register(Post)
@@ -36,3 +36,11 @@ class StudyEventAdmin(admin.ModelAdmin):
 @admin.register(EventRSVP)
 class EventRSVPAdmin(admin.ModelAdmin):
     list_display = ["event", "user", "status", "created_at"]
+
+
+@admin.register(LeaderboardProfile)
+class LeaderboardProfileAdmin(admin.ModelAdmin):
+    list_display = ["user", "is_opted_in", "custom_quote", "updated_at"]
+    list_filter = ["is_opted_in", "created_at"]
+    search_fields = ["user__email", "user__full_name", "custom_quote"]
+
