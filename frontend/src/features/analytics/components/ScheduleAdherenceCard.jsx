@@ -69,3 +69,4 @@ export default function ScheduleAdherenceCard({ adherence }) {
     </div>
   );
 }
+

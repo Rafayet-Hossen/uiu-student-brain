@@ -49,3 +49,4 @@ class AnalyticsDashboardSerializer(serializers.Serializer):
     weekly_trend = WeeklyTrendItemSerializer(many=True)
     schedule_adherence = ScheduleAdherenceSerializer()
     insights = serializers.ListField(child=serializers.CharField())
+

@@ -113,3 +113,4 @@ class AnalyticsDashboardTests(APITestCase):
 
         # Insights check
         self.assertTrue(len(response.data["insights"]) >= 2)
+
