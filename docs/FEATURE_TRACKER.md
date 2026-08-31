@@ -49,7 +49,7 @@ A feature is only ✅ when **all** of these are true:
 | 10  | Rewards & streaks (extends `tracker`)                     | Study Tracker                    | MUST         | ✅      | ✅       | ✅     | Rafayet | Daily-plan achievement rewards                             |
 | 11  | Study Analytics Dashboard (`analytics`)                   | Tracker, Grades, Assessments     | MUST         | ✅      | ✅       | ✅     | Rafayet | Charts across tracker + grades + assessments               |
 | 12  | AI Risk Prediction (`analytics`)                          | Tracker, Grades                  | STRETCH      | ⬜      | ⬜       | ⬜     |         | Flag falling-behind students (rule-based fallback OK)      |
-| 13  | Leaderboard (`community`/`tracker`)                       | Tracker                          | STRETCH      | ⬜      | ⬜       | ⬜     |         | Opt-in ranking                                             |
+| 13  | Leaderboard (`community`/`tracker`)                       | Tracker                          | STRETCH      | ✅      | ✅       | ✅     | Sourav  | Opt-in ranking                                             |
 
 `Backend` and `Frontend` track each half's progress using the same legend
 above. `Status` is the feature's overall status — only ✅ once both halves
@@ -71,6 +71,8 @@ frontend screen by design, so its Frontend cell is `N/A` instead of ⬜.
 | 2026-08-30 | Community (`community`)          | Completed backend and frontend      | Sourav  |
 | 2026-08-31 | Rewards & Streaks (`tracker`)    | Completed backend and frontend      | Rafayet |
 | 2026-08-31 | Study Analytics (`analytics`)    | Completed backend and frontend      | Rafayet |
+| 2026-08-31 | Leaderboard (`community`)        | Completed backend and frontend      | Sourav  |
+
 
 Add one row here every time a feature's status changes — keep the newest
 entry at the bottom.
