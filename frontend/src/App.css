@@ -2172,7 +2172,10 @@
   overflow: hidden;
   cursor: pointer;
   z-index: 3;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, z-index 0s;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    z-index 0s;
 }
 
 .calendar-time-block:hover {
@@ -2378,4 +2381,3 @@
     width: 100%;
   }
 }
-
