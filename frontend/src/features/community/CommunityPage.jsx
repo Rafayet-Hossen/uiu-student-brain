@@ -147,6 +147,11 @@ export default function CommunityPage() {
     setShowPostForm(false);
   }
 
+  // Handle post deletion
+  function handleDeletePost(postId) {
+    setPosts((prev) => prev.filter((p) => p.id !== postId));
+  }
+
   // Handle post reaction toggle
   async function handleToggleReaction(postId) {
     try {
@@ -208,6 +213,11 @@ export default function CommunityPage() {
     const newEvent = await createEvent(payload);
     setEvents((prev) => [newEvent, ...prev]);
     setShowEventForm(false);
+  }
+
+  // Handle event deletion
+  function handleDeleteEvent(eventId) {
+    setEvents((prev) => prev.filter((e) => e.id !== eventId));
   }
 
   // Handle RSVP toggle
@@ -424,6 +434,7 @@ export default function CommunityPage() {
                     comments={commentsMap[post.id] || []}
                     commentsLoading={Boolean(commentsLoadingMap[post.id])}
                     onCreateComment={handleCreateComment}
+                    onDeleted={handleDeletePost}
                   />
                 ))}
               </div>
@@ -491,6 +502,7 @@ export default function CommunityPage() {
                     key={event.id}
                     event={event}
                     onToggleRSVP={handleToggleRSVP}
+                    onDeleted={handleDeleteEvent}
                   />
                 ))}
               </div>

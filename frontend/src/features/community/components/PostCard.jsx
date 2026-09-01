@@ -96,7 +96,9 @@ export default function PostCard({ post, onDeleted }) {
       return;
     try {
       await deletePost(post.id);
-      onDeleted(post.id);
+      if (onDeleted) {
+        onDeleted(post.id);
+      }
     } catch (err) {
       console.error("Error deleting post:", err);
     }

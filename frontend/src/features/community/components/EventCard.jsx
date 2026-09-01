@@ -36,7 +36,9 @@ export default function EventCard({ event, onDeleted }) {
       return;
     try {
       await deleteEvent(event.id);
-      onDeleted(event.id);
+      if (onDeleted) {
+        onDeleted(event.id);
+      }
     } catch (err) {
       console.error("Error deleting event:", err);
     }
