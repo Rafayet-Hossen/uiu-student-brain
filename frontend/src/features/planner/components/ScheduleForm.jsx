@@ -43,22 +43,32 @@ function scheduleToForm(schedule) {
 
 export default function ScheduleForm({
   schedule = null,
+  initialValues = null,
   onCreated,
   onUpdated,
   onCancel,
 }) {
-  const isEditing = Boolean(schedule);
+  const isEditing = Boolean(schedule && schedule.id);
 
-  const [form, setForm] = useState(
-    isEditing ? scheduleToForm(schedule) : INITIAL_FORM,
-  );
+  const getInitialForm = () => {
+    if (isEditing) return scheduleToForm(schedule);
+    if (initialValues) {
+      return {
+        ...INITIAL_FORM,
+        ...initialValues,
+      };
+    }
+    return INITIAL_FORM;
+  };
+
+  const [form, setForm] = useState(getInitialForm);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    setForm(isEditing ? scheduleToForm(schedule) : INITIAL_FORM);
+    setForm(getInitialForm());
     setError("");
-  }, [schedule, isEditing]);
+  }, [schedule, initialValues, isEditing]);
 
   function handleChange(event) {
     const { name, value } = event.target;

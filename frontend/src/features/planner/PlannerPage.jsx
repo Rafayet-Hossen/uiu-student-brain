@@ -10,14 +10,17 @@ import {
   extractPlannerErrorMessage,
   getSchedules,
 } from "./api";
+import CalendarView from "./components/CalendarView";
 import ScheduleForm from "./components/ScheduleForm";
 
 export default function PlannerPage() {
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [viewMode, setViewMode] = useState("calendar"); // "calendar" | "list"
   const [showForm, setShowForm] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState(null);
+  const [formInitialValues, setFormInitialValues] = useState(null);
 
   async function loadSchedules() {
     setLoading(true);
@@ -40,10 +43,12 @@ export default function PlannerPage() {
   function handleCreated(schedule) {
     setSchedules((current) => [...current, schedule]);
     setShowForm(false);
+    setFormInitialValues(null);
   }
 
   function handleEdit(schedule) {
     setEditingSchedule(schedule);
+    setFormInitialValues(null);
     setShowForm(true);
     setError("");
   }
@@ -55,11 +60,13 @@ export default function PlannerPage() {
       ),
     );
     setEditingSchedule(null);
+    setFormInitialValues(null);
     setShowForm(false);
   }
 
-  function handleCancelEdit() {
+  function handleCancelForm() {
     setEditingSchedule(null);
+    setFormInitialValues(null);
     setShowForm(false);
   }
 
@@ -80,6 +87,7 @@ export default function PlannerPage() {
 
       if (editingSchedule?.id === scheduleId) {
         setEditingSchedule(null);
+        setFormInitialValues(null);
         setShowForm(false);
       }
     } catch (err) {
@@ -89,8 +97,23 @@ export default function PlannerPage() {
 
   function handleAddSchedule() {
     setEditingSchedule(null);
+    setFormInitialValues(null);
     setShowForm((current) => !current);
     setError("");
+  }
+
+  function handleSlotClick(dayName, startHour) {
+    const startStr = `${startHour.toString().padStart(2, "0")}:00`;
+    const endStr = `${Math.min(23, startHour + 2).toString().padStart(2, "0")}:00`;
+
+    setEditingSchedule(null);
+    setFormInitialValues({
+      days: [dayName],
+      start_time: startStr,
+      end_time: endStr,
+    });
+    setShowForm(true);
+    window.scrollTo({ top: 120, behavior: "smooth" });
   }
 
   return (
@@ -107,13 +130,37 @@ export default function PlannerPage() {
                 <span>Study Planner</span>
               </h1>
               <p className="page-description">
-                Organize your course routines, set regular study blocks, and manage academic deadlines.
+                Organize your course routines into blocked calendar time slots, maintain balance, and hit your academic milestones.
               </p>
             </div>
 
-            <Button onClick={handleAddSchedule}>
-              {showForm && !editingSchedule ? "✕ Close Form" : "➕ Add Study Routine"}
-            </Button>
+            <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+              {/* View Switcher Toggle */}
+              <div className="planner-view-toggle">
+                <button
+                  type="button"
+                  className={`view-toggle-btn ${
+                    viewMode === "calendar" ? "btn-active" : ""
+                  }`}
+                  onClick={() => setViewMode("calendar")}
+                >
+                  📅 Calendar View
+                </button>
+                <button
+                  type="button"
+                  className={`view-toggle-btn ${
+                    viewMode === "list" ? "btn-active" : ""
+                  }`}
+                  onClick={() => setViewMode("list")}
+                >
+                  📋 Routine Cards
+                </button>
+              </div>
+
+              <Button onClick={handleAddSchedule}>
+                {showForm && !editingSchedule ? "✕ Close Form" : "➕ Add Study Routine"}
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -121,9 +168,10 @@ export default function PlannerPage() {
         {showForm && (
           <ScheduleForm
             schedule={editingSchedule}
+            initialValues={formInitialValues}
             onCreated={handleCreated}
             onUpdated={handleUpdated}
-            onCancel={handleCancelEdit}
+            onCancel={handleCancelForm}
           />
         )}
 
@@ -147,16 +195,26 @@ export default function PlannerPage() {
         {!loading && !error && schedules.length === 0 && !showForm && (
           <Card className="empty-state-card">
             <div className="empty-state-icon">📚</div>
-            <h2 className="empty-state-title">No study routines yet</h2>
+            <h2 className="empty-state-title">No study routines scheduled yet</h2>
             <p className="empty-state-desc">
-              Create your first scheduled routine to structure your weekly study sessions and hit your deadlines.
+              Create your first scheduled routine to see time slots blocked on your weekly calendar and stay on track with exam deadlines.
             </p>
             <Button onClick={handleAddSchedule}>Create Routine Now</Button>
           </Card>
         )}
 
-        {/* Schedules Grid */}
-        {!loading && !error && schedules.length > 0 && (
+        {/* Mode 1: CALENDAR VIEW */}
+        {!loading && !error && schedules.length > 0 && viewMode === "calendar" && (
+          <CalendarView
+            schedules={schedules}
+            onEditSchedule={handleEdit}
+            onDeleteSchedule={handleDelete}
+            onSlotClick={handleSlotClick}
+          />
+        )}
+
+        {/* Mode 2: LIST / CARDS VIEW */}
+        {!loading && !error && schedules.length > 0 && viewMode === "list" && (
           <div className="schedules-grid">
             {schedules.map((schedule) => (
               <Card key={schedule.id} className="schedule-card">
@@ -191,7 +249,11 @@ export default function PlannerPage() {
                 </div>
 
                 <div className="card-actions-row">
-                  <Button size="sm" variant="secondary" onClick={() => handleEdit(schedule)}>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => handleEdit(schedule)}
+                  >
                     ✏️ Edit
                   </Button>
                   <Button
