@@ -280,7 +280,8 @@ export default function CommunityPage() {
                 <span>Student Community & Network</span>
               </h1>
               <p className="page-description">
-                Engage in academic discussions, organize study groups, compete on the leaderboard, and connect with fellow scholars.
+                Engage in academic discussions, organize study groups, compete
+                on the leaderboard, and connect with fellow scholars.
               </p>
             </div>
 
@@ -402,7 +403,8 @@ export default function CommunityPage() {
                 <div className="empty-state-icon">💬</div>
                 <h2 className="empty-state-title">No discussions found</h2>
                 <p className="empty-state-desc">
-                  Be the first to post a question, share resources, or start an academic conversation!
+                  Be the first to post a question, share resources, or start an
+                  academic conversation!
                 </p>
                 <Button onClick={() => setShowPostForm(true)}>
                   Start First Discussion
@@ -443,7 +445,10 @@ export default function CommunityPage() {
               </div>
             )}
 
-            <div className="community-filters-row" style={{ justifyContent: "flex-end" }}>
+            <div
+              className="community-filters-row"
+              style={{ justifyContent: "flex-end" }}
+            >
               <div className="community-search-box">
                 <Input
                   id="event_search"
@@ -470,7 +475,8 @@ export default function CommunityPage() {
                 <div className="empty-state-icon">📅</div>
                 <h2 className="empty-state-title">No upcoming study events</h2>
                 <p className="empty-state-desc">
-                  Host an exam review, study group, or quiet work session with your peers.
+                  Host an exam review, study group, or quiet work session with
+                  your peers.
                 </p>
                 <Button onClick={() => setShowEventForm(true)}>
                   Host First Study Event
@@ -497,7 +503,10 @@ export default function CommunityPage() {
             ============================================================ */}
         {activeTab === "network" && (
           <div>
-            <div className="community-filters-row" style={{ justifyContent: "flex-end" }}>
+            <div
+              className="community-filters-row"
+              style={{ justifyContent: "flex-end" }}
+            >
               <div className="community-search-box">
                 <Input
                   id="student_search"
@@ -515,7 +524,9 @@ export default function CommunityPage() {
             {studentsLoading && (
               <Card className="empty-state-card">
                 <Spinner standalone />
-                <p className="page-loading-text">Loading student directory...</p>
+                <p className="page-loading-text">
+                  Loading student directory...
+                </p>
               </Card>
             )}
 
@@ -577,7 +588,8 @@ export default function CommunityPage() {
 
               <div className="leaderboard-participants-count">
                 <span>
-                  👥 {leaderboardData?.total_participants || 0} Opted-In Scholars
+                  👥 {leaderboardData?.total_participants || 0} Opted-In
+                  Scholars
                 </span>
               </div>
             </div>
@@ -593,42 +605,52 @@ export default function CommunityPage() {
             {/* Error */}
             {!leaderboardLoading && leaderboardError && (
               <Card className="empty-state-card">
-                <FormError message={leaderboardError} className="form-error-block" />
+                <FormError
+                  message={leaderboardError}
+                  className="form-error-block"
+                />
                 <Button onClick={loadLeaderboard}>Try Again</Button>
               </Card>
             )}
 
             {/* Empty State */}
-            {!leaderboardLoading && !leaderboardError && rankings.length === 0 && (
-              <Card className="empty-state-card">
-                <div className="empty-state-icon">🏆</div>
-                <h2 className="empty-state-title">No participants on the leaderboard yet</h2>
-                <p className="empty-state-desc">
-                  Be the first to opt in and climb the academic study leaderboard!
-                </p>
-              </Card>
-            )}
+            {!leaderboardLoading &&
+              !leaderboardError &&
+              rankings.length === 0 && (
+                <Card className="empty-state-card">
+                  <div className="empty-state-icon">🏆</div>
+                  <h2 className="empty-state-title">
+                    No participants on the leaderboard yet
+                  </h2>
+                  <p className="empty-state-desc">
+                    Be the first to opt in and climb the academic study
+                    leaderboard!
+                  </p>
+                </Card>
+              )}
 
             {/* Leaderboard Content */}
-            {!leaderboardLoading && !leaderboardError && rankings.length > 0 && (
-              <div className="leaderboard-display-wrap">
-                {/* Top 3 Podium */}
-                {topThree.length > 0 && (
-                  <LeaderboardPodium
-                    topThree={topThree}
+            {!leaderboardLoading &&
+              !leaderboardError &&
+              rankings.length > 0 && (
+                <div className="leaderboard-display-wrap">
+                  {/* Top 3 Podium */}
+                  {topThree.length > 0 && (
+                    <LeaderboardPodium
+                      topThree={topThree}
+                      timeframe={leaderboardTimeframe}
+                      onToggleFollow={handleToggleFollow}
+                    />
+                  )}
+
+                  {/* Table for remaining or all participants */}
+                  <LeaderboardTable
+                    rankings={rankings}
                     timeframe={leaderboardTimeframe}
                     onToggleFollow={handleToggleFollow}
                   />
-                )}
-
-                {/* Table for remaining or all participants */}
-                <LeaderboardTable
-                  rankings={rankings}
-                  timeframe={leaderboardTimeframe}
-                  onToggleFollow={handleToggleFollow}
-                />
-              </div>
-            )}
+                </div>
+              )}
           </div>
         )}
       </main>

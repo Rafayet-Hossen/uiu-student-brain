@@ -4,7 +4,7 @@ import Input from "../../../components/Input";
 import FormError from "../../../components/FormError";
 import { createEvent, extractCommunityErrorMessage } from "../api";
 
-export default function EventForm({ onCreated, onCancel }) {
+export default function EventForm({ onSubmit, onCreated, onCancel }) {
   const [title, setTitle] = useState("");
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
@@ -38,7 +38,7 @@ export default function EventForm({ onCreated, onCancel }) {
     setError("");
 
     try {
-      const newEvent = await createEvent({
+      const payload = {
         title: title.trim(),
         subject: subject.trim(),
         description: description.trim(),
@@ -46,8 +46,16 @@ export default function EventForm({ onCreated, onCancel }) {
         start_time: startTime,
         end_time: endTime,
         location: location.trim(),
-      });
-      onCreated(newEvent);
+      };
+
+      if (onSubmit) {
+        await onSubmit(payload);
+      } else if (onCreated) {
+        const newEvent = await createEvent(payload);
+        onCreated(newEvent);
+      } else {
+        await createEvent(payload);
+      }
     } catch (err) {
       setError(extractCommunityErrorMessage(err));
     } finally {
@@ -67,6 +75,7 @@ export default function EventForm({ onCreated, onCancel }) {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="e.g. Midterm Prep & Review"
+          disabled={loading}
           required
         />
 
@@ -75,6 +84,7 @@ export default function EventForm({ onCreated, onCancel }) {
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
           placeholder="e.g. CSE 311 / Database"
+          disabled={loading}
           required
         />
       </div>
@@ -91,6 +101,7 @@ export default function EventForm({ onCreated, onCancel }) {
           type="date"
           value={eventDate}
           onChange={(e) => setEventDate(e.target.value)}
+          disabled={loading}
           required
         />
 
@@ -99,6 +110,7 @@ export default function EventForm({ onCreated, onCancel }) {
           type="time"
           value={startTime}
           onChange={(e) => setStartTime(e.target.value)}
+          disabled={loading}
           required
         />
 
@@ -107,6 +119,7 @@ export default function EventForm({ onCreated, onCancel }) {
           type="time"
           value={endTime}
           onChange={(e) => setEndTime(e.target.value)}
+          disabled={loading}
           required
         />
       </div>
@@ -116,6 +129,7 @@ export default function EventForm({ onCreated, onCancel }) {
         value={location}
         onChange={(e) => setLocation(e.target.value)}
         placeholder="e.g. Central Library Study Room 402 or Google Meet Link"
+        disabled={loading}
         required
       />
 
@@ -132,6 +146,7 @@ export default function EventForm({ onCreated, onCancel }) {
             padding: "10px 14px",
             borderRadius: "var(--radius-md)",
           }}
+          disabled={loading}
         />
       </div>
 

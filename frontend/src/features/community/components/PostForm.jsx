@@ -12,7 +12,7 @@ const CATEGORIES = [
   "Resources",
 ];
 
-export default function PostForm({ onCreated, onCancel }) {
+export default function PostForm({ onSubmit, onCreated, onCancel }) {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("General");
   const [content, setContent] = useState("");
@@ -30,12 +30,20 @@ export default function PostForm({ onCreated, onCancel }) {
     setError("");
 
     try {
-      const newPost = await createPost({
+      const payload = {
         title: title.trim(),
         category,
         content: content.trim(),
-      });
-      onCreated(newPost);
+      };
+
+      if (onSubmit) {
+        await onSubmit(payload);
+      } else if (onCreated) {
+        const newPost = await createPost(payload);
+        onCreated(newPost);
+      } else {
+        await createPost(payload);
+      }
     } catch (err) {
       setError(extractCommunityErrorMessage(err));
     } finally {
@@ -52,6 +60,7 @@ export default function PostForm({ onCreated, onCancel }) {
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="e.g., How to solve recurring relations in Algorithms?"
+        disabled={loading}
         required
       />
 
@@ -66,6 +75,7 @@ export default function PostForm({ onCreated, onCancel }) {
             padding: "10px 14px",
             borderRadius: "var(--radius-md)",
           }}
+          disabled={loading}
         >
           {CATEGORIES.map((cat) => (
             <option key={cat} value={cat}>
@@ -89,6 +99,7 @@ export default function PostForm({ onCreated, onCancel }) {
             borderRadius: "var(--radius-md)",
             resize: "vertical",
           }}
+          disabled={loading}
           required
         />
       </div>
