@@ -360,7 +360,7 @@ The web application is now accessible at: **`http://localhost:5173`**
 
 ---
 
-## 🇧🇩 Pre-Seeded Bangladeshi Demo Scholar Accounts
+## Pre-Seeded Accounts
 
 All demo accounts share the password: **`Password123!`**
 
