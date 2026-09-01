@@ -72,7 +72,7 @@ export default function DashboardPage() {
         <section className="academic-hero">
           <div className="hero-text-col">
             <div className="hero-badge">
-              <Badge variant="accent">Academic Command Center</Badge>
+              <Badge variant="accent">Academic Dashboard</Badge>
             </div>
             <h1 className="hero-title">
               Welcome back, {user?.full_name || "Scholar"}!
