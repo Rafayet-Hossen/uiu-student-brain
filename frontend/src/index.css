@@ -1,28 +1,36 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
-
 :root {
-  /* Academic Royal Navy / Oxford Indigo Palette */
-  --color-accent: #2563eb;
-  --color-accent-hover: #1d4ed8;
-  --color-accent-subtle: #eff6ff;
-  --color-accent-text: #1d4ed8;
+  /* Student Brain Design System Palette */
+  --color-primary: #4f46e5;
+  --color-primary-hover: #4338ca;
+  --color-primary-subtle: rgba(79, 70, 229, 0.08);
+  --color-primary-border: rgba(79, 70, 229, 0.2);
+  --color-primary-text: #4f46e5;
 
-  --color-emerald: #059669;
-  --color-emerald-bg: #ecfdf5;
-  --color-emerald-text: #065f46;
+  --color-secondary: #10b981;
+  --color-secondary-hover: #059669;
+  --color-secondary-subtle: rgba(16, 185, 129, 0.08);
+  --color-secondary-border: rgba(16, 185, 129, 0.2);
+  --color-secondary-text: #059669;
 
-  --color-amber: #d97706;
-  --color-amber-bg: #fffbeb;
-  --color-amber-text: #92400e;
+  --color-accent: #f59e0b;
+  --color-accent-hover: #d97706;
+  --color-accent-subtle: rgba(245, 158, 11, 0.08);
+  --color-accent-border: rgba(245, 158, 11, 0.2);
+  --color-accent-text: #d97706;
 
-  --color-rose: #e11d48;
-  --color-rose-bg: #fff1f2;
-  --color-rose-text: #9f1239;
+  --color-danger: #f43f5e;
+  --color-danger-hover: #e11d48;
+  --color-danger-subtle: rgba(244, 63, 94, 0.08);
+  --color-danger-border: rgba(244, 63, 94, 0.2);
+  --color-danger-text: #e11d48;
 
+  /* Surfaces & Backgrounds */
   --color-bg: #f8fafc;
   --color-surface: #ffffff;
   --color-surface-subtle: #f1f5f9;
+  --color-surface-elevated: #ffffff;
   --color-surface-card: #ffffff;
+  --color-surface-glass: rgba(255, 255, 255, 0.82);
 
   --color-text: #0f172a;
   --color-text-muted: #64748b;
@@ -30,50 +38,64 @@
   --color-border: #e2e8f0;
   --color-border-subtle: #f1f5f9;
 
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.07);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.08);
+  /* Elevation Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
 
+  --radius-xs: 4px;
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
   --radius-xl: 20px;
+  --radius-full: 9999px;
 
   color-scheme: light;
 }
 
 :root[data-theme="dark"] {
-  --color-accent: #3b82f6;
-  --color-accent-hover: #60a5fa;
-  --color-accent-subtle: rgba(59, 130, 246, 0.15);
-  --color-accent-text: #93c5fd;
+  --color-primary: #6366f1;
+  --color-primary-hover: #818cf8;
+  --color-primary-subtle: rgba(99, 102, 241, 0.15);
+  --color-primary-border: rgba(99, 102, 241, 0.3);
+  --color-primary-text: #a5b4fc;
 
-  --color-emerald: #10b981;
-  --color-emerald-bg: rgba(16, 185, 129, 0.15);
-  --color-emerald-text: #6ee7b7;
+  --color-secondary: #10b981;
+  --color-secondary-hover: #34d399;
+  --color-secondary-subtle: rgba(16, 185, 129, 0.15);
+  --color-secondary-border: rgba(16, 185, 129, 0.3);
+  --color-secondary-text: #6ee7b7;
 
-  --color-amber: #f59e0b;
-  --color-amber-bg: rgba(245, 158, 11, 0.15);
-  --color-amber-text: #fcd34d;
+  --color-accent: #f59e0b;
+  --color-accent-hover: #fbbf24;
+  --color-accent-subtle: rgba(245, 158, 11, 0.15);
+  --color-accent-border: rgba(245, 158, 11, 0.3);
+  --color-accent-text: #fcd34d;
 
-  --color-rose: #f43f5e;
-  --color-rose-bg: rgba(244, 63, 94, 0.15);
-  --color-rose-text: #fda4af;
+  --color-danger: #f43f5e;
+  --color-danger-hover: #fb7185;
+  --color-danger-subtle: rgba(244, 63, 94, 0.15);
+  --color-danger-border: rgba(244, 63, 94, 0.3);
+  --color-danger-text: #fda4af;
 
   --color-bg: #090d16;
-  --color-surface: #111827;
-  --color-surface-subtle: #172033;
-  --color-surface-card: #131d31;
+  --color-surface: #0f172a;
+  --color-surface-subtle: #1e293b;
+  --color-surface-elevated: #1e293b;
+  --color-surface-card: #0f172a;
+  --color-surface-glass: rgba(15, 23, 42, 0.85);
 
   --color-text: #f8fafc;
   --color-text-muted: #94a3b8;
   --color-text-subtle: #64748b;
   --color-border: #1e293b;
-  --color-border-subtle: #182234;
+  --color-border-subtle: #172033;
 
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
 
   color-scheme: dark;
 }
@@ -88,18 +110,19 @@ html,
 body {
   margin: 0;
   padding: 0;
+  scroll-behavior: smooth;
 }
 
 body {
   min-height: 100svh;
   background: var(--color-bg);
   color: var(--color-text);
-  font-family: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: 15px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: background-color 0.25s ease, color 0.25s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 #root {
@@ -111,25 +134,28 @@ body {
 h1,
 h2,
 h3,
-h4 {
+h4,
+h5,
+h6 {
+  font-family: "Space Grotesk", "Inter", sans-serif;
   font-weight: 700;
   margin: 0 0 8px;
   color: var(--color-text);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
 }
 
 h1 {
-  font-size: 1.875rem;
-  line-height: 1.25;
+  font-size: 2.25rem;
+  line-height: 1.2;
 }
 
 h2 {
-  font-size: 1.375rem;
-  line-height: 1.35;
+  font-size: 1.5rem;
+  line-height: 1.3;
 }
 
 h3 {
-  font-size: 1.125rem;
+  font-size: 1.1875rem;
   line-height: 1.4;
 }
 
@@ -139,20 +165,25 @@ p {
 }
 
 a {
-  color: var(--color-accent);
+  color: var(--color-primary);
   text-decoration: none;
   font-weight: 600;
   transition: color 0.15s ease;
 }
 
 a:hover {
-  color: var(--color-accent-hover);
+  color: var(--color-primary-hover);
 }
 
 button {
   font-family: inherit;
 }
 
-code, pre {
-  font-family: "JetBrains Mono", monospace;
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

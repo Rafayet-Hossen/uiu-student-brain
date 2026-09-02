@@ -1,10 +1,27 @@
 import { useEffect, useState } from "react";
+import {
+  Calendar as CalendarIcon,
+  CheckCircle2,
+  Clock,
+  ExternalLink,
+  FileText,
+  Layers,
+  LayoutGrid,
+  List,
+  Pencil,
+  Plus,
+  Trash2,
+  Video,
+  X,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Badge from "../../components/Badge";
 import Button from "../../components/Button";
 import Card from "../../components/Card";
-import FormError from "../../components/FormError";
+import EmptyState from "../../components/EmptyState";
+import ErrorState from "../../components/ErrorState";
 import Navbar from "../../components/Navbar";
-import Spinner from "../../components/Spinner";
+import { CardSkeleton } from "../../components/Skeleton";
 import {
   deleteSchedule,
   extractPlannerErrorMessage,
@@ -72,7 +89,7 @@ export default function PlannerPage() {
 
   async function handleDelete(scheduleId) {
     const confirmed = window.confirm(
-      "Are you sure you want to delete this study schedule?",
+      "Remove this study routine from your planner?",
     );
 
     if (!confirmed) return;
@@ -104,7 +121,9 @@ export default function PlannerPage() {
 
   function handleSlotClick(dayName, startHour) {
     const startStr = `${startHour.toString().padStart(2, "0")}:00`;
-    const endStr = `${Math.min(23, startHour + 2).toString().padStart(2, "0")}:00`;
+    const endStr = `${Math.min(23, startHour + 2)
+      .toString()
+      .padStart(2, "0")}:00`;
 
     setEditingSchedule(null);
     setFormInitialValues({
@@ -121,21 +140,29 @@ export default function PlannerPage() {
       <Navbar />
 
       <main className="main-content">
-        {/* Header section */}
+        {/* Page Header */}
         <div className="page-header">
           <div className="page-header-row">
             <div>
               <h1 className="page-title">
-                <span>📅</span>
-                <span>Study Planner</span>
+                <CalendarIcon size={28} className="text-indigo" />
+                <span>Study Planner & Timetable</span>
               </h1>
               <p className="page-description">
-                Organize your course routines into blocked calendar time slots, maintain balance, and hit your academic milestones.
+                Organize coursework into focused weekly blocks, attach Drive
+                notes and video links, and maintain academic momentum.
               </p>
             </div>
 
-            <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
-              {/* View Switcher Toggle */}
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                alignItems: "center",
+                flexWrap: "wrap",
+              }}
+            >
+              {/* View Toggle */}
               <div className="planner-view-toggle">
                 <button
                   type="button"
@@ -144,7 +171,8 @@ export default function PlannerPage() {
                   }`}
                   onClick={() => setViewMode("calendar")}
                 >
-                  📅 Calendar View
+                  <CalendarIcon size={14} />
+                  <span>Calendar</span>
                 </button>
                 <button
                   type="button"
@@ -153,115 +181,232 @@ export default function PlannerPage() {
                   }`}
                   onClick={() => setViewMode("list")}
                 >
-                  📋 Routine Cards
+                  <List size={14} />
+                  <span>Routine Cards</span>
                 </button>
               </div>
 
-              <Button onClick={handleAddSchedule}>
-                {showForm && !editingSchedule ? "✕ Close Form" : "➕ Add Study Routine"}
+              <Button
+                variant={showForm && !editingSchedule ? "secondary" : "primary"}
+                onClick={handleAddSchedule}
+                icon={showForm && !editingSchedule ? X : Plus}
+              >
+                {showForm && !editingSchedule ? "Close Form" : "Add Routine"}
               </Button>
             </div>
           </div>
         </div>
 
         {/* Schedule Form */}
-        {showForm && (
-          <ScheduleForm
-            schedule={editingSchedule}
-            initialValues={formInitialValues}
-            onCreated={handleCreated}
-            onUpdated={handleUpdated}
-            onCancel={handleCancelForm}
-          />
-        )}
+        <AnimatePresence>
+          {showForm && (
+            <motion.div
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ScheduleForm
+                schedule={editingSchedule}
+                initialValues={formInitialValues}
+                onCreated={handleCreated}
+                onUpdated={handleUpdated}
+                onCancel={handleCancelForm}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* Loading State */}
+        {/* Loading Skeletons */}
         {loading && (
-          <Card className="empty-state-card">
-            <Spinner standalone />
-            <p className="page-loading-text">Loading your study routines...</p>
-          </Card>
+          <div className="schedules-grid">
+            <CardSkeleton />
+            <CardSkeleton />
+            <CardSkeleton />
+          </div>
         )}
 
         {/* Error State */}
         {!loading && error && (
-          <Card className="empty-state-card">
-            <FormError message={error} className="form-error-block" />
-            <Button onClick={loadSchedules}>Try Again</Button>
-          </Card>
+          <ErrorState
+            title="Failed to load study routines"
+            message={error}
+            onRetry={loadSchedules}
+          />
         )}
 
         {/* Empty State */}
         {!loading && !error && schedules.length === 0 && !showForm && (
-          <Card className="empty-state-card">
-            <div className="empty-state-icon">📚</div>
-            <h2 className="empty-state-title">No study routines scheduled yet</h2>
-            <p className="empty-state-desc">
-              Create your first scheduled routine to see time slots blocked on your weekly calendar and stay on track with exam deadlines.
-            </p>
-            <Button onClick={handleAddSchedule}>Create Routine Now</Button>
-          </Card>
+          <EmptyState
+            icon={CalendarIcon}
+            title="No study routines scheduled yet"
+            description="Create your first structured routine to see time slots blocked on your weekly calendar and stay on track with exam deadlines."
+            actionLabel="Create Routine Now"
+            onAction={handleAddSchedule}
+          />
         )}
 
         {/* Mode 1: CALENDAR VIEW */}
-        {!loading && !error && schedules.length > 0 && viewMode === "calendar" && (
-          <CalendarView
-            schedules={schedules}
-            onEditSchedule={handleEdit}
-            onDeleteSchedule={handleDelete}
-            onSlotClick={handleSlotClick}
-          />
-        )}
+        {!loading &&
+          !error &&
+          schedules.length > 0 &&
+          viewMode === "calendar" && (
+            <CalendarView
+              schedules={schedules}
+              onEditSchedule={handleEdit}
+              onDeleteSchedule={handleDelete}
+              onSlotClick={handleSlotClick}
+            />
+          )}
 
         {/* Mode 2: LIST / CARDS VIEW */}
         {!loading && !error && schedules.length > 0 && viewMode === "list" && (
           <div className="schedules-grid">
             {schedules.map((schedule) => (
-              <Card key={schedule.id} className="schedule-card">
+              <Card
+                key={schedule.id}
+                variant="feature"
+                className="schedule-card"
+              >
                 <div>
                   <div className="schedule-card-header">
                     <h3 className="schedule-subject">{schedule.subject}</h3>
-                    <Badge variant="accent">Routine</Badge>
+                    <Badge variant="primary">Routine</Badge>
                   </div>
 
                   <div className="schedule-meta-row">
                     <div className="schedule-time-badge">
-                      <span>⏰</span>
+                      <Clock size={14} />
                       <span>
-                        {schedule.start_time.slice(0, 5)} – {schedule.end_time.slice(0, 5)}
+                        {schedule.start_time.slice(0, 5)} –{" "}
+                        {schedule.end_time.slice(0, 5)}
                       </span>
                     </div>
 
                     <div className="schedule-days-list">
                       {schedule.days.map((day) => (
-                        <Badge key={day} variant="default">
+                        <span key={day} className="schedule-day-pill">
                           {day.slice(0, 3)}
-                        </Badge>
+                        </span>
                       ))}
                     </div>
-
-                    {schedule.deadline && (
-                      <div className="schedule-deadline">
-                        <span>🎯 Deadline: {schedule.deadline}</span>
-                      </div>
-                    )}
                   </div>
+
+                  {/* Notes & Resources */}
+                  {schedule.notes && (
+                    <div
+                      style={{
+                        margin: "12px 0",
+                        fontSize: "0.875rem",
+                        color: "var(--color-text)",
+                        background: "var(--color-surface-subtle)",
+                        padding: "8px 12px",
+                        borderRadius: "var(--radius-sm)",
+                        borderLeft: "3px solid var(--color-primary)",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontWeight: 600,
+                          fontSize: "0.75rem",
+                          color: "var(--color-text-muted)",
+                          display: "block",
+                          marginBottom: "2px",
+                        }}
+                      >
+                        📝 Study Notes:
+                      </span>
+                      {schedule.notes}
+                    </div>
+                  )}
+
+                  {/* Resource Links */}
+                  {schedule.resources && schedule.resources.length > 0 && (
+                    <div style={{ marginTop: "12px" }}>
+                      <span
+                        style={{
+                          fontSize: "0.75rem",
+                          fontWeight: 600,
+                          color: "var(--color-text-muted)",
+                          display: "block",
+                          marginBottom: "6px",
+                        }}
+                      >
+                        🔗 Study Resources:
+                      </span>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "6px",
+                        }}
+                      >
+                        {schedule.resources.map((res, index) => (
+                          <a
+                            key={index}
+                            href={res.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "8px",
+                              fontSize: "0.8125rem",
+                              padding: "6px 10px",
+                              background: "var(--color-surface-subtle)",
+                              borderRadius: "var(--radius-sm)",
+                              border: "1px solid var(--color-border-subtle)",
+                              textDecoration: "none",
+                              color: "var(--color-text)",
+                              transition: "background 0.15s ease",
+                            }}
+                          >
+                            <span>
+                              {res.type === "drive"
+                                ? "📁"
+                                : res.type === "video"
+                                  ? "🎥"
+                                  : res.type === "doc"
+                                    ? "📄"
+                                    : "🔗"}
+                            </span>
+                            <strong
+                              style={{
+                                flex: 1,
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {res.title || "Resource Link"}
+                            </strong>
+                            <ExternalLink size={12} className="text-muted" />
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                <div className="card-actions-row">
+                <div
+                  className="schedule-card-actions"
+                  style={{ marginTop: "16px" }}
+                >
                   <Button
-                    size="sm"
                     variant="secondary"
+                    size="sm"
+                    icon={Pencil}
                     onClick={() => handleEdit(schedule)}
                   >
-                    ✏️ Edit
+                    Edit
                   </Button>
                   <Button
-                    size="sm"
                     variant="danger"
+                    size="sm"
+                    icon={Trash2}
                     onClick={() => handleDelete(schedule.id)}
                   >
-                    🗑️ Delete
+                    Delete
                   </Button>
                 </div>
               </Card>

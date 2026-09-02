@@ -1,10 +1,39 @@
 import { useEffect, useState } from "react";
+import {
+  Award,
+  BookOpen,
+  Calendar,
+  CheckCircle2,
+  ChevronRight,
+  Clock,
+  Crown,
+  FileText,
+  Flame,
+  HelpCircle,
+  Megaphone,
+  MessageSquare,
+  Plus,
+  Radio,
+  RefreshCw,
+  Search,
+  Sparkles,
+  Tag,
+  ThumbsUp,
+  Trophy,
+  Users,
+  X,
+  Zap,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import Badge from "../../components/Badge";
 import Button from "../../components/Button";
 import Card from "../../components/Card";
-import FormError from "../../components/FormError";
-import Input from "../../components/Input";
+import EmptyState from "../../components/EmptyState";
+import ErrorState from "../../components/ErrorState";
 import Navbar from "../../components/Navbar";
-import Spinner from "../../components/Spinner";
+import { CardSkeleton } from "../../components/Skeleton";
+import ScholarAvatar from "../auth/components/ScholarAvatar";
+import { useAuth } from "../auth/useAuth";
 import {
   createComment,
   createEvent,
@@ -30,12 +59,12 @@ import PostForm from "./components/PostForm";
 import StudentCard from "./components/StudentCard";
 
 const CATEGORIES = [
-  "All",
-  "General",
-  "Exam Prep",
-  "Study Group",
-  "Course Help",
-  "Resources",
+  { label: "All Posts", value: "All", icon: BookOpen, count: null },
+  { label: "Exam Prep", value: "Exam Prep", icon: Zap, count: null },
+  { label: "Course Help", value: "Course Help", icon: HelpCircle, count: null },
+  { label: "Study Group", value: "Study Group", icon: Users, count: null },
+  { label: "Resources", value: "Resources", icon: FileText, count: null },
+  { label: "General", value: "General", icon: MessageSquare, count: null },
 ];
 
 const TIMEFRAMES = [
@@ -45,6 +74,7 @@ const TIMEFRAMES = [
 ];
 
 export default function CommunityPage() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("posts"); // "posts" | "events" | "network" | "leaderboard"
 
   // Posts state
@@ -53,10 +83,8 @@ export default function CommunityPage() {
   const [postsError, setPostsError] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [postSearch, setPostSearch] = useState("");
-  const [showPostForm, setShowPostForm] = useState(false);
-  const [expandedPostId, setExpandedPostId] = useState(null);
-  const [commentsMap, setCommentsMap] = useState({});
-  const [commentsLoadingMap, setCommentsLoadingMap] = useState({});
+  const [showPostModal, setShowPostModal] = useState(false);
+  const [filterAuthor, setFilterAuthor] = useState("all"); // "all" | "my_posts"
 
   // Events state
   const [events, setEvents] = useState([]);
@@ -82,7 +110,10 @@ export default function CommunityPage() {
     setPostsLoading(true);
     setPostsError("");
     try {
-      const data = await getPosts(selectedCategory, postSearch);
+      const data = await getPosts(
+        selectedCategory === "All" ? "" : selectedCategory,
+        postSearch,
+      );
       setPosts(data);
     } catch (err) {
       setPostsError(extractCommunityErrorMessage(err));
@@ -134,7 +165,11 @@ export default function CommunityPage() {
   }
 
   useEffect(() => {
-    if (activeTab === "posts") loadPosts();
+    if (activeTab === "posts") {
+      loadPosts();
+      loadEvents();
+      loadLeaderboard();
+    }
     if (activeTab === "events") loadEvents();
     if (activeTab === "network") loadStudents();
     if (activeTab === "leaderboard") loadLeaderboard();
@@ -144,68 +179,12 @@ export default function CommunityPage() {
   async function handleCreatePost(payload) {
     const newPost = await createPost(payload);
     setPosts((prev) => [newPost, ...prev]);
-    setShowPostForm(false);
+    setShowPostModal(false);
   }
 
   // Handle post deletion
   function handleDeletePost(postId) {
     setPosts((prev) => prev.filter((p) => p.id !== postId));
-  }
-
-  // Handle post reaction toggle
-  async function handleToggleReaction(postId) {
-    try {
-      const result = await togglePostReaction(postId);
-      setPosts((prev) =>
-        prev.map((p) =>
-          p.id === postId
-            ? {
-                ...p,
-                has_reacted: result.has_reacted,
-                reactions_count: result.reactions_count,
-              }
-            : p,
-        ),
-      );
-    } catch (err) {
-      console.error("Failed to react to post", err);
-    }
-  }
-
-  // Handle comment load/expand
-  async function handleToggleComments(postId) {
-    if (expandedPostId === postId) {
-      setExpandedPostId(null);
-      return;
-    }
-
-    setExpandedPostId(postId);
-
-    if (!commentsMap[postId]) {
-      setCommentsLoadingMap((prev) => ({ ...prev, [postId]: true }));
-      try {
-        const comments = await getComments(postId);
-        setCommentsMap((prev) => ({ ...prev, [postId]: comments }));
-      } catch (err) {
-        console.error("Failed to load comments", err);
-      } finally {
-        setCommentsLoadingMap((prev) => ({ ...prev, [postId]: false }));
-      }
-    }
-  }
-
-  // Handle create comment
-  async function handleCreateComment(postId, content) {
-    const newComment = await createComment(postId, { content });
-    setCommentsMap((prev) => ({
-      ...prev,
-      [postId]: [...(prev[postId] || []), newComment],
-    }));
-    setPosts((prev) =>
-      prev.map((p) =>
-        p.id === postId ? { ...p, comments_count: p.comments_count + 1 } : p,
-      ),
-    );
   }
 
   // Handle event creation
@@ -244,8 +223,6 @@ export default function CommunityPage() {
   async function handleToggleFollow(userId) {
     try {
       const result = await toggleFollowStudent(userId);
-
-      // Update student network state
       setStudents((prev) =>
         prev.map((s) =>
           s.id === userId
@@ -257,8 +234,6 @@ export default function CommunityPage() {
             : s,
         ),
       );
-
-      // Update leaderboard state if active
       if (leaderboardData?.rankings) {
         setLeaderboardData((prev) => ({
           ...prev,
@@ -272,173 +247,368 @@ export default function CommunityPage() {
     }
   }
 
+  // Filter posts by user if "My Posts" selected
+  const displayedPosts =
+    filterAuthor === "my_posts"
+      ? posts.filter((p) => p.author?.id === user?.id)
+      : posts;
+
   const rankings = leaderboardData?.rankings || [];
   const topThree = rankings.slice(0, 3);
-  const remainingRankings = rankings.length > 3 ? rankings.slice(3) : rankings;
+
+  // Category post counters
+  const getCategoryCount = (catValue) => {
+    if (catValue === "All") return posts.length;
+    return posts.filter((p) => p.category === catValue).length;
+  };
 
   return (
     <div className="app-screen">
       <Navbar />
 
       <main className="main-content">
-        {/* Page Header */}
-        <div className="page-header">
+        {/* Top Header */}
+        <div className="page-header" style={{ marginBottom: "20px" }}>
           <div className="page-header-row">
             <div>
               <h1 className="page-title">
-                <span>💬</span>
-                <span>Student Community & Network</span>
+                <Users size={28} className="text-indigo" />
+                <span>Student Community & Knowledge Hub</span>
               </h1>
               <p className="page-description">
-                Engage in academic discussions, organize study groups, compete
-                on the leaderboard, and connect with fellow scholars.
+                Ask questions, share syllabus summaries, join campus study groups, and climb the academic leaderboard.
               </p>
             </div>
 
-            {activeTab === "posts" && (
-              <Button onClick={() => setShowPostForm(!showPostForm)}>
-                {showPostForm ? "✕ Close Form" : "✏️ Start Discussion"}
-              </Button>
-            )}
-
-            {activeTab === "events" && (
-              <Button onClick={() => setShowEventForm(!showEventForm)}>
-                {showEventForm ? "✕ Close Form" : "📅 Host Study Session"}
-              </Button>
-            )}
+            <Button
+              variant="primary"
+              onClick={() => {
+                if (activeTab === "events") {
+                  setShowEventForm(!showEventForm);
+                } else {
+                  setShowPostModal(true);
+                }
+              }}
+              icon={Plus}
+            >
+              {activeTab === "events"
+                ? showEventForm
+                  ? "Close Form"
+                  : "Host Study Event"
+                : "Ask / Share Something"}
+            </Button>
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="community-tabs-bar">
-          <button
-            type="button"
-            className={`community-tab-btn ${
-              activeTab === "posts" ? "tab-active" : ""
-            }`}
-            onClick={() => setActiveTab("posts")}
-          >
-            💬 Discussions
-          </button>
-          <button
-            type="button"
-            className={`community-tab-btn ${
-              activeTab === "events" ? "tab-active" : ""
-            }`}
-            onClick={() => setActiveTab("events")}
-          >
-            📅 Study Events
-          </button>
-          <button
-            type="button"
-            className={`community-tab-btn ${
-              activeTab === "network" ? "tab-active" : ""
-            }`}
-            onClick={() => setActiveTab("network")}
-          >
-            👥 Student Network
-          </button>
-          <button
-            type="button"
-            className={`community-tab-btn ${
-              activeTab === "leaderboard" ? "tab-active" : ""
-            }`}
-            onClick={() => setActiveTab("leaderboard")}
-          >
-            🏆 Leaderboard
-          </button>
+        {/* Primary Tab Navigation Pills */}
+        <div className="community-main-tabs-wrapper" style={{ marginBottom: "24px" }}>
+          <div className="community-tabs-bar">
+            <button
+              type="button"
+              className={`community-tab-btn ${
+                activeTab === "posts" ? "tab-active" : ""
+              }`}
+              onClick={() => setActiveTab("posts")}
+            >
+              <MessageSquare size={16} />
+              <span>All Discussions</span>
+            </button>
+            <button
+              type="button"
+              className={`community-tab-btn ${
+                activeTab === "events" ? "tab-active" : ""
+              }`}
+              onClick={() => setActiveTab("events")}
+            >
+              <Calendar size={16} />
+              <span>Campus Events ({events.length})</span>
+            </button>
+            <button
+              type="button"
+              className={`community-tab-btn ${
+                activeTab === "network" ? "tab-active" : ""
+              }`}
+              onClick={() => setActiveTab("network")}
+            >
+              <Users size={16} />
+              <span>Student Directory</span>
+            </button>
+            <button
+              type="button"
+              className={`community-tab-btn ${
+                activeTab === "leaderboard" ? "tab-active" : ""
+              }`}
+              onClick={() => setActiveTab("leaderboard")}
+            >
+              <Trophy size={16} />
+              <span>Scholar Leaderboard</span>
+            </button>
+          </div>
         </div>
 
         {/* ============================================================
-            TAB 1: POSTS & DISCUSSIONS
+            TAB 1: DISCUSSIONS (2-COLUMN FEED + SIDEBAR LIKE REFERENCE)
             ============================================================ */}
         {activeTab === "posts" && (
-          <div>
-            {showPostForm && (
-              <div style={{ marginBottom: "28px" }}>
-                <PostForm
-                  onSubmit={handleCreatePost}
-                  onCancel={() => setShowPostForm(false)}
-                />
-              </div>
-            )}
-
-            {/* Filter and Search */}
-            <div className="community-filters-row">
-              <div className="category-pills">
-                {CATEGORIES.map((cat) => (
+          <div className="community-layout-grid">
+            {/* LEFT / MAIN COLUMN (FEED) */}
+            <div className="community-feed-column">
+              {/* 1. Quick Post Creator Bar */}
+              <Card className="quick-post-creator-card">
+                <div className="quick-creator-top">
+                  <ScholarAvatar user={user} size={42} />
                   <button
-                    key={cat}
                     type="button"
-                    className={`category-pill ${
-                      selectedCategory === cat ? "pill-active" : ""
-                    }`}
-                    onClick={() => setSelectedCategory(cat)}
+                    className="quick-creator-input-trigger"
+                    onClick={() => setShowPostModal(true)}
                   >
-                    {cat}
+                    <span>Share or Ask Something to Everyone?</span>
                   </button>
-                ))}
+                </div>
+                <div className="quick-creator-bottom">
+                  <div className="quick-creator-chips">
+                    <span className="quick-chip-item">
+                      <FileText size={14} className="text-indigo" />
+                      <span>Note / Topic</span>
+                    </span>
+                    <span className="quick-chip-item">
+                      <Zap size={14} className="text-amber" />
+                      <span>Exam Question</span>
+                    </span>
+                  </div>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => setShowPostModal(true)}
+                    icon={Plus}
+                  >
+                    Create Post
+                  </Button>
+                </div>
+              </Card>
+
+              {/* 2. Sub-Filters & Search Bar */}
+              <div className="community-feed-filters-bar">
+                <div className="feed-filter-tabs">
+                  <button
+                    type="button"
+                    className={`feed-filter-btn ${
+                      filterAuthor === "all" ? "filter-btn-active" : ""
+                    }`}
+                    onClick={() => setFilterAuthor("all")}
+                  >
+                    <BookOpen size={14} />
+                    <span>All Posts</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`feed-filter-btn ${
+                      filterAuthor === "my_posts" ? "filter-btn-active" : ""
+                    }`}
+                    onClick={() => setFilterAuthor("my_posts")}
+                  >
+                    <Users size={14} />
+                    <span>My Posts</span>
+                  </button>
+                </div>
+
+                <div className="feed-search-wrap">
+                  <input
+                    type="text"
+                    placeholder="Search discussions..."
+                    value={postSearch}
+                    onChange={(e) => setPostSearch(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && loadPosts()}
+                    className="form-input-control feed-search-input"
+                  />
+                  <button
+                    type="button"
+                    className="feed-search-action-btn"
+                    onClick={loadPosts}
+                    title="Search"
+                  >
+                    <Search size={15} />
+                  </button>
+                </div>
               </div>
 
-              <div className="community-search-box">
-                <Input
-                  id="post_search"
-                  placeholder="Search discussions..."
-                  value={postSearch}
-                  onChange={(e) => setPostSearch(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && loadPosts()}
-                />
-                <Button size="sm" variant="secondary" onClick={loadPosts}>
-                  🔍 Search
-                </Button>
+              {/* 3. Category Filter Pills */}
+              <div className="category-scroll-bar">
+                {CATEGORIES.map((cat) => {
+                  const Icon = cat.icon;
+                  const isSelected = selectedCategory === cat.value;
+                  return (
+                    <button
+                      key={cat.value}
+                      type="button"
+                      className={`category-tag-pill ${
+                        isSelected ? "category-tag-active" : ""
+                      }`}
+                      onClick={() => setSelectedCategory(cat.value)}
+                    >
+                      <Icon size={14} />
+                      <span>{cat.label}</span>
+                    </button>
+                  );
+                })}
               </div>
+
+              {/* 4. Loading Skeletons */}
+              {postsLoading && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                  <CardSkeleton />
+                  <CardSkeleton />
+                </div>
+              )}
+
+              {/* 5. Error State */}
+              {!postsLoading && postsError && (
+                <ErrorState
+                  title="Failed to load discussions"
+                  message={postsError}
+                  onRetry={loadPosts}
+                />
+              )}
+
+              {/* 6. Empty State */}
+              {!postsLoading && !postsError && displayedPosts.length === 0 && (
+                <EmptyState
+                  icon={MessageSquare}
+                  title="No discussions found"
+                  description="Be the first scholar to ask an academic question, share study notes, or start a collaborative thread!"
+                  actionLabel="Create First Discussion"
+                  onAction={() => setShowPostModal(true)}
+                />
+              )}
+
+              {/* 7. Posts Feed List */}
+              {!postsLoading && !postsError && displayedPosts.length > 0 && (
+                <div className="posts-feed-stream">
+                  {displayedPosts.map((post) => (
+                    <PostCard
+                      key={post.id}
+                      post={post}
+                      onDeleted={handleDeletePost}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
 
-            {postsLoading && (
-              <Card className="empty-state-card">
-                <Spinner standalone />
-                <p className="page-loading-text">Loading discussions...</p>
-              </Card>
-            )}
+            {/* RIGHT SIDEBAR (30% on desktop) */}
+            <aside className="community-sidebar-column">
+              {/* Sidebar Widget 1: Academic Channels / Topics */}
+              <Card className="sidebar-widget-card">
+                <div className="sidebar-widget-header">
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <Tag size={16} className="text-indigo" />
+                    <strong className="sidebar-widget-title">Course Topics & Channels</strong>
+                  </div>
+                </div>
 
-            {!postsLoading && postsError && (
-              <Card className="empty-state-card">
-                <FormError message={postsError} className="form-error-block" />
-                <Button onClick={loadPosts}>Try Again</Button>
+                <div className="sidebar-channels-list">
+                  {CATEGORIES.map((cat) => {
+                    const Icon = cat.icon;
+                    const count = getCategoryCount(cat.value);
+                    const isSelected = selectedCategory === cat.value;
+                    return (
+                      <button
+                        key={cat.value}
+                        type="button"
+                        className={`sidebar-channel-item ${
+                          isSelected ? "sidebar-channel-active" : ""
+                        }`}
+                        onClick={() => setSelectedCategory(cat.value)}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                          <Icon size={16} className="text-muted" />
+                          <span>{cat.label}</span>
+                        </div>
+                        <span className="channel-count-badge">{count}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </Card>
-            )}
 
-            {!postsLoading && !postsError && posts.length === 0 && (
-              <Card className="empty-state-card">
-                <div className="empty-state-icon">💬</div>
-                <h2 className="empty-state-title">No discussions found</h2>
-                <p className="empty-state-desc">
-                  Be the first to post a question, share resources, or start an
-                  academic conversation!
-                </p>
-                <Button onClick={() => setShowPostForm(true)}>
-                  Start First Discussion
-                </Button>
+              {/* Sidebar Widget 2: Upcoming Study Events Preview */}
+              <Card className="sidebar-widget-card">
+                <div className="sidebar-widget-header">
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <Calendar size={16} className="text-emerald" />
+                    <strong className="sidebar-widget-title">Upcoming Study Sessions</strong>
+                  </div>
+                  <button
+                    type="button"
+                    className="sidebar-link-btn"
+                    onClick={() => setActiveTab("events")}
+                  >
+                    View all
+                  </button>
+                </div>
+
+                <div className="sidebar-events-list">
+                  {events.length > 0 ? (
+                    events.slice(0, 3).map((event) => (
+                      <div key={event.id} className="sidebar-event-item">
+                        <div>
+                          <strong className="sidebar-event-title">{event.title}</strong>
+                          <span className="sidebar-event-meta">
+                            🗓️ {event.event_date} • ⏰ {event.start_time?.slice(0, 5)}
+                          </span>
+                        </div>
+                        <Button
+                          variant={event.is_attending ? "success" : "outline"}
+                          size="sm"
+                          onClick={() => handleToggleRSVP(event.id)}
+                        >
+                          {event.is_attending ? "Going" : "RSVP"}
+                        </Button>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="sidebar-empty-text">
+                      No upcoming campus sessions. Host one for your peers!
+                    </p>
+                  )}
+                </div>
               </Card>
-            )}
 
-            {!postsLoading && !postsError && posts.length > 0 && (
-              <div className="posts-feed">
-                {posts.map((post) => (
-                  <PostCard
-                    key={post.id}
-                    post={post}
-                    onToggleReaction={handleToggleReaction}
-                    onToggleComments={handleToggleComments}
-                    isExpanded={expandedPostId === post.id}
-                    comments={commentsMap[post.id] || []}
-                    commentsLoading={Boolean(commentsLoadingMap[post.id])}
-                    onCreateComment={handleCreateComment}
-                    onDeleted={handleDeletePost}
-                  />
-                ))}
-              </div>
-            )}
+              {/* Sidebar Widget 3: Top Scholars Spotlight */}
+              {topThree.length > 0 && (
+                <Card className="sidebar-widget-card">
+                  <div className="sidebar-widget-header">
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <Trophy size={16} className="text-amber" />
+                      <strong className="sidebar-widget-title">Top Scholars This Week</strong>
+                    </div>
+                    <button
+                      type="button"
+                      className="sidebar-link-btn"
+                      onClick={() => setActiveTab("leaderboard")}
+                    >
+                      Leaderboard
+                    </button>
+                  </div>
+
+                  <div className="sidebar-top-scholars">
+                    {topThree.map((scholar, idx) => (
+                      <div key={scholar.user_id} className="sidebar-scholar-row">
+                        <div className="scholar-rank-medal">
+                          {idx === 0 ? "🥇" : idx === 1 ? "🥈" : "🥉"}
+                        </div>
+                        <div className="scholar-row-meta">
+                          <strong className="scholar-row-name">
+                            {scholar.full_name || scholar.email?.split("@")[0]}
+                          </strong>
+                          <span className="scholar-row-pts">{scholar.total_points} XP</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              )}
+            </aside>
           </div>
         )}
 
@@ -447,52 +617,57 @@ export default function CommunityPage() {
             ============================================================ */}
         {activeTab === "events" && (
           <div>
-            {showEventForm && (
-              <div style={{ marginBottom: "28px" }}>
-                <EventForm
-                  onSubmit={handleCreateEvent}
-                  onCancel={() => setShowEventForm(false)}
-                />
-              </div>
-            )}
+            <AnimatePresence>
+              {showEventForm && (
+                <motion.div
+                  initial={{ opacity: 0, y: -12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  transition={{ duration: 0.2 }}
+                  style={{ marginBottom: "28px" }}
+                >
+                  <EventForm
+                    onSubmit={handleCreateEvent}
+                    onCancel={() => setShowEventForm(false)}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             <div
               className="community-filters-row"
               style={{ justifyContent: "flex-end" }}
             >
               <div className="community-search-box">
-                <Input
+                <input
                   id="event_search"
                   placeholder="Search events by title or subject..."
                   value={eventSearch}
                   onChange={(e) => setEventSearch(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && loadEvents()}
+                  className="form-input-control"
                 />
-                <Button size="sm" variant="secondary" onClick={loadEvents}>
-                  🔍 Search
+                <Button size="sm" variant="secondary" onClick={loadEvents} icon={Search}>
+                  Search
                 </Button>
               </div>
             </div>
 
             {eventsLoading && (
-              <Card className="empty-state-card">
-                <Spinner standalone />
-                <p className="page-loading-text">Loading study events...</p>
-              </Card>
+              <div className="events-grid">
+                <CardSkeleton />
+                <CardSkeleton />
+              </div>
             )}
 
             {!eventsLoading && !eventsError && events.length === 0 && (
-              <Card className="empty-state-card">
-                <div className="empty-state-icon">📅</div>
-                <h2 className="empty-state-title">No upcoming study events</h2>
-                <p className="empty-state-desc">
-                  Host an exam review, study group, or quiet work session with
-                  your peers.
-                </p>
-                <Button onClick={() => setShowEventForm(true)}>
-                  Host First Study Event
-                </Button>
-              </Card>
+              <EmptyState
+                icon={Calendar}
+                title="No upcoming study events"
+                description="Host an exam review, study group, or quiet work session with your peers."
+                actionLabel="Host First Study Event"
+                onAction={() => setShowEventForm(true)}
+              />
             )}
 
             {!eventsLoading && !eventsError && events.length > 0 && (
@@ -520,36 +695,33 @@ export default function CommunityPage() {
               style={{ justifyContent: "flex-end" }}
             >
               <div className="community-search-box">
-                <Input
+                <input
                   id="student_search"
                   placeholder="Search students by name or email..."
                   value={studentSearch}
                   onChange={(e) => setStudentSearch(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && loadStudents()}
+                  className="form-input-control"
                 />
-                <Button size="sm" variant="secondary" onClick={loadStudents}>
-                  🔍 Search
+                <Button size="sm" variant="secondary" onClick={loadStudents} icon={Search}>
+                  Search
                 </Button>
               </div>
             </div>
 
             {studentsLoading && (
-              <Card className="empty-state-card">
-                <Spinner standalone />
-                <p className="page-loading-text">
-                  Loading student directory...
-                </p>
-              </Card>
+              <div className="students-grid">
+                <CardSkeleton />
+                <CardSkeleton />
+              </div>
             )}
 
             {!studentsLoading && !studentsError && students.length === 0 && (
-              <Card className="empty-state-card">
-                <div className="empty-state-icon">👥</div>
-                <h2 className="empty-state-title">No students found</h2>
-                <p className="empty-state-desc">
-                  Invite your classmates to build your academic peer network!
-                </p>
-              </Card>
+              <EmptyState
+                icon={Users}
+                title="No students found"
+                description="Invite your classmates to build your academic peer network!"
+              />
             )}
 
             {!studentsLoading && !studentsError && students.length > 0 && (
@@ -571,7 +743,6 @@ export default function CommunityPage() {
             ============================================================ */}
         {activeTab === "leaderboard" && (
           <div className="leaderboard-tab-content">
-            {/* Opt-In Preferences Card */}
             {leaderboardData && (
               <LeaderboardOptInCard
                 isOptedIn={leaderboardData.is_opted_in}
@@ -581,7 +752,6 @@ export default function CommunityPage() {
               />
             )}
 
-            {/* Timeframe Switcher */}
             <div className="leaderboard-timeframe-bar">
               <div className="timeframe-buttons-group">
                 {TIMEFRAMES.map((tf) => (
@@ -600,53 +770,40 @@ export default function CommunityPage() {
 
               <div className="leaderboard-participants-count">
                 <span>
-                  👥 {leaderboardData?.total_participants || 0} Opted-In
-                  Scholars
+                  👥 {leaderboardData?.total_participants || 0} Opted-In Scholars
                 </span>
               </div>
             </div>
 
-            {/* Loading */}
             {leaderboardLoading && (
-              <Card className="empty-state-card">
-                <Spinner standalone />
-                <p className="page-loading-text">Calculating rankings...</p>
-              </Card>
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                <CardSkeleton />
+                <CardSkeleton />
+              </div>
             )}
 
-            {/* Error */}
             {!leaderboardLoading && leaderboardError && (
-              <Card className="empty-state-card">
-                <FormError
-                  message={leaderboardError}
-                  className="form-error-block"
-                />
-                <Button onClick={loadLeaderboard}>Try Again</Button>
-              </Card>
+              <ErrorState
+                title="Failed to calculate rankings"
+                message={leaderboardError}
+                onRetry={loadLeaderboard}
+              />
             )}
 
-            {/* Empty State */}
             {!leaderboardLoading &&
               !leaderboardError &&
               rankings.length === 0 && (
-                <Card className="empty-state-card">
-                  <div className="empty-state-icon">🏆</div>
-                  <h2 className="empty-state-title">
-                    No participants on the leaderboard yet
-                  </h2>
-                  <p className="empty-state-desc">
-                    Be the first to opt in and climb the academic study
-                    leaderboard!
-                  </p>
-                </Card>
+                <EmptyState
+                  icon={Trophy}
+                  title="No participants on the leaderboard yet"
+                  description="Be the first to opt in and climb the academic study leaderboard!"
+                />
               )}
 
-            {/* Leaderboard Content */}
             {!leaderboardLoading &&
               !leaderboardError &&
               rankings.length > 0 && (
                 <div className="leaderboard-display-wrap">
-                  {/* Top 3 Podium */}
                   {topThree.length > 0 && (
                     <LeaderboardPodium
                       topThree={topThree}
@@ -655,7 +812,6 @@ export default function CommunityPage() {
                     />
                   )}
 
-                  {/* Table for remaining or all participants */}
                   <LeaderboardTable
                     rankings={rankings}
                     timeframe={leaderboardTimeframe}
@@ -663,6 +819,54 @@ export default function CommunityPage() {
                   />
                 </div>
               )}
+          </div>
+        )}
+
+        {/* Discussion Creator Modal */}
+        {showPostModal && (
+          <div className="modal-backdrop" onClick={() => setShowPostModal(false)}>
+            <div
+              className="modal-content-card"
+              onClick={(e) => e.stopPropagation()}
+              style={{ maxWidth: "600px" }}
+            >
+              <div className="modal-header-row">
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <div
+                    style={{
+                      width: "36px",
+                      height: "36px",
+                      borderRadius: "var(--radius-md)",
+                      background: "var(--color-primary-subtle)",
+                      color: "var(--color-primary)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <MessageSquare size={20} />
+                  </div>
+                  <div>
+                    <h3 className="modal-title">Start a Discussion or Question</h3>
+                    <span style={{ fontSize: "0.8125rem", color: "var(--color-text-muted)" }}>
+                      Share with your fellow university scholars
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="modal-close-btn"
+                  onClick={() => setShowPostModal(false)}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <PostForm
+                onSubmit={handleCreatePost}
+                onCancel={() => setShowPostModal(false)}
+              />
+            </div>
           </div>
         )}
       </main>

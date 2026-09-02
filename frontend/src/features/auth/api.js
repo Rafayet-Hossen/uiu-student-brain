@@ -1,15 +1,27 @@
 import api from "../../lib/api";
 
 export function register({ email, password, full_name }) {
-  return api.post("/accounts/register/", { email, password, full_name }).then((res) => res.data);
+  return api
+    .post("/accounts/register/", { email, password, full_name })
+    .then((res) => res.data);
 }
 
 export function login({ email, password }) {
-  return api.post("/accounts/login/", { email, password }).then((res) => res.data);
+  return api
+    .post("/accounts/login/", { email, password })
+    .then((res) => res.data);
 }
 
 export function getMe() {
   return api.get("/accounts/me/").then((res) => res.data);
+}
+
+export function updateProfile(payload) {
+  return api.patch("/accounts/me/", payload).then((res) => res.data);
+}
+
+export function getProfileSummary() {
+  return api.get("/accounts/profile-summary/").then((res) => res.data);
 }
 
 export function extractErrorMessage(error) {

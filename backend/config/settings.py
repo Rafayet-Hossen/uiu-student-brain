@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "tracker",
     "community",
     "analytics",
+    "materials",
 ]
 
 
@@ -183,7 +184,11 @@ USE_TZ = True
 
 
 # ============================================================
-# STATIC FILES
+# STATIC & MEDIA FILES
 # ============================================================
 
 STATIC_URL = "static/"
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+

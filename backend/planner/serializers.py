@@ -13,6 +13,8 @@ class ScheduleSerializer(serializers.ModelSerializer):
             "end_time",
             "deadline",
             "days",
+            "notes",
+            "resources",
             "created_at",
             "updated_at",
         ]
@@ -55,5 +57,10 @@ class ScheduleSerializer(serializers.ModelSerializer):
 
             if invalid_days:
                 raise serializers.ValidationError({"days": "Invalid day provided."})
+
+        if "resources" in attrs:
+            resources = attrs["resources"]
+            if not isinstance(resources, list):
+                raise serializers.ValidationError({"resources": "Resources must be a list."})
 
         return attrs

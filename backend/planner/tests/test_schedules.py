@@ -24,6 +24,19 @@ class ScheduleTests(APITestCase):
             "end_time": "20:00",
             "deadline": "2026-08-20",
             "days": ["Saturday", "Monday"],
+            "notes": "Review binary trees and graph traversals",
+            "resources": [
+                {
+                    "title": "Lecture Slides Drive Folder",
+                    "url": "https://drive.google.com/drive/folders/example123",
+                    "type": "drive",
+                },
+                {
+                    "title": "Algorithms Video Lecture",
+                    "url": "https://youtube.com/watch?v=example456",
+                    "type": "video",
+                },
+            ],
         }
 
         response = self.client.post(
@@ -39,6 +52,18 @@ class ScheduleTests(APITestCase):
         self.assertEqual(
             response.data["subject"],
             "Data Structures",
+        )
+        self.assertEqual(
+            response.data["notes"],
+            "Review binary trees and graph traversals",
+        )
+        self.assertEqual(
+            len(response.data["resources"]),
+            2,
+        )
+        self.assertEqual(
+            response.data["resources"][0]["type"],
+            "drive",
         )
 
     def test_list_schedules(self):
