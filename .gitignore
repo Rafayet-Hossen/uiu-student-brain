@@ -21,3 +21,4 @@ frontend/dist/
 # Testing
 .pytest_cache/
 .coverage
+API.txt

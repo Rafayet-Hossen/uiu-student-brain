@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "tracker",
     "community",
     "analytics",
+    "ai",
 ]
 
 
@@ -187,3 +188,9 @@ USE_TZ = True
 # ============================================================
 
 STATIC_URL = "static/"
+
+# ============================================================
+# GEMINI AI SERVICE CONFIGURATION
+# ============================================================
+GEMINI_API_KEY = env("GEMINI_API_KEY", default="")
+

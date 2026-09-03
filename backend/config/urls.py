@@ -25,4 +25,5 @@ urlpatterns = [
     path('api/tracker/', include('tracker.urls')),
     path('api/community/', include('community.urls')),
     path('api/analytics/', include('analytics.urls')),
+    path('api/ai/', include('ai.urls')),
 ]
