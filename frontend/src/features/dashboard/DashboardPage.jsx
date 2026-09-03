@@ -150,6 +150,26 @@ export default function DashboardPage() {
         <h2 className="section-title">Academic Modules</h2>
 
         <div className="features-grid">
+          {/* Materials & AI Knowledge Hub */}
+          <Card className="feature-hub-card">
+            <div>
+              <div className="feature-hub-header">
+                <div className="feature-hub-icon">📚</div>
+                <div className="feature-hub-body">
+                  <Badge variant="purple">AI Knowledge Hub</Badge>
+                  <h3>Materials & AI Knowledge</h3>
+                  <p>
+                    Create subject projects, upload PDF notes/books, save resource links, and extract key topics with Gemini AI.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <Link to="/materials">
+              <Button className="btn-block">Open Materials Hub →</Button>
+            </Link>
+          </Card>
+
           {/* Study Planner Hub */}
           <Card className="feature-hub-card">
             <div>

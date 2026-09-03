@@ -15,6 +15,7 @@ import GradePlannerPage from "./features/grades/GradePlannerPage";
 import TrackerPage from "./features/tracker/TrackerPage";
 import CommunityPage from "./features/community/CommunityPage";
 import AnalyticsPage from "./features/analytics/AnalyticsPage";
+import MaterialsPage from "./features/materials/MaterialsPage";
 
 function PageLoading() {
   return (
@@ -75,6 +76,14 @@ export default function AppRoutes() {
           element={
             <ProtectedRoute>
               <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/materials"
+          element={
+            <ProtectedRoute>
+              <MaterialsPage />
             </ProtectedRoute>
           }
         />

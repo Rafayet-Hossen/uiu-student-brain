@@ -43,7 +43,7 @@ A feature is only ✅ when **all** of these are true:
 | 4   | Study Tracker (`tracker`)                                 | Accounts                         | MUST         | ✅      | ✅       | ✅     | Rafayet | Log sessions, habits, streaks                         |
 | 5   | Community (`community`)                                   | Accounts                         | MUST         | ✅      | ✅       | ✅     | Sourav  | Posts, comments, reactions, follow, events + RSVP     |
 | 6   | AI service (`ai`)                                         | Accounts                         | MUST         | ✅      | N/A      | ✅     | Rafayet | Core Gemini AI client, structured schemas & services  |
-| 7   | Material Upload & Analyze (`materials`)                   | AI service                       | MUST         | ⬜      | ⬜       | ⬜     |         | Upload notes/PDF, AI extracts topics                  |
+| 7   | Material Upload & Analyze (`materials`)                   | AI service                       | MUST         | ✅      | ✅       | ✅     | Rafayet | Subject projects, PDF upload, links, AI topic analyze |
 | 8   | Study Session Test + Weak Topic Detection (`assessments`) | AI service, Materials            | MUST         | ⬜      | ⬜       | ⬜     |         | AI quiz, score, weak areas                            |
 | 9   | AI Revision Planner (extends `planner`/`assessments`)     | Assessments, Planner, AI service | MUST         | ⬜      | ⬜       | ⬜     |         | Revision plan from weak topics + deadlines            |
 | 10  | Rewards & streaks (extends `tracker`)                     | Study Tracker                    | MUST         | ✅      | ✅       | ✅     | Rafayet | Daily-plan achievement rewards                        |
@@ -73,6 +73,8 @@ frontend screen by design, so its Frontend cell is `N/A` instead of ⬜.
 | 2026-08-31 | Study Analytics (`analytics`)    | Completed backend and frontend      | Rafayet |
 | 2026-08-31 | Leaderboard (`community`)        | Completed backend and frontend      | Sourav  |
 | 2026-09-03 | AI Service Core (`ai`)           | Completed backend core AI service   | Rafayet |
+| 2026-09-03 | Material Upload & AI (`materials`)| Completed backend and frontend      | Rafayet |
 
 Add one row here every time a feature's status changes — keep the newest
 entry at the bottom.
+

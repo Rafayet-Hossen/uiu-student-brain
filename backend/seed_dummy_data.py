@@ -3,6 +3,7 @@ import sys
 from datetime import date, time, timedelta
 
 import django
+from django.utils import timezone
 
 # Setup Django environment
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
@@ -11,6 +12,7 @@ django.setup()
 from accounts.models import User
 from community.models import Comment, EventRSVP, Follow, LeaderboardProfile, Post, Reaction, StudyEvent
 from grades.models import GradePlan
+from materials.models import StudyMaterial, StudyProject
 from planner.models import Schedule
 from tracker.models import StudyGoal, StudySession
 
@@ -461,6 +463,105 @@ def seed():
     EventRSVP.objects.create(event=e2, user=jamil, status="going")
     EventRSVP.objects.create(event=e3, user=rayhan, status="going")
     EventRSVP.objects.create(event=e3, user=shourav, status="going")
+
+    # Study Projects & Materials
+    StudyMaterial.objects.all().delete()
+    StudyProject.objects.all().delete()
+
+    # Project 1: Jamil - Algorithms & Data Structures
+    p1 = StudyProject.objects.create(
+        user=jamil,
+        title="Algorithms & Advanced Data Structures",
+        subject="Computer Science & Engineering",
+        description="Core syllabus covering Graph Theory, Dynamic Programming, Tree traversals, and amortized complexity analysis.",
+        color="#2563eb",
+    )
+    StudyMaterial.objects.create(
+        project=p1,
+        user=jamil,
+        title="Graph Algorithms & Shortest Paths Notes.pdf",
+        material_type="document",
+        file_size_bytes=2450000,
+        content_text="Comprehensive notes on Dijkstra, Bellman-Ford, Floyd-Warshall, and Johnson algorithm with adjacency matrix representations.",
+        ai_analysis={
+            "title": "Shortest Path & Graph Traversal Algorithms",
+            "summary": "Covers single-source and all-pairs shortest path algorithms in directed and undirected graphs. Compares time complexities across adjacency lists and matrices.",
+            "difficulty": "Advanced",
+            "key_topics": ["Dijkstra Algorithm", "Bellman-Ford Algorithm", "Floyd-Warshall", "Negative Weight Cycles", "Priority Queues"],
+            "key_formulas_or_definitions": [
+                "Dijkstra Time Complexity: O((V + E) log V)",
+                "Bellman-Ford Relaxation: dist[v] = min(dist[v], dist[u] + weight(u, v))",
+            ],
+        },
+        analyzed_at=timezone.now(),
+    )
+    StudyMaterial.objects.create(
+        project=p1,
+        user=jamil,
+        title="VisuAlgo - Interactive Algorithm Visualizations",
+        material_type="link",
+        link_url="https://visualgo.net/en",
+        content_text="Visualizing data structures and algorithms through animation.",
+        ai_analysis={
+            "title": "Interactive Computer Science Data Structures",
+            "summary": "Visual animations showing step-by-step executions of graph algorithms, heap operations, and dynamic programming state transitions.",
+            "difficulty": "Intermediate",
+            "key_topics": ["Binary Heaps", "Graph Traversal", "Topological Sort", "Algorithm Visualization"],
+            "key_formulas_or_definitions": ["Visual execution step inspection"],
+        },
+        analyzed_at=timezone.now(),
+    )
+    StudyMaterial.objects.create(
+        project=p1,
+        user=jamil,
+        title="Dynamic Programming Memoization vs Tabulation Cheat Sheet",
+        material_type="note",
+        content_text="Top-down memoization uses recursion + cache. Bottom-up tabulation uses iteration + table. Space optimization techniques for 0/1 Knapsack.",
+        ai_analysis={
+            "title": "Dynamic Programming Paradigm Comparison",
+            "summary": "Detailed breakdown between recursive top-down memoization and iterative bottom-up tabulation. Focuses on state transitions and memory reduction.",
+            "difficulty": "Intermediate",
+            "key_topics": ["Memoization", "Tabulation", "State Transition Equation", "0/1 Knapsack", "Space Optimization"],
+            "key_formulas_or_definitions": ["dp[i][w] = max(dp[i-1][w], val[i] + dp[i-1][w - wt[i]])"],
+        },
+        analyzed_at=timezone.now(),
+    )
+
+    # Project 2: Baitun - Molecular Biochemistry & Enzyme Kinetics
+    p2 = StudyProject.objects.create(
+        user=bithy,
+        title="Molecular Biochemistry & Metabolic Pathways",
+        subject="Biochemistry & Molecular Biology",
+        description="Lecture series on cellular respiration, glycolysis, Krebs cycle, and enzyme inhibition kinetics.",
+        color="#10b981",
+    )
+    StudyMaterial.objects.create(
+        project=p2,
+        user=bithy,
+        title="Enzyme Kinetics & Lineweaver-Burk Derivations.pdf",
+        material_type="document",
+        file_size_bytes=3840000,
+        content_text="Michaelis-Menten kinetics, competitive vs non-competitive inhibition, allosteric regulation.",
+        ai_analysis={
+            "title": "Enzyme Kinetics and Mathematical Modeling",
+            "summary": "Detailed derivation of Michaelis-Menten equation and Lineweaver-Burk double reciprocal plots. Explains Vmax and Km parameters under various inhibitors.",
+            "difficulty": "Advanced",
+            "key_topics": ["Michaelis-Menten Equation", "Lineweaver-Burk Plot", "Competitive Inhibition", "Allosteric Modulators", "Catalytic Efficiency (kcat/Km)"],
+            "key_formulas_or_definitions": [
+                "v0 = (Vmax * [S]) / (Km + [S])",
+                "Lineweaver-Burk: 1/v0 = (Km/Vmax)(1/[S]) + 1/Vmax",
+            ],
+        },
+        analyzed_at=timezone.now(),
+    )
+    StudyMaterial.objects.create(
+        project=p2,
+        user=bithy,
+        title="NCBI Biochemical Pathway Database",
+        material_type="link",
+        link_url="https://www.ncbi.nlm.nih.gov/",
+        content_text="GenBank, BLAST, and structural biological database reference for metabolic pathway mapping.",
+    )
 
     print("✨ Successfully generated 7 Bangladeshi scholar demo accounts with complete data across all features!")
     print("--------------------------------------------------------------------------------------------------")

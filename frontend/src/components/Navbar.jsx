@@ -9,6 +9,7 @@ export default function Navbar() {
 
   const navLinks = [
     { to: "/dashboard", label: "Dashboard", icon: "📊" },
+    { to: "/materials", label: "Materials Hub", icon: "📚" },
     { to: "/planner", label: "Study Planner", icon: "📅" },
     { to: "/grades", label: "Grade Planner", icon: "🎓" },
     { to: "/tracker", label: "Study Tracker", icon: "⏱️" },

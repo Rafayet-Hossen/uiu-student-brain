@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     "community",
     "analytics",
     "ai",
+    "materials",
 ]
 
 
@@ -190,7 +191,14 @@ USE_TZ = True
 STATIC_URL = "static/"
 
 # ============================================================
+# MEDIA FILES (User Uploads)
+# ============================================================
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+# ============================================================
 # GEMINI AI SERVICE CONFIGURATION
 # ============================================================
 GEMINI_API_KEY = env("GEMINI_API_KEY", default="")
+
 
