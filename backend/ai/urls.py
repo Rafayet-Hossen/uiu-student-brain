@@ -12,3 +12,4 @@ urlpatterns = [
     path("quiz/generate/", QuizGenerationView.as_view(), name="ai-quiz-generate"),
     path("risk-assessment/", RiskAssessmentView.as_view(), name="ai-risk-assessment"),
 ]
+

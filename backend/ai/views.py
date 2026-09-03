@@ -74,3 +74,4 @@ class RiskAssessmentView(APIView):
             weak_topics=serializer.validated_data.get("weak_topics", []),
         )
         return Response(data, status=status.HTTP_200_OK)
+

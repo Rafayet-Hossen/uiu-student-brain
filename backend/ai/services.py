@@ -238,3 +238,4 @@ def assess_student_academic_risk(
             ],
             "optimistic_outlook": "With disciplined adherence to your study plan, this target is attainable.",
         }
+

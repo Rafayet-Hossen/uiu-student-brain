@@ -39,3 +39,4 @@ class RiskAssessmentRequestSerializer(serializers.Serializer):
         required=False,
         default=list,
     )
+

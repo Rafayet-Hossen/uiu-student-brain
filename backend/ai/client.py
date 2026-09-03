@@ -27,3 +27,4 @@ def get_gemini_client() -> genai.Client:
 
     _client = genai.Client(api_key=api_key)
     return _client
+

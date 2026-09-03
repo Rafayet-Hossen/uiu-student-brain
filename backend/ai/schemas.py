@@ -71,3 +71,4 @@ class AcademicRiskAssessmentResult(BaseModel):
     risk_factors: List[str] = Field(description="Key contributing reasons (e.g., target GPA gap, broken streaks)")
     actionable_interventions: List[str] = Field(description="Concrete corrective actions the student should take immediately")
     optimistic_outlook: str = Field(description="Positive and encouraging advisory note on recovery feasibility")
+

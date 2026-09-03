@@ -125,3 +125,4 @@ class AIServiceUnitTests(TestCase):
         response = self.client.post(url, data=payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["risk_level"], "Low")
+
