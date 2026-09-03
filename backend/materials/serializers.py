@@ -1,16 +1,90 @@
 from rest_framework import serializers
-from .models import StudyMaterial, StudyProject
+from .models import Course, CourseChatMessage, Semester, StudyMaterial
+
+
+class SemesterSerializer(serializers.ModelSerializer):
+    courses_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Semester
+        fields = [
+            "id",
+            "user",
+            "name",
+            "is_current",
+            "courses_count",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "user", "courses_count", "created_at", "updated_at"]
+
+    def get_courses_count(self, obj) -> int:
+        return obj.courses.count()
+
+
+class CourseSerializer(serializers.ModelSerializer):
+    semester_name = serializers.CharField(source="semester.name", read_only=True)
+    materials_count = serializers.SerializerMethodField()
+    analyzed_materials_count = serializers.SerializerMethodField()
+    extracted_topics = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Course
+        fields = [
+            "id",
+            "semester",
+            "semester_name",
+            "user",
+            "code",
+            "title",
+            "color",
+            "description",
+            "materials_count",
+            "analyzed_materials_count",
+            "extracted_topics",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = [
+            "id",
+            "semester",
+            "user",
+            "semester_name",
+            "materials_count",
+            "analyzed_materials_count",
+            "extracted_topics",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_materials_count(self, obj) -> int:
+        return obj.materials.count()
+
+    def get_analyzed_materials_count(self, obj) -> int:
+        return obj.materials.filter(analyzed_at__isnull=False).count()
+
+    def get_extracted_topics(self, obj) -> list[str]:
+        topics = set()
+        for mat in obj.materials.filter(analyzed_at__isnull=False):
+            analysis = mat.ai_analysis or {}
+            key_topics = analysis.get("key_topics") or []
+            for t in key_topics:
+                if t and isinstance(t, str):
+                    topics.add(t.strip())
+        return sorted(list(topics))
 
 
 class StudyMaterialSerializer(serializers.ModelSerializer):
     file_url = serializers.SerializerMethodField()
     formatted_file_size = serializers.SerializerMethodField()
+    course_title = serializers.CharField(source="course.title", read_only=True)
 
     class Meta:
         model = StudyMaterial
         fields = [
             "id",
-            "project",
+            "course",
+            "course_title",
             "user",
             "title",
             "material_type",
@@ -28,7 +102,8 @@ class StudyMaterialSerializer(serializers.ModelSerializer):
         read_only_fields = [
             "id",
             "user",
-            "project",
+            "course",
+            "course_title",
             "file_size_bytes",
             "formatted_file_size",
             "ai_analysis",
@@ -89,48 +164,15 @@ class StudyMaterialCreateSerializer(serializers.ModelSerializer):
         return attrs
 
 
-class StudyProjectSerializer(serializers.ModelSerializer):
-    materials_count = serializers.SerializerMethodField()
-    analyzed_materials_count = serializers.SerializerMethodField()
-    extracted_topics = serializers.SerializerMethodField()
-
+class CourseChatMessageSerializer(serializers.ModelSerializer):
     class Meta:
-        model = StudyProject
+        model = CourseChatMessage
         fields = [
             "id",
+            "course",
             "user",
-            "title",
-            "subject",
-            "description",
-            "color",
-            "materials_count",
-            "analyzed_materials_count",
-            "extracted_topics",
+            "role",
+            "content",
             "created_at",
-            "updated_at",
         ]
-        read_only_fields = [
-            "id",
-            "user",
-            "materials_count",
-            "analyzed_materials_count",
-            "extracted_topics",
-            "created_at",
-            "updated_at",
-        ]
-
-    def get_materials_count(self, obj) -> int:
-        return obj.materials.count()
-
-    def get_analyzed_materials_count(self, obj) -> int:
-        return obj.materials.filter(analyzed_at__isnull=False).count()
-
-    def get_extracted_topics(self, obj) -> list[str]:
-        topics = set()
-        for mat in obj.materials.filter(analyzed_at__isnull=False):
-            analysis = mat.ai_analysis or {}
-            key_topics = analysis.get("key_topics") or []
-            for t in key_topics:
-                if t and isinstance(t, str):
-                    topics.add(t.strip())
-        return sorted(list(topics))
+        read_only_fields = ["id", "course", "user", "created_at"]

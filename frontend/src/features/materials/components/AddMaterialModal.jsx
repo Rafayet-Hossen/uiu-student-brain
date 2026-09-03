@@ -6,8 +6,10 @@ export default function AddMaterialModal({
   onClose,
   onSubmit,
   submitting,
+  courseName,
   projectName,
 }) {
+  const displayName = courseName || projectName || "Course";
   const [activeTab, setActiveTab] = useState("document"); // 'document' | 'link' | 'note'
   const [title, setTitle] = useState("");
   const [file, setFile] = useState(null);
@@ -98,7 +100,7 @@ export default function AddMaterialModal({
           <div>
             <h3 className="modal-title">Add Study Material</h3>
             <p className="modal-subtitle">
-              Adding to <span className="text-accent font-semibold">{projectName}</span>
+              Adding to <span className="text-accent font-semibold">{displayName}</span>
             </p>
           </div>
           <button

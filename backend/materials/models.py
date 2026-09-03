@@ -2,16 +2,39 @@ from django.conf import settings
 from django.db import models
 
 
-class StudyProject(models.Model):
+class Semester(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="study_projects",
+        related_name="semesters",
     )
-    title = models.CharField(max_length=255)
-    subject = models.CharField(max_length=255)
-    description = models.TextField(blank=True)
+    name = models.CharField(max_length=100)  # e.g., "Summer 2026", "Spring 2026"
+    is_current = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-is_current", "-created_at"]
+
+    def __str__(self):
+        return f"{self.name} ({self.user.email})"
+
+
+class Course(models.Model):
+    semester = models.ForeignKey(
+        Semester,
+        on_delete=models.CASCADE,
+        related_name="courses",
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="courses",
+    )
+    code = models.CharField(max_length=50, blank=True)  # e.g., "CSE 220", "BIO 101"
+    title = models.CharField(max_length=255)  # e.g., "Data Structures & Algorithms"
     color = models.CharField(max_length=50, default="#2563eb")
+    description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -19,7 +42,8 @@ class StudyProject(models.Model):
         ordering = ["-updated_at"]
 
     def __str__(self):
-        return f"{self.title} ({self.subject})"
+        code_prefix = f"[{self.code}] " if self.code else ""
+        return f"{code_prefix}{self.title}"
 
 
 class StudyMaterial(models.Model):
@@ -29,8 +53,8 @@ class StudyMaterial(models.Model):
         ("note", "Study Note"),
     ]
 
-    project = models.ForeignKey(
-        StudyProject,
+    course = models.ForeignKey(
+        Course,
         on_delete=models.CASCADE,
         related_name="materials",
     )
@@ -63,3 +87,30 @@ class StudyMaterial(models.Model):
 
     def __str__(self):
         return f"{self.title} [{self.material_type}]"
+
+
+class CourseChatMessage(models.Model):
+    ROLE_CHOICES = [
+        ("user", "User"),
+        ("assistant", "AI Assistant"),
+    ]
+
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        related_name="chat_messages",
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="course_chat_messages",
+    )
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"{self.role.capitalize()}: {self.content[:50]}"

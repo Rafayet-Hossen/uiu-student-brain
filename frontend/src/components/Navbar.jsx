@@ -9,11 +9,8 @@ export default function Navbar() {
 
   const navLinks = [
     { to: "/dashboard", label: "Dashboard", icon: "📊" },
-    { to: "/materials", label: "Materials Hub", icon: "📚" },
-    { to: "/planner", label: "Study Planner", icon: "📅" },
+    { to: "/study-center", label: "Study Center", icon: "🏛️" },
     { to: "/grades", label: "Grade Planner", icon: "🎓" },
-    { to: "/tracker", label: "Study Tracker", icon: "⏱️" },
-    { to: "/analytics", label: "Analytics", icon: "📈" },
     { to: "/community", label: "Community", icon: "💬" },
   ];
 
@@ -25,6 +22,19 @@ export default function Navbar() {
       .join("")
       .toUpperCase()
       .slice(0, 2);
+  };
+
+  const isLinkActive = (to) => {
+    if (to === "/study-center") {
+      return (
+        location.pathname.startsWith("/study-center") ||
+        location.pathname === "/materials" ||
+        location.pathname === "/planner" ||
+        location.pathname === "/tracker" ||
+        location.pathname === "/analytics"
+      );
+    }
+    return location.pathname === to;
   };
 
   return (
@@ -40,12 +50,12 @@ export default function Navbar() {
 
           <nav className="navbar-nav" aria-label="Main Navigation">
             {navLinks.map((link) => {
-              const isActive = location.pathname === link.to;
+              const active = isLinkActive(link.to);
               return (
                 <Link
                   key={link.to}
                   to={link.to}
-                  className={`nav-link ${isActive ? "nav-link-active" : ""}`}
+                  className={`nav-link ${active ? "nav-link-active" : ""}`}
                 >
                   <span className="nav-link-icon">{link.icon}</span>
                   <span>{link.label}</span>

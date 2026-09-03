@@ -16,6 +16,7 @@ import TrackerPage from "./features/tracker/TrackerPage";
 import CommunityPage from "./features/community/CommunityPage";
 import AnalyticsPage from "./features/analytics/AnalyticsPage";
 import MaterialsPage from "./features/materials/MaterialsPage";
+import StudyCenterPage from "./features/studycenter/StudyCenterPage";
 
 function PageLoading() {
   return (
@@ -80,42 +81,34 @@ export default function AppRoutes() {
           }
         />
         <Route
-          path="/materials"
+          path="/study-center"
           element={
             <ProtectedRoute>
-              <MaterialsPage />
+              <StudyCenterPage />
             </ProtectedRoute>
           }
         />
         <Route
+          path="/materials"
+          element={<Navigate to="/study-center?tab=materials" replace />}
+        />
+        <Route
           path="/planner"
-          element={
-            <ProtectedRoute>
-              <PlannerPage />
-            </ProtectedRoute>
-          }
+          element={<Navigate to="/study-center?tab=planner" replace />}
+        />
+        <Route
+          path="/tracker"
+          element={<Navigate to="/study-center?tab=tracker" replace />}
+        />
+        <Route
+          path="/analytics"
+          element={<Navigate to="/study-center?tab=analytics" replace />}
         />
         <Route
           path="/grades"
           element={
             <ProtectedRoute>
               <GradePlannerPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/tracker"
-          element={
-            <ProtectedRoute>
-              <TrackerPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/analytics"
-          element={
-            <ProtectedRoute>
-              <AnalyticsPage />
             </ProtectedRoute>
           }
         />

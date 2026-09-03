@@ -1,76 +1,113 @@
-import os
 import mimetypes
-from typing import Any, Dict, Optional
-from django.db.models import QuerySet, Q
+from typing import Any, Dict, List, Optional
+from django.db.models import Q, QuerySet
 from django.utils import timezone
-from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
+from rest_framework.exceptions import NotFound, ValidationError
 
 from ai import services as ai_services
-from .models import StudyMaterial, StudyProject
+from .models import Course, CourseChatMessage, Semester, StudyMaterial
 
 
 # ============================================================
-# PROJECT SERVICES
+# SEMESTER SERVICES
 # ============================================================
 
-def list_user_projects(*, user) -> QuerySet[StudyProject]:
-    return StudyProject.objects.filter(user=user).prefetch_related("materials")
+def list_user_semesters(*, user) -> QuerySet[Semester]:
+    return Semester.objects.filter(user=user).prefetch_related("courses")
 
 
-def get_user_project(*, user, project_id: int) -> StudyProject:
+def get_user_semester(*, user, semester_id: int) -> Semester:
     try:
-        return StudyProject.objects.prefetch_related("materials").get(id=project_id, user=user)
-    except StudyProject.DoesNotExist:
-        raise NotFound("Study project not found.")
+        return Semester.objects.prefetch_related("courses").get(id=semester_id, user=user)
+    except Semester.DoesNotExist:
+        raise NotFound("Semester not found.")
 
 
-def create_study_project(
-    *,
-    user,
-    title: str,
-    subject: str,
-    description: str = "",
-    color: str = "#2563eb",
-) -> StudyProject:
-    if not title.strip():
-        raise ValidationError({"title": ["Title cannot be blank."]})
-    if not subject.strip():
-        raise ValidationError({"subject": ["Subject cannot be blank."]})
+def create_user_semester(*, user, name: str, is_current: bool = True) -> Semester:
+    clean_name = name.strip()
+    if not clean_name:
+        raise ValidationError({"name": ["Semester name cannot be blank."]})
 
-    return StudyProject.objects.create(
+    if is_current:
+        # Mark other semesters as not current
+        Semester.objects.filter(user=user, is_current=True).update(is_current=False)
+
+    return Semester.objects.create(
         user=user,
-        title=title.strip(),
-        subject=subject.strip(),
-        description=description.strip(),
-        color=color.strip() if color else "#2563eb",
+        name=clean_name,
+        is_current=is_current,
     )
 
 
-def delete_study_project(*, user, project_id: int) -> None:
-    project = get_user_project(user=user, project_id=project_id)
-    # Delete uploaded files on disk if any
-    for mat in project.materials.all():
+def delete_user_semester(*, user, semester_id: int) -> None:
+    sem = get_user_semester(user=user, semester_id=semester_id)
+    sem.delete()
+
+
+# ============================================================
+# COURSE SERVICES
+# ============================================================
+
+def list_semester_courses(*, user, semester_id: int) -> QuerySet[Course]:
+    sem = get_user_semester(user=user, semester_id=semester_id)
+    return Course.objects.filter(semester=sem, user=user).prefetch_related("materials")
+
+
+def get_user_course(*, user, course_id: int) -> Course:
+    try:
+        return Course.objects.select_related("semester").prefetch_related("materials").get(id=course_id, user=user)
+    except Course.DoesNotExist:
+        raise NotFound("Course not found.")
+
+
+def create_course(
+    *,
+    user,
+    semester_id: int,
+    title: str,
+    code: str = "",
+    color: str = "#2563eb",
+    description: str = "",
+) -> Course:
+    sem = get_user_semester(user=user, semester_id=semester_id)
+    clean_title = title.strip()
+    if not clean_title:
+        raise ValidationError({"title": ["Course title cannot be blank."]})
+
+    return Course.objects.create(
+        semester=sem,
+        user=user,
+        code=code.strip().upper(),
+        title=clean_title,
+        color=color.strip() if color else "#2563eb",
+        description=description.strip(),
+    )
+
+
+def delete_course(*, user, course_id: int) -> None:
+    course = get_user_course(user=user, course_id=course_id)
+    for mat in course.materials.all():
         if mat.file:
             try:
                 mat.file.delete(save=False)
             except Exception:
                 pass
-    project.delete()
+    course.delete()
 
 
 # ============================================================
 # MATERIAL SERVICES
 # ============================================================
 
-def list_project_materials(
+def list_course_materials(
     *,
     user,
-    project_id: int,
+    course_id: int,
     material_type: Optional[str] = None,
     search: Optional[str] = None,
 ) -> QuerySet[StudyMaterial]:
-    project = get_user_project(user=user, project_id=project_id)
-    queryset = StudyMaterial.objects.filter(project=project, user=user)
+    course = get_user_course(user=user, course_id=course_id)
+    queryset = StudyMaterial.objects.filter(course=course, user=user)
 
     if material_type and material_type != "all":
         queryset = queryset.filter(material_type=material_type)
@@ -86,7 +123,7 @@ def list_project_materials(
 
 def get_user_material(*, user, material_id: int) -> StudyMaterial:
     try:
-        return StudyMaterial.objects.select_related("project").get(id=material_id, user=user)
+        return StudyMaterial.objects.select_related("course").get(id=material_id, user=user)
     except StudyMaterial.DoesNotExist:
         raise NotFound("Study material not found.")
 
@@ -94,21 +131,21 @@ def get_user_material(*, user, material_id: int) -> StudyMaterial:
 def create_study_material(
     *,
     user,
-    project_id: int,
+    course_id: int,
     title: str,
     material_type: str = "document",
     file=None,
     link_url: Optional[str] = None,
     content_text: str = "",
 ) -> StudyMaterial:
-    project = get_user_project(user=user, project_id=project_id)
+    course = get_user_course(user=user, course_id=course_id)
 
     file_size_bytes = 0
     if file:
         file_size_bytes = file.size
 
     return StudyMaterial.objects.create(
-        project=project,
+        course=course,
         user=user,
         title=title.strip(),
         material_type=material_type,
@@ -132,7 +169,7 @@ def delete_study_material(*, user, material_id: int) -> None:
 def analyze_material_with_ai(*, user, material_id: int) -> StudyMaterial:
     """Invokes Gemini AI to extract topics, summary, formulas, and difficulty."""
     material = get_user_material(user=user, material_id=material_id)
-    subject_hint = material.project.subject
+    subject_hint = f"{material.course.code} {material.course.title}".strip()
 
     file_bytes = None
     mime_type = "application/pdf"
@@ -144,7 +181,6 @@ def analyze_material_with_ai(*, user, material_id: int) -> StudyMaterial:
             file_bytes = material.file.read()
             material.file.close()
 
-            # Guess mime type
             guessed, _ = mimetypes.guess_type(material.file.name)
             if guessed:
                 mime_type = guessed
@@ -161,9 +197,8 @@ def analyze_material_with_ai(*, user, material_id: int) -> StudyMaterial:
         raw_text = link_info
 
     if not file_bytes and not raw_text:
-        raw_text = f"Subject topic study document titled: {material.title}"
+        raw_text = f"Study document titled: {material.title} for course {subject_hint}"
 
-    # Call AI service
     analysis_result = ai_services.extract_material_topics(
         raw_text=raw_text,
         file_bytes=file_bytes,
@@ -176,3 +211,64 @@ def analyze_material_with_ai(*, user, material_id: int) -> StudyMaterial:
     material.save(update_fields=["ai_analysis", "analyzed_at", "updated_at"])
 
     return material
+
+
+# ============================================================
+# COURSE AI CHAT SERVICES
+# ============================================================
+
+def list_course_chat_messages(*, user, course_id: int) -> QuerySet[CourseChatMessage]:
+    course = get_user_course(user=user, course_id=course_id)
+    return CourseChatMessage.objects.filter(course=course, user=user)
+
+
+def send_course_chat_message(*, user, course_id: int, user_message: str) -> CourseChatMessage:
+    clean_msg = user_message.strip()
+    if not clean_msg:
+        raise ValidationError({"message": ["Message cannot be empty."]})
+
+    course = get_user_course(user=user, course_id=course_id)
+
+    # 1. Save student message
+    CourseChatMessage.objects.create(
+        course=course,
+        user=user,
+        role="user",
+        content=clean_msg,
+    )
+
+    # 2. Gather course knowledge base context
+    materials_context = []
+    for mat in course.materials.all()[:8]:
+        item_text = f"Title: {mat.title} ({mat.material_type})"
+        if mat.ai_analysis and mat.ai_analysis.get("summary"):
+            item_text += f"\nSummary: {mat.ai_analysis.get('summary')}"
+        if mat.ai_analysis and mat.ai_analysis.get("key_topics"):
+            item_text += f"\nKey Topics: {', '.join(mat.ai_analysis.get('key_topics'))}"
+        if mat.content_text:
+            item_text += f"\nExcerpt: {mat.content_text[:400]}"
+        materials_context.append(item_text)
+
+    # 3. Gather recent chat history
+    recent_msgs = list(
+        CourseChatMessage.objects.filter(course=course, user=user).order_by("-created_at")[:6]
+    )
+    recent_msgs.reverse()
+    chat_history = [{"role": m.role, "content": m.content} for m in recent_msgs]
+
+    # 4. Invoke AI course tutor
+    ai_reply_text = ai_services.chat_with_course_tutor(
+        course_title=course.title,
+        course_code=course.code,
+        materials_context=materials_context,
+        chat_history=chat_history,
+        user_message=clean_msg,
+    )
+
+    # 5. Save assistant reply
+    return CourseChatMessage.objects.create(
+        course=course,
+        user=user,
+        role="assistant",
+        content=ai_reply_text,
+    )

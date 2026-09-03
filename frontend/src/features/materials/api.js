@@ -14,38 +14,58 @@ export const extractMaterialsErrorMessage = (error) => {
   return error.message || "An unexpected error occurred.";
 };
 
-// Projects
-export const getProjects = async () => {
-  const res = await apiClient.get("/materials/projects/");
+// ============================================================
+// SEMESTERS API
+// ============================================================
+
+export const getSemesters = async () => {
+  const res = await apiClient.get("/materials/semesters/");
   return res.data;
 };
 
-export const createProject = async (payload) => {
-  const res = await apiClient.post("/materials/projects/", payload);
+export const createSemester = async (payload) => {
+  const res = await apiClient.post("/materials/semesters/", payload);
   return res.data;
 };
 
-export const getProject = async (id) => {
-  const res = await apiClient.get(`/materials/projects/${id}/`);
+export const deleteSemester = async (id) => {
+  const res = await apiClient.delete(`/materials/semesters/${id}/`);
   return res.data;
 };
 
-export const deleteProject = async (id) => {
-  const res = await apiClient.delete(`/materials/projects/${id}/`);
+// ============================================================
+// COURSES API
+// ============================================================
+
+export const getCourses = async (semesterId) => {
+  const res = await apiClient.get(`/materials/semesters/${semesterId}/courses/`);
   return res.data;
 };
 
-// Materials
-export const getMaterials = async (projectId, params = {}) => {
-  const res = await apiClient.get(`/materials/projects/${projectId}/materials/`, {
+export const createCourse = async (semesterId, payload) => {
+  const res = await apiClient.post(`/materials/semesters/${semesterId}/courses/`, payload);
+  return res.data;
+};
+
+export const deleteCourse = async (id) => {
+  const res = await apiClient.delete(`/materials/courses/${id}/`);
+  return res.data;
+};
+
+// ============================================================
+// MATERIALS API
+// ============================================================
+
+export const getMaterials = async (courseId, params = {}) => {
+  const res = await apiClient.get(`/materials/courses/${courseId}/materials/`, {
     params,
   });
   return res.data;
 };
 
-export const createMaterial = async (projectId, formData) => {
+export const createMaterial = async (courseId, formData) => {
   const res = await apiClient.post(
-    `/materials/projects/${projectId}/materials/`,
+    `/materials/courses/${courseId}/materials/`,
     formData,
     {
       headers: {
@@ -63,5 +83,19 @@ export const deleteMaterial = async (id) => {
 
 export const analyzeMaterial = async (id) => {
   const res = await apiClient.post(`/materials/materials/${id}/analyze/`);
+  return res.data;
+};
+
+// ============================================================
+// COURSE AI CHAT API
+// ============================================================
+
+export const getCourseChat = async (courseId) => {
+  const res = await apiClient.get(`/materials/courses/${courseId}/chat/`);
+  return res.data;
+};
+
+export const sendCourseChat = async (courseId, message) => {
+  const res = await apiClient.post(`/materials/courses/${courseId}/chat/`, { message });
   return res.data;
 };

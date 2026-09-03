@@ -239,3 +239,66 @@ def assess_student_academic_risk(
             "optimistic_outlook": "With disciplined adherence to your study plan, this target is attainable.",
         }
 
+
+def chat_with_course_tutor(
+    *,
+    course_title: str,
+    course_code: str = "",
+    materials_context: Optional[List[str]] = None,
+    chat_history: Optional[List[Dict[str, str]]] = None,
+    user_message: str,
+) -> str:
+    """Conversational academic AI tutor grounded in the course materials and topics."""
+    client = get_gemini_client()
+
+    context_str = ""
+    if materials_context:
+        context_str = "\n\nCourse Materials and Extracted Knowledge Base:\n" + "\n---\n".join(materials_context)
+
+    history_str = ""
+    if chat_history:
+        formatted = []
+        for msg in chat_history[-6:]:  # Keep recent turns for concise prompt
+            role_label = "Student" if msg.get("role") == "user" else "Tutor"
+            formatted.append(f"{role_label}: {msg.get('content')}")
+        history_str = "\n\nRecent Conversation:\n" + "\n".join(formatted)
+
+    full_prompt = f"""
+Course: {f'[{course_code}] ' if course_code else ''}{course_title}
+{context_str}
+{history_str}
+
+Student Question:
+{user_message}
+
+Provide a clear, engaging, and pedagogically sound response. Format with clear headings, bullet points, or code snippets when helpful. If the student asks for practice problems or summaries, tailor them strictly to the course level.
+"""
+
+    models_to_try = [PRIMARY_MODEL, FALLBACK_MODEL]
+    system_instruction = (
+        f"You are an expert university academic tutor and professor for '{course_title}'. "
+        "Your goal is to help the student deeply understand concepts, solve problems step-by-step, "
+        "and prepare for exams based on their uploaded materials."
+    )
+
+    for model_name in models_to_try:
+        try:
+            config = types.GenerateContentConfig(
+                system_instruction=system_instruction,
+                temperature=0.4,
+            )
+            response = client.models.generate_content(
+                model=model_name,
+                contents=full_prompt,
+                config=config,
+            )
+            if response.text:
+                return response.text.strip()
+        except Exception as e:
+            logger.warning(f"AI Course Tutor with {model_name} failed: {e}. Trying fallback...")
+            if model_name == models_to_try[-1]:
+                raise e
+
+    return "I am currently analyzing your question. Please try again in a moment."
+
+

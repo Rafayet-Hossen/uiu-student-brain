@@ -12,7 +12,7 @@ django.setup()
 from accounts.models import User
 from community.models import Comment, EventRSVP, Follow, LeaderboardProfile, Post, Reaction, StudyEvent
 from grades.models import GradePlan
-from materials.models import StudyMaterial, StudyProject
+from materials.models import Course, CourseChatMessage, Semester, StudyMaterial
 from planner.models import Schedule
 from tracker.models import StudyGoal, StudySession
 
@@ -464,20 +464,45 @@ def seed():
     EventRSVP.objects.create(event=e3, user=rayhan, status="going")
     EventRSVP.objects.create(event=e3, user=shourav, status="going")
 
-    # Study Projects & Materials
+    # Semesters, Courses & Study Materials
+    CourseChatMessage.objects.all().delete()
     StudyMaterial.objects.all().delete()
-    StudyProject.objects.all().delete()
+    Course.objects.all().delete()
+    Semester.objects.all().delete()
 
-    # Project 1: Jamil - Algorithms & Data Structures
-    p1 = StudyProject.objects.create(
+    # Semesters for Jamil
+    jamil_sem_curr = Semester.objects.create(user=jamil, name="Summer 2026", is_current=True)
+    jamil_sem_prev = Semester.objects.create(user=jamil, name="Spring 2026", is_current=False)
+
+    # Courses under Summer 2026 for Jamil
+    c1 = Course.objects.create(
+        semester=jamil_sem_curr,
         user=jamil,
-        title="Algorithms & Advanced Data Structures",
-        subject="Computer Science & Engineering",
-        description="Core syllabus covering Graph Theory, Dynamic Programming, Tree traversals, and amortized complexity analysis.",
+        code="CSE 220",
+        title="Data Structures & Algorithms",
         color="#2563eb",
+        description="Graph Theory, Dynamic Programming, Tree traversals, and amortized complexity analysis.",
     )
+    c2 = Course.objects.create(
+        semester=jamil_sem_curr,
+        user=jamil,
+        code="CSE 330",
+        title="Database Management Systems",
+        color="#10b981",
+        description="Relational algebra, B+ Trees, ACID transactions, and query optimization.",
+    )
+    c3 = Course.objects.create(
+        semester=jamil_sem_curr,
+        user=jamil,
+        code="MATH 201",
+        title="Linear Algebra & Numerical Methods",
+        color="#8b5cf6",
+        description="Matrix decompositions, eigenvalues, and Newton-Raphson approximation methods.",
+    )
+
+    # Materials for Course 1 (CSE 220)
     StudyMaterial.objects.create(
-        project=p1,
+        course=c1,
         user=jamil,
         title="Graph Algorithms & Shortest Paths Notes.pdf",
         material_type="document",
@@ -496,7 +521,7 @@ def seed():
         analyzed_at=timezone.now(),
     )
     StudyMaterial.objects.create(
-        project=p1,
+        course=c1,
         user=jamil,
         title="VisuAlgo - Interactive Algorithm Visualizations",
         material_type="link",
@@ -512,7 +537,7 @@ def seed():
         analyzed_at=timezone.now(),
     )
     StudyMaterial.objects.create(
-        project=p1,
+        course=c1,
         user=jamil,
         title="Dynamic Programming Memoization vs Tabulation Cheat Sheet",
         material_type="note",
@@ -527,16 +552,32 @@ def seed():
         analyzed_at=timezone.now(),
     )
 
-    # Project 2: Baitun - Molecular Biochemistry & Enzyme Kinetics
-    p2 = StudyProject.objects.create(
+    # AI Chat Messages for CSE 220
+    CourseChatMessage.objects.create(
+        course=c1,
+        user=jamil,
+        role="user",
+        content="What is the core difference between Dijkstra and Bellman-Ford algorithms?",
+    )
+    CourseChatMessage.objects.create(
+        course=c1,
+        user=jamil,
+        role="assistant",
+        content="Great question! Both algorithms find the shortest path from a single source vertex to all other vertices, but they differ in design and capabilities:\n\n1. **Dijkstra's Algorithm (Greedy)**:\n- **Constraint**: Edge weights must be non-negative ($\ge 0$).\n- **Complexity**: $O((V + E) \\log V)$ using a binary min-heap.\n- **Approach**: Greedily extracts the minimum distance unvisited vertex.\n\n2. **Bellman-Ford Algorithm (Dynamic Programming)**:\n- **Capability**: Handles **negative edge weights** and detects **negative cycles**.\n- **Complexity**: $O(V \\times E)$.\n- **Approach**: Relaxes all $|V|-1$ edges sequentially.\n\n*Study Tip:* In your upcoming exam, use Dijkstra if graph weights are strictly positive. If negative weights appear, always choose Bellman-Ford!",
+    )
+
+    # Semester & Course for Bithy
+    bithy_sem = Semester.objects.create(user=bithy, name="Summer 2026", is_current=True)
+    b1 = Course.objects.create(
+        semester=bithy_sem,
         user=bithy,
+        code="BCH 204",
         title="Molecular Biochemistry & Metabolic Pathways",
-        subject="Biochemistry & Molecular Biology",
-        description="Lecture series on cellular respiration, glycolysis, Krebs cycle, and enzyme inhibition kinetics.",
         color="#10b981",
+        description="Lecture series on cellular respiration, glycolysis, Krebs cycle, and enzyme inhibition kinetics.",
     )
     StudyMaterial.objects.create(
-        project=p2,
+        course=b1,
         user=bithy,
         title="Enzyme Kinetics & Lineweaver-Burk Derivations.pdf",
         material_type="document",
@@ -555,7 +596,7 @@ def seed():
         analyzed_at=timezone.now(),
     )
     StudyMaterial.objects.create(
-        project=p2,
+        course=b1,
         user=bithy,
         title="NCBI Biochemical Pathway Database",
         material_type="link",

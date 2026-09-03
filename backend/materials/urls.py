@@ -2,10 +2,15 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    # Projects
-    path("projects/", views.StudyProjectListCreateView.as_view(), name="materials-project-list-create"),
-    path("projects/<int:pk>/", views.StudyProjectDetailView.as_view(), name="materials-project-detail"),
-    path("projects/<int:project_id>/materials/", views.StudyMaterialListCreateView.as_view(), name="materials-material-list-create"),
+    # Semesters
+    path("semesters/", views.SemesterListCreateView.as_view(), name="materials-semester-list-create"),
+    path("semesters/<int:pk>/", views.SemesterDetailView.as_view(), name="materials-semester-detail"),
+    path("semesters/<int:semester_id>/courses/", views.CourseListCreateView.as_view(), name="materials-semester-course-list-create"),
+
+    # Courses
+    path("courses/<int:pk>/", views.CourseDetailView.as_view(), name="materials-course-detail"),
+    path("courses/<int:course_id>/materials/", views.StudyMaterialListCreateView.as_view(), name="materials-course-material-list-create"),
+    path("courses/<int:course_id>/chat/", views.CourseChatView.as_view(), name="materials-course-chat"),
 
     # Materials
     path("materials/<int:pk>/", views.StudyMaterialDetailView.as_view(), name="materials-material-detail"),
