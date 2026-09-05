@@ -27,11 +27,17 @@ environ.Env.read_env(BASE_DIR.parent / ".env")
 # SECURITY
 # ============================================================
 
-SECRET_KEY = "django-insecure-jgjok3^26293l*4gus^)&eas*=7ar-djvdktlc^ge%_a=7t=w8"
+SECRET_KEY = env(
+    "DJANGO_SECRET_KEY",
+    default="django-insecure-jgjok3^26293l*4gus^)&eas*=7ar-djvdktlc^ge%_a=7t=w8",
+)
 
-DEBUG = True
+DEBUG = env.bool("DJANGO_DEBUG", default=True)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = env.list(
+    "ALLOWED_HOSTS",
+    default=["*"] if DEBUG else ["localhost", "127.0.0.1", "backend"],
+)
 
 
 # ============================================================
@@ -81,10 +87,16 @@ MIDDLEWARE = [
 # CORS
 # ============================================================
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-]
+CORS_ALLOWED_ORIGINS = env.list(
+    "CORS_ALLOWED_ORIGINS",
+    default=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://0.0.0.0:5173",
+        "http://localhost:3000",
+    ],
+)
+CORS_ALLOW_ALL_ORIGINS = DEBUG
 
 
 # ============================================================
