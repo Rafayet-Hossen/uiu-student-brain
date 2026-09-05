@@ -60,23 +60,21 @@ frontend screen by design, so its Frontend cell is `N/A` instead of ⬜.
 
 ## Change log
 
-| Date       | Feature                          | Change                              | By      |
-| ---------- | -------------------------------- | ----------------------------------- | ------- |
-| 2026-08-14 | Study Schedule Maker (`planner`) | Started feature development         | Sourav  |
-| 2026-08-30 | Accounts (`accounts`)            | Completed backend and frontend      | Rafayet |
-| 2026-08-30 | Study Schedule Maker (`planner`) | Completed backend and frontend      | Sourav  |
-| 2026-08-30 | Grade Planner (`grades`)         | Completed backend and frontend      | Rafayet |
-| 2026-08-30 | Study Tracker (`tracker`)        | Completed backend and frontend      | Rafayet |
-| 2026-08-30 | Academic UI Redesign             | Modern academic theme & UI overhaul | Rafayet |
-| 2026-08-30 | Community (`community`)          | Completed backend and frontend      | Sourav  |
-| 2026-08-31 | Rewards & Streaks (`tracker`)    | Completed backend and frontend      | Rafayet |
-| 2026-08-31 | Study Analytics (`analytics`)    | Completed backend and frontend      | Rafayet |
-| 2026-08-31 | Leaderboard (`community`)        | Completed backend and frontend      | Sourav  |
-| 2026-09-03 | AI Service Core (`ai`)           | Completed backend core AI service   | Rafayet |
-| 2026-09-03 | Material Upload & AI (`materials`)| Completed backend and frontend      | Rafayet |
-| 2026-09-05 | Frontend Redesign v3             | Integrated modern UI/UX overhaul    | Rafayet |
+| Date       | Feature                            | Change                              | By      |
+| ---------- | ---------------------------------- | ----------------------------------- | ------- |
+| 2026-08-14 | Study Schedule Maker (`planner`)   | Started feature development         | Sourav  |
+| 2026-08-30 | Accounts (`accounts`)              | Completed backend and frontend      | Rafayet |
+| 2026-08-30 | Study Schedule Maker (`planner`)   | Completed backend and frontend      | Sourav  |
+| 2026-08-30 | Grade Planner (`grades`)           | Completed backend and frontend      | Rafayet |
+| 2026-08-30 | Study Tracker (`tracker`)          | Completed backend and frontend      | Rafayet |
+| 2026-08-30 | Academic UI Redesign               | Modern academic theme & UI overhaul | Rafayet |
+| 2026-08-30 | Community (`community`)            | Completed backend and frontend      | Sourav  |
+| 2026-08-31 | Rewards & Streaks (`tracker`)      | Completed backend and frontend      | Rafayet |
+| 2026-08-31 | Study Analytics (`analytics`)      | Completed backend and frontend      | Rafayet |
+| 2026-08-31 | Leaderboard (`community`)          | Completed backend and frontend      | Sourav  |
+| 2026-09-03 | AI Service Core (`ai`)             | Completed backend core AI service   | Rafayet |
+| 2026-09-03 | Material Upload & AI (`materials`) | Completed backend and frontend      | Rafayet |
+| 2026-09-05 | Frontend Redesign v3               | Integrated modern UI/UX overhaul    | Rafayet |
 
 Add one row here every time a feature's status changes — keep the newest
 entry at the bottom.
-
-
