@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -10,6 +10,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
+  ExternalLink,
   FileText,
   Flame,
   GraduationCap,
@@ -31,6 +32,7 @@ import { useAuth } from "../auth/useAuth";
 import { getGradePlans } from "../grades/api";
 import { getMaterials } from "../materials/api";
 import { getSchedules } from "../planner/api";
+import ScheduleDetailModal from "../planner/components/ScheduleDetailModal";
 import { getStreakSummary, getStudySessions } from "../tracker/api";
 
 const MOTIVATION_QUOTES = [
@@ -55,6 +57,7 @@ const MOTIVATION_QUOTES = [
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [schedules, setSchedules] = useState([]);
   const [gradePlans, setGradePlans] = useState([]);
@@ -63,6 +66,7 @@ export default function DashboardPage() {
   const [streakData, setStreakData] = useState(null);
   const [quoteIndex, setQuoteIndex] = useState(0);
   const [flowDayOffset, setFlowDayOffset] = useState(0); // 0 = Today, 1 = Yesterday, 2 = 2 days ago, 3 = 3 days ago
+  const [selectedScheduleModal, setSelectedScheduleModal] = useState(null);
 
   useEffect(() => {
     async function loadDashboardData() {
@@ -154,6 +158,25 @@ export default function DashboardPage() {
         d.toLowerCase().startsWith(targetWeekday.slice(0, 3).toLowerCase()),
     ),
   );
+
+  const todayWeekdayName = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+  });
+  const todayWeekdayShort = todayWeekdayName.slice(0, 3).toLowerCase();
+
+  const todayClasses = schedules.filter((sch) => {
+    const days = Array.isArray(sch.days)
+      ? sch.days
+      : typeof sch.days === "string"
+        ? sch.days.split(",").map((d) => d.trim())
+        : [sch.day].filter(Boolean);
+    return days.some(
+      (d) =>
+        d &&
+        (d.toLowerCase() === todayWeekdayName.toLowerCase() ||
+          d.toLowerCase().startsWith(todayWeekdayShort)),
+    );
+  });
 
   return (
     <div className="app-screen">
@@ -491,25 +514,91 @@ export default function DashboardPage() {
                   and organize subject workloads.
                 </p>
 
-                {/* Quick Schedule Preview */}
+                {/* Today's Schedule Live Preview */}
+                <div className="bento-today-header">
+                  <span className="today-badge-live">
+                    <span className="live-dot" /> Today’s Classes ({todayWeekdayName})
+                  </span>
+                  <span className="today-class-count">
+                    {todayClasses.length > 0
+                      ? `${todayClasses.length} ${todayClasses.length === 1 ? "class" : "classes"} scheduled`
+                      : "No classes scheduled today"}
+                  </span>
+                </div>
+
                 <div className="bento-routines-preview">
-                  {schedules.length > 0 ? (
-                    schedules.slice(0, 3).map((item) => (
-                      <div key={item.id} className="mini-routine-pill">
-                        <span className="routine-day-badge">{item.day}</span>
-                        <strong className="routine-subject-text">
-                          {item.subject}
-                        </strong>
-                        <span className="routine-time-text">
-                          {item.start_time} - {item.end_time}
-                        </span>
+                  {todayClasses.length > 0 ? (
+                    todayClasses.map((item) => (
+                      <div
+                        key={item.id}
+                        className="mini-routine-pill interactive-routine-pill"
+                      >
+                        <div
+                          className="routine-pill-main"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setSelectedScheduleModal(item)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              setSelectedScheduleModal(item);
+                            }
+                          }}
+                          title="Click to view full class details"
+                        >
+                          <span className="routine-day-badge today-day-badge">
+                            Today
+                          </span>
+                          <div className="routine-pill-info">
+                            <strong className="routine-subject-text">
+                              {item.subject}
+                            </strong>
+                            <span className="routine-time-text">
+                              <Clock size={12} /> {item.start_time?.slice(0, 5)} -{" "}
+                              {item.end_time?.slice(0, 5)}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="mini-routine-actions">
+                          <button
+                            type="button"
+                            className="routine-action-btn view-details-btn"
+                            title="View Class Details"
+                            onClick={() => setSelectedScheduleModal(item)}
+                          >
+                            Details
+                          </button>
+                          <button
+                            type="button"
+                            className="routine-action-btn goto-card-btn"
+                            title="Go to Routine Card in Planner"
+                            onClick={() =>
+                              navigate(`/planner?routineId=${item.id}`, {
+                                state: { highlightId: item.id },
+                              })
+                            }
+                          >
+                            Open Card ↗
+                          </button>
+                        </div>
                       </div>
                     ))
                   ) : (
-                    <div className="mini-empty-hint">
-                      <span>
-                        No routines scheduled yet — plan your week in seconds.
-                      </span>
+                    <div className="mini-today-empty-state">
+                      <div className="empty-cal-text">
+                        <span className="empty-day-icon">📅</span>
+                        <div>
+                          <strong>No classes scheduled for {todayWeekdayName}</strong>
+                          <p>
+                            {schedules.length > 0
+                              ? `You have ${schedules.length} weekly classes recorded across your schedule.`
+                              : "No routine entries found yet. Plan your semester in the planner."}
+                          </p>
+                        </div>
+                      </div>
+                      <Link to="/planner" className="empty-routine-link">
+                        {schedules.length > 0 ? "View Weekly Routine →" : "+ Add Routine"}
+                      </Link>
                     </div>
                   )}
                 </div>
@@ -777,7 +866,10 @@ export default function DashboardPage() {
                 ? dayRoutines.map((routine, rIdx) => (
                     <div
                       key={routine.id || rIdx}
-                      className="timeline-step-item"
+                      className="timeline-step-item interactive-flow-item"
+                      style={{ cursor: "pointer" }}
+                      onClick={() => setSelectedScheduleModal(routine)}
+                      title="Click to view routine details"
                     >
                       <div className="step-bullet-indicator active-bullet">
                         <Zap size={14} className="animate-pulse" />
@@ -880,6 +972,20 @@ export default function DashboardPage() {
             </Card>
           </div>
         </div>
+
+        {/* Schedule Detail Modal when viewing from Dashboard */}
+        {selectedScheduleModal && (
+          <ScheduleDetailModal
+            schedule={selectedScheduleModal}
+            onClose={() => setSelectedScheduleModal(null)}
+            onGoToPlanner={(schedule) => {
+              setSelectedScheduleModal(null);
+              navigate(`/planner?routineId=${schedule.id}`, {
+                state: { highlightId: schedule.id },
+              });
+            }}
+          />
+        )}
       </main>
     </div>
   );

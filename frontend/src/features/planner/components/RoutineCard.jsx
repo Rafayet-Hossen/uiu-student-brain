@@ -100,7 +100,12 @@ function calculateDuration(startStr, endStr) {
   }
 }
 
-export default function RoutineCard({ schedule, onEdit, onDelete }) {
+export default function RoutineCard({
+  schedule,
+  onEdit,
+  onDelete,
+  isHighlighted = false,
+}) {
   const [showMenu, setShowMenu] = useState(false);
   const theme = getSubjectTheme(schedule.subject);
   const SubjectIcon = theme.icon;
@@ -117,12 +122,13 @@ export default function RoutineCard({ schedule, onEdit, onDelete }) {
 
   return (
     <motion.div
+      id={`routine-${schedule.id}`}
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -3, transition: { duration: 0.15 } }}
       className={`pro-routine-card ${theme.colorClass} ${
         isScheduledToday ? "card-active-today" : ""
-      }`}
+      } ${isHighlighted ? "routine-card-highlighted" : ""}`}
     >
       {/* Top Accent Strip */}
       <div

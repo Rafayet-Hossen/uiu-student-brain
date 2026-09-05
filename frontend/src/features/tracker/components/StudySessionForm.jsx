@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Button from "../../../components/Button";
 import FormError from "../../../components/FormError";
 import Input from "../../../components/Input";
+import { createStudySession, updateStudySession } from "../api";
 
 function getInitialForm() {
   return {
@@ -33,10 +34,15 @@ export default function StudySessionForm({
   onCancel,
   createSession,
   updateSession,
-  submitting,
+  onCreate,
+  onUpdate,
+  submitting: externalSubmitting,
 }) {
   const [form, setForm] = useState(() => sessionToForm(session));
   const [error, setError] = useState("");
+  const [internalSubmitting, setInternalSubmitting] = useState(false);
+
+  const submitting = Boolean(externalSubmitting || internalSubmitting);
 
   useEffect(() => {
     setForm(sessionToForm(session));
@@ -56,13 +62,13 @@ export default function StudySessionForm({
     setError("");
 
     if (!form.subject.trim()) {
-      setError("Subject is required.");
+      setError("Subject / topic studied is required.");
       return;
     }
 
     const duration = parseInt(form.duration_minutes, 10);
     if (isNaN(duration) || duration <= 0) {
-      setError("Duration must be a positive number of minutes (e.g. 45).");
+      setError("Duration must be a positive number of minutes (e.g. 60).");
       return;
     }
 
@@ -75,20 +81,46 @@ export default function StudySessionForm({
       subject: form.subject.trim(),
       duration_minutes: duration,
       session_date: form.session_date,
-      notes: form.notes.trim(),
+      notes: form.notes ? form.notes.trim() : "",
     };
 
+    setInternalSubmitting(true);
     try {
       if (session) {
-        const result = await updateSession(session.id, payload);
-        onUpdated(result);
+        const updater = updateSession || onUpdate;
+        let result;
+        if (typeof updater === "function") {
+          result = await updater(session.id, payload);
+        } else {
+          result = await updateStudySession(session.id, payload);
+        }
+        if (onUpdated) onUpdated(result);
       } else {
-        const result = await createSession(payload);
+        const creator = createSession || onCreate;
+        let result;
+        if (typeof creator === "function") {
+          result = await creator(payload);
+        } else {
+          result = await createStudySession(payload);
+        }
         setForm(getInitialForm());
-        onCreated(result);
+        if (onCreated) onCreated(result);
       }
     } catch (err) {
       console.error("Study session save failed:", err);
+      const msg =
+        err?.response?.data?.detail ||
+        err?.response?.data?.message ||
+        (err?.response?.data && typeof err.response.data === "object"
+          ? Object.entries(err.response.data)
+              .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(", ") : v}`)
+              .join(" | ")
+          : null) ||
+        err.message ||
+        "Failed to save study session.";
+      setError(msg);
+    } finally {
+      setInternalSubmitting(false);
     }
   }
 
@@ -101,7 +133,7 @@ export default function StudySessionForm({
         name="subject"
         label="Subject / Topic Studied"
         type="text"
-        placeholder="e.g. Linear Algebra, Neural Networks"
+        placeholder="e.g. Linear Algebra, Neural Networks, DBMS"
         value={form.subject}
         onChange={handleChange}
         disabled={submitting}
@@ -135,14 +167,20 @@ export default function StudySessionForm({
         />
       </div>
 
-      <div className="field">
-        <label htmlFor="tracker-notes" className="field-label">
-          Notes & Covered Topics (Optional)
+      <div className="form-field-group">
+        <label htmlFor="tracker-notes" className="form-field-label">
+          <span>Notes & Covered Topics (Optional)</span>
         </label>
         <textarea
           id="tracker-notes"
           name="notes"
-          className="field-input"
+          className="form-input-control"
+          style={{
+            minHeight: "86px",
+            resize: "vertical",
+            fontFamily: "inherit",
+            lineHeight: "1.5",
+          }}
           value={form.notes}
           onChange={handleChange}
           rows="3"

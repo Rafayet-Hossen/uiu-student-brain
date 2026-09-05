@@ -6,6 +6,7 @@ export default function ScheduleDetailModal({
   onClose,
   onEdit,
   onDelete,
+  onGoToPlanner,
 }) {
   if (!schedule) return null;
 
@@ -73,7 +74,8 @@ export default function ScheduleDetailModal({
             <span className="modal-info-label">⏰ Time Slot:</span>
             <span className="modal-info-value">
               <strong>
-                {schedule.start_time.slice(0, 5)} – {schedule.end_time.slice(0, 5)}
+                {schedule.start_time.slice(0, 5)} –{" "}
+                {schedule.end_time.slice(0, 5)}
               </strong>{" "}
               {duration && <Badge variant="accent">{duration}</Badge>}
             </span>
@@ -95,7 +97,9 @@ export default function ScheduleDetailModal({
           {deadlineInfo && (
             <div className="modal-info-row">
               <span className="modal-info-label">🎯 Target Deadline:</span>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "6px" }}
+              >
                 <span>{deadlineInfo.dateStr}</span>
                 {deadlineInfo.diffDays >= 0 ? (
                   <Badge
@@ -103,15 +107,15 @@ export default function ScheduleDetailModal({
                       deadlineInfo.diffDays <= 3
                         ? "danger"
                         : deadlineInfo.diffDays <= 7
-                        ? "warning"
-                        : "success"
+                          ? "warning"
+                          : "success"
                     }
                   >
                     {deadlineInfo.diffDays === 0
                       ? "Today"
                       : deadlineInfo.diffDays === 1
-                      ? "Tomorrow"
-                      : `${deadlineInfo.diffDays} days left`}
+                        ? "Tomorrow"
+                        : `${deadlineInfo.diffDays} days left`}
                   </Badge>
                 ) : (
                   <Badge variant="default">Past Deadline</Badge>
@@ -224,10 +228,10 @@ export default function ScheduleDetailModal({
                         {res.type === "drive"
                           ? "📁"
                           : res.type === "video"
-                          ? "🎥"
-                          : res.type === "doc"
-                          ? "📄"
-                          : "🔗"}
+                            ? "🎥"
+                            : res.type === "doc"
+                              ? "📄"
+                              : "🔗"}
                       </span>
                       <div style={{ overflow: "hidden" }}>
                         <strong
@@ -262,20 +266,24 @@ export default function ScheduleDetailModal({
                         res.type === "drive"
                           ? "primary"
                           : res.type === "video"
-                          ? "danger"
-                          : res.type === "doc"
-                          ? "success"
-                          : "default"
+                            ? "danger"
+                            : res.type === "doc"
+                              ? "success"
+                              : "default"
                       }
-                      style={{ fontSize: "0.75rem", textTransform: "capitalize" }}
+                      style={{
+                        fontSize: "0.75rem",
+                        textTransform: "capitalize",
+                      }}
                     >
                       {res.type === "drive"
                         ? "Google Drive"
                         : res.type === "video"
-                        ? "Video Lecture"
-                        : res.type === "doc"
-                        ? "Document"
-                        : "Web Link"} ↗
+                          ? "Video Lecture"
+                          : res.type === "doc"
+                            ? "Document"
+                            : "Web Link"}{" "}
+                      ↗
                     </Badge>
                   </a>
                 ))}
@@ -285,31 +293,51 @@ export default function ScheduleDetailModal({
         </div>
 
         <div className="modal-footer-row">
-          <Button
-            size="sm"
-            variant="danger"
-            onClick={() => {
-              onClose();
-              onDelete(schedule.id);
-            }}
-          >
-            🗑️ Delete
-          </Button>
+          {onDelete ? (
+            <Button
+              size="sm"
+              variant="danger"
+              onClick={() => {
+                onClose();
+                onDelete(schedule.id);
+              }}
+            >
+              🗑️ Delete
+            </Button>
+          ) : (
+            <div />
+          )}
 
-          <div style={{ display: "flex", gap: "8px" }}>
+          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+            {onGoToPlanner && (
+              <Button
+                size="sm"
+                variant="primary"
+                onClick={() => {
+                  onClose();
+                  onGoToPlanner(schedule);
+                }}
+              >
+                🔗 Open in Routine Planner
+              </Button>
+            )}
+
             <Button size="sm" variant="secondary" onClick={onClose}>
               Close
             </Button>
-            <Button
-              size="sm"
-              variant="primary"
-              onClick={() => {
-                onClose();
-                onEdit(schedule);
-              }}
-            >
-              ✏️ Edit Routine
-            </Button>
+
+            {onEdit && (
+              <Button
+                size="sm"
+                variant="primary"
+                onClick={() => {
+                  onClose();
+                  onEdit(schedule);
+                }}
+              >
+                ✏️ Edit Routine
+              </Button>
+            )}
           </div>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation, useSearchParams } from "react-router-dom";
 import {
   Calendar as CalendarIcon,
   CheckCircle2,
@@ -32,10 +33,18 @@ import RoutineCard from "./components/RoutineCard";
 import ScheduleForm from "./components/ScheduleForm";
 
 export default function PlannerPage() {
+  const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const targetRoutineId =
+    searchParams.get("routineId") || location.state?.highlightId;
+  const [highlightedId, setHighlightedId] = useState(null);
+
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [viewMode, setViewMode] = useState("calendar"); // "calendar" | "list"
+  const [viewMode, setViewMode] = useState(() =>
+    targetRoutineId ? "list" : "calendar",
+  ); // "calendar" | "list"
   const [showForm, setShowForm] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState(null);
   const [formInitialValues, setFormInitialValues] = useState(null);
@@ -57,6 +66,29 @@ export default function PlannerPage() {
   useEffect(() => {
     loadSchedules();
   }, []);
+
+  useEffect(() => {
+    if (targetRoutineId && schedules.length > 0) {
+      setViewMode("list");
+      setHighlightedId(Number(targetRoutineId) || targetRoutineId);
+
+      const scrollTimer = setTimeout(() => {
+        const el = document.getElementById(`routine-${targetRoutineId}`);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 300);
+
+      const highlightTimer = setTimeout(() => {
+        setHighlightedId(null);
+      }, 6000);
+
+      return () => {
+        clearTimeout(scrollTimer);
+        clearTimeout(highlightTimer);
+      };
+    }
+  }, [targetRoutineId, schedules]);
 
   function handleCreated(schedule) {
     setSchedules((current) => [...current, schedule]);
@@ -269,6 +301,7 @@ export default function PlannerPage() {
                 schedule={schedule}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                isHighlighted={Number(schedule.id) === Number(highlightedId)}
               />
             ))}
           </div>
