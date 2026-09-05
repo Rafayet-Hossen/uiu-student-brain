@@ -517,7 +517,8 @@ export default function DashboardPage() {
                 {/* Today's Schedule Live Preview */}
                 <div className="bento-today-header">
                   <span className="today-badge-live">
-                    <span className="live-dot" /> Today’s Classes ({todayWeekdayName})
+                    <span className="live-dot" /> Today’s Classes (
+                    {todayWeekdayName})
                   </span>
                   <span className="today-class-count">
                     {todayClasses.length > 0
@@ -553,8 +554,8 @@ export default function DashboardPage() {
                               {item.subject}
                             </strong>
                             <span className="routine-time-text">
-                              <Clock size={12} /> {item.start_time?.slice(0, 5)} -{" "}
-                              {item.end_time?.slice(0, 5)}
+                              <Clock size={12} /> {item.start_time?.slice(0, 5)}{" "}
+                              - {item.end_time?.slice(0, 5)}
                             </span>
                           </div>
                         </div>
@@ -588,7 +589,9 @@ export default function DashboardPage() {
                       <div className="empty-cal-text">
                         <span className="empty-day-icon">📅</span>
                         <div>
-                          <strong>No classes scheduled for {todayWeekdayName}</strong>
+                          <strong>
+                            No classes scheduled for {todayWeekdayName}
+                          </strong>
                           <p>
                             {schedules.length > 0
                               ? `You have ${schedules.length} weekly classes recorded across your schedule.`
@@ -597,7 +600,9 @@ export default function DashboardPage() {
                         </div>
                       </div>
                       <Link to="/planner" className="empty-routine-link">
-                        {schedules.length > 0 ? "View Weekly Routine →" : "+ Add Routine"}
+                        {schedules.length > 0
+                          ? "View Weekly Routine →"
+                          : "+ Add Routine"}
                       </Link>
                     </div>
                   )}

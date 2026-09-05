@@ -1239,7 +1239,8 @@
 }
 
 @keyframes liveDotPulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
@@ -1439,7 +1440,9 @@
 /* Routine Card Highlighted Glow in Planner */
 .routine-card-highlighted {
   border-color: var(--color-primary, #4f46e5) !important;
-  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.35), 0 10px 25px -5px rgba(79, 70, 229, 0.25) !important;
+  box-shadow:
+    0 0 0 4px rgba(79, 70, 229, 0.35),
+    0 10px 25px -5px rgba(79, 70, 229, 0.25) !important;
   animation: routineHighlightPulse 2s ease-in-out infinite;
   transform: scale(1.02);
   z-index: 10;
@@ -1447,11 +1450,16 @@
 }
 
 @keyframes routineHighlightPulse {
-  0%, 100% {
-    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.35), 0 10px 25px -5px rgba(79, 70, 229, 0.25);
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 4px rgba(79, 70, 229, 0.35),
+      0 10px 25px -5px rgba(79, 70, 229, 0.25);
   }
   50% {
-    box-shadow: 0 0 0 8px rgba(79, 70, 229, 0.6), 0 14px 30px -5px rgba(79, 70, 229, 0.4);
+    box-shadow:
+      0 0 0 8px rgba(79, 70, 229, 0.6),
+      0 14px 30px -5px rgba(79, 70, 229, 0.4);
   }
 }
 
