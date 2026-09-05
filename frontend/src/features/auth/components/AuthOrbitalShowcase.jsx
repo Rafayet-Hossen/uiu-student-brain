@@ -1,5 +1,4 @@
 import {
-
   Bell,
   BookOpen,
   CalendarDays,
@@ -98,7 +97,6 @@ export default function AuthOrbitalShowcase() {
         {/* Central Illustrated Laptop */}
         <div className="auth-center-laptop-stage">
           <div className="auth-laptop-wrapper">
-
             <svg
               className="auth-laptop-svg"
               viewBox="0 0 140 100"
@@ -281,7 +279,6 @@ export default function AuthOrbitalShowcase() {
             </div>
           );
         })}
-
       </div>
     </div>
   );
