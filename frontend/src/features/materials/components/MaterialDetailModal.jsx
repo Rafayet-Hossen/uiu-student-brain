@@ -12,6 +12,7 @@ import {
   EyeOff,
   FileCode,
   FileDown,
+  FileEdit,
   FileText,
   HelpCircle,
   Image as ImageIcon,
@@ -38,6 +39,7 @@ import Card from "../../../components/Card";
 import Spinner from "../../../components/Spinner";
 import { formatRichContent } from "../../../lib/markdownHelper";
 import { analyzeMaterial } from "../api";
+import MaterialNotepad from "./MaterialNotepad";
 
 function getAbsoluteFileUrl(fileField) {
   if (!fileField) return null;
@@ -45,7 +47,9 @@ function getAbsoluteFileUrl(fileField) {
     return fileField;
   }
   const baseUrl = "http://127.0.0.1:8000";
-  return fileField.startsWith("/") ? `${baseUrl}${fileField}` : `${baseUrl}/${fileField}`;
+  return fileField.startsWith("/")
+    ? `${baseUrl}${fileField}`
+    : `${baseUrl}/${fileField}`;
 }
 
 function detectFileType(fileUrl, fileName) {
@@ -53,7 +57,12 @@ function detectFileType(fileUrl, fileName) {
   if (target.endsWith(".pdf")) return "pdf";
   if (target.endsWith(".docx") || target.endsWith(".doc")) return "docx";
   if (target.endsWith(".pptx") || target.endsWith(".ppt")) return "pptx";
-  if (target.endsWith(".xlsx") || target.endsWith(".xls") || target.endsWith(".csv")) return "xlsx";
+  if (
+    target.endsWith(".xlsx") ||
+    target.endsWith(".xls") ||
+    target.endsWith(".csv")
+  )
+    return "xlsx";
   if (
     target.endsWith(".jpg") ||
     target.endsWith(".jpeg") ||
@@ -74,7 +83,9 @@ export default function MaterialDetailModal({ material, onClose, onUpdated }) {
   const fileType = detectFileType(fileUrl, currentMaterial?.title);
 
   // If a file is uploaded, default to "file_viewer", else default to "extracted_notes"
-  const [activeTab, setActiveTab] = useState(fileUrl ? "file_viewer" : "extracted_notes");
+  const [activeTab, setActiveTab] = useState(
+    fileUrl ? "file_viewer" : "extracted_notes",
+  );
 
   // Blob URL for embedding PDF without X-Frame-Options block
   const [blobUrl, setBlobUrl] = useState(null);
@@ -118,7 +129,8 @@ export default function MaterialDetailModal({ material, onClose, onUpdated }) {
       setIsFullscreen(Boolean(document.fullscreenElement));
     }
     document.addEventListener("fullscreenchange", onFullscreenChange);
-    return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", onFullscreenChange);
   }, []);
 
   function handleToggleFullscreen() {
@@ -145,7 +157,8 @@ export default function MaterialDetailModal({ material, onClose, onUpdated }) {
     async function loadFileBlob() {
       setBlobLoading(true);
       try {
-        const token = localStorage.getItem("token") || localStorage.getItem("access_token");
+        const token =
+          localStorage.getItem("token") || localStorage.getItem("access_token");
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
         const response = await fetch(fileUrl, { headers });
 
@@ -205,7 +218,9 @@ export default function MaterialDetailModal({ material, onClose, onUpdated }) {
 
   function handleDownloadRawText() {
     const textToDownload =
-      currentMaterial.content || currentMaterial.raw_text || currentMaterial.summary;
+      currentMaterial.content ||
+      currentMaterial.raw_text ||
+      currentMaterial.summary;
     const element = document.createElement("a");
     const file = new Blob([textToDownload], { type: "text/plain" });
     element.href = URL.createObjectURL(file);
@@ -249,13 +264,21 @@ export default function MaterialDetailModal({ material, onClose, onUpdated }) {
               {currentMaterial.title}
             </h2>
             <div className="native-meta-pill-line">
-              <span className="native-subject-tag">{currentMaterial.subject}</span>
+              <span className="native-subject-tag">
+                {currentMaterial.subject}
+              </span>
               <span className="native-meta-sep">•</span>
-              <span className="native-meta-dim">{currentMaterial.category}</span>
+              <span className="native-meta-dim">
+                {currentMaterial.category}
+              </span>
               <span className="native-meta-sep">•</span>
-              <span className="native-meta-dim">{currentMaterial.estimated_reading_time}m read</span>
+              <span className="native-meta-dim">
+                {currentMaterial.estimated_reading_time}m read
+              </span>
               <span className="native-meta-sep">•</span>
-              <span className="native-meta-dim">{currentMaterial.word_count} words</span>
+              <span className="native-meta-dim">
+                {currentMaterial.word_count} words
+              </span>
             </div>
           </div>
         </div>
@@ -339,12 +362,23 @@ export default function MaterialDetailModal({ material, onClose, onUpdated }) {
           <button
             type="button"
             className={`native-tab-pill ${
+              activeTab === "my_notepad" ? "tab-pill-active" : ""
+            }`}
+            onClick={() => setActiveTab("my_notepad")}
+          >
+            <FileEdit size={13} />
+            <span>Notepad 📝</span>
+          </button>
+
+          <button
+            type="button"
+            className={`native-tab-pill ${
               activeTab === "extracted_notes" ? "tab-pill-active" : ""
             }`}
             onClick={() => setActiveTab("extracted_notes")}
           >
             <BookOpen size={13} />
-            <span>Notes</span>
+            <span>Extracted Content</span>
           </button>
 
           <button
@@ -431,7 +465,9 @@ export default function MaterialDetailModal({ material, onClose, onUpdated }) {
                   </div>
                   <h3 className="office-doc-title">{currentMaterial.title}</h3>
                   <p className="office-doc-sub">
-                    This is a <strong>.{fileType.toUpperCase()}</strong> file. You can download and open it in Microsoft Office / PowerPoint or read the extracted notes.
+                    This is a <strong>.{fileType.toUpperCase()}</strong> file.
+                    You can download and open it in Microsoft Office /
+                    PowerPoint or read the extracted notes.
                   </p>
                   <div className="office-doc-actions-row">
                     <a
@@ -440,7 +476,10 @@ export default function MaterialDetailModal({ material, onClose, onUpdated }) {
                       className="office-primary-download-btn"
                     >
                       <Download size={16} />
-                      <span>Download & Open in {fileType === "pptx" ? "PowerPoint" : "Word"}</span>
+                      <span>
+                        Download & Open in{" "}
+                        {fileType === "pptx" ? "PowerPoint" : "Word"}
+                      </span>
                     </a>
                     <button
                       type="button"
@@ -455,6 +494,11 @@ export default function MaterialDetailModal({ material, onClose, onUpdated }) {
               </div>
             )}
           </div>
+        )}
+
+        {/* Real Interactive Study Notepad */}
+        {activeTab === "my_notepad" && (
+          <MaterialNotepad material={currentMaterial} />
         )}
 
         {/* Extracted Notes */}
@@ -528,7 +572,9 @@ export default function MaterialDetailModal({ material, onClose, onUpdated }) {
                 }}
               >
                 <div className="paper-header">
-                  <span className="paper-title-tag">{currentMaterial.title}</span>
+                  <span className="paper-title-tag">
+                    {currentMaterial.title}
+                  </span>
                   <span className="paper-page-indicator">
                     {currentMaterial.subject} • {currentMaterial.category}
                   </span>
@@ -547,7 +593,9 @@ export default function MaterialDetailModal({ material, onClose, onUpdated }) {
           <div className="native-scrollable-content-tab">
             <div className="ai-summary-note-card">
               <div className="summary-card-header">
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
                   <Sparkles size={18} className="text-primary" />
                   <strong className="summary-heading">
                     Executive Syllabus Summary
@@ -565,7 +613,9 @@ export default function MaterialDetailModal({ material, onClose, onUpdated }) {
                   ) : (
                     <Copy size={14} />
                   )}
-                  <span>{copiedIndex === "summary" ? "Copied" : "Copy Notes"}</span>
+                  <span>
+                    {copiedIndex === "summary" ? "Copied" : "Copy Notes"}
+                  </span>
                 </button>
               </div>
               <div className="summary-body-text">
@@ -638,14 +688,23 @@ export default function MaterialDetailModal({ material, onClose, onUpdated }) {
         {/* Key Terms */}
         {activeTab === "concepts" && (
           <div className="native-scrollable-content-tab">
-            {currentMaterial.key_concepts && currentMaterial.key_concepts.length > 0 ? (
+            {currentMaterial.key_concepts &&
+            currentMaterial.key_concepts.length > 0 ? (
               <div className="concepts-card-grid">
                 {currentMaterial.key_concepts.map((concept, idx) => (
                   <Card key={idx} className="concept-definition-card">
                     <div className="concept-card-top">
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                        }}
+                      >
                         <div className="concept-bullet-badge">{idx + 1}</div>
-                        <strong className="concept-term-title">{concept.term}</strong>
+                        <strong className="concept-term-title">
+                          {concept.term}
+                        </strong>
                       </div>
                       <button
                         type="button"
@@ -672,7 +731,10 @@ export default function MaterialDetailModal({ material, onClose, onUpdated }) {
             ) : (
               <div className="concepts-empty-box">
                 <Lightbulb size={24} className="text-amber" />
-                <span>No key concepts extracted yet. Click Re-analyze AI to generate!</span>
+                <span>
+                  No key concepts extracted yet. Click Re-analyze AI to
+                  generate!
+                </span>
               </div>
             )}
           </div>
@@ -697,8 +759,14 @@ export default function MaterialDetailModal({ material, onClose, onUpdated }) {
                           }`}
                           onClick={() => handleToggleRevealQuestion(idx)}
                         >
-                          {isRevealed ? <EyeOff size={14} /> : <Eye size={14} />}
-                          <span>{isRevealed ? "Hide Answer" : "Reveal Answer"}</span>
+                          {isRevealed ? (
+                            <EyeOff size={14} />
+                          ) : (
+                            <Eye size={14} />
+                          )}
+                          <span>
+                            {isRevealed ? "Hide Answer" : "Reveal Answer"}
+                          </span>
                         </button>
                       </div>
 
@@ -721,7 +789,10 @@ export default function MaterialDetailModal({ material, onClose, onUpdated }) {
                                   marginBottom: "6px",
                                 }}
                               >
-                                <CheckCircle2 size={16} className="text-emerald" />
+                                <CheckCircle2
+                                  size={16}
+                                  className="text-emerald"
+                                />
                                 <strong className="answer-heading">
                                   Expected Academic Answer:
                                 </strong>
@@ -738,7 +809,10 @@ export default function MaterialDetailModal({ material, onClose, onUpdated }) {
             ) : (
               <div className="concepts-empty-box">
                 <HelpCircle size={24} className="text-primary" />
-                <span>No practice questions generated yet. Click Re-analyze AI to build a quiz!</span>
+                <span>
+                  No practice questions generated yet. Click Re-analyze AI to
+                  build a quiz!
+                </span>
               </div>
             )}
           </div>
@@ -747,7 +821,8 @@ export default function MaterialDetailModal({ material, onClose, onUpdated }) {
         {/* Syllabus Topics */}
         {activeTab === "topics" && (
           <div className="native-scrollable-content-tab">
-            {currentMaterial.key_topics && currentMaterial.key_topics.length > 0 ? (
+            {currentMaterial.key_topics &&
+            currentMaterial.key_topics.length > 0 ? (
               <div className="topics-cloud-card">
                 <h4 className="topics-cloud-title">
                   Identified Syllabus Concepts & Keywords

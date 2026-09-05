@@ -28,6 +28,7 @@ import {
   getSchedules,
 } from "./api";
 import CalendarView from "./components/CalendarView";
+import RoutineCard from "./components/RoutineCard";
 import ScheduleForm from "./components/ScheduleForm";
 
 export default function PlannerPage() {
@@ -263,153 +264,12 @@ export default function PlannerPage() {
         {!loading && !error && schedules.length > 0 && viewMode === "list" && (
           <div className="schedules-grid">
             {schedules.map((schedule) => (
-              <Card
+              <RoutineCard
                 key={schedule.id}
-                variant="feature"
-                className="schedule-card"
-              >
-                <div>
-                  <div className="schedule-card-header">
-                    <h3 className="schedule-subject">{schedule.subject}</h3>
-                    <Badge variant="primary">Routine</Badge>
-                  </div>
-
-                  <div className="schedule-meta-row">
-                    <div className="schedule-time-badge">
-                      <Clock size={14} />
-                      <span>
-                        {schedule.start_time.slice(0, 5)} –{" "}
-                        {schedule.end_time.slice(0, 5)}
-                      </span>
-                    </div>
-
-                    <div className="schedule-days-list">
-                      {schedule.days.map((day) => (
-                        <span key={day} className="schedule-day-pill">
-                          {day.slice(0, 3)}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Notes & Resources */}
-                  {schedule.notes && (
-                    <div
-                      style={{
-                        margin: "12px 0",
-                        fontSize: "0.875rem",
-                        color: "var(--color-text)",
-                        background: "var(--color-surface-subtle)",
-                        padding: "8px 12px",
-                        borderRadius: "var(--radius-sm)",
-                        borderLeft: "3px solid var(--color-primary)",
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontWeight: 600,
-                          fontSize: "0.75rem",
-                          color: "var(--color-text-muted)",
-                          display: "block",
-                          marginBottom: "2px",
-                        }}
-                      >
-                        📝 Study Notes:
-                      </span>
-                      {schedule.notes}
-                    </div>
-                  )}
-
-                  {/* Resource Links */}
-                  {schedule.resources && schedule.resources.length > 0 && (
-                    <div style={{ marginTop: "12px" }}>
-                      <span
-                        style={{
-                          fontSize: "0.75rem",
-                          fontWeight: 600,
-                          color: "var(--color-text-muted)",
-                          display: "block",
-                          marginBottom: "6px",
-                        }}
-                      >
-                        🔗 Study Resources:
-                      </span>
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "6px",
-                        }}
-                      >
-                        {schedule.resources.map((res, index) => (
-                          <a
-                            key={index}
-                            href={res.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: "8px",
-                              fontSize: "0.8125rem",
-                              padding: "6px 10px",
-                              background: "var(--color-surface-subtle)",
-                              borderRadius: "var(--radius-sm)",
-                              border: "1px solid var(--color-border-subtle)",
-                              textDecoration: "none",
-                              color: "var(--color-text)",
-                              transition: "background 0.15s ease",
-                            }}
-                          >
-                            <span>
-                              {res.type === "drive"
-                                ? "📁"
-                                : res.type === "video"
-                                  ? "🎥"
-                                  : res.type === "doc"
-                                    ? "📄"
-                                    : "🔗"}
-                            </span>
-                            <strong
-                              style={{
-                                flex: 1,
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                whiteSpace: "nowrap",
-                              }}
-                            >
-                              {res.title || "Resource Link"}
-                            </strong>
-                            <ExternalLink size={12} className="text-muted" />
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div
-                  className="schedule-card-actions"
-                  style={{ marginTop: "16px" }}
-                >
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    icon={Pencil}
-                    onClick={() => handleEdit(schedule)}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    icon={Trash2}
-                    onClick={() => handleDelete(schedule.id)}
-                  >
-                    Delete
-                  </Button>
-                </div>
-              </Card>
+                schedule={schedule}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
             ))}
           </div>
         )}

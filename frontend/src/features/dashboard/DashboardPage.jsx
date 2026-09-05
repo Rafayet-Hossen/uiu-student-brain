@@ -7,6 +7,7 @@ import {
   BookOpen,
   Calendar,
   CheckCircle2,
+  ChevronLeft,
   ChevronRight,
   Clock,
   FileText,
@@ -46,7 +47,8 @@ const MOTIVATION_QUOTES = [
     author: "Nelson Mandela",
   },
   {
-    quote: "Live as if you were to die tomorrow. Learn as if you were to live forever.",
+    quote:
+      "Live as if you were to die tomorrow. Learn as if you were to live forever.",
     author: "Mahatma Gandhi",
   },
 ];
@@ -60,6 +62,7 @@ export default function DashboardPage() {
   const [materials, setMaterials] = useState([]);
   const [streakData, setStreakData] = useState(null);
   const [quoteIndex, setQuoteIndex] = useState(0);
+  const [flowDayOffset, setFlowDayOffset] = useState(0); // 0 = Today, 1 = Yesterday, 2 = 2 days ago, 3 = 3 days ago
 
   useEffect(() => {
     async function loadDashboardData() {
@@ -74,11 +77,16 @@ export default function DashboardPage() {
             getMaterials(),
           ]);
 
-        if (schedulesRes.status === "fulfilled") setSchedules(schedulesRes.value || []);
-        if (gradesRes.status === "fulfilled") setGradePlans(gradesRes.value || []);
-        if (sessionsRes.status === "fulfilled") setSessions(sessionsRes.value || []);
-        if (streakRes.status === "fulfilled") setStreakData(streakRes.value || null);
-        if (materialsRes.status === "fulfilled") setMaterials(materialsRes.value || []);
+        if (schedulesRes.status === "fulfilled")
+          setSchedules(schedulesRes.value || []);
+        if (gradesRes.status === "fulfilled")
+          setGradePlans(gradesRes.value || []);
+        if (sessionsRes.status === "fulfilled")
+          setSessions(sessionsRes.value || []);
+        if (streakRes.status === "fulfilled")
+          setStreakData(streakRes.value || null);
+        if (materialsRes.status === "fulfilled")
+          setMaterials(materialsRes.value || []);
       } catch (err) {
         console.error("Error loading dashboard data:", err);
       } finally {
@@ -107,6 +115,45 @@ export default function DashboardPage() {
     month: "short",
     day: "numeric",
   });
+
+  // Calculate day-specific data for Today's Flow navigation (Last 3 days)
+  const targetDate = new Date();
+  targetDate.setDate(targetDate.getDate() - flowDayOffset);
+  const targetIsoDate = targetDate.toISOString().split("T")[0];
+  const targetWeekday = targetDate.toLocaleDateString(undefined, {
+    weekday: "long",
+  });
+  const targetDayLabel =
+    flowDayOffset === 0
+      ? "Today"
+      : flowDayOffset === 1
+        ? "Yesterday"
+        : `${flowDayOffset} Days Ago`;
+  const targetFormattedDate = targetDate.toLocaleDateString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
+
+  const daySessions = sessions.filter((s) => {
+    if (!s.session_date) return false;
+    return s.session_date.startsWith(targetIsoDate);
+  });
+
+  const dayTotalMinutes = daySessions.reduce(
+    (sum, s) => sum + (Number(s.duration_minutes) || 0),
+    0,
+  );
+  const dayHours = Math.floor(dayTotalMinutes / 60);
+  const dayMins = dayTotalMinutes % 60;
+
+  const dayRoutines = schedules.filter((sch) =>
+    (sch.days || []).some(
+      (d) =>
+        d.toLowerCase() === targetWeekday.toLowerCase() ||
+        d.toLowerCase().startsWith(targetWeekday.slice(0, 3).toLowerCase()),
+    ),
+  );
 
   return (
     <div className="app-screen">
@@ -142,7 +189,8 @@ export default function DashboardPage() {
 
               <p className="hero-subtext">
                 Welcome back, <strong>{user?.full_name || "Scholar"}</strong>.
-                Master routines, project GPA honors, maintain focus streaks, and extract syllabus knowledge with AI.
+                Master routines, project GPA honors, maintain focus streaks, and
+                extract syllabus knowledge with AI.
               </p>
 
               <div className="hero-cta-button-group">
@@ -170,7 +218,11 @@ export default function DashboardPage() {
                 {/* Floating Cap */}
                 <motion.div
                   animate={{ y: [-4, 6, -4], rotate: [-1, 2, -1] }}
-                  transition={{ repeat: Infinity, duration: 4.5, ease: "easeInOut" }}
+                  transition={{
+                    repeat: Infinity,
+                    duration: 4.5,
+                    ease: "easeInOut",
+                  }}
                   className="floating-asset cap-asset"
                 >
                   <div className="asset-icon-box bg-indigo">
@@ -179,7 +231,9 @@ export default function DashboardPage() {
                   <div className="asset-meta">
                     <span className="asset-title">Target Honors</span>
                     <strong className="asset-val">
-                      {topGradePlan ? `${topGradePlan.target_gpa} GPA` : "3.85 GPA"}
+                      {topGradePlan
+                        ? `${topGradePlan.target_gpa} GPA`
+                        : "3.85 GPA"}
                     </strong>
                   </div>
                 </motion.div>
@@ -187,7 +241,11 @@ export default function DashboardPage() {
                 {/* Floating Streak Flame */}
                 <motion.div
                   animate={{ y: [6, -6, 6] }}
-                  transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
+                  transition={{
+                    repeat: Infinity,
+                    duration: 5,
+                    ease: "easeInOut",
+                  }}
                   className="floating-asset flame-asset"
                 >
                   <div className="asset-icon-box bg-amber">
@@ -196,7 +254,9 @@ export default function DashboardPage() {
                   <div className="asset-meta">
                     <span className="asset-title">Daily Focus</span>
                     <strong className="asset-val text-amber">
-                      {currentStreak > 0 ? `${currentStreak} Days 🔥` : "Streak Ready"}
+                      {currentStreak > 0
+                        ? `${currentStreak} Days 🔥`
+                        : "Streak Ready"}
                     </strong>
                   </div>
                 </motion.div>
@@ -204,7 +264,11 @@ export default function DashboardPage() {
                 {/* Floating Knowledge Nodes */}
                 <motion.div
                   animate={{ y: [-5, 5, -5], rotate: [1, -1, 1] }}
-                  transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
+                  transition={{
+                    repeat: Infinity,
+                    duration: 6,
+                    ease: "easeInOut",
+                  }}
                   className="floating-asset book-asset"
                 >
                   <div className="asset-icon-box bg-emerald">
@@ -213,7 +277,9 @@ export default function DashboardPage() {
                   <div className="asset-meta">
                     <span className="asset-title">Knowledge Extracted</span>
                     <strong className="asset-val text-emerald">
-                      {totalExtractedTopics > 0 ? `${totalExtractedTopics} Topics` : "AI Ready"}
+                      {totalExtractedTopics > 0
+                        ? `${totalExtractedTopics} Topics`
+                        : "AI Ready"}
                     </strong>
                   </div>
                 </motion.div>
@@ -225,12 +291,56 @@ export default function DashboardPage() {
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <circle cx="150" cy="120" r="60" stroke="var(--color-primary-border)" strokeWidth="1.5" strokeDasharray="4 4" />
-                  <circle cx="150" cy="120" r="95" stroke="var(--color-primary-border)" strokeWidth="1" strokeDasharray="6 6" />
-                  <line x1="80" y1="80" x2="150" y2="120" stroke="var(--color-primary)" strokeWidth="1.5" strokeOpacity="0.4" />
-                  <line x1="220" y1="80" x2="150" y2="120" stroke="var(--color-secondary)" strokeWidth="1.5" strokeOpacity="0.4" />
-                  <line x1="150" y1="120" x2="150" y2="195" stroke="var(--color-accent)" strokeWidth="1.5" strokeOpacity="0.4" />
-                  <circle cx="150" cy="120" r="14" fill="var(--color-primary)" fillOpacity="0.15" />
+                  <circle
+                    cx="150"
+                    cy="120"
+                    r="60"
+                    stroke="var(--color-primary-border)"
+                    strokeWidth="1.5"
+                    strokeDasharray="4 4"
+                  />
+                  <circle
+                    cx="150"
+                    cy="120"
+                    r="95"
+                    stroke="var(--color-primary-border)"
+                    strokeWidth="1"
+                    strokeDasharray="6 6"
+                  />
+                  <line
+                    x1="80"
+                    y1="80"
+                    x2="150"
+                    y2="120"
+                    stroke="var(--color-primary)"
+                    strokeWidth="1.5"
+                    strokeOpacity="0.4"
+                  />
+                  <line
+                    x1="220"
+                    y1="80"
+                    x2="150"
+                    y2="120"
+                    stroke="var(--color-secondary)"
+                    strokeWidth="1.5"
+                    strokeOpacity="0.4"
+                  />
+                  <line
+                    x1="150"
+                    y1="120"
+                    x2="150"
+                    y2="195"
+                    stroke="var(--color-accent)"
+                    strokeWidth="1.5"
+                    strokeOpacity="0.4"
+                  />
+                  <circle
+                    cx="150"
+                    cy="120"
+                    r="14"
+                    fill="var(--color-primary)"
+                    fillOpacity="0.15"
+                  />
                   <circle cx="150" cy="120" r="6" fill="var(--color-primary)" />
                 </svg>
               </div>
@@ -279,9 +389,14 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <div className="stat-number-row">
-                  <strong className="stat-metric-value">{currentStreak} Days</strong>
+                  <strong className="stat-metric-value">
+                    {currentStreak} Days
+                  </strong>
                   <span className="stat-trend-chip chip-emerald">
-                    🔥 {streakData?.today_minutes > 0 ? `${streakData.today_minutes}m today` : "Active"}
+                    🔥{" "}
+                    {streakData?.today_minutes > 0
+                      ? `${streakData.today_minutes}m today`
+                      : "Active"}
                   </span>
                 </div>
                 <span className="stat-footer-subtext">
@@ -299,10 +414,15 @@ export default function DashboardPage() {
                 </div>
                 <div className="stat-number-row">
                   <strong className="stat-metric-value">
-                    {topGradePlan ? Number(topGradePlan.target_gpa).toFixed(2) : "3.80"}
+                    {topGradePlan
+                      ? Number(topGradePlan.target_gpa).toFixed(2)
+                      : "3.80"}
                   </strong>
                   <span className="stat-trend-chip chip-amber">
-                    CGPA: {topGradePlan ? Number(topGradePlan.current_gpa).toFixed(2) : "Set"}
+                    CGPA:{" "}
+                    {topGradePlan
+                      ? Number(topGradePlan.current_gpa).toFixed(2)
+                      : "Set"}
                   </span>
                 </div>
                 <span className="stat-footer-subtext">
@@ -321,7 +441,9 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <div className="stat-number-row">
-                  <strong className="stat-metric-value">{materials.length}</strong>
+                  <strong className="stat-metric-value">
+                    {materials.length}
+                  </strong>
                   <span className="stat-trend-chip chip-rose">
                     {totalExtractedTopics} topics
                   </span>
@@ -341,7 +463,8 @@ export default function DashboardPage() {
           <div>
             <h2 className="section-main-heading">Academic Modules</h2>
             <p className="section-sub-heading">
-              Your interconnected tools for high-performance university coursework.
+              Your interconnected tools for high-performance university
+              coursework.
             </p>
           </div>
         </div>
@@ -364,7 +487,8 @@ export default function DashboardPage() {
               <div className="bento-body">
                 <h3 className="bento-title">Study Planner & Timetable</h3>
                 <p className="bento-description">
-                  Build structured weekly routines, attach resource drive links, and organize subject workloads.
+                  Build structured weekly routines, attach resource drive links,
+                  and organize subject workloads.
                 </p>
 
                 {/* Quick Schedule Preview */}
@@ -373,7 +497,9 @@ export default function DashboardPage() {
                     schedules.slice(0, 3).map((item) => (
                       <div key={item.id} className="mini-routine-pill">
                         <span className="routine-day-badge">{item.day}</span>
-                        <strong className="routine-subject-text">{item.subject}</strong>
+                        <strong className="routine-subject-text">
+                          {item.subject}
+                        </strong>
                         <span className="routine-time-text">
                           {item.start_time} - {item.end_time}
                         </span>
@@ -381,7 +507,9 @@ export default function DashboardPage() {
                     ))
                   ) : (
                     <div className="mini-empty-hint">
-                      <span>No routines scheduled yet — plan your week in seconds.</span>
+                      <span>
+                        No routines scheduled yet — plan your week in seconds.
+                      </span>
                     </div>
                   )}
                 </div>
@@ -397,11 +525,7 @@ export default function DashboardPage() {
           </Card>
 
           {/* Bento Item 2: AI Materials & Note Extractor */}
-          <Card
-            variant="feature"
-            hoverEffect
-            className="bento-card"
-          >
+          <Card variant="feature" hoverEffect className="bento-card">
             <div className="bento-card-inner">
               <div className="bento-header">
                 <div className="bento-icon-wrapper bg-rose-subtle text-rose">
@@ -413,7 +537,8 @@ export default function DashboardPage() {
               <div className="bento-body">
                 <h3 className="bento-title">Materials & Extraction</h3>
                 <p className="bento-description">
-                  Upload PDF, DOCX, or markdown lecture notes. Automatically extract syllabus concepts & flashcards.
+                  Upload PDF, DOCX, or markdown lecture notes. Automatically
+                  extract syllabus concepts & flashcards.
                 </p>
 
                 <div className="mini-materials-indicator">
@@ -422,7 +547,9 @@ export default function DashboardPage() {
                     <span className="count-label">Documents</span>
                   </div>
                   <div className="materials-count-box">
-                    <strong className="count-number text-rose">{totalExtractedTopics}</strong>
+                    <strong className="count-number text-rose">
+                      {totalExtractedTopics}
+                    </strong>
                     <span className="count-label">Topics</span>
                   </div>
                 </div>
@@ -438,11 +565,7 @@ export default function DashboardPage() {
           </Card>
 
           {/* Bento Item 3: Grade Planner & Honors Projection */}
-          <Card
-            variant="feature"
-            hoverEffect
-            className="bento-card"
-          >
+          <Card variant="feature" hoverEffect className="bento-card">
             <div className="bento-card-inner">
               <div className="bento-header">
                 <div className="bento-icon-wrapper bg-emerald-subtle text-emerald">
@@ -454,7 +577,8 @@ export default function DashboardPage() {
               <div className="bento-body">
                 <h3 className="bento-title">Grade Planner</h3>
                 <p className="bento-description">
-                  Calculate required semester GPAs on remaining credit hours to lock in graduation honors.
+                  Calculate required semester GPAs on remaining credit hours to
+                  lock in graduation honors.
                 </p>
 
                 <div className="gpa-progress-indicator">
@@ -485,11 +609,7 @@ export default function DashboardPage() {
           </Card>
 
           {/* Bento Item 4: Study Tracker & Streaks */}
-          <Card
-            variant="feature"
-            hoverEffect
-            className="bento-card"
-          >
+          <Card variant="feature" hoverEffect className="bento-card">
             <div className="bento-card-inner">
               <div className="bento-header">
                 <div className="bento-icon-wrapper bg-amber-subtle text-amber">
@@ -501,13 +621,15 @@ export default function DashboardPage() {
               <div className="bento-body">
                 <h3 className="bento-title">Focus & Rewards</h3>
                 <p className="bento-description">
-                  Log focused pomodoros, maintain consistency streaks, and unlock achievement milestone badges.
+                  Log focused pomodoros, maintain consistency streaks, and
+                  unlock achievement milestone badges.
                 </p>
 
                 <div className="streak-badge-highlight">
                   <Flame size={20} className="text-amber animate-pulse" />
                   <span>
-                    <strong>{currentStreak} Days</strong> of unbroken academic consistency
+                    <strong>{currentStreak} Days</strong> of unbroken academic
+                    consistency
                   </span>
                 </div>
               </div>
@@ -522,11 +644,7 @@ export default function DashboardPage() {
           </Card>
 
           {/* Bento Item 5: Community & Peer Network */}
-          <Card
-            variant="feature"
-            hoverEffect
-            className="bento-card"
-          >
+          <Card variant="feature" hoverEffect className="bento-card">
             <div className="bento-card-inner">
               <div className="bento-header">
                 <div className="bento-icon-wrapper bg-indigo-subtle text-indigo">
@@ -538,7 +656,8 @@ export default function DashboardPage() {
               <div className="bento-body">
                 <h3 className="bento-title">Scholar Community</h3>
                 <p className="bento-description">
-                  Ask exam questions, collaborate on coursework, RSVP for study groups, and climb the leaderboard.
+                  Ask exam questions, collaborate on coursework, RSVP for study
+                  groups, and climb the leaderboard.
                 </p>
 
                 <div className="community-meta-row">
@@ -562,49 +681,151 @@ export default function DashboardPage() {
             4. TODAY'S FOCUS & MOTIVATION WIDGETS
             ================================================================= */}
         <div className="dashboard-sub-grid">
-          {/* Today's Focus Timeline */}
+          {/* Day-Navigable Focus Flow (Today & Last 3 Days) */}
           <Card className="timeline-focus-card">
             <div className="card-header-with-action">
               <div>
-                <h3 className="card-title-lg">Today's Focus Flow</h3>
-                <p className="card-subtitle-sm">Structured high-retention schedule</p>
+                <div className="flow-title-row">
+                  <h3 className="card-title-lg">
+                    {targetDayLabel}'s Focus Flow
+                  </h3>
+                  {flowDayOffset > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setFlowDayOffset(0)}
+                      className="flow-jump-today-btn"
+                    >
+                      Jump to Today
+                    </button>
+                  )}
+                </div>
+                <p className="card-subtitle-sm">
+                  {targetFormattedDate} •{" "}
+                  {dayTotalMinutes > 0
+                    ? `${dayHours > 0 ? `${dayHours}h ` : ""}${dayMins}m focused`
+                    : "No sessions logged"}
+                </p>
               </div>
-              <Badge variant="secondary">Active Flow</Badge>
+
+              {/* Day Arrow Controls (Browse past 3 days) */}
+              <div className="flow-date-navigator">
+                <button
+                  type="button"
+                  className="flow-nav-arrow-btn"
+                  onClick={() =>
+                    setFlowDayOffset((prev) => Math.min(3, prev + 1))
+                  }
+                  disabled={flowDayOffset >= 3}
+                  title="View Previous Day (up to 3 days ago)"
+                  aria-label="Previous day"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+
+                <span className="flow-nav-offset-pill">{targetDayLabel}</span>
+
+                <button
+                  type="button"
+                  className="flow-nav-arrow-btn"
+                  onClick={() =>
+                    setFlowDayOffset((prev) => Math.max(0, prev - 1))
+                  }
+                  disabled={flowDayOffset <= 0}
+                  title="View Next Day"
+                  aria-label="Next day"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
             </div>
 
             <div className="focus-timeline-container">
-              <div className="timeline-step-item">
-                <div className="step-bullet-indicator completed-bullet">
-                  <CheckCircle2 size={16} />
-                </div>
-                <div className="step-content-box">
-                  <span className="step-time-label">Morning • 09:00 - 11:30</span>
-                  <strong className="step-title-text">Lecture Analysis & Problem Sets</strong>
-                  <p className="step-desc-text">Review core algorithms and annotate slide decks.</p>
-                </div>
-              </div>
+              {/* If sessions exist for this day */}
+              {daySessions.length > 0
+                ? daySessions.map((session, sIdx) => (
+                    <div
+                      key={session.id || sIdx}
+                      className="timeline-step-item"
+                    >
+                      <div className="step-bullet-indicator completed-bullet">
+                        <CheckCircle2 size={16} />
+                      </div>
+                      <div className="step-content-box">
+                        <div className="step-time-line">
+                          <span className="step-time-label">
+                            Session #{sIdx + 1} • {session.duration_minutes}{" "}
+                            mins
+                          </span>
+                          <span className="session-completed-tag">
+                            ✓ Completed
+                          </span>
+                        </div>
+                        <strong className="step-title-text">
+                          {session.subject}
+                        </strong>
+                        <p className="step-desc-text">
+                          {session.notes ||
+                            "Focused study session recorded in habit streak."}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                : null}
 
-              <div className="timeline-step-item">
-                <div className="step-bullet-indicator active-bullet">
-                  <Zap size={14} className="animate-pulse" />
-                </div>
-                <div className="step-content-box">
-                  <span className="step-time-label">Afternoon • 14:00 - 16:30</span>
-                  <strong className="step-title-text">Document Review & Flashcards</strong>
-                  <p className="step-desc-text">AI material extraction self-quiz & practice questions.</p>
-                </div>
-              </div>
+              {/* If scheduled routines match this day and we're looking at Today */}
+              {flowDayOffset === 0 && dayRoutines.length > 0
+                ? dayRoutines.map((routine, rIdx) => (
+                    <div
+                      key={routine.id || rIdx}
+                      className="timeline-step-item"
+                    >
+                      <div className="step-bullet-indicator active-bullet">
+                        <Zap size={14} className="animate-pulse" />
+                      </div>
+                      <div className="step-content-box">
+                        <div className="step-time-line">
+                          <span className="step-time-label">
+                            Timetable • {routine.start_time?.slice(0, 5)} -{" "}
+                            {routine.end_time?.slice(0, 5)}
+                          </span>
+                          <span className="routine-scheduled-tag">
+                            Scheduled
+                          </span>
+                        </div>
+                        <strong className="step-title-text">
+                          {routine.subject}
+                        </strong>
+                        <p className="step-desc-text">
+                          {routine.notes || "Active weekly coursework routine."}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                : null}
 
-              <div className="timeline-step-item">
-                <div className="step-bullet-indicator pending-bullet">
-                  <Clock size={14} />
+              {/* If no sessions and no routines on this day */}
+              {daySessions.length === 0 &&
+              (flowDayOffset > 0 || dayRoutines.length === 0) ? (
+                <div className="timeline-empty-day-state">
+                  <Clock size={22} className="text-muted" />
+                  <p className="empty-day-title">
+                    {flowDayOffset === 0
+                      ? "No study activity logged yet today"
+                      : `No study sessions recorded for ${targetDayLabel}`}
+                  </p>
+                  <p className="empty-day-sub">
+                    {flowDayOffset === 0
+                      ? "Start a focus timer in Study Tracker to maintain your habit streak."
+                      : `You did not record focus minutes on ${targetFormattedDate}.`}
+                  </p>
+                  {flowDayOffset === 0 && (
+                    <Link to="/tracker" className="timeline-start-cta">
+                      <Zap size={14} />
+                      <span>Start Focus Timer</span>
+                    </Link>
+                  )}
                 </div>
-                <div className="step-content-box">
-                  <span className="step-time-label">Evening • 19:30 - 21:00</span>
-                  <strong className="step-title-text">Habit Streak & Daily Reflection</strong>
-                  <p className="step-desc-text">Log study minutes and set tomorrow's priorities.</p>
-                </div>
-              </div>
+              ) : null}
             </div>
           </Card>
 
@@ -617,7 +838,11 @@ export default function DashboardPage() {
                 <button
                   type="button"
                   className="quote-refresh-btn"
-                  onClick={() => setQuoteIndex((prev) => (prev + 1) % MOTIVATION_QUOTES.length)}
+                  onClick={() =>
+                    setQuoteIndex(
+                      (prev) => (prev + 1) % MOTIVATION_QUOTES.length,
+                    )
+                  }
                   title="Next Quote"
                 >
                   <Sparkles size={14} />
@@ -636,10 +861,13 @@ export default function DashboardPage() {
             <Card className="challenge-widget-card">
               <div className="challenge-header">
                 <Award size={20} className="text-amber" />
-                <strong className="challenge-title">Daily Study Challenge</strong>
+                <strong className="challenge-title">
+                  Daily Study Challenge
+                </strong>
               </div>
               <p className="challenge-desc">
-                Log at least <strong>45 minutes</strong> of uninterrupted focused study today.
+                Log at least <strong>45 minutes</strong> of uninterrupted
+                focused study today.
               </p>
               <div className="challenge-footer">
                 <Badge variant="accent">+50 Scholar XP</Badge>

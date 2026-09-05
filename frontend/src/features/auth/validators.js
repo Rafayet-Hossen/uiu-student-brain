@@ -16,3 +16,9 @@ export function validateFullName(fullName) {
   if (!fullName.trim()) return "Full name is required.";
   return "";
 }
+
+export function validateConfirmPassword(password, confirmPassword) {
+  if (!confirmPassword) return "Confirm your password.";
+  if (password !== confirmPassword) return "Passwords do not match.";
+  return "";
+}
