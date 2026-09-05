@@ -7,11 +7,18 @@ export const extractMaterialsErrorMessage = (error) => {
     if (data.detail) return data.detail;
     if (data.message) return data.message;
     const firstKey = Object.keys(data)[0];
-    if (firstKey && Array.isArray(data[firstKey]) && data[firstKey].length > 0) {
+    if (
+      firstKey &&
+      Array.isArray(data[firstKey]) &&
+      data[firstKey].length > 0
+    ) {
       return `${firstKey}: ${data[firstKey][0]}`;
     }
   }
-  return error?.message || "An unexpected error occurred while processing study materials.";
+  return (
+    error?.message ||
+    "An unexpected error occurred while processing study materials."
+  );
 };
 
 export const extractMaterialErrorMessage = extractMaterialsErrorMessage;
@@ -40,12 +47,17 @@ export const deleteSemester = async (id) => {
 // ============================================================
 
 export const getCourses = async (semesterId) => {
-  const res = await apiClient.get(`/materials/semesters/${semesterId}/courses/`);
+  const res = await apiClient.get(
+    `/materials/semesters/${semesterId}/courses/`,
+  );
   return res.data;
 };
 
 export const createCourse = async (semesterId, payload) => {
-  const res = await apiClient.post(`/materials/semesters/${semesterId}/courses/`, payload);
+  const res = await apiClient.post(
+    `/materials/semesters/${semesterId}/courses/`,
+    payload,
+  );
   return res.data;
 };
 
@@ -58,19 +70,38 @@ export const deleteCourse = async (id) => {
 // MATERIALS API
 // ============================================================
 
-export const getMaterials = async (courseIdOrSubject, paramsOrCategory = {}, maybeSearch = null) => {
+export const getMaterials = async (
+  courseIdOrSubject,
+  paramsOrCategory = {},
+  maybeSearch = null,
+) => {
   // If first param is number or numeric string, it's courseId
-  if (typeof courseIdOrSubject === "number" || (!isNaN(courseIdOrSubject) && typeof paramsOrCategory === "object" && !Array.isArray(paramsOrCategory) && !maybeSearch)) {
-    const res = await apiClient.get(`/materials/courses/${courseIdOrSubject}/materials/`, {
-      params: paramsOrCategory,
-    });
+  if (
+    typeof courseIdOrSubject === "number" ||
+    (!isNaN(courseIdOrSubject) &&
+      typeof paramsOrCategory === "object" &&
+      !Array.isArray(paramsOrCategory) &&
+      !maybeSearch)
+  ) {
+    const res = await apiClient.get(
+      `/materials/courses/${courseIdOrSubject}/materials/`,
+      {
+        params: paramsOrCategory,
+      },
+    );
     return res.data;
   }
 
   // Otherwise global getMaterials(subject, category, search)
   const params = {};
-  if (courseIdOrSubject && courseIdOrSubject !== "All") params.subject = courseIdOrSubject;
-  if (paramsOrCategory && typeof paramsOrCategory === "string" && paramsOrCategory !== "All") params.category = paramsOrCategory;
+  if (courseIdOrSubject && courseIdOrSubject !== "All")
+    params.subject = courseIdOrSubject;
+  if (
+    paramsOrCategory &&
+    typeof paramsOrCategory === "string" &&
+    paramsOrCategory !== "All"
+  )
+    params.category = paramsOrCategory;
   if (maybeSearch) params.search = maybeSearch;
   const res = await apiClient.get("/materials/", { params });
   return res.data;
@@ -86,7 +117,10 @@ export const getMaterialById = async (id) => {
   return res.data;
 };
 
-export const createMaterial = async (courseIdOrPayload, maybeFormData = null) => {
+export const createMaterial = async (
+  courseIdOrPayload,
+  maybeFormData = null,
+) => {
   if (maybeFormData) {
     const res = await apiClient.post(
       `/materials/courses/${courseIdOrPayload}/materials/`,
@@ -95,7 +129,7 @@ export const createMaterial = async (courseIdOrPayload, maybeFormData = null) =>
         headers: {
           "Content-Type": "multipart/form-data",
         },
-      }
+      },
     );
     return res.data;
   }
@@ -128,6 +162,8 @@ export const getCourseChat = async (courseId) => {
 };
 
 export const sendCourseChat = async (courseId, message) => {
-  const res = await apiClient.post(`/materials/courses/${courseId}/chat/`, { message });
+  const res = await apiClient.post(`/materials/courses/${courseId}/chat/`, {
+    message,
+  });
   return res.data;
 };
