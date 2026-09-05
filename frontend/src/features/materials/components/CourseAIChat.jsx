@@ -224,3 +224,4 @@ export default function CourseAIChat({ courseId, courseTitle, courseCode, extrac
     </div>
   );
 }
+

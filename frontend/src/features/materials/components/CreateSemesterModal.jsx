@@ -119,3 +119,4 @@ export default function CreateSemesterModal({ isOpen, onClose, onSubmit, submitt
     </div>
   );
 }
+
