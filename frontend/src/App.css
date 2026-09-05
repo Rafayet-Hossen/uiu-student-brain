@@ -1360,6 +1360,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
   margin-bottom: 24px;
 }
 
@@ -1565,6 +1567,62 @@
   }
   .bento-span-2 {
     grid-column: span 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .academic-hero-banner {
+    padding: 18px 14px;
+    margin-bottom: 20px;
+    border-radius: var(--radius-lg);
+  }
+  .hero-headline {
+    font-size: 1.625rem;
+    line-height: 1.25;
+  }
+  .hero-subtext {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin-bottom: 18px;
+  }
+  .hero-pill-tag {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    max-width: 100%;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .hero-cta-button-group {
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+  }
+  .hero-cta-button-group a,
+  .hero-cta-button-group .btn {
+    width: 100%;
+  }
+  .bento-card {
+    min-width: 0;
+  }
+  .schedules-grid,
+  .sessions-grid,
+  .analytics-charts-grid,
+  .analytics-layout-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-headline {
+    font-size: 1.45rem;
+  }
+  .card-stat {
+    padding: 14px 16px;
+  }
+  .stat-metric-value {
+    font-size: 1.45rem;
   }
 }
 
@@ -3780,59 +3838,314 @@
   flex-wrap: wrap;
 }
 
-/* Responsive adjust */
+/* Responsive adjust — Complete Zero-Horizontal-Spillage Suite */
 @media (max-width: 640px) {
   .main-content {
-    padding: 16px 12px 40px;
+    padding: 14px 10px 40px;
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
+    overflow-x: hidden;
   }
+
   .modal-content-card {
-    padding: 16px;
+    padding: 16px 12px;
+    width: calc(100vw - 20px);
+    max-width: calc(100vw - 20px);
     max-height: 94vh;
     border-radius: var(--radius-lg);
+    box-sizing: border-box;
+    overflow-x: hidden;
   }
+
   .academic-hero {
-    padding: 16px;
+    padding: 16px 12px;
   }
+
   .hero-title {
     font-size: 1.4rem;
   }
+
   .planner-time-row {
     grid-template-columns: 1fr;
   }
+
   .weekly-dots-container {
     grid-template-columns: repeat(4, 1fr);
   }
+
+  .schedules-grid,
+  .sessions-grid,
+  .grades-grid,
+  .materials-grid,
+  .analytics-charts-grid,
   .analytics-layout-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
+    gap: 14px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
+
   .leaderboard-podium-container {
     grid-template-columns: 1fr;
   }
+
+  .leaderboard-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+  }
+
   .leaderboard-table-header {
     display: none;
   }
+
   .leaderboard-row {
     grid-template-columns: 1fr;
     gap: 8px;
+    padding: 12px 10px;
   }
+
+  .planner-calendar-container {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .calendar-header-bar {
+    padding: 12px 10px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
   .calendar-nav-controls {
     width: 100%;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
   }
+
+  .week-switch-buttons {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    gap: 4px;
+  }
+
+  .week-switch-buttons .btn {
+    flex: 1;
+    padding: 6px 4px;
+    font-size: 0.75rem;
+  }
+
   .calendar-range-title {
     font-size: 0.9375rem;
+    text-align: center;
+    justify-content: center;
   }
+
   .calendar-summary-chips {
     width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
   }
+
+  .cal-stat-chip {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    padding: 4px 8px;
+  }
+
   .page-header-row {
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
   }
+
   .community-filters-row {
     flex-direction: column;
     align-items: stretch;
+    gap: 10px;
+  }
+
+  .community-search-box {
+    width: 100%;
+  }
+
+  /* Routine Cards Mobile */
+  .pro-routine-card {
+    padding: 14px 12px;
+    gap: 10px;
+    border-radius: 14px;
+  }
+
+  .routine-card-header {
+    gap: 8px;
+  }
+
+  .routine-subject-icon-box {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+
+  .routine-subject-heading {
+    font-size: 0.95rem;
+  }
+
+  .routine-time-row {
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 6px 10px;
+  }
+
+  .routine-week-capsules-bar {
+    gap: 4px;
+  }
+
+  .day-capsule-item {
+    padding: 4px 0;
+    font-size: 0.6875rem;
+    border-radius: 6px;
+  }
+
+  /* Premium Theme Toggle Switch Compact */
+  .premium-theme-toggle-switch {
+    width: 44px;
+    height: 26px;
+    padding: 2px;
+  }
+
+  .toggle-track-icons {
+    padding: 0 4px;
+  }
+
+  .track-icon {
+    width: 10px;
+    height: 10px;
+  }
+
+  .toggle-thumb {
+    width: 20px;
+    height: 20px;
+  }
+
+  .thumb-icon-svg.sun,
+  .thumb-icon-svg.moon {
+    width: 11px;
+    height: 11px;
+  }
+
+  /* Material Notepad Toolbar Mobile */
+  .notepad-header-toolbar {
+    padding: 6px 10px;
+    gap: 6px;
+  }
+
+  .notepad-toolbar-left {
+    gap: 6px;
+    width: 100%;
+  }
+
+  .notepad-format-tools {
+    overflow-x: auto;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
+    padding: 2px;
+  }
+
+  .notepad-toolbar-right {
+    width: 100%;
+    justify-content: space-between;
+    margin-left: 0;
+    padding-top: 4px;
+    border-top: 1px dashed var(--color-border-subtle);
+  }
+
+  /* Fullscreen Document Reader Mobile */
+  .native-reader-header {
+    padding: 0 10px;
+    height: 44px;
+    min-height: 44px;
+  }
+
+  .native-doc-title {
+    max-width: 150px;
+    font-size: 0.8125rem;
+  }
+
+  .native-meta-pill-line {
+    display: none;
+  }
+
+  .native-reanalyze-btn {
+    display: none;
+  }
+
+  .native-reader-tabs-bar {
+    padding: 0 8px;
+    height: 32px;
+    min-height: 32px;
+  }
+
+  .native-tab-pill {
+    padding: 2px 8px;
+    font-size: 0.6875rem;
+  }
+
+  .native-reader-main-viewport {
+    width: 100%;
+    max-width: 100%;
+    height: calc(100dvh - 76px);
+  }
+
+  .native-fullscreen-reader-overlay {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Tracker Streak Hero */
+  .streak-hero-card {
+    padding: 16px 14px;
+  }
+
+  .streak-flame-section {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 380px) {
+  .premium-theme-toggle-switch {
+    width: 38px;
+    height: 24px;
+    padding: 2px;
+  }
+
+  .toggle-track-icons {
+    display: none;
+  }
+
+  .toggle-thumb {
+    width: 18px;
+    height: 18px;
+  }
+
+  .thumb-icon-svg.sun,
+  .thumb-icon-svg.moon {
+    width: 10px;
+    height: 10px;
+  }
+
+  .routine-subject-heading {
+    font-size: 0.875rem;
+  }
+
+  .routine-frequency-text {
+    font-size: 0.6875rem;
   }
 }
 
@@ -7373,6 +7686,27 @@ html[data-theme="dark"] .native-reader-main-viewport {
   z-index: 1000;
   display: flex;
   flex-direction: column;
+}
+
+@media (max-width: 640px) {
+  .notif-bell-btn {
+    width: 32px;
+    height: 32px;
+  }
+  .notif-bell-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+  .notif-dropdown-panel {
+    position: fixed !important;
+    top: 58px !important;
+    left: 10px !important;
+    right: 10px !important;
+    width: auto !important;
+    max-width: none !important;
+    max-height: calc(100vh - 72px) !important;
+    border-radius: 14px !important;
+  }
 }
 
 .notif-panel-header {
