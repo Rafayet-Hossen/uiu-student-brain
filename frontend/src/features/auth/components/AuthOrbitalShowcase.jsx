@@ -1,5 +1,5 @@
-import { motion } from "framer-motion";
 import {
+
   Bell,
   BookOpen,
   CalendarDays,
@@ -95,13 +95,10 @@ export default function AuthOrbitalShowcase() {
         <div className="orbit-ring orbit-ring-mid" />
         <div className="orbit-ring orbit-ring-inner" />
 
-        {/* Central Illustrated Laptop in StudentBrain Palette */}
+        {/* Central Illustrated Laptop */}
         <div className="auth-center-laptop-stage">
-          <motion.div
-            className="auth-laptop-wrapper"
-            animate={{ y: [-4, 4, -4] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          >
+          <div className="auth-laptop-wrapper">
+
             <svg
               className="auth-laptop-svg"
               viewBox="0 0 140 100"
@@ -259,24 +256,16 @@ export default function AuthOrbitalShowcase() {
               <GraduationCap size={13} className="auth-laptop-pill-icon" />
               <span>Student Dashboard</span>
             </div>
-          </motion.div>
+          </div>
         </div>
 
-        {/* Orbiting Feature Badges */}
+        {/* Feature Badges (Fixed & Static) */}
         {orbitNodes.map((node) => {
           const NodeIcon = node.icon;
           return (
-            <motion.div
+            <div
               key={node.id}
               className={`auth-orbit-node ${node.positionClass}`}
-              animate={{ y: [-3, 3, -3] }}
-              transition={{
-                duration: 3.5,
-                repeat: Infinity,
-                delay: node.delay,
-                ease: "easeInOut",
-              }}
-              whileHover={{ scale: 1.08 }}
             >
               <div
                 className="orbit-node-icon-box"
@@ -289,9 +278,10 @@ export default function AuthOrbitalShowcase() {
                 <NodeIcon size={17} strokeWidth={2.2} />
               </div>
               <span className="orbit-node-text">{node.text}</span>
-            </motion.div>
+            </div>
           );
         })}
+
       </div>
     </div>
   );
