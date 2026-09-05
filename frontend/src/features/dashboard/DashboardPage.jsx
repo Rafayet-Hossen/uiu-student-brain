@@ -606,7 +606,6 @@ export default function DashboardPage() {
                       </Link>
                     </div>
                   )}
->>>>>>> origin/feat/frontend-redesign-v3
                 </div>
               </div>
 
