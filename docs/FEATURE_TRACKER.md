@@ -37,13 +37,13 @@ A feature is only ✅ when **all** of these are true:
 
 | #   | Feature (backend app name)                                | Depends on                       | MUST/STRETCH | Backend | Frontend | Status | Owner   | Notes                                                 |
 | --- | --------------------------------------------------------- | -------------------------------- | ------------ | ------- | -------- | ------ | ------- | ----------------------------------------------------- |
-| 1   | Accounts (`accounts`)                                     | None                             | MUST         | ✅      | ✅       | ✅     | Rafayet | Register, login, JWT auth, profile                    |
-| 2   | Study Schedule Maker (`planner`)                          | Accounts                         | MUST         | ✅      | ✅       | ✅     | Sourav  | Routine from time + subjects + deadlines              |
+| 1   | Accounts (`accounts`)                                     | None                             | MUST         | ✅      | ✅       | ✅     | Rafayet | Register, login, JWT auth, profile, avatar & bios     |
+| 2   | Study Schedule Maker (`planner`)                          | Accounts                         | MUST         | ✅      | ✅       | ✅     | Sourav  | Routine from time + subjects + deadlines + notes      |
 | 3   | Grade Planner (`grades`)                                  | Accounts                         | MUST         | ✅      | ✅       | ✅     | Rafayet | Target GPA, grades, required scores + projection      |
 | 4   | Study Tracker (`tracker`)                                 | Accounts                         | MUST         | ✅      | ✅       | ✅     | Rafayet | Log sessions, habits, streaks                         |
 | 5   | Community (`community`)                                   | Accounts                         | MUST         | ✅      | ✅       | ✅     | Sourav  | Posts, comments, reactions, follow, events + RSVP     |
 | 6   | AI service (`ai`)                                         | Accounts                         | MUST         | ✅      | N/A      | ✅     | Rafayet | Core Gemini AI client, structured schemas & services  |
-| 7   | Material Upload & Analyze (`materials`)                   | AI service                       | MUST         | ✅      | ✅       | ✅     | Rafayet | Subject projects, PDF upload, links, AI topic analyze |
+| 7   | Material Upload & Analyze (`materials`)                   | AI service                       | MUST         | ✅      | ✅       | ✅     | Rafayet | Semesters, Courses, PDF upload, links, AI Tutor chat  |
 | 8   | Study Session Test + Weak Topic Detection (`assessments`) | AI service, Materials            | MUST         | ⬜      | ⬜       | ⬜     |         | AI quiz, score, weak areas                            |
 | 9   | AI Revision Planner (extends `planner`/`assessments`)     | Assessments, Planner, AI service | MUST         | ⬜      | ⬜       | ⬜     |         | Revision plan from weak topics + deadlines            |
 | 10  | Rewards & streaks (extends `tracker`)                     | Study Tracker                    | MUST         | ✅      | ✅       | ✅     | Rafayet | Daily-plan achievement rewards                        |
@@ -74,7 +74,9 @@ frontend screen by design, so its Frontend cell is `N/A` instead of ⬜.
 | 2026-08-31 | Leaderboard (`community`)        | Completed backend and frontend      | Sourav  |
 | 2026-09-03 | AI Service Core (`ai`)           | Completed backend core AI service   | Rafayet |
 | 2026-09-03 | Material Upload & AI (`materials`)| Completed backend and frontend      | Rafayet |
+| 2026-09-05 | Frontend Redesign v3             | Integrated modern UI/UX overhaul    | Rafayet |
 
 Add one row here every time a feature's status changes — keep the newest
 entry at the bottom.
+
 

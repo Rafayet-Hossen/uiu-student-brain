@@ -55,7 +55,6 @@ INSTALLED_APPS = [
     "grades",
     "tracker",
     "community",
-    "analytics",
     "ai",
     "materials",
 ]
@@ -185,7 +184,7 @@ USE_TZ = True
 
 
 # ============================================================
-# STATIC FILES
+# STATIC & MEDIA FILES
 # ============================================================
 
 STATIC_URL = "static/"
@@ -200,5 +199,4 @@ MEDIA_ROOT = BASE_DIR / "media"
 # GEMINI AI SERVICE CONFIGURATION
 # ============================================================
 GEMINI_API_KEY = env("GEMINI_API_KEY", default="")
-
 

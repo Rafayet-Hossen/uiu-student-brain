@@ -23,6 +23,8 @@ class Schedule(models.Model):
     end_time = models.TimeField()
     deadline = models.DateField(null=True, blank=True)
     days = models.JSONField(default=list)
+    notes = models.TextField(blank=True, default="")
+    resources = models.JSONField(default=list, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

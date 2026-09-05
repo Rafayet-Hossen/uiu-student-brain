@@ -1,11 +1,94 @@
+import io
 import mimetypes
+import re
+import xml.etree.ElementTree as ET
+import zipfile
 from typing import Any, Dict, List, Optional
-from django.db.models import Q, QuerySet
+from django.db.models import Count, Q, QuerySet, Sum
 from django.utils import timezone
 from rest_framework.exceptions import NotFound, ValidationError
 
 from ai import services as ai_services
 from .models import Course, CourseChatMessage, Semester, StudyMaterial
+
+
+def estimate_reading_time(text: str) -> int:
+    """Estimates reading time in minutes based on average 200 words/minute."""
+    words = len(text.split())
+    return max(1, round(words / 200))
+
+
+def extract_text_from_uploaded_file(file_obj) -> str:
+    """
+    Extracts text cleanly from PDF, DOCX, Markdown, Plain Text, Code, CSV, etc.
+    """
+    if not file_obj:
+        return ""
+
+    filename = getattr(file_obj, "name", "").lower()
+
+    # 1. PDF Extraction via pypdf
+    if filename.endswith(".pdf"):
+        try:
+            from pypdf import PdfReader
+
+            if hasattr(file_obj, "seek"):
+                file_obj.seek(0)
+            reader = PdfReader(file_obj)
+            extracted_pages = []
+            for i, page in enumerate(reader.pages):
+                text = page.extract_text()
+                if text:
+                    extracted_pages.append(text.strip())
+                if i >= 60:  # Cap at 60 pages for performance
+                    break
+            if extracted_pages:
+                return "\n\n".join(extracted_pages)
+        except Exception as e:
+            print(f"PDF extraction error: {e}")
+
+    # 2. DOCX Extraction via standard zipfile and xml parsing
+    if filename.endswith(".docx") or filename.endswith(".doc"):
+        try:
+            if hasattr(file_obj, "seek"):
+                file_obj.seek(0)
+            with zipfile.ZipFile(file_obj) as docx_zip:
+                xml_content = docx_zip.read("word/document.xml")
+                tree = ET.fromstring(xml_content)
+                namespaces = {
+                    "w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+                }
+                paragraphs = []
+                for p in tree.iterfind(".//w:p", namespaces):
+                    texts = [
+                        node.text
+                        for node in p.iterfind(".//w:t", namespaces)
+                        if node.text
+                    ]
+                    if texts:
+                        paragraphs.append("".join(texts))
+                if paragraphs:
+                    return "\n\n".join(paragraphs)
+        except Exception as e:
+            print(f"DOCX extraction error: {e}")
+
+    # 3. Plain Text, Markdown, CSV, Code files
+    try:
+        if hasattr(file_obj, "seek"):
+            file_obj.seek(0)
+        raw_bytes = file_obj.read()
+        if isinstance(raw_bytes, bytes):
+            for encoding in ("utf-8", "utf-8-sig", "latin-1", "cp1252", "ascii"):
+                try:
+                    return raw_bytes.decode(encoding)
+                except UnicodeDecodeError:
+                    continue
+            return raw_bytes.decode("utf-8", errors="ignore")
+        return str(raw_bytes)
+    except Exception as e:
+        print(f"Text file read error: {e}")
+
+    return f"Study material document: {getattr(file_obj, 'name', 'Document')}"
 
 
 # ============================================================
@@ -104,6 +187,7 @@ def list_course_materials(
     user,
     course_id: int,
     material_type: Optional[str] = None,
+    category: Optional[str] = None,
     search: Optional[str] = None,
 ) -> QuerySet[StudyMaterial]:
     course = get_user_course(user=user, course_id=course_id)
@@ -112,10 +196,33 @@ def list_course_materials(
     if material_type and material_type != "all":
         queryset = queryset.filter(material_type=material_type)
 
+    if category and category != "all":
+        queryset = queryset.filter(category=category)
+
     if search and search.strip():
         term = search.strip()
         queryset = queryset.filter(
-            Q(title__icontains=term) | Q(content_text__icontains=term)
+            Q(title__icontains=term) | Q(content_text__icontains=term) | Q(summary__icontains=term)
+        )
+
+    return queryset
+
+
+def list_user_all_materials(
+    *,
+    user,
+    category: Optional[str] = None,
+    search: Optional[str] = None,
+) -> QuerySet[StudyMaterial]:
+    queryset = StudyMaterial.objects.filter(user=user).select_related("course", "course__semester")
+
+    if category and category != "all":
+        queryset = queryset.filter(category=category)
+
+    if search and search.strip():
+        term = search.strip()
+        queryset = queryset.filter(
+            Q(title__icontains=term) | Q(content_text__icontains=term) | Q(summary__icontains=term)
         )
 
     return queryset
@@ -123,7 +230,7 @@ def list_course_materials(
 
 def get_user_material(*, user, material_id: int) -> StudyMaterial:
     try:
-        return StudyMaterial.objects.select_related("course").get(id=material_id, user=user)
+        return StudyMaterial.objects.select_related("course", "course__semester").get(id=material_id, user=user)
     except StudyMaterial.DoesNotExist:
         raise NotFound("Study material not found.")
 
@@ -131,29 +238,63 @@ def get_user_material(*, user, material_id: int) -> StudyMaterial:
 def create_study_material(
     *,
     user,
-    course_id: int,
+    course_id: Optional[int] = None,
     title: str,
     material_type: str = "document",
+    category: str = "Lecture Note",
     file=None,
     link_url: Optional[str] = None,
     content_text: str = "",
+    tags: Optional[List[str]] = None,
 ) -> StudyMaterial:
-    course = get_user_course(user=user, course_id=course_id)
+    # If course_id is not provided, associate with current/first course or create default
+    if not course_id:
+        curr_sem = Semester.objects.filter(user=user, is_current=True).first() or Semester.objects.filter(user=user).first()
+        if not curr_sem:
+            curr_sem = Semester.objects.create(user=user, name="Current Semester", is_current=True)
+        course = Course.objects.filter(semester=curr_sem, user=user).first()
+        if not course:
+            course = Course.objects.create(semester=curr_sem, user=user, code="GEN 101", title="General Studies")
+    else:
+        course = get_user_course(user=user, course_id=course_id)
 
     file_size_bytes = 0
+    extracted_text = content_text.strip()
     if file:
         file_size_bytes = file.size
+        if not extracted_text:
+            try:
+                extracted_text = extract_text_from_uploaded_file(file)
+            except Exception:
+                pass
+
+    words = extracted_text.split()
+    word_count = len(words)
+    reading_time = estimate_reading_time(extracted_text)
 
     return StudyMaterial.objects.create(
         course=course,
         user=user,
         title=title.strip(),
         material_type=material_type,
+        category=category,
         file=file,
         file_size_bytes=file_size_bytes,
         link_url=link_url.strip() if link_url else None,
-        content_text=content_text.strip(),
+        content_text=extracted_text,
+        tags=tags or [],
+        word_count=word_count,
+        estimated_reading_time=reading_time,
     )
+
+
+def update_study_material_notepad(*, user, material_id: int, content_text: str) -> StudyMaterial:
+    material = get_user_material(user=user, material_id=material_id)
+    material.content_text = content_text
+    material.word_count = len(content_text.split())
+    material.estimated_reading_time = estimate_reading_time(content_text)
+    material.save(update_fields=["content_text", "word_count", "estimated_reading_time", "updated_at"])
+    return material
 
 
 def delete_study_material(*, user, material_id: int) -> None:
@@ -207,10 +348,46 @@ def analyze_material_with_ai(*, user, material_id: int) -> StudyMaterial:
     )
 
     material.ai_analysis = analysis_result
+    material.summary = analysis_result.get("summary", "")
+    material.key_topics = analysis_result.get("key_topics", [])
+    material.difficulty_level = analysis_result.get("difficulty", "Intermediate")
     material.analyzed_at = timezone.now()
-    material.save(update_fields=["ai_analysis", "analyzed_at", "updated_at"])
+    material.save(update_fields=["ai_analysis", "summary", "key_topics", "difficulty_level", "analyzed_at", "updated_at"])
 
     return material
+
+
+def get_materials_stats(*, user) -> Dict[str, Any]:
+    """Feature statistics for materials across all courses."""
+    materials = StudyMaterial.objects.filter(user=user)
+    total_materials = materials.count()
+    total_reading_minutes = materials.aggregate(total=Sum("estimated_reading_time"))["total"] or 0
+    total_words = materials.aggregate(total=Sum("word_count"))["total"] or 0
+
+    # Count total unique topics
+    topics_set = set()
+    for mat in materials:
+        if mat.key_topics:
+            for t in mat.key_topics:
+                topics_set.add(t)
+        elif mat.ai_analysis and mat.ai_analysis.get("key_topics"):
+            for t in mat.ai_analysis.get("key_topics"):
+                topics_set.add(t)
+
+    # Subject breakdown
+    courses = Course.objects.filter(user=user).annotate(mat_count=Count("materials"))
+    subjects_data = [
+        {"subject": f"{c.code} {c.title}".strip(), "count": c.mat_count, "color": c.color}
+        for c in courses
+    ]
+
+    return {
+        "total_materials": total_materials,
+        "total_topics_extracted": len(topics_set),
+        "total_reading_minutes": total_reading_minutes,
+        "total_words_analyzed": total_words,
+        "subjects": subjects_data,
+    }
 
 
 # ============================================================
@@ -241,9 +418,13 @@ def send_course_chat_message(*, user, course_id: int, user_message: str) -> Cour
     materials_context = []
     for mat in course.materials.all()[:8]:
         item_text = f"Title: {mat.title} ({mat.material_type})"
-        if mat.ai_analysis and mat.ai_analysis.get("summary"):
+        if mat.summary:
+            item_text += f"\nSummary: {mat.summary}"
+        elif mat.ai_analysis and mat.ai_analysis.get("summary"):
             item_text += f"\nSummary: {mat.ai_analysis.get('summary')}"
-        if mat.ai_analysis and mat.ai_analysis.get("key_topics"):
+        if mat.key_topics:
+            item_text += f"\nKey Topics: {', '.join(mat.key_topics)}"
+        elif mat.ai_analysis and mat.ai_analysis.get("key_topics"):
             item_text += f"\nKey Topics: {', '.join(mat.ai_analysis.get('key_topics'))}"
         if mat.content_text:
             item_text += f"\nExcerpt: {mat.content_text[:400]}"

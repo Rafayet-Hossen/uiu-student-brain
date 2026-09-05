@@ -1,3 +1,4 @@
+import json
 from rest_framework import serializers
 from .models import Course, CourseChatMessage, Semester, StudyMaterial
 
@@ -65,12 +66,15 @@ class CourseSerializer(serializers.ModelSerializer):
 
     def get_extracted_topics(self, obj) -> list[str]:
         topics = set()
-        for mat in obj.materials.filter(analyzed_at__isnull=False):
-            analysis = mat.ai_analysis or {}
-            key_topics = analysis.get("key_topics") or []
-            for t in key_topics:
-                if t and isinstance(t, str):
-                    topics.add(t.strip())
+        for mat in obj.materials.all():
+            if mat.key_topics:
+                for t in mat.key_topics:
+                    if t and isinstance(t, str):
+                        topics.add(t.strip())
+            elif mat.ai_analysis:
+                for t in mat.ai_analysis.get("key_topics", []):
+                    if t and isinstance(t, str):
+                        topics.add(t.strip())
         return sorted(list(topics))
 
 
@@ -78,6 +82,8 @@ class StudyMaterialSerializer(serializers.ModelSerializer):
     file_url = serializers.SerializerMethodField()
     formatted_file_size = serializers.SerializerMethodField()
     course_title = serializers.CharField(source="course.title", read_only=True)
+    content = serializers.CharField(source="content_text", required=False, allow_blank=True, default="")
+    is_analyzed = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = StudyMaterial
@@ -88,12 +94,23 @@ class StudyMaterialSerializer(serializers.ModelSerializer):
             "user",
             "title",
             "material_type",
+            "category",
             "file",
             "file_url",
             "file_size_bytes",
             "formatted_file_size",
             "link_url",
             "content_text",
+            "content",
+            "tags",
+            "word_count",
+            "is_analyzed",
+            "summary",
+            "key_topics",
+            "key_concepts",
+            "key_questions",
+            "difficulty_level",
+            "estimated_reading_time",
             "ai_analysis",
             "analyzed_at",
             "created_at",
@@ -106,6 +123,8 @@ class StudyMaterialSerializer(serializers.ModelSerializer):
             "course_title",
             "file_size_bytes",
             "formatted_file_size",
+            "word_count",
+            "is_analyzed",
             "ai_analysis",
             "analyzed_at",
             "created_at",
@@ -138,15 +157,52 @@ class StudyMaterialSerializer(serializers.ModelSerializer):
 
 
 class StudyMaterialCreateSerializer(serializers.ModelSerializer):
+    content = serializers.CharField(source="content_text", required=False, allow_blank=True, default="")
+    tags = serializers.ListField(
+        child=serializers.CharField(),
+        required=False,
+        default=list,
+    )
+
     class Meta:
         model = StudyMaterial
         fields = [
             "title",
             "material_type",
+            "category",
             "file",
             "link_url",
             "content_text",
+            "content",
+            "tags",
         ]
+
+    def to_internal_value(self, data):
+        mutable_data = {}
+        for key in data:
+            if key == "file":
+                mutable_data[key] = data.get(key)
+            else:
+                val = data.get(key)
+                if val == "":
+                    mutable_data[key] = ""
+                else:
+                    mutable_data[key] = val
+
+        if "tags" in mutable_data:
+            tags_val = mutable_data["tags"]
+            if isinstance(tags_val, str):
+                try:
+                    parsed = json.loads(tags_val)
+                    mutable_data["tags"] = parsed if isinstance(parsed, list) else [parsed]
+                except Exception:
+                    mutable_data["tags"] = [t.strip() for t in tags_val.split(",") if t.strip()]
+            elif isinstance(tags_val, list):
+                mutable_data["tags"] = tags_val
+            else:
+                mutable_data["tags"] = []
+
+        return super().to_internal_value(mutable_data)
 
     def validate(self, attrs):
         m_type = attrs.get("material_type", "document")
@@ -176,3 +232,11 @@ class CourseChatMessageSerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = ["id", "course", "user", "created_at"]
+
+
+class MaterialStatsSerializer(serializers.Serializer):
+    total_materials = serializers.IntegerField()
+    total_topics_extracted = serializers.IntegerField()
+    total_reading_minutes = serializers.IntegerField()
+    total_words_analyzed = serializers.IntegerField()
+    subjects = serializers.ListField(child=serializers.DictField())

@@ -1,10 +1,26 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import {
+  BarChart3,
+  BookOpen,
+  Calendar,
+  CheckCircle2,
+  Clock,
+  Flame,
+  GraduationCap,
+  Layers,
+  RefreshCw,
+  Sparkles,
+  Target,
+  TrendingUp,
+  Zap,
+} from "lucide-react";
 import Badge from "../../components/Badge";
 import Button from "../../components/Button";
 import Card from "../../components/Card";
-import FormError from "../../components/FormError";
+import ErrorState from "../../components/ErrorState";
 import Navbar from "../../components/Navbar";
-import Spinner from "../../components/Spinner";
+import { StatSkeleton } from "../../components/Skeleton";
 import { extractAnalyticsErrorMessage, getAnalyticsDashboard } from "./api";
 import GpaTrajectoryCard from "./components/GpaTrajectoryCard";
 import ScheduleAdherenceCard from "./components/ScheduleAdherenceCard";
@@ -24,6 +40,7 @@ export default function AnalyticsPage() {
       const res = await getAnalyticsDashboard();
       setData(res);
     } catch (err) {
+      console.error("Failed to load analytics dashboard:", err);
       setError(extractAnalyticsErrorMessage(err));
     } finally {
       setLoading(false);
@@ -34,9 +51,25 @@ export default function AnalyticsPage() {
     loadDashboard();
   }, []);
 
-  const summary = data?.summary;
-  const totalHours = summary ? Math.floor(summary.total_study_minutes / 60) : 0;
-  const remainingMins = summary ? summary.total_study_minutes % 60 : 0;
+  const summary = data?.summary || {};
+  const totalStudyMinutes = Number(summary.total_study_minutes) || 0;
+  const totalHours = Math.floor(totalStudyMinutes / 60);
+  const remainingMins = totalStudyMinutes % 60;
+  const totalSessions = Number(summary.total_sessions) || 0;
+  const totalSubjects = Number(summary.total_subjects) || 0;
+  const avgSessionMinutes = Number(summary.avg_session_minutes) || 0;
+
+  const gpaSummary = data?.gpa_summary || null;
+  const adherence = data?.schedule_adherence || {};
+  const adherenceRate = Number(adherence.adherence_rate) || 0;
+  const coveredCount = Array.isArray(adherence.covered_subjects_this_week)
+    ? adherence.covered_subjects_this_week.length
+    : 0;
+  const scheduledCount = Array.isArray(adherence.scheduled_subjects)
+    ? adherence.scheduled_subjects.length
+    : 0;
+
+  const insights = Array.isArray(data?.insights) ? data.insights : [];
 
   return (
     <div className="app-screen">
@@ -48,119 +81,151 @@ export default function AnalyticsPage() {
           <div className="page-header-row">
             <div>
               <h1 className="page-title">
-                <span>📊</span>
-                <span>Study & Academic Analytics</span>
+                <BarChart3 size={28} className="text-indigo" />
+                <span>Academic & Focus Analytics</span>
               </h1>
               <p className="page-description">
-                Comprehensive academic intelligence: focus time trends, course distribution, GPA forecast, and routine adherence.
+                Comprehensive academic intelligence: focus time trends, subject distribution, GPA forecast, and routine adherence.
               </p>
             </div>
 
-            <Button variant="secondary" onClick={loadDashboard}>
-              🔄 Refresh Analytics
+            <Button
+              variant="secondary"
+              onClick={loadDashboard}
+              icon={RefreshCw}
+              disabled={loading}
+            >
+              {loading ? "Refreshing..." : "Refresh Analytics"}
             </Button>
           </div>
         </div>
 
-        {/* Loading Spinner */}
+        {/* Loading Skeletons */}
         {loading && (
-          <Card className="empty-state-card">
-            <Spinner standalone />
-            <p className="page-loading-text">Computing academic analytics...</p>
-          </Card>
+          <div className="stats-cards-row">
+            <StatSkeleton />
+            <StatSkeleton />
+            <StatSkeleton />
+            <StatSkeleton />
+          </div>
         )}
 
         {/* Error State */}
         {!loading && error && (
-          <Card className="empty-state-card">
-            <FormError message={error} className="form-error-block" />
-            <Button onClick={loadDashboard}>Try Again</Button>
-          </Card>
+          <ErrorState
+            title="Failed to compute analytics"
+            message={error}
+            onRetry={loadDashboard}
+          />
         )}
 
         {/* Loaded Analytics Dashboard */}
         {!loading && !error && data && (
           <div>
-            {/* KPI Summary Grid */}
-            <div className="stats-grid">
-              <div className="stat-card">
-                <div className="stat-card-header">
-                  <span className="stat-label">Total Focus Investment</span>
-                  <div className="stat-icon">⏱️</div>
+            {/* KPI Summary Grid with 4 distinct styled cards */}
+            <div className="stats-cards-row">
+              {/* Card 1: Focus Investment */}
+              <Card variant="stat" className="stat-indigo">
+                <div className="stat-top-row">
+                  <span className="stat-header-label">Focus Investment</span>
+                  <div className="stat-icon-pill bg-indigo-subtle">
+                    <Clock size={16} className="text-indigo" />
+                  </div>
                 </div>
-                <p className="stat-number">
-                  {totalHours}h {remainingMins}m
-                </p>
-                <p className="stat-subtext">
-                  {summary.total_sessions} study sessions logged
-                </p>
-              </div>
+                <div className="stat-number-row">
+                  <strong className="stat-metric-value">
+                    {totalHours}h {remainingMins}m
+                  </strong>
+                </div>
+                <span className="stat-footer-subtext">
+                  {totalSessions} study sessions logged
+                </span>
+              </Card>
 
-              <div className="stat-card">
-                <div className="stat-card-header">
-                  <span className="stat-label">Active Subjects</span>
-                  <div className="stat-icon">📚</div>
+              {/* Card 2: Subject Breadth */}
+              <Card variant="stat" className="stat-emerald">
+                <div className="stat-top-row">
+                  <span className="stat-header-label">Subject Breadth</span>
+                  <div className="stat-icon-pill bg-emerald-subtle">
+                    <BookOpen size={16} className="text-emerald" />
+                  </div>
                 </div>
-                <p className="stat-number">{summary.total_subjects}</p>
-                <p className="stat-subtext">
-                  Across {summary.active_schedules_count} scheduled routines
-                </p>
-              </div>
+                <div className="stat-number-row">
+                  <strong className="stat-metric-value">
+                    {totalSubjects} Subjects
+                  </strong>
+                </div>
+                <span className="stat-footer-subtext">
+                  Avg session: {avgSessionMinutes} mins
+                </span>
+              </Card>
 
-              <div className="stat-card">
-                <div className="stat-card-header">
-                  <span className="stat-label">Average Session Length</span>
-                  <div className="stat-icon">📈</div>
+              {/* Card 3: Academic Standing */}
+              <Card variant="stat" className="stat-amber">
+                <div className="stat-top-row">
+                  <span className="stat-header-label">Academic Standing</span>
+                  <div className="stat-icon-pill bg-amber-subtle">
+                    <GraduationCap size={16} className="text-amber" />
+                  </div>
                 </div>
-                <p className="stat-number">{summary.avg_session_minutes}m</p>
-                <p className="stat-subtext">Per focused study block</p>
-              </div>
+                <div className="stat-number-row">
+                  <strong className="stat-metric-value">
+                    {gpaSummary && typeof gpaSummary.current_gpa === "number"
+                      ? `${gpaSummary.current_gpa.toFixed(2)}`
+                      : "N/A"}
+                  </strong>
+                </div>
+                <span className="stat-footer-subtext">
+                  {gpaSummary && typeof gpaSummary.target_gpa === "number"
+                    ? `Target Goal: ${gpaSummary.target_gpa.toFixed(2)} CGPA`
+                    : "No GPA target configured"}
+                </span>
+              </Card>
 
-              <div className="stat-card">
-                <div className="stat-card-header">
-                  <span className="stat-label">Target GPA Status</span>
-                  <div className="stat-icon">🎓</div>
+              {/* Card 4: Routine Adherence */}
+              <Card variant="stat" className="stat-rose">
+                <div className="stat-top-row">
+                  <span className="stat-header-label">Routine Adherence</span>
+                  <div className="stat-icon-pill bg-rose-subtle">
+                    <Calendar size={16} className="text-rose" />
+                  </div>
                 </div>
-                <p className="stat-number">
-                  {data.gpa_summary
-                    ? data.gpa_summary.target_gpa.toFixed(2)
-                    : "N/A"}
-                </p>
-                <p className="stat-subtext">
-                  {data.gpa_summary
-                    ? `Current: ${data.gpa_summary.current_gpa.toFixed(2)}`
-                    : "No GPA plan set"}
-                </p>
-              </div>
+                <div className="stat-number-row">
+                  <strong className="stat-metric-value">
+                    {adherenceRate}%
+                  </strong>
+                </div>
+                <span className="stat-footer-subtext">
+                  {coveredCount} of {scheduledCount} weekly routines covered
+                </span>
+              </Card>
             </div>
 
-            {/* Smart Academic Insights Banner */}
-            {data.insights && data.insights.length > 0 && (
+            {/* Smart AI Academic Intelligence Insights */}
+            {insights.length > 0 && (
               <div className="analytics-insights-banner">
-                <div className="insights-header">
-                  <span style={{ fontSize: "1.25rem" }}>💡</span>
-                  <span className="insights-title">Academic Insights & Intelligence</span>
+                <div className="insights-banner-header">
+                  <Sparkles size={18} className="text-primary" />
+                  <h3 className="insights-banner-title">
+                    Smart Academic Intelligence & Recommendations
+                  </h3>
                 </div>
-                <ul className="insights-list">
-                  {data.insights.map((insight, idx) => (
-                    <li key={idx} className="insight-item">
-                      {insight}
-                    </li>
+                <div className="insights-cards-list">
+                  {insights.map((insight, idx) => (
+                    <div key={idx} className="insight-chip-item">
+                      <span>{insight}</span>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
             )}
 
-            {/* 2-Column Analytics Grid */}
-            <div className="analytics-layout-grid">
+            {/* Analytics Visual Charts Grid */}
+            <div className="analytics-charts-grid">
               <WeeklyTrendChart trend={data.weekly_trend} />
-              <SubjectDistributionChart
-                distribution={data.subject_distribution}
-              />
+              <SubjectDistributionChart distribution={data.subject_distribution} />
               <GpaTrajectoryCard gpaSummary={data.gpa_summary} />
-              <ScheduleAdherenceCard
-                adherence={data.schedule_adherence}
-              />
+              <ScheduleAdherenceCard adherence={data.schedule_adherence} />
             </div>
           </div>
         )}
@@ -168,4 +233,3 @@ export default function AnalyticsPage() {
     </div>
   );
 }
-

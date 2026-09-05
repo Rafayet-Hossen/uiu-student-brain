@@ -67,9 +67,7 @@ export default function EventForm({ onSubmit, onCreated, onCancel }) {
     <form onSubmit={handleSubmit} className="academic-form">
       {error && <FormError message={error} />}
 
-      <div
-        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}
-      >
+      <div className="modal-grid-2col">
         <Input
           label="Event Title"
           value={title}
@@ -89,13 +87,7 @@ export default function EventForm({ onSubmit, onCreated, onCancel }) {
         />
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr 1fr",
-          gap: "16px",
-        }}
-      >
+      <div className="modal-grid-3col">
         <Input
           label="Date"
           type="date"

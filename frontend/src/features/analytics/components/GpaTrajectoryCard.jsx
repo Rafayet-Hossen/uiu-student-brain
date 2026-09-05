@@ -1,31 +1,42 @@
+import { Link } from "react-router-dom";
 import Badge from "../../../components/Badge";
 
 export default function GpaTrajectoryCard({ gpaSummary }) {
   if (!gpaSummary) {
     return (
       <div className="analytics-card">
-        <h3 className="analytics-card-title">
-          <span>🎓</span>
-          <span>Academic GPA Forecast</span>
-        </h3>
-        <p className="analytics-card-desc">
-          No grade plan configured yet. Set a target GPA in Grade Planner to view projection analytics.
-        </p>
+        <div className="analytics-card-header">
+          <div>
+            <h3 className="analytics-card-title">
+              <span>🎓</span>
+              <span>Academic GPA Forecast</span>
+            </h3>
+            <p className="analytics-card-desc">
+              Degree projection and honors target model.
+            </p>
+          </div>
+          <Link to="/grades" className="text-primary text-xs font-semibold hover:underline">
+            Configure Goal →
+          </Link>
+        </div>
+        <div className="empty-chart-placeholder">
+          <p className="text-muted text-sm">No grade plan configured yet. Set a target GPA in Grade Planner to view projection analytics.</p>
+        </div>
       </div>
     );
   }
 
-  const {
-    plan_name,
-    current_gpa,
-    target_gpa,
-    completed_credits,
-    total_credits,
-    remaining_credits,
-    required_gpa,
-    possible,
-    percent_complete,
-  } = gpaSummary;
+  const plan_name = gpaSummary.plan_name || "Academic Degree Plan";
+  const current_gpa = Number(gpaSummary.current_gpa) || 0;
+  const target_gpa = Number(gpaSummary.target_gpa) || 0;
+  const completed_credits = Number(gpaSummary.completed_credits) || 0;
+  const total_credits = Number(gpaSummary.total_credits) || 0;
+  const remaining_credits = Number(gpaSummary.remaining_credits) || 0;
+  const required_gpa = gpaSummary.required_gpa !== null && gpaSummary.required_gpa !== undefined
+    ? Number(gpaSummary.required_gpa)
+    : null;
+  const possible = Boolean(gpaSummary.possible);
+  const percent_complete = Math.min(100, Math.max(0, Number(gpaSummary.percent_complete) || 0));
 
   return (
     <div className="analytics-card">
@@ -89,4 +100,3 @@ export default function GpaTrajectoryCard({ gpaSummary }) {
     </div>
   );
 }
-

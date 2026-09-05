@@ -8,6 +8,7 @@ from . import services
 from .serializers import (
     CourseChatMessageSerializer,
     CourseSerializer,
+    MaterialStatsSerializer,
     SemesterSerializer,
     StudyMaterialCreateSerializer,
     StudyMaterialSerializer,
@@ -109,11 +110,13 @@ class StudyMaterialListCreateView(APIView):
 
     def get(self, request, course_id):
         m_type = request.query_params.get("type")
+        category = request.query_params.get("category")
         search = request.query_params.get("search")
         materials = services.list_course_materials(
             user=request.user,
             course_id=course_id,
             material_type=m_type,
+            category=category,
             search=search,
         )
         serializer = StudyMaterialSerializer(materials, many=True, context={"request": request})
@@ -128,9 +131,49 @@ class StudyMaterialListCreateView(APIView):
             course_id=course_id,
             title=serializer.validated_data["title"],
             material_type=serializer.validated_data.get("material_type", "document"),
+            category=serializer.validated_data.get("category", "Lecture Note"),
             file=serializer.validated_data.get("file"),
             link_url=serializer.validated_data.get("link_url"),
             content_text=serializer.validated_data.get("content_text", ""),
+            tags=serializer.validated_data.get("tags", []),
+        )
+        return Response(
+            StudyMaterialSerializer(material, context={"request": request}).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class GlobalMaterialListCreateView(APIView):
+    """Top-level access to list all user materials across all courses."""
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def get(self, request):
+        category = request.query_params.get("category")
+        search = request.query_params.get("search")
+        materials = services.list_user_all_materials(
+            user=request.user,
+            category=category,
+            search=search,
+        )
+        serializer = StudyMaterialSerializer(materials, many=True, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = StudyMaterialCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        course_id = request.data.get("course") or request.data.get("course_id")
+        material = services.create_study_material(
+            user=request.user,
+            course_id=int(course_id) if course_id else None,
+            title=serializer.validated_data["title"],
+            material_type=serializer.validated_data.get("material_type", "document"),
+            category=serializer.validated_data.get("category", "Lecture Note"),
+            file=serializer.validated_data.get("file"),
+            link_url=serializer.validated_data.get("link_url"),
+            content_text=serializer.validated_data.get("content_text", ""),
+            tags=serializer.validated_data.get("tags", []),
         )
         return Response(
             StudyMaterialSerializer(material, context={"request": request}).data,
@@ -143,6 +186,18 @@ class StudyMaterialDetailView(APIView):
 
     def get(self, request, pk):
         material = services.get_user_material(user=request.user, material_id=pk)
+        return Response(
+            StudyMaterialSerializer(material, context={"request": request}).data,
+            status=status.HTTP_200_OK,
+        )
+
+    def patch(self, request, pk):
+        content_text = request.data.get("content", request.data.get("content_text", ""))
+        material = services.update_study_material_notepad(
+            user=request.user,
+            material_id=pk,
+            content_text=content_text,
+        )
         return Response(
             StudyMaterialSerializer(material, context={"request": request}).data,
             status=status.HTTP_200_OK,
@@ -162,6 +217,15 @@ class StudyMaterialAnalyzeView(APIView):
             StudyMaterialSerializer(material, context={"request": request}).data,
             status=status.HTTP_200_OK,
         )
+
+
+class MaterialStatsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        stats_data = services.get_materials_stats(user=request.user)
+        serializer = MaterialStatsSerializer(stats_data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 # ============================================================

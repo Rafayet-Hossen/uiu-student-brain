@@ -1,8 +1,32 @@
 import { useState } from "react";
+import {
+  Bookmark,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Copy,
+  ExternalLink,
+  FileText,
+  HelpCircle,
+  MessageSquare,
+  MoreHorizontal,
+  Send,
+  Share2,
+  Sparkles,
+  ThumbsUp,
+  Trash2,
+  Users,
+  Zap,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Badge from "../../../components/Badge";
 import Button from "../../../components/Button";
 import Card from "../../../components/Card";
 import Spinner from "../../../components/Spinner";
+import { formatRichContent } from "../../../lib/markdownHelper";
+import ScholarAvatar from "../../auth/components/ScholarAvatar";
+import { useAuth } from "../../auth/useAuth";
 import {
   createComment,
   deleteComment,
@@ -11,13 +35,23 @@ import {
   getComments,
   togglePostReaction,
 } from "../api";
-import { useAuth } from "../../auth/useAuth";
+
+const CATEGORY_CONFIG = {
+  "Exam Prep": { icon: Zap, variant: "accent", label: "Exam Prep" },
+  "Course Help": { icon: HelpCircle, variant: "primary", label: "Course Help" },
+  "Study Group": { icon: Users, variant: "success", label: "Study Group" },
+  Resources: { icon: FileText, variant: "default", label: "Resources" },
+  General: { icon: MessageSquare, variant: "default", label: "General Discussion" },
+};
 
 export default function PostCard({ post, onDeleted }) {
   const { user } = useAuth();
   const [likesCount, setLikesCount] = useState(post.likes_count || 0);
-  const [isLiked, setIsLiked] = useState(Boolean(post.is_liked));
+  const [isLiked, setIsLiked] = useState(Boolean(post.is_liked || post.has_reacted));
   const [likeLoading, setLikeLoading] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
 
   // Comments state
   const [showComments, setShowComments] = useState(false);
@@ -35,10 +69,10 @@ export default function PostCard({ post, onDeleted }) {
     setLikeLoading(true);
     try {
       const res = await togglePostReaction(post.id);
-      setIsLiked(res.liked);
-      setLikesCount(res.likes_count);
+      setIsLiked(res.liked ?? res.has_reacted ?? !isLiked);
+      setLikesCount(res.likes_count ?? res.reactions_count ?? (isLiked ? likesCount - 1 : likesCount + 1));
     } catch (err) {
-      console.error("Error liking post:", err);
+      console.error("Error toggling upvote:", err);
     } finally {
       setLikeLoading(false);
     }
@@ -85,15 +119,14 @@ export default function PostCard({ post, onDeleted }) {
       setComments((prev) => prev.filter((c) => c.id !== commentId));
       setCommentsCount((prev) => Math.max(0, prev - 1));
     } catch (err) {
-      console.error("Error deleting comment:", err);
+      console.error("Error deleting reply:", err);
     }
   }
 
   async function handleDeletePost() {
-    if (
-      !window.confirm("Are you sure you want to delete this discussion post?")
-    )
+    if (!window.confirm("Remove this discussion thread from the community?")) {
       return;
+    }
     try {
       await deletePost(post.id);
       if (onDeleted) {
@@ -104,259 +137,301 @@ export default function PostCard({ post, onDeleted }) {
     }
   }
 
-  const getInitials = (name) => {
-    if (!name) return "S";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
+  function handleCopyPostLink() {
+    const url = `${window.location.origin}/community#post-${post.id}`;
+    navigator.clipboard.writeText(url);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
+    setShowMenu(false);
+  }
 
-  const formattedDate = new Date(post.created_at).toLocaleDateString(
-    undefined,
-    {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    },
-  );
+  const formattedDate = new Date(post.created_at).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  const catConfig = CATEGORY_CONFIG[post.category] || {
+    icon: MessageSquare,
+    variant: "default",
+    label: post.category || "Discussion",
+  };
+  const CatIcon = catConfig.icon;
 
   return (
-    <Card className="community-post-card" style={{ marginBottom: "20px" }}>
-      {/* Post Header */}
-      <div
-        className="post-header"
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          gap: "12px",
-        }}
-      >
-        <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-          <div
-            className="user-avatar"
-            style={{ width: "38px", height: "38px", fontSize: "0.875rem" }}
-          >
-            {getInitials(post.author?.full_name)}
+    <motion.div
+      whileHover={{ y: -6 }}
+      transition={{ duration: 0.22, ease: "easeOut" }}
+      style={{ marginBottom: "20px" }}
+      id={`post-${post.id}`}
+    >
+      <Card className="premium-social-post-card">
+        {/* Top Header Row */}
+        <div className="social-post-header">
+          <div className="social-post-author-row">
+            <div className="author-avatar-container">
+              <ScholarAvatar user={post.author} size={48} />
+              <div className="author-online-indicator" />
+            </div>
+
+            <div className="author-text-meta">
+              <div className="author-name-line">
+                <strong className="author-name">
+                  {post.author?.full_name || post.author?.email?.split("@")[0] || "Scholar"}
+                </strong>
+                <span className="scholar-verified-badge" title="Verified University Scholar">
+                  ✓
+                </span>
+                {post.author?.department && (
+                  <span className="author-dept-chip">
+                    {post.author.department}
+                  </span>
+                )}
+              </div>
+
+              <div className="author-sub-line">
+                <Clock size={12} className="text-muted" />
+                <span>{formattedDate}</span>
+              </div>
+            </div>
           </div>
-          <div>
-            <h4 style={{ margin: 0, fontSize: "0.9375rem", fontWeight: 600 }}>
-              {post.author?.full_name || post.author?.email || "Scholar"}
-            </h4>
-            <span
-              style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}
-            >
-              {formattedDate}
-            </span>
-          </div>
-        </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <Badge variant="accent">{post.category}</Badge>
-          {isAuthor && (
-            <Button size="sm" variant="danger" onClick={handleDeletePost}>
-              🗑️
-            </Button>
-          )}
-        </div>
-      </div>
+          {/* Right Header Actions */}
+          <div className="social-header-right">
+            <Badge variant={catConfig.variant} size="sm">
+              <CatIcon size={12} />
+              <span>{catConfig.label}</span>
+            </Badge>
 
-      {/* Post Body */}
-      <div style={{ marginTop: "14px", marginBottom: "16px" }}>
-        <h3
-          style={{
-            margin: "0 0 8px 0",
-            fontSize: "1.125rem",
-            color: "var(--color-text)",
-          }}
-        >
-          {post.title}
-        </h3>
-        <p
-          style={{
-            margin: 0,
-            color: "var(--color-text)",
-            lineHeight: 1.6,
-            whiteSpace: "pre-wrap",
-          }}
-        >
-          {post.content}
-        </p>
-      </div>
+            <div style={{ position: "relative" }}>
+              <button
+                type="button"
+                className="social-options-btn"
+                onClick={() => setShowMenu(!showMenu)}
+                title="Options"
+              >
+                <MoreHorizontal size={16} />
+              </button>
 
-      {/* Action Footer */}
-      <div
-        style={{
-          display: "flex",
-          gap: "12px",
-          borderTop: "1px solid var(--color-border)",
-          paddingTop: "12px",
-        }}
-      >
-        <Button
-          size="sm"
-          variant={isLiked ? "primary" : "secondary"}
-          onClick={handleToggleReaction}
-          disabled={likeLoading}
-        >
-          <span>{isLiked ? "👍 Upvoted" : "👍 Upvote"}</span>
-          <span style={{ marginLeft: "4px", fontWeight: 700 }}>
-            ({likesCount})
-          </span>
-        </Button>
+              {showMenu && (
+                <div className="social-options-dropdown">
+                  <button
+                    type="button"
+                    className="dropdown-item-btn"
+                    onClick={handleCopyPostLink}
+                  >
+                    {copiedLink ? <Check size={14} className="text-emerald" /> : <Copy size={14} />}
+                    <span>{copiedLink ? "Link Copied" : "Copy Link"}</span>
+                  </button>
 
-        <Button size="sm" variant="secondary" onClick={handleToggleComments}>
-          <span>💬 Discussion ({commentsCount})</span>
-        </Button>
-      </div>
-
-      {/* Comments Section */}
-      {showComments && (
-        <div
-          style={{
-            marginTop: "16px",
-            paddingTop: "16px",
-            borderTop: "1px dashed var(--color-border)",
-          }}
-        >
-          <h4
-            style={{
-              fontSize: "0.875rem",
-              color: "var(--color-text-muted)",
-              marginBottom: "12px",
-            }}
-          >
-            Replies & Solutions
-          </h4>
-
-          {commentsLoading ? (
-            <Spinner />
-          ) : comments.length === 0 ? (
-            <p
-              style={{
-                fontSize: "0.875rem",
-                color: "var(--color-text-muted)",
-                margin: "8px 0",
-              }}
-            >
-              No replies yet. Be the first to share an answer!
-            </p>
-          ) : (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "10px",
-                marginBottom: "16px",
-              }}
-            >
-              {comments.map((comment) => {
-                const isCommentAuthor = user?.id === comment.author?.id;
-                return (
-                  <div
-                    key={comment.id}
-                    style={{
-                      background: "var(--color-surface-subtle)",
-                      padding: "10px 14px",
-                      borderRadius: "var(--radius-md)",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "flex-start",
+                  <button
+                    type="button"
+                    className="dropdown-item-btn"
+                    onClick={() => {
+                      setIsBookmarked(!isBookmarked);
+                      setShowMenu(false);
                     }}
                   >
-                    <div>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "8px",
-                          marginBottom: "4px",
-                        }}
-                      >
-                        <span
-                          style={{ fontWeight: 600, fontSize: "0.8125rem" }}
-                        >
-                          {comment.author?.full_name || comment.author?.email}
-                        </span>
-                        <span
-                          style={{
-                            fontSize: "0.75rem",
-                            color: "var(--color-text-muted)",
-                          }}
-                        >
-                          {new Date(comment.created_at).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </span>
-                      </div>
-                      <p
-                        style={{
-                          margin: 0,
-                          fontSize: "0.875rem",
-                          color: "var(--color-text)",
-                          whiteSpace: "pre-wrap",
-                        }}
-                      >
-                        {comment.content}
-                      </p>
-                    </div>
+                    <Bookmark
+                      size={14}
+                      className={isBookmarked ? "text-amber fill-amber" : ""}
+                    />
+                    <span>{isBookmarked ? "Saved in Bookmarks" : "Bookmark Thread"}</span>
+                  </button>
 
-                    {isCommentAuthor && (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => handleDeleteComment(comment.id)}
-                        style={{ padding: "2px 6px", fontSize: "0.75rem" }}
-                      >
-                        ✕
-                      </Button>
-                    )}
-                  </div>
-                );
-              })}
+                  {isAuthor && (
+                    <button
+                      type="button"
+                      className="dropdown-item-btn text-danger"
+                      onClick={handleDeletePost}
+                    >
+                      <Trash2 size={14} />
+                      <span>Delete Discussion</span>
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
+          </div>
+        </div>
+
+        {/* Middle Content */}
+        <div className="social-post-body">
+          {post.title && (
+            <h3 className="social-post-title">{post.title}</h3>
           )}
 
-          {/* New Comment Input */}
-          <form
-            onSubmit={handleAddComment}
-            style={{ display: "flex", gap: "8px", marginTop: "12px" }}
-          >
-            <input
-              type="text"
-              className="form-input"
-              placeholder="Write a helpful reply..."
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              style={{
-                flex: 1,
-                padding: "8px 12px",
-                borderRadius: "var(--radius-md)",
-              }}
-              required
-            />
-            <Button size="sm" type="submit" disabled={commentSubmitting}>
-              {commentSubmitting ? "Posting..." : "Reply"}
-            </Button>
-          </form>
-          {commentError && (
-            <p
-              style={{
-                color: "var(--color-rose)",
-                fontSize: "0.8125rem",
-                marginTop: "6px",
-              }}
-            >
-              {commentError}
-            </p>
-          )}
+          <div className="social-post-markdown-content">
+            {formatRichContent(post.content)}
+          </div>
         </div>
-      )}
-    </Card>
+
+        {/* Bottom Interactive Action Bar */}
+        <div className="social-post-footer">
+          <div className="social-action-buttons">
+            <motion.button
+              type="button"
+              whileTap={{ scale: 0.9 }}
+              className={`social-action-pill ${isLiked ? "pill-upvoted" : ""}`}
+              onClick={handleToggleReaction}
+              disabled={likeLoading}
+            >
+              <motion.div
+                animate={isLiked ? { scale: [1, 1.35, 1] } : { scale: 1 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ThumbsUp
+                  size={15}
+                  className={isLiked ? "text-primary fill-primary" : ""}
+                />
+              </motion.div>
+              <span>{isLiked ? "Upvoted" : "Upvote"}</span>
+              <span className="pill-count-badge">{likesCount}</span>
+            </motion.button>
+
+            <motion.button
+              type="button"
+              whileTap={{ scale: 0.92 }}
+              className={`social-action-pill ${showComments ? "pill-active-drawer" : ""}`}
+              onClick={handleToggleComments}
+            >
+              <MessageSquare size={15} />
+              <span>Discussion</span>
+              <span className="pill-count-badge">{commentsCount}</span>
+              {showComments ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+            </motion.button>
+
+            <button
+              type="button"
+              className="social-action-pill desktop-only"
+              onClick={handleCopyPostLink}
+              title="Share Link"
+            >
+              <Share2 size={14} />
+              <span>Share</span>
+            </button>
+
+            <button
+              type="button"
+              className={`social-action-pill ${isBookmarked ? "pill-bookmarked" : ""}`}
+              onClick={() => setIsBookmarked(!isBookmarked)}
+              title="Bookmark"
+            >
+              <Bookmark
+                size={14}
+                className={isBookmarked ? "text-amber fill-amber" : ""}
+              />
+            </button>
+          </div>
+        </div>
+
+        {/* Expandable Threaded Discussion Drawer */}
+        <AnimatePresence>
+          {showComments && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.22, ease: "easeOut" }}
+              className="threaded-comments-drawer"
+            >
+              {/* Reply Composer */}
+              <form onSubmit={handleAddComment} className="threaded-composer-box">
+                <ScholarAvatar user={user} size={36} />
+                <div className="threaded-composer-input-row">
+                  <input
+                    type="text"
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="Contribute a helpful reply, insight, or solution..."
+                    className="form-input-control threaded-input"
+                    disabled={commentSubmitting}
+                  />
+                  <Button
+                    type="submit"
+                    size="sm"
+                    variant="primary"
+                    disabled={commentSubmitting || !newComment.trim()}
+                    icon={Send}
+                  >
+                    Reply
+                  </Button>
+                </div>
+              </form>
+
+              {commentError && (
+                <div className="comment-error-alert">{commentError}</div>
+              )}
+
+              {/* Nested Comments Stream */}
+              <div className="threaded-comments-stream">
+                {commentsLoading ? (
+                  <div style={{ padding: "16px", textAlign: "center" }}>
+                    <Spinner size="sm" standalone />
+                  </div>
+                ) : comments.length === 0 ? (
+                  <div className="threaded-empty-state">
+                    <MessageSquare size={20} className="text-muted" />
+                    <span>No replies yet. Be the first scholar to contribute!</span>
+                  </div>
+                ) : (
+                  comments.map((comment) => {
+                    const isCommentAuthor = user?.id === comment.author?.id;
+                    const commentDate = new Date(comment.created_at).toLocaleDateString(
+                      undefined,
+                      { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" },
+                    );
+                    return (
+                      <div key={comment.id} className="threaded-comment-node">
+                        {/* Colored reply line */}
+                        <div className="thread-line" />
+
+                        <div className="thread-avatar-col">
+                          <ScholarAvatar user={comment.author} size={32} />
+                        </div>
+
+                        <div className="thread-bubble-content">
+                          <div className="thread-bubble-header">
+                            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                              <strong className="thread-author-name">
+                                {comment.author?.full_name || comment.author?.email?.split("@")[0] || "Scholar"}
+                              </strong>
+                              {comment.author?.department && (
+                                <span className="thread-dept-badge">
+                                  {comment.author.department}
+                                </span>
+                              )}
+                            </div>
+
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                              <span className="thread-timestamp">{commentDate}</span>
+                              {isCommentAuthor && (
+                                <button
+                                  type="button"
+                                  className="thread-delete-btn"
+                                  onClick={() => handleDeleteComment(comment.id)}
+                                  title="Delete Reply"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="thread-comment-body">
+                            {formatRichContent(comment.content)}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </Card>
+    </motion.div>
   );
 }

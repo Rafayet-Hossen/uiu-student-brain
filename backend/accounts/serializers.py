@@ -17,4 +17,24 @@ class RegisterSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "email", "full_name"]
+        fields = [
+            "id",
+            "email",
+            "full_name",
+            "department",
+            "bio",
+            "target_daily_minutes",
+            "date_joined",
+        ]
+        read_only_fields = ["id", "email", "date_joined"]
+
+
+class UpdateProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["full_name", "department", "bio", "target_daily_minutes"]
+
+
+class ProfileSummarySerializer(serializers.Serializer):
+    user = UserSerializer()
+    performance = serializers.DictField()

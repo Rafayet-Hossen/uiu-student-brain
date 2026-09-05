@@ -10,12 +10,8 @@ import { useAuth } from "./features/auth/useAuth";
 import LoginPage from "./features/auth/pages/LoginPage";
 import RegisterPage from "./features/auth/pages/RegisterPage";
 import DashboardPage from "./features/dashboard/DashboardPage";
-import PlannerPage from "./features/planner/PlannerPage";
 import GradePlannerPage from "./features/grades/GradePlannerPage";
-import TrackerPage from "./features/tracker/TrackerPage";
 import CommunityPage from "./features/community/CommunityPage";
-import AnalyticsPage from "./features/analytics/AnalyticsPage";
-import MaterialsPage from "./features/materials/MaterialsPage";
 import StudyCenterPage from "./features/studycenter/StudyCenterPage";
 
 function PageLoading() {

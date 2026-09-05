@@ -13,6 +13,14 @@ urlpatterns = [
     path("courses/<int:course_id>/chat/", views.CourseChatView.as_view(), name="materials-course-chat"),
 
     # Materials
+    path("materials/", views.GlobalMaterialListCreateView.as_view(), name="materials-global-list-create"),
+    path("materials/stats/", views.MaterialStatsView.as_view(), name="materials-stats"),
     path("materials/<int:pk>/", views.StudyMaterialDetailView.as_view(), name="materials-material-detail"),
     path("materials/<int:pk>/analyze/", views.StudyMaterialAnalyzeView.as_view(), name="materials-material-analyze"),
+
+    # Direct top-level shortcuts for compatibility
+    path("", views.GlobalMaterialListCreateView.as_view(), name="material-list-create"),
+    path("stats/", views.MaterialStatsView.as_view(), name="material-stats"),
+    path("<int:pk>/", views.StudyMaterialDetailView.as_view(), name="material-detail"),
+    path("<int:pk>/analyze/", views.StudyMaterialAnalyzeView.as_view(), name="material-analyze"),
 ]

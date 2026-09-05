@@ -1,6 +1,10 @@
 import { useState } from "react";
+import { Check, GraduationCap, Plus, UserCheck, UserPlus, Users } from "lucide-react";
+import { motion } from "framer-motion";
+import Badge from "../../../components/Badge";
 import Button from "../../../components/Button";
 import Card from "../../../components/Card";
+import ScholarAvatar from "../../auth/components/ScholarAvatar";
 import { toggleFollowStudent } from "../api";
 
 export default function StudentCard({ student }) {
@@ -24,96 +28,64 @@ export default function StudentCard({ student }) {
     }
   }
 
-  const getInitials = (name) => {
-    if (!name) return "S";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
   return (
-    <Card
-      className="student-profile-card"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-      }}
+    <motion.div
+      whileHover={{ y: -4 }}
+      transition={{ duration: 0.18 }}
+      style={{ height: "100%" }}
     >
-      <div
-        style={{
-          display: "flex",
-          gap: "14px",
-          alignItems: "center",
-          marginBottom: "16px",
-        }}
-      >
-        <div
-          className="user-avatar"
-          style={{ width: "46px", height: "46px", fontSize: "1.125rem" }}
-        >
-          {getInitials(student.full_name)}
-        </div>
-        <div>
-          <h3 style={{ margin: 0, fontSize: "1.0625rem" }}>
-            {student.full_name || "Peer Scholar"}
+      <Card className="student-profile-vertical-card">
+        {/* Top Avatar & Name */}
+        <div className="student-card-top">
+          <div className="student-avatar-wrap">
+            <ScholarAvatar user={student} size={54} />
+          </div>
+
+          <h3 className="student-name">
+            {student.full_name || student.email?.split("@")[0] || "Peer Scholar"}
           </h3>
-          <span
-            style={{ fontSize: "0.8125rem", color: "var(--color-text-muted)" }}
-          >
-            {student.email}
-          </span>
-        </div>
-      </div>
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-around",
-          padding: "10px 0",
-          borderTop: "1px solid var(--color-border)",
-          borderBottom: "1px solid var(--color-border)",
-          margin: "8px 0 16px 0",
-        }}
-      >
-        <div style={{ textAlign: "center" }}>
-          <span
-            style={{ display: "block", fontWeight: 700, fontSize: "1.125rem" }}
-          >
-            {followersCount}
-          </span>
-          <span
-            style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}
-          >
-            Followers
-          </span>
+          <span className="student-email-sub">{student.email}</span>
+
+          {student.department ? (
+            <span className="student-dept-pill">
+              <GraduationCap size={12} />
+              <span>{student.department}</span>
+            </span>
+          ) : (
+            <span className="student-dept-pill text-muted">
+              <span>University Scholar</span>
+            </span>
+          )}
         </div>
 
-        <div style={{ textAlign: "center" }}>
-          <span
-            style={{ display: "block", fontWeight: 700, fontSize: "1.125rem" }}
-          >
-            {student.following_count || 0}
-          </span>
-          <span
-            style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}
-          >
-            Following
-          </span>
+        {/* Stats Row */}
+        <div className="student-stats-row">
+          <div className="student-stat-col">
+            <strong className="student-stat-num">{followersCount}</strong>
+            <span className="student-stat-lbl">Followers</span>
+          </div>
+          <div className="student-stat-divider" />
+          <div className="student-stat-col">
+            <strong className="student-stat-num">{student.following_count || 0}</strong>
+            <span className="student-stat-lbl">Following</span>
+          </div>
         </div>
-      </div>
 
-      <Button
-        variant={isFollowing ? "secondary" : "primary"}
-        onClick={handleToggleFollow}
-        disabled={loading}
-        className="btn-block"
-      >
-        {isFollowing ? "✓ Following" : "+ Follow Scholar"}
-      </Button>
-    </Card>
+        {/* Action Button */}
+        <div className="student-card-action">
+          <Button
+            variant={isFollowing ? "secondary" : "primary"}
+            size="sm"
+            onClick={handleToggleFollow}
+            disabled={loading}
+            icon={isFollowing ? UserCheck : UserPlus}
+            style={{ width: "100%", justifyContent: "center" }}
+          >
+            {isFollowing ? "Following" : "Follow"}
+          </Button>
+        </div>
+      </Card>
+    </motion.div>
   );
 }

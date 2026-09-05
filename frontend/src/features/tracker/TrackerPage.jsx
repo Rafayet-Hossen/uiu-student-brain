@@ -1,10 +1,26 @@
 import { useEffect, useState } from "react";
+import {
+  Award,
+  Calendar,
+  Clock,
+  Flame,
+  Pencil,
+  Plus,
+  Sparkles,
+  Timer,
+  Trash2,
+  TrendingUp,
+  X,
+  Zap,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Badge from "../../components/Badge";
 import Button from "../../components/Button";
 import Card from "../../components/Card";
-import FormError from "../../components/FormError";
+import EmptyState from "../../components/EmptyState";
+import ErrorState from "../../components/ErrorState";
 import Navbar from "../../components/Navbar";
-import Spinner from "../../components/Spinner";
+import { CardSkeleton } from "../../components/Skeleton";
 import {
   createStudySession,
   deleteStudySession,
@@ -40,9 +56,11 @@ export default function TrackerPage() {
         getRewards(),
       ]);
 
-      if (sessionsRes.status === "fulfilled") setSessions(sessionsRes.value);
-      if (streakRes.status === "fulfilled") setStreakData(streakRes.value);
-      if (rewardsRes.status === "fulfilled") setRewards(rewardsRes.value);
+      if (sessionsRes.status === "fulfilled")
+        setSessions(sessionsRes.value || []);
+      if (streakRes.status === "fulfilled")
+        setStreakData(streakRes.value || null);
+      if (rewardsRes.status === "fulfilled") setRewards(rewardsRes.value || []);
     } catch (err) {
       setError(extractTrackerErrorMessage(err));
     } finally {
@@ -60,7 +78,6 @@ export default function TrackerPage() {
 
     try {
       const session = await createStudySession(payload);
-      // Reload streak & rewards alongside sessions
       await loadTrackerData();
       return session;
     } catch (err) {
@@ -99,34 +116,20 @@ export default function TrackerPage() {
     setError("");
   }
 
+  function handleCancelForm() {
+    setEditingSession(null);
+    setShowForm(false);
+  }
+
   function handleEdit(session) {
     setEditingSession(session);
     setShowForm(true);
-    setError("");
-
-    setTimeout(() => {
-      document.getElementById("study-session-form")?.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-    }, 100);
-  }
-
-  function handleCancel() {
-    setEditingSession(null);
-    setShowForm(false);
-    setError("");
-  }
-
-  function handleAddSession() {
-    setEditingSession(null);
-    setShowForm((current) => !current);
     setError("");
   }
 
   async function handleDelete(sessionId) {
     const confirmed = window.confirm(
-      "Are you sure you want to delete this study session?",
+      "Remove this study session from your habit logs?",
     );
 
     if (!confirmed) return;
@@ -137,14 +140,26 @@ export default function TrackerPage() {
       await loadTrackerData();
 
       if (editingSession?.id === sessionId) {
-        handleCancel();
+        setEditingSession(null);
+        setShowForm(false);
       }
     } catch (err) {
       setError(extractTrackerErrorMessage(err));
     }
   }
 
-  const unlockedTrophiesCount = rewards.filter((r) => r.unlocked).length;
+  function handleAddSession() {
+    setEditingSession(null);
+    setShowForm((current) => !current);
+    setError("");
+  }
+
+  const totalStudyMinutes = sessions.reduce(
+    (total, session) => total + Number(session.duration_minutes || 0),
+    0,
+  );
+  const totalHours = Math.floor(totalStudyMinutes / 60);
+  const remainingMins = totalStudyMinutes % 60;
 
   return (
     <div className="app-screen">
@@ -156,170 +171,194 @@ export default function TrackerPage() {
           <div className="page-header-row">
             <div>
               <h1 className="page-title">
-                <span>⏱️</span>
-                <span>Study Tracker & Streaks</span>
+                <Timer size={28} className="text-amber" />
+                <span>Study Tracker & Focus Habits</span>
               </h1>
               <p className="page-description">
-                Log daily study sessions, maintain focus streaks, and unlock academic milestone trophies.
+                Log focused learning sessions, maintain uninterrupted habit
+                streaks, and unlock academic milestone badges.
               </p>
             </div>
 
-            <Button onClick={handleAddSession}>
-              {showForm && !editingSession ? "✕ Close Form" : "➕ Log Study Session"}
+            <Button
+              variant={showForm && !editingSession ? "secondary" : "primary"}
+              onClick={handleAddSession}
+              icon={showForm && !editingSession ? X : Plus}
+            >
+              {showForm && !editingSession ? "Close Form" : "Log Study Session"}
             </Button>
           </div>
         </div>
 
-        {/* Dynamic Streak & Daily Goal Hero Card */}
-        {!loading && streakData && (
+        {/* Top Streak & Summary Hero */}
+        <div style={{ marginBottom: "24px" }}>
           <StreakCard
             streakData={streakData}
-            onGoalUpdated={loadTrackerData}
+            totalHours={totalHours}
+            remainingMins={remainingMins}
+            sessionCount={sessions.length}
           />
-        )}
+        </div>
 
-        {/* Study Session Form Modal/Card */}
-        {showForm && (
-          <Card style={{ marginBottom: "28px" }}>
-            <div className="card-header">
-              <h2 className="card-title">
-                <span>{editingSession ? "✏️" : "📝"}</span>
-                <span>
-                  {editingSession
-                    ? "Edit Logged Session"
-                    : "Log New Study Session"}
-                </span>
-              </h2>
-            </div>
+        {/* Session Form */}
+        <AnimatePresence>
+          {showForm && (
+            <motion.div
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.2 }}
+            >
+              <StudySessionForm
+                session={editingSession}
+                onCreate={handleCreate}
+                onUpdate={handleUpdate}
+                onCreated={handleCreated}
+                onUpdated={handleUpdated}
+                onCancel={handleCancelForm}
+                submitting={submitting}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-            <StudySessionForm
-              session={editingSession}
-              onCreated={handleCreated}
-              onUpdated={handleUpdated}
-              onCancel={handleCancel}
-              createSession={handleCreate}
-              updateSession={handleUpdate}
-              submitting={submitting}
-            />
-          </Card>
-        )}
-
-        {/* Section Navigation Tabs */}
-        <div className="tracker-subnav-tabs">
+        {/* Tabs Bar */}
+        <div
+          className="community-tabs-bar"
+          style={{
+            marginBottom: "20px",
+            display: "flex",
+            gap: "8px",
+          }}
+        >
           <button
             type="button"
-            className={`tracker-subnav-tab ${
+            className={`community-tab-btn ${
               activeTab === "sessions" ? "tab-active" : ""
             }`}
             onClick={() => setActiveTab("sessions")}
           >
-            📋 Study Sessions ({sessions.length})
+            <Clock size={16} />
+            <span>Session Logs ({sessions.length})</span>
           </button>
           <button
             type="button"
-            className={`tracker-subnav-tab ${
+            className={`community-tab-btn ${
               activeTab === "rewards" ? "tab-active" : ""
             }`}
             onClick={() => setActiveTab("rewards")}
           >
-            🏆 Trophies & Rewards ({unlockedTrophiesCount}/{rewards.length})
+            <Award size={16} />
+            <span>Milestone Badges ({rewards.length})</span>
           </button>
         </div>
 
-        {/* Loading Spinner */}
+        {/* Loading Skeletons */}
         {loading && (
-          <Card className="empty-state-card">
-            <Spinner standalone />
-            <p className="page-loading-text">Loading your study progress...</p>
-          </Card>
+          <div className="schedules-grid">
+            <CardSkeleton />
+            <CardSkeleton />
+            <CardSkeleton />
+          </div>
         )}
 
-        {/* Error Alert */}
+        {/* Error State */}
         {!loading && error && (
-          <Card className="empty-state-card">
-            <FormError message={error} className="form-error-block" />
-            <Button onClick={loadTrackerData}>Try Again</Button>
-          </Card>
+          <ErrorState
+            title="Failed to load study tracker"
+            message={error}
+            onRetry={loadTrackerData}
+          />
         )}
 
-        {/* TAB 1: SESSIONS LOG */}
+        {/* TAB 1: SESSIONS LIST */}
         {!loading && !error && activeTab === "sessions" && (
-          <div>
+          <>
             {sessions.length === 0 && !showForm ? (
-              <Card className="empty-state-card">
-                <div className="empty-state-icon">⏱️</div>
-                <h2 className="empty-state-title">No study sessions logged yet</h2>
-                <p className="empty-state-desc">
-                  Track your daily study blocks, record notes and topic coverage, and build your study streak.
-                </p>
-                <Button onClick={handleAddSession}>Log Your First Session</Button>
-              </Card>
+              <EmptyState
+                icon={Timer}
+                title="No study sessions logged yet"
+                description="Log your first study block to start your consistency streak flame and unlock milestone badges."
+                actionLabel="Log Study Session Now"
+                onAction={handleAddSession}
+              />
             ) : (
-              <div className="sessions-grid">
-                {sessions.map((session) => {
-                  const sessionHours = Math.floor(
-                    session.duration_minutes / 60,
-                  );
-                  const sessionMins = session.duration_minutes % 60;
-                  const formattedDuration =
-                    sessionHours > 0
-                      ? `${sessionHours}h ${
-                          sessionMins > 0 ? `${sessionMins}m` : ""
-                        }`
-                      : `${sessionMins} mins`;
+              <div className="schedules-grid">
+                {sessions.map((session) => (
+                  <Card
+                    key={session.id}
+                    variant="feature"
+                    className="schedule-card"
+                  >
+                    <div>
+                      <div className="schedule-card-header">
+                        <h3 className="schedule-subject">{session.subject}</h3>
+                        <Badge variant="accent">
+                          {session.duration_minutes} mins
+                        </Badge>
+                      </div>
 
-                  return (
-                    <Card key={session.id} className="session-card">
-                      <div>
-                        <div className="session-header">
-                          <div>
-                            <h3 className="session-subject">{session.subject}</h3>
-                            <span
-                              style={{
-                                fontSize: "0.8125rem",
-                                color: "var(--color-text-muted)",
-                              }}
-                            >
-                              📅 {session.session_date}
-                            </span>
-                          </div>
-                          <Badge variant="accent">{formattedDuration}</Badge>
+                      <div className="schedule-meta-row">
+                        <div className="schedule-time-badge">
+                          <Calendar size={14} />
+                          <span>{session.session_date}</span>
                         </div>
-
-                        {session.notes && (
-                          <div style={{ marginTop: "12px" }}>
-                            <p className="session-notes">{session.notes}</p>
+                        {session.start_time && (
+                          <div className="schedule-time-badge">
+                            <Clock size={14} />
+                            <span>{session.start_time.slice(0, 5)}</span>
                           </div>
                         )}
                       </div>
 
-                      <div className="card-actions-row">
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => handleEdit(session)}
+                      {session.notes && (
+                        <p
+                          style={{
+                            fontSize: "0.875rem",
+                            color: "var(--color-text-muted)",
+                            margin: "12px 0 0",
+                            lineHeight: 1.5,
+                          }}
                         >
-                          ✏️ Edit
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="danger"
-                          onClick={() => handleDelete(session.id)}
-                        >
-                          🗑️ Delete
-                        </Button>
-                      </div>
-                    </Card>
-                  );
-                })}
+                          {session.notes}
+                        </p>
+                      )}
+                    </div>
+
+                    <div
+                      className="schedule-card-actions"
+                      style={{ marginTop: "16px" }}
+                    >
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        icon={Pencil}
+                        onClick={() => handleEdit(session)}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        icon={Trash2}
+                        onClick={() => handleDelete(session.id)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
               </div>
             )}
-          </div>
+          </>
         )}
 
-        {/* TAB 2: REWARDS & TROPHIES */}
+        {/* TAB 2: REWARDS SHELF */}
         {!loading && !error && activeTab === "rewards" && (
-          <RewardsShelf rewards={rewards} />
+          <RewardsShelf
+            rewards={rewards}
+            currentStreak={streakData?.current_streak || 0}
+          />
         )}
       </main>
     </div>

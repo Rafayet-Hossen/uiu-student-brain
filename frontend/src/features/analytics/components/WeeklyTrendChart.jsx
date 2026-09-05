@@ -1,11 +1,32 @@
 import Badge from "../../../components/Badge";
 
-export default function WeeklyTrendChart({ trend }) {
-  if (!trend || trend.length === 0) return null;
-
-  const maxMinutes = Math.max(...trend.map((t) => t.minutes), 60);
-  const totalWeeklyMins = trend.reduce((sum, item) => sum + item.minutes, 0);
+export default function WeeklyTrendChart({ trend = [] }) {
+  const safeTrend = Array.isArray(trend) ? trend : [];
+  const maxMinutes = Math.max(...safeTrend.map((t) => Number(t.minutes) || 0), 60);
+  const totalWeeklyMins = safeTrend.reduce((sum, item) => sum + (Number(item.minutes) || 0), 0);
   const totalWeeklyHours = (totalWeeklyMins / 60).toFixed(1);
+
+  if (safeTrend.length === 0) {
+    return (
+      <div className="analytics-card">
+        <div className="analytics-card-header">
+          <div>
+            <h3 className="analytics-card-title">
+              <span>📊</span>
+              <span>Weekly Focus Trend</span>
+            </h3>
+            <p className="analytics-card-desc">
+              Daily focus hours recorded across the past 7 days.
+            </p>
+          </div>
+          <Badge variant="default">0 hrs</Badge>
+        </div>
+        <div className="empty-chart-placeholder">
+          <p className="text-muted text-sm">No study sessions logged in the last 7 days.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="analytics-card">
@@ -13,7 +34,7 @@ export default function WeeklyTrendChart({ trend }) {
         <div>
           <h3 className="analytics-card-title">
             <span>📊</span>
-            <span>Weekly Study Trend</span>
+            <span>Weekly Focus Trend</span>
           </h3>
           <p className="analytics-card-desc">
             Daily focus hours recorded across the past 7 days.
@@ -23,22 +44,21 @@ export default function WeeklyTrendChart({ trend }) {
       </div>
 
       <div className="trend-bar-chart">
-        {trend.map((day) => {
-          const heightPct = Math.round((day.minutes / maxMinutes) * 100);
-          const isHighest = day.minutes > 0 && day.minutes === maxMinutes;
+        {safeTrend.map((day) => {
+          const mins = Number(day.minutes) || 0;
+          const heightPct = Math.round((mins / maxMinutes) * 100);
+          const isHighest = mins > 0 && mins === maxMinutes;
 
           return (
-            <div key={day.date} className="trend-bar-column">
+            <div key={day.date || day.day_name} className="trend-bar-column">
               <div className="trend-bar-track">
                 <div
-                  className={`trend-bar-fill ${
-                    isHighest ? "trend-bar-peak" : ""
-                  }`}
+                  className={`trend-bar-fill ${isHighest ? "trend-bar-peak" : ""}`}
                   style={{ height: `${Math.max(6, heightPct)}%` }}
-                  title={`${day.day_name} (${day.date}): ${day.minutes} mins (${day.sessions} sessions)`}
+                  title={`${day.day_name} (${day.date}): ${mins} mins (${day.sessions || 0} sessions)`}
                 >
-                  {day.minutes > 0 && (
-                    <span className="trend-bar-value">{day.minutes}m</span>
+                  {mins > 0 && (
+                    <span className="trend-bar-value">{mins}m</span>
                   )}
                 </div>
               </div>
@@ -50,4 +70,3 @@ export default function WeeklyTrendChart({ trend }) {
     </div>
   );
 }
-
