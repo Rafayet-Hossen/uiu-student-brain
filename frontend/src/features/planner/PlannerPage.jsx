@@ -21,7 +21,6 @@ import Button from "../../components/Button";
 import Card from "../../components/Card";
 import EmptyState from "../../components/EmptyState";
 import ErrorState from "../../components/ErrorState";
-import Navbar from "../../components/Navbar";
 import { CardSkeleton } from "../../components/Skeleton";
 import {
   deleteSchedule,
@@ -169,144 +168,140 @@ export default function PlannerPage() {
   }
 
   return (
-    <div className="app-screen">
-      <Navbar />
+    <div className="planner-page-container">
+      {/* Page Header */}
+      <div className="page-header">
+        <div className="page-header-row">
+          <div>
+            <h1 className="page-title">
+              <CalendarIcon size={28} className="text-indigo" />
+              <span>Study Planner & Timetable</span>
+            </h1>
+            <p className="page-description">
+              Organize coursework into focused weekly blocks, attach Drive
+              notes and video links, and maintain academic momentum.
+            </p>
+          </div>
 
-      <main className="main-content">
-        {/* Page Header */}
-        <div className="page-header">
-          <div className="page-header-row">
-            <div>
-              <h1 className="page-title">
-                <CalendarIcon size={28} className="text-indigo" />
-                <span>Study Planner & Timetable</span>
-              </h1>
-              <p className="page-description">
-                Organize coursework into focused weekly blocks, attach Drive
-                notes and video links, and maintain academic momentum.
-              </p>
-            </div>
-
-            <div
-              style={{
-                display: "flex",
-                gap: "10px",
-                alignItems: "center",
-                flexWrap: "wrap",
-              }}
-            >
-              {/* View Toggle */}
-              <div className="planner-view-toggle">
-                <button
-                  type="button"
-                  className={`view-toggle-btn ${
-                    viewMode === "calendar" ? "btn-active" : ""
-                  }`}
-                  onClick={() => setViewMode("calendar")}
-                >
-                  <CalendarIcon size={14} />
-                  <span>Calendar</span>
-                </button>
-                <button
-                  type="button"
-                  className={`view-toggle-btn ${
-                    viewMode === "list" ? "btn-active" : ""
-                  }`}
-                  onClick={() => setViewMode("list")}
-                >
-                  <List size={14} />
-                  <span>Routine Cards</span>
-                </button>
-              </div>
-
-              <Button
-                variant={showForm && !editingSchedule ? "secondary" : "primary"}
-                onClick={handleAddSchedule}
-                icon={showForm && !editingSchedule ? X : Plus}
+          <div
+            style={{
+              display: "flex",
+              gap: "10px",
+              alignItems: "center",
+              flexWrap: "wrap",
+            }}
+          >
+            {/* View Toggle */}
+            <div className="planner-view-toggle">
+              <button
+                type="button"
+                className={`view-toggle-btn ${
+                  viewMode === "calendar" ? "btn-active" : ""
+                }`}
+                onClick={() => setViewMode("calendar")}
               >
-                {showForm && !editingSchedule ? "Close Form" : "Add Routine"}
-              </Button>
+                <CalendarIcon size={14} />
+                <span>Calendar</span>
+              </button>
+              <button
+                type="button"
+                className={`view-toggle-btn ${
+                  viewMode === "list" ? "btn-active" : ""
+                }`}
+                onClick={() => setViewMode("list")}
+              >
+                <List size={14} />
+                <span>Routine Cards</span>
+              </button>
             </div>
+
+            <Button
+              variant={showForm && !editingSchedule ? "secondary" : "primary"}
+              onClick={handleAddSchedule}
+              icon={showForm && !editingSchedule ? X : Plus}
+            >
+              {showForm && !editingSchedule ? "Close Form" : "Add Routine"}
+            </Button>
           </div>
         </div>
+      </div>
 
-        {/* Schedule Form */}
-        <AnimatePresence>
-          {showForm && (
-            <motion.div
-              initial={{ opacity: 0, y: -12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.2 }}
-            >
-              <ScheduleForm
-                schedule={editingSchedule}
-                initialValues={formInitialValues}
-                onCreated={handleCreated}
-                onUpdated={handleUpdated}
-                onCancel={handleCancelForm}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Loading Skeletons */}
-        {loading && (
-          <div className="schedules-grid">
-            <CardSkeleton />
-            <CardSkeleton />
-            <CardSkeleton />
-          </div>
-        )}
-
-        {/* Error State */}
-        {!loading && error && (
-          <ErrorState
-            title="Failed to load study routines"
-            message={error}
-            onRetry={loadSchedules}
-          />
-        )}
-
-        {/* Empty State */}
-        {!loading && !error && schedules.length === 0 && !showForm && (
-          <EmptyState
-            icon={CalendarIcon}
-            title="No study routines scheduled yet"
-            description="Create your first structured routine to see time slots blocked on your weekly calendar and stay on track with exam deadlines."
-            actionLabel="Create Routine Now"
-            onAction={handleAddSchedule}
-          />
-        )}
-
-        {/* Mode 1: CALENDAR VIEW */}
-        {!loading &&
-          !error &&
-          schedules.length > 0 &&
-          viewMode === "calendar" && (
-            <CalendarView
-              schedules={schedules}
-              onEditSchedule={handleEdit}
-              onDeleteSchedule={handleDelete}
-              onSlotClick={handleSlotClick}
+      {/* Schedule Form */}
+      <AnimatePresence>
+        {showForm && (
+          <motion.div
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.2 }}
+          >
+            <ScheduleForm
+              schedule={editingSchedule}
+              initialValues={formInitialValues}
+              onCreated={handleCreated}
+              onUpdated={handleUpdated}
+              onCancel={handleCancelForm}
             />
-          )}
-
-        {/* Mode 2: LIST / CARDS VIEW */}
-        {!loading && !error && schedules.length > 0 && viewMode === "list" && (
-          <div className="schedules-grid">
-            {schedules.map((schedule) => (
-              <RoutineCard
-                key={schedule.id}
-                schedule={schedule}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                isHighlighted={Number(schedule.id) === Number(highlightedId)}
-              />
-            ))}
-          </div>
+          </motion.div>
         )}
-      </main>
+      </AnimatePresence>
+
+      {/* Loading Skeletons */}
+      {loading && (
+        <div className="schedules-grid">
+          <CardSkeleton />
+          <CardSkeleton />
+          <CardSkeleton />
+        </div>
+      )}
+
+      {/* Error State */}
+      {!loading && error && (
+        <ErrorState
+          title="Failed to load study routines"
+          message={error}
+          onRetry={loadSchedules}
+        />
+      )}
+
+      {/* Empty State */}
+      {!loading && !error && schedules.length === 0 && !showForm && (
+        <EmptyState
+          icon={CalendarIcon}
+          title="No study routines scheduled yet"
+          description="Create your first structured routine to see time slots blocked on your weekly calendar and stay on track with exam deadlines."
+          actionLabel="Create Routine Now"
+          onAction={handleAddSchedule}
+        />
+      )}
+
+      {/* Mode 1: CALENDAR VIEW */}
+      {!loading &&
+        !error &&
+        schedules.length > 0 &&
+        viewMode === "calendar" && (
+          <CalendarView
+            schedules={schedules}
+            onEditSchedule={handleEdit}
+            onDeleteSchedule={handleDelete}
+            onSlotClick={handleSlotClick}
+          />
+        )}
+
+      {/* Mode 2: LIST / CARDS VIEW */}
+      {!loading && !error && schedules.length > 0 && viewMode === "list" && (
+        <div className="schedules-grid">
+          {schedules.map((schedule) => (
+            <RoutineCard
+              key={schedule.id}
+              schedule={schedule}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              isHighlighted={Number(schedule.id) === Number(highlightedId)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

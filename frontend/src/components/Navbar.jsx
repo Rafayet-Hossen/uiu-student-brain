@@ -261,7 +261,9 @@ export default function Navbar() {
             >
               <div className="drawer-header-row">
                 <div className="drawer-brand-wrap">
-                  <GraduationCap size={22} className="brand-logo-svg" />
+                  <div className="navbar-brand-icon-box">
+                    <GraduationCap size={18} className="brand-logo-svg" />
+                  </div>
                   <span className="drawer-brand-title">
                     Student<span className="brand-accent-text">Brain</span>
                   </span>
@@ -283,6 +285,11 @@ export default function Navbar() {
                       {user.full_name || "Scholar"}
                     </strong>
                     <span className="drawer-user-email">{user.email}</span>
+                    {user.department && (
+                      <span className="identity-dept-badge">
+                        🎓 {user.department}
+                      </span>
+                    )}
                   </div>
                 </div>
               )}

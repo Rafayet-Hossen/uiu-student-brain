@@ -1,4 +1,5 @@
 import { useSearchParams } from "react-router-dom";
+import Navbar from "../../components/Navbar";
 import MaterialsPage from "../materials/MaterialsPage";
 import PlannerPage from "../planner/PlannerPage";
 import TrackerPage from "../tracker/TrackerPage";
@@ -42,44 +43,50 @@ export default function StudyCenterPage() {
   const activeTabMeta = tabs.find((t) => t.id === currentTab) || tabs[0];
 
   return (
-    <div className="study-center-wrapper">
-      {/* Study Center Master Header */}
-      <div className="study-center-top-header">
-        <div className="study-center-title-group">
-          <div className="study-center-badge-icon">🏛️</div>
-          <div>
-            <h1 className="study-center-main-title">Study Center</h1>
-            <p className="study-center-tagline">
-              Your centralized academic workspace for curriculum materials, schedule planning, and performance intelligence.
-            </p>
+    <div className="app-screen">
+      <Navbar />
+
+      <main className="main-content">
+        <div className="study-center-wrapper">
+          {/* Study Center Master Header */}
+          <div className="study-center-top-header">
+            <div className="study-center-title-group">
+              <div className="study-center-badge-icon">🏛️</div>
+              <div>
+                <h1 className="study-center-main-title">Study Center</h1>
+                <p className="study-center-tagline">
+                  Your centralized academic workspace for curriculum materials, schedule planning, and performance intelligence.
+                </p>
+              </div>
+            </div>
+
+            {/* Sub-Nav Tab Switcher Bar */}
+            <nav className="study-center-nav-tabs" aria-label="Study Center Modules">
+              {tabs.map((tab) => {
+                const isActive = currentTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    className={`study-center-nav-tab ${isActive ? "study-center-tab-active" : ""}`}
+                    onClick={() => handleTabChange(tab.id)}
+                  >
+                    <span className="tab-icon-emoji">{tab.icon}</span>
+                    <span className="tab-label-text">{tab.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+
+          {/* Active Tab View Body */}
+          <div className="study-center-view-body">
+            {currentTab === "materials" && <MaterialsPage />}
+            {currentTab === "planner" && <PlannerPage />}
+            {currentTab === "tracker" && <TrackerPage />}
+            {currentTab === "analytics" && <AnalyticsPage />}
           </div>
         </div>
-
-        {/* Sub-Nav Tab Switcher Bar */}
-        <nav className="study-center-nav-tabs" aria-label="Study Center Modules">
-          {tabs.map((tab) => {
-            const isActive = currentTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                className={`study-center-nav-tab ${isActive ? "study-center-tab-active" : ""}`}
-                onClick={() => handleTabChange(tab.id)}
-              >
-                <span className="tab-icon-emoji">{tab.icon}</span>
-                <span className="tab-label-text">{tab.label}</span>
-              </button>
-            );
-          })}
-        </nav>
-      </div>
-
-      {/* Active Tab View Body */}
-      <main className="study-center-view-body">
-        {currentTab === "materials" && <MaterialsPage />}
-        {currentTab === "planner" && <PlannerPage />}
-        {currentTab === "tracker" && <TrackerPage />}
-        {currentTab === "analytics" && <AnalyticsPage />}
       </main>
     </div>
   );

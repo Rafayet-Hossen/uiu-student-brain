@@ -310,6 +310,7 @@
   pointer-events: none;
 }
 
+.form-input,
 .form-input-control {
   width: 100%;
   padding: 10px 14px;
@@ -319,31 +320,55 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
+  box-sizing: border-box;
   transition:
     border-color 0.15s ease,
-    box-shadow 0.15s ease;
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
   outline: none;
 }
 
-.form-input-control.input-with-leading-icon {
+.form-input::placeholder,
+.form-input-control::placeholder {
+  color: var(--color-text-subtle, #94a3b8);
+  font-size: 0.875rem;
+}
+
+.form-input-sm {
+  padding: 7px 12px !important;
+  font-size: 0.8125rem !important;
+  border-radius: var(--radius-sm, 8px) !important;
+}
+
+.form-input-sm::placeholder {
+  font-size: 0.8125rem !important;
+}
+
+.form-input-control.input-with-leading-icon,
+.form-input.input-with-leading-icon {
   padding-left: 40px;
 }
 
+.form-input:hover:not(:disabled),
 .form-input-control:hover:not(:disabled) {
   border-color: var(--color-text-muted);
 }
 
+.form-input:focus,
 .form-input-control:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px var(--color-primary-subtle);
+  background: var(--color-surface);
 }
 
-.form-input-control.input-error-state {
+.form-input-control.input-error-state,
+.form-input.input-error-state {
   border-color: var(--color-danger);
   box-shadow: 0 0 0 3px var(--color-danger-subtle);
 }
 
-.form-input-control.input-success-state {
+.form-input-control.input-success-state,
+.form-input.input-success-state {
   border-color: var(--color-secondary);
 }
 
@@ -710,80 +735,230 @@
   color: var(--color-danger);
 }
 
-/* Mobile Drawer */
-.mobile-drawer-trigger {
-  background: none;
-  border: 1px solid var(--color-border);
+/* --------------------------------------------------------------------------
+   Mobile Hamburger Button & Mobile Drawer Panel (Redesign v3)
+   -------------------------------------------------------------------------- */
+.mobile-hamburger-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
   border-radius: var(--radius-md);
-  padding: 6px 10px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   color: var(--color-text);
   cursor: pointer;
+  transition: all 0.15s ease;
 }
 
-.mobile-slide-drawer {
+.mobile-hamburger-btn:hover {
+  background: var(--color-surface-subtle);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.mobile-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.mobile-drawer-sheet {
+  width: min(340px, 85vw);
+  height: 100%;
   background: var(--color-surface);
-  border-top: 1px solid var(--color-border);
-  padding: 16px;
+  border-left: 1px solid var(--color-border);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  box-shadow: var(--shadow-lg);
+  padding: 20px 20px 28px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  gap: 20px;
 }
 
-.mobile-drawer-links-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-
-.mobile-drawer-card-link {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--color-text);
-  background: var(--color-surface-subtle);
-  border-radius: var(--radius-md);
-  text-decoration: none;
-}
-
-.mobile-drawer-card-link:hover,
-.mobile-drawer-active {
-  background: var(--color-primary-subtle) !important;
-  color: var(--color-primary) !important;
-}
-
-.mobile-drawer-bottom-row {
+.drawer-header-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 10px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.drawer-brand-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.drawer-brand-title {
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 800;
+  font-size: 1.15rem;
+  letter-spacing: -0.03em;
+  color: var(--color-text);
+}
+
+.drawer-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-subtle);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.drawer-close-btn:hover {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--color-text-muted);
+}
+
+.drawer-user-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.drawer-user-card .scholar-avatar-circle {
+  flex-shrink: 0;
+}
+
+.drawer-user-card > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.drawer-user-name {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.drawer-user-email {
+  font-size: 0.78125rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.drawer-links-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.drawer-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.drawer-nav-item:hover {
+  background: var(--color-surface-subtle);
+  color: var(--color-text);
+}
+
+.drawer-nav-active {
+  background: var(--color-primary-subtle) !important;
+  color: var(--color-primary) !important;
+  font-weight: 700;
+}
+
+.drawer-footer-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 14px;
   border-top: 1px solid var(--color-border-subtle);
 }
 
-.mobile-drawer-profile-btn {
+.drawer-footer-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: none;
-  border: none;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--color-primary);
+  color: var(--color-text);
   cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
 }
 
-.mobile-drawer-logout-btn {
+.drawer-footer-btn:hover {
+  background: var(--color-surface);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.drawer-footer-btn.text-danger:hover {
+  background: var(--color-danger-subtle);
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.drawer-guest-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn-drawer-login,
+.btn-drawer-register {
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: none;
-  border: none;
+  justify-content: center;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
   font-size: 0.875rem;
-  color: var(--color-danger);
-  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.btn-drawer-login {
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.btn-drawer-register {
+  background: var(--color-primary);
+  color: #ffffff;
 }
 
 /* --------------------------------------------------------------------------
@@ -839,7 +1014,8 @@
    9. Responsive Breakpoint Helpers
    -------------------------------------------------------------------------- */
 @media (min-width: 961px) {
-  .mobile-tablet-only {
+  .mobile-tablet-only,
+  .mobile-only {
     display: none !important;
   }
 }
@@ -847,6 +1023,10 @@
 @media (max-width: 960px) {
   .desktop-only {
     display: none !important;
+  }
+
+  .mobile-only {
+    display: inline-flex !important;
   }
 }
 
