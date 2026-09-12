@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 
 from . import services
 from .serializers import (
+    QuizEvaluationRequestSerializer,
     QuizGenerationRequestSerializer,
     RiskAssessmentRequestSerializer,
     TopicExtractionRequestSerializer,
@@ -52,6 +53,7 @@ class QuizGenerationView(APIView):
             topics=serializer.validated_data["topics"],
             num_questions=serializer.validated_data.get("num_questions", 5),
             difficulty=serializer.validated_data.get("difficulty", "Intermediate"),
+            force_refresh=serializer.validated_data.get("force_refresh", False),
         )
         return Response(data, status=status.HTTP_200_OK)
 
@@ -74,4 +76,19 @@ class RiskAssessmentView(APIView):
             weak_topics=serializer.validated_data.get("weak_topics", []),
         )
         return Response(data, status=status.HTTP_200_OK)
+
+
+class QuizEvaluationView(APIView):
+    """POST /api/ai/quiz/evaluate/ - Analyzes student answers, scores performance, and identifies weak sub-topics."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = QuizEvaluationRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = services.analyze_quiz_weakness(
+            subject=serializer.validated_data["subject"],
+            question_results=serializer.validated_data["question_results"],
+        )
+        return Response(data, status=status.HTTP_200_OK)
+
 

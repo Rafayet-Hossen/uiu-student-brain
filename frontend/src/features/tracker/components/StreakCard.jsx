@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { Flame, Sparkles, Target, Zap } from "lucide-react";
 import Badge from "../../../components/Badge";
 import Button from "../../../components/Button";
 import Input from "../../../components/Input";
@@ -11,16 +12,32 @@ export default function StreakCard({ streakData, onGoalUpdated }) {
   );
   const [saving, setSaving] = useState(false);
 
+  const weekly_consistency = streakData?.weekly_consistency || [];
+
+  // Compute 7-day consistency stats
+  const { totalWeekMinutes, activeDaysCount, goalsMetCount } = useMemo(() => {
+    const totalMins = weekly_consistency.reduce(
+      (sum, d) => sum + (d.minutes || 0),
+      0,
+    );
+    const activeDays = weekly_consistency.filter((d) => d.studied).length;
+    const goalsMet = weekly_consistency.filter((d) => d.goal_met).length;
+    return {
+      totalWeekMinutes: totalMins,
+      activeDaysCount: activeDays,
+      goalsMetCount: goalsMet,
+    };
+  }, [weekly_consistency]);
+
   if (!streakData) return null;
 
   const {
-    current_streak,
-    longest_streak,
-    today_minutes,
-    daily_goal_minutes,
-    daily_goal_achieved,
-    studied_today,
-    weekly_consistency,
+    current_streak = 0,
+    longest_streak = 0,
+    today_minutes = 0,
+    daily_goal_minutes = 60,
+    daily_goal_achieved = false,
+    studied_today = false,
   } = streakData;
 
   const goalPercent = Math.min(
@@ -45,6 +62,26 @@ export default function StreakCard({ streakData, onGoalUpdated }) {
     }
   }
 
+  // Helper to format short date "9 Sep"
+  const formatShortDate = (dateStr) => {
+    if (!dateStr) return "";
+    try {
+      const parts = dateStr.split("-");
+      if (parts.length === 3) {
+        const d = new Date(parts[0], parts[1] - 1, parts[2]);
+        return d.toLocaleDateString(undefined, {
+          day: "numeric",
+          month: "short",
+        });
+      }
+      return dateStr;
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const todayIso = new Date().toISOString().slice(0, 10);
+
   return (
     <div className="streak-hero-card">
       <div className="streak-main-row">
@@ -63,8 +100,8 @@ export default function StreakCard({ streakData, onGoalUpdated }) {
             {studied_today
               ? "⚡ Streak active for today! Great dedication."
               : current_streak > 0
-              ? "⏳ Log study time today to keep your streak alive!"
-              : "🌱 Start your streak today by logging a session."}
+                ? "⏳ Log study time today to keep your streak alive!"
+                : "🌱 Start your streak today by logging a session."}
           </p>
         </div>
 
@@ -72,9 +109,11 @@ export default function StreakCard({ streakData, onGoalUpdated }) {
         <div className="daily-goal-section">
           <div className="daily-goal-header">
             <div className="daily-goal-title-wrap">
-              <span className="daily-goal-label">Today's Study Goal</span>
+              <span className="daily-goal-label">Today's Study Target</span>
               {daily_goal_achieved ? (
-                <Badge variant="success">🎯 Goal Met</Badge>
+                <Badge variant="success">
+                  🎯 Target Met ({today_minutes}m)
+                </Badge>
               ) : (
                 <Badge variant="accent">
                   {today_minutes} / {daily_goal_minutes}m
@@ -87,7 +126,7 @@ export default function StreakCard({ streakData, onGoalUpdated }) {
               className="goal-edit-toggle"
               onClick={() => setEditingGoal(!editingGoal)}
             >
-              {editingGoal ? "Cancel" : "⚙️ Edit Goal"}
+              {editingGoal ? "Cancel" : "⚙️ Edit Target"}
             </button>
           </div>
 
@@ -104,8 +143,13 @@ export default function StreakCard({ streakData, onGoalUpdated }) {
                 onChange={(e) => setGoalInput(e.target.value)}
                 disabled={saving}
               />
-              <Button type="submit" size="sm" loading={saving} disabled={saving}>
-                Save Goal
+              <Button
+                type="submit"
+                size="sm"
+                loading={saving}
+                disabled={saving}
+              >
+                Save Target
               </Button>
             </form>
           ) : (
@@ -125,34 +169,119 @@ export default function StreakCard({ streakData, onGoalUpdated }) {
         </div>
       </div>
 
-      {/* 7-Day Consistency Week Strip */}
+      {/* Gamified 7-Day Consistency Tracker */}
       <div className="weekly-streak-strip">
-        <span className="weekly-strip-title">7-Day Study Consistency</span>
-        <div className="weekly-dots-container">
-          {weekly_consistency?.map((item) => (
-            <div
-              key={item.date}
-              className={`weekly-day-dot ${
-                item.goal_met
-                  ? "dot-goal-met"
-                  : item.studied
-                  ? "dot-studied"
-                  : "dot-empty"
-              }`}
-              title={`${item.day_name} (${item.date}): ${item.minutes} mins studied`}
-            >
-              <span className="dot-day-name">{item.day_name}</span>
-              <span className="dot-indicator">
-                {item.goal_met ? "⭐" : item.studied ? "✓" : "·"}
-              </span>
-              <span className="dot-mins">
-                {item.minutes > 0 ? `${item.minutes}m` : "0m"}
+        <div className="weekly-strip-header">
+          <div className="weekly-strip-title-group">
+            <span className="weekly-strip-title">7-Day Study Consistency</span>
+            <span className="weekly-strip-subtitle">
+              Daily habit velocity & target achievements
+            </span>
+          </div>
+
+          <div className="weekly-strip-metrics">
+            <div className="weekly-metric-chip active-days">
+              <Zap size={12} className="text-amber" />
+              <span>{activeDaysCount}/7 Active Days</span>
+            </div>
+            <div className="weekly-metric-chip goals-met">
+              <Target size={12} className="text-emerald" />
+              <span>{goalsMetCount} Targets Met</span>
+            </div>
+            <div className="weekly-metric-chip total-focus">
+              <Flame size={12} className="text-purple" />
+              <span>
+                {Math.round((totalWeekMinutes / 60) * 10) / 10}h Focused
               </span>
             </div>
-          ))}
+          </div>
+        </div>
+
+        <div className="weekly-days-grid">
+          {weekly_consistency?.map((item, idx) => {
+            const isToday =
+              item.date === todayIso || idx === weekly_consistency.length - 1;
+            const targetMins = daily_goal_minutes || 60;
+            const pct = Math.min(
+              100,
+              Math.round(((item.minutes || 0) / targetMins) * 100),
+            );
+            const fillHeight = Math.max(item.studied ? 16 : 0, pct);
+
+            return (
+              <div
+                key={item.date}
+                className={`weekly-day-card ${
+                  item.goal_met
+                    ? "day-goal-met"
+                    : item.studied
+                      ? "day-studied"
+                      : "day-rest"
+                } ${isToday ? "day-today" : ""}`}
+                title={`${item.day_name}, ${formatShortDate(item.date)}: ${
+                  item.minutes
+                } mins studied (${pct}% of target)${
+                  item.goal_met ? " • Target Met!" : ""
+                }`}
+              >
+                {/* Day Header */}
+                <div className="day-card-header">
+                  <span className="day-card-name">{item.day_name}</span>
+                  {isToday ? (
+                    <span className="day-card-today-badge">Today</span>
+                  ) : (
+                    <span className="day-card-date">
+                      {formatShortDate(item.date)}
+                    </span>
+                  )}
+                </div>
+
+                {/* Cylinder Progress Gauge */}
+                <div className="cylinder-gauge-container">
+                  <div className="cylinder-gauge-track">
+                    <div
+                      className={`cylinder-gauge-fill ${
+                        item.goal_met
+                          ? "fill-goal-met"
+                          : item.studied
+                            ? "fill-studied"
+                            : "fill-empty"
+                      }`}
+                      style={{ height: `${fillHeight}%` }}
+                    />
+                  </div>
+
+                  <div className="cylinder-badge-icon">
+                    {item.goal_met ? (
+                      <span className="icon-met" title="Goal Met">
+                        ⭐
+                      </span>
+                    ) : item.studied ? (
+                      <span className="icon-studied" title="Studied">
+                        ⚡
+                      </span>
+                    ) : (
+                      <span className="icon-rest" title="Rest Day">
+                        ·
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Minutes & Completion Footer */}
+                <div className="day-card-footer">
+                  <span className="day-card-mins">
+                    {item.minutes > 0 ? `${item.minutes}m` : "0m"}
+                  </span>
+                  <span className="day-card-pct">
+                    {pct > 0 ? `${pct}%` : "—"}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
   );
 }
-

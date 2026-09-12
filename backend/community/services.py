@@ -100,6 +100,29 @@ def delete_comment(*, comment_id: int, user) -> None:
     comment.delete()
 
 
+def mark_comment_helpful(*, comment_id: int, user) -> dict:
+    comment = Comment.objects.select_related("post", "author").get(id=comment_id)
+    post = comment.post
+    if post.author != user:
+        raise PermissionDenied("Only the author of the post can mark a solution as helpful.")
+
+    # Toggle helpful status
+    comment.is_helpful = not comment.is_helpful
+    comment.save(update_fields=["is_helpful"])
+
+    # Update post solved status
+    post.is_solved = comment.is_helpful
+    post.solved_comment = comment if comment.is_helpful else None
+    post.save(update_fields=["is_solved", "solved_comment"])
+
+    return {
+        "comment_id": comment.id,
+        "is_helpful": comment.is_helpful,
+        "is_solved": post.is_solved,
+        "solved_comment_id": post.solved_comment_id,
+    }
+
+
 # ============================================================
 # STUDY EVENT SERVICES
 # ============================================================
@@ -107,6 +130,8 @@ def delete_comment(*, comment_id: int, user) -> None:
 def list_upcoming_events(*, user) -> QuerySet[StudyEvent]:
     return StudyEvent.objects.select_related("creator").annotate(
         rsvp_count=Count("rsvps", distinct=True),
+        going_count=Count("rsvps", filter=Q(rsvps__status="going"), distinct=True),
+        interested_count=Count("rsvps", filter=Q(rsvps__status__in=["interested", "going"]), distinct=True),
         is_rsvped=Exists(
             EventRSVP.objects.filter(event=OuterRef("pk"), user=user)
         ),
@@ -129,15 +154,33 @@ def toggle_event_rsvp(*, user, event_id: int, status: str = "going") -> dict:
     event = StudyEvent.objects.get(id=event_id)
     rsvp = EventRSVP.objects.filter(event=event, user=user).first()
 
-    if rsvp:
-        rsvp.delete()
-        rsvped = False
-    else:
-        EventRSVP.objects.create(event=event, user=user, status=status)
-        rsvped = True
+    norm_status = "interested" if str(status).lower() == "interested" else "going"
 
-    rsvp_count = EventRSVP.objects.filter(event=event).count()
-    return {"rsvped": rsvped, "rsvp_count": rsvp_count}
+    if rsvp:
+        if rsvp.status == norm_status:
+            rsvp.delete()
+            user_rsvp_status = None
+        else:
+            rsvp.status = norm_status
+            rsvp.save(update_fields=["status"])
+            user_rsvp_status = norm_status
+    else:
+        EventRSVP.objects.create(event=event, user=user, status=norm_status)
+        user_rsvp_status = norm_status
+
+    going_count = EventRSVP.objects.filter(event=event, status="going").count()
+    interested_count = EventRSVP.objects.filter(event=event, status="interested").count()
+    interested_count = EventRSVP.objects.filter(event=event, status__in=["interested", "going"]).count()
+    return {
+        "rsvped": user_rsvp_status is not None,
+        "user_rsvp_status": user_rsvp_status,
+        "going_count": going_count,
+        "interested_count": interested_count,
+        "rsvp_count": going_count + interested_count,
+        "rsvps_count": going_count + interested_count,
+        "rsvp_count": going_count,
+        "rsvps_count": going_count,
+    }
 
 
 # ============================================================

@@ -30,6 +30,7 @@ import {
   getGradePlans,
 } from "./api";
 import GradePlanForm from "./components/GradePlanForm";
+import CourseRetakeAdvisor from "./components/CourseRetakeAdvisor";
 
 export default function GradePlannerPage() {
   const [plans, setPlans] = useState([]);
@@ -149,7 +150,8 @@ export default function GradePlannerPage() {
                 <span>Grade Planner & Degree Projections</span>
               </h1>
               <p className="page-description">
-                Forecast required semester grades across remaining credits, plan study terms, and secure graduation honors.
+                Forecast required semester grades across remaining credits, plan
+                study terms, and secure graduation honors.
               </p>
             </div>
 
@@ -180,6 +182,9 @@ export default function GradePlannerPage() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* AI Course Retake Optimizer & Advisor */}
+        <CourseRetakeAdvisor />
 
         {/* Loading Skeletons */}
         {loading && (
@@ -224,7 +229,13 @@ export default function GradePlannerPage() {
                     <div>
                       {/* Top Header Row */}
                       <div className="grade-card-header">
-                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "10px",
+                          }}
+                        >
                           <div
                             style={{
                               width: "38px",
@@ -244,13 +255,18 @@ export default function GradePlannerPage() {
                               {plan.degree_name || "Bachelor's Degree Plan"}
                             </h3>
                             <span className="grade-plan-sub">
-                              Target Cumulative CGPA: <strong>{Number(plan.target_gpa).toFixed(2)}</strong>
+                              Target Cumulative CGPA:{" "}
+                              <strong>
+                                {Number(plan.target_gpa).toFixed(2)}
+                              </strong>
                             </span>
                           </div>
                         </div>
 
                         <Badge variant={proj.possible ? "success" : "accent"}>
-                          {proj.possible ? "Target On Track" : "Academic Push Required"}
+                          {proj.possible
+                            ? "Target On Track"
+                            : "Academic Push Required"}
                         </Badge>
                       </div>
 
@@ -267,13 +283,17 @@ export default function GradePlannerPage() {
                         </div>
 
                         <div className="grade-metric-box">
-                          <span className="metric-box-label">Required Semester GPA</span>
+                          <span className="metric-box-label">
+                            Required Semester GPA
+                          </span>
                           <strong
                             className={`metric-box-val ${
                               proj.possible ? "text-emerald" : "text-amber"
                             }`}
                           >
-                            {proj.requiredGpa ? `${proj.requiredGpa}` : "Achieved 🎉"}
+                            {proj.requiredGpa
+                              ? `${proj.requiredGpa}`
+                              : "Achieved 🎉"}
                           </strong>
                           <span className="metric-box-sub">
                             on {proj.remainingCredits} remaining credits
@@ -281,12 +301,15 @@ export default function GradePlannerPage() {
                         </div>
 
                         <div className="grade-metric-box">
-                          <span className="metric-box-label">Degree Completion</span>
+                          <span className="metric-box-label">
+                            Degree Completion
+                          </span>
                           <strong className="metric-box-val text-emerald">
                             {proj.percentComplete}%
                           </strong>
                           <span className="metric-box-sub">
-                            {plan.completed_credits} / {plan.total_credits} total credits
+                            {plan.completed_credits} / {plan.total_credits}{" "}
+                            total credits
                           </span>
                         </div>
                       </div>
@@ -300,7 +323,9 @@ export default function GradePlannerPage() {
                           />
                         </div>
                         <div className="degree-progress-bar-labels">
-                          <span>{plan.completed_credits} credits completed</span>
+                          <span>
+                            {plan.completed_credits} credits completed
+                          </span>
                           <span>{proj.remainingCredits} credits remaining</span>
                           <span>{plan.total_credits} total</span>
                         </div>
@@ -336,7 +361,14 @@ export default function GradePlannerPage() {
                               style={{ flexShrink: 0, marginTop: "2px" }}
                             />
                             <span>
-                              <strong>Academic Roadmap</strong>: Maintaining a term average of <strong>{proj.requiredGpa} GPA</strong> across your remaining <strong>{proj.remainingCredits} credits</strong> will successfully achieve your <strong>{plan.target_gpa} CGPA</strong> graduation goal.
+                              <strong>Academic Roadmap</strong>: Maintaining a
+                              term average of{" "}
+                              <strong>{proj.requiredGpa} GPA</strong> across
+                              your remaining{" "}
+                              <strong>{proj.remainingCredits} credits</strong>{" "}
+                              will successfully achieve your{" "}
+                              <strong>{plan.target_gpa} CGPA</strong> graduation
+                              goal.
                             </span>
                           </>
                         ) : (
@@ -347,7 +379,14 @@ export default function GradePlannerPage() {
                               style={{ flexShrink: 0, marginTop: "2px" }}
                             />
                             <span>
-                              <strong>Academic Advisor Tip</strong>: Reaching a <strong>{plan.target_gpa} CGPA</strong> requires a <strong>{proj.requiredGpa} GPA</strong> on your remaining <strong>{proj.remainingCredits} credits</strong>. Achieving maximum grades (4.00) in all remaining courses will bring your final CGPA to <strong>~{proj.maxPossibleGpa}</strong>!
+                              <strong>Academic Advisor Tip</strong>: Reaching a{" "}
+                              <strong>{plan.target_gpa} CGPA</strong> requires a{" "}
+                              <strong>{proj.requiredGpa} GPA</strong> on your
+                              remaining{" "}
+                              <strong>{proj.remainingCredits} credits</strong>.
+                              Achieving maximum grades (4.00) in all remaining
+                              courses will bring your final CGPA to{" "}
+                              <strong>~{proj.maxPossibleGpa}</strong>!
                             </span>
                           </>
                         )}

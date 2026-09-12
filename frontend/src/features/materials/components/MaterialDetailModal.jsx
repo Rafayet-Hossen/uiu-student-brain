@@ -289,10 +289,10 @@ export default function MaterialDetailModal({ material, onClose, onUpdated }) {
             variant="secondary"
             onClick={handleReanalyze}
             disabled={analyzing}
-            icon={Sparkles}
+            icon={RotateCcw}
             className="native-reanalyze-btn"
           >
-            {analyzing ? "Analyzing..." : "Re-analyze AI"}
+            {analyzing ? "Analyzing..." : "Re-analyze"}
           </Button>
 
           {fileUrl && (
@@ -388,7 +388,7 @@ export default function MaterialDetailModal({ material, onClose, onUpdated }) {
             }`}
             onClick={() => setActiveTab("insights")}
           >
-            <Sparkles size={13} />
+            <FileText size={13} />
             <span>Summary</span>
           </button>
 
@@ -596,7 +596,7 @@ export default function MaterialDetailModal({ material, onClose, onUpdated }) {
                 <div
                   style={{ display: "flex", alignItems: "center", gap: "8px" }}
                 >
-                  <Sparkles size={18} className="text-primary" />
+                  <FileText size={18} className="text-primary" />
                   <strong className="summary-heading">
                     Executive Syllabus Summary
                   </strong>

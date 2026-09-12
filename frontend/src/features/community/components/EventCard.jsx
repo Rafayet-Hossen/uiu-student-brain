@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Calendar,
   CheckCircle2,
@@ -20,32 +20,78 @@ import { useAuth } from "../../auth/useAuth";
 import { deleteEvent, toggleEventRSVP } from "../api";
 
 export default function EventCard({ event, onToggleRSVP, onDeleted }) {
+  if (!event) return null;
   const { user } = useAuth();
-  const [isRsvped, setIsRsvped] = useState(Boolean(event.is_attending || event.is_rsvped));
-  const [rsvpCount, setRsvpCount] = useState(event.rsvps_count || event.rsvp_count || 0);
+  const [userStatus, setUserStatus] = useState(
+    event.user_rsvp_status || (event.is_attending ? "going" : null),
+  );
+  const [goingCount, setGoingCount] = useState(
+    event.going_count !== undefined
+      ? event.going_count
+      : event.is_attending
+        ? event.rsvps_count || 1
+        : event.rsvps_count || 0,
+  );
+  const [interestedCount, setInterestedCount] = useState(
+    event.interested_count || 0,
+  );
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!event) return;
+    setUserStatus(
+      event.user_rsvp_status || (event.is_attending ? "going" : null),
+    );
+    setGoingCount(
+      event.going_count !== undefined
+        ? event.going_count
+        : event.is_attending
+          ? event.rsvps_count || 1
+          : event.rsvps_count || 0,
+    );
+    setInterestedCount(event.interested_count || 0);
+  }, [event]);
 
   const isCreator = user?.id === event.creator?.id;
 
-  // Assume max capacity is 30 seats for university study sessions
+  // Max capacity for university study sessions
   const maxCapacity = 30;
-  const capacityPct = Math.min(100, Math.round((rsvpCount / maxCapacity) * 100));
 
-  async function handleToggleRsvp() {
+  async function handleToggleStatus(targetStatus) {
     if (loading) return;
     setLoading(true);
     try {
       if (onToggleRSVP) {
-        await onToggleRSVP(event.id);
-        setIsRsvped(!isRsvped);
-        setRsvpCount((prev) => (isRsvped ? prev - 1 : prev + 1));
+        const res = await onToggleRSVP(event.id, targetStatus);
+        if (res) {
+          setUserStatus(res.user_rsvp_status);
+          setGoingCount(res.going_count);
+          setInterestedCount(res.interested_count);
+        } else {
+          // Fallback optimistic update
+          if (userStatus === targetStatus) {
+            setUserStatus(null);
+            if (targetStatus === "going")
+              setGoingCount((c) => Math.max(0, c - 1));
+            else setInterestedCount((c) => Math.max(0, c - 1));
+          } else {
+            if (userStatus === "going")
+              setGoingCount((c) => Math.max(0, c - 1));
+            if (userStatus === "interested")
+              setInterestedCount((c) => Math.max(0, c - 1));
+            setUserStatus(targetStatus);
+            if (targetStatus === "going") setGoingCount((c) => c + 1);
+            else setInterestedCount((c) => c + 1);
+          }
+        }
       } else {
-        const res = await toggleEventRSVP(event.id);
-        setIsRsvped(res.is_attending);
-        setRsvpCount(res.rsvps_count);
+        const res = await toggleEventRSVP(event.id, targetStatus);
+        setUserStatus(res.user_rsvp_status);
+        setGoingCount(res.going_count);
+        setInterestedCount(res.interested_count);
       }
     } catch (err) {
-      console.error("Error toggling RSVP:", err);
+      console.error("Error toggling event response:", err);
     } finally {
       setLoading(false);
     }
@@ -65,15 +111,16 @@ export default function EventCard({ event, onToggleRSVP, onDeleted }) {
     }
   }
 
-  // Parse date into Month and Day
-  const dateObj = new Date(event.event_date);
-  const monthStr = isNaN(dateObj)
-    ? "OCT"
-    : dateObj.toLocaleDateString(undefined, { month: "short" }).toUpperCase();
-  const dayStr = isNaN(dateObj) ? "15" : dateObj.getDate();
-  const dayName = isNaN(dateObj)
-    ? "Monday"
-    : dateObj.toLocaleDateString(undefined, { weekday: "short" });
+  // Parse date into Month and Day safely
+  const dateObj = event?.event_date ? new Date(event.event_date) : null;
+  const isValidDate = dateObj && !isNaN(dateObj.getTime());
+  const monthStr = isValidDate
+    ? dateObj.toLocaleDateString(undefined, { month: "short" }).toUpperCase()
+    : "OCT";
+  const dayStr = isValidDate ? dateObj.getDate() : "15";
+  const dayName = isValidDate
+    ? dateObj.toLocaleDateString(undefined, { weekday: "short" })
+    : "Monday";
 
   const isOnline =
     event.location?.toLowerCase().includes("meet") ||
@@ -100,7 +147,14 @@ export default function EventCard({ event, onToggleRSVP, onDeleted }) {
           <div className="event-booking-right-content">
             {/* Top Badges & Actions */}
             <div className="event-booking-top-row">
-              <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "6px",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                }}
+              >
                 <Badge variant="primary" size="sm">
                   {event.subject || "Study Session"}
                 </Badge>
@@ -136,7 +190,12 @@ export default function EventCard({ event, onToggleRSVP, onDeleted }) {
             <div className="event-host-row">
               <ScholarAvatar user={event.creator} size={26} />
               <span className="event-host-text">
-                Organized by <strong>{event.creator?.full_name || event.creator?.email?.split("@")[0] || "Scholar"}</strong>
+                Organized by{" "}
+                <strong>
+                  {event.creator?.full_name ||
+                    event.creator?.email?.split("@")[0] ||
+                    "Scholar"}
+                </strong>
               </span>
             </div>
 
@@ -145,7 +204,8 @@ export default function EventCard({ event, onToggleRSVP, onDeleted }) {
               <div className="event-info-pill">
                 <Clock size={13} className="text-indigo" />
                 <span>
-                  {event.start_time?.slice(0, 5)} - {event.end_time?.slice(0, 5)}
+                  {event.start_time?.slice(0, 5)} -{" "}
+                  {event.end_time?.slice(0, 5)}
                 </span>
               </div>
 
@@ -159,43 +219,71 @@ export default function EventCard({ event, onToggleRSVP, onDeleted }) {
               </div>
             </div>
 
-            {/* Seat Capacity Progress Bar */}
+            {/* Social Response Counters & Capacity */}
             <div className="event-capacity-section">
-              <div className="capacity-label-row">
-                <span>Seats & RSVPs</span>
-                <strong>
-                  {rsvpCount} / {maxCapacity} scholars
-                </strong>
+              <div className="event-response-stats-row">
+                <span className="response-stat-item stat-going">
+                  <CheckCircle2 size={13} className="text-emerald" />
+                  <strong>{goingCount}</strong> Going
+                </span>
+                <span className="response-stat-dot">•</span>
+                <span className="response-stat-item stat-interested">
+                  <Sparkles size={13} className="text-amber" />
+                  <strong>{interestedCount}</strong> Interested
+                </span>
+                <span className="capacity-seats-label">
+                  ({goingCount} / {maxCapacity} seats)
+                </span>
               </div>
               <div className="capacity-bar-track">
                 <div
                   className="capacity-bar-fill"
-                  style={{ width: `${capacityPct}%` }}
+                  style={{
+                    width: `${Math.min(100, Math.round((goingCount / maxCapacity) * 100))}%`,
+                  }}
                 />
               </div>
             </div>
 
-            {/* Bottom RSVP Action Button */}
+            {/* Bottom Facebook-Style Action Buttons */}
             <div className="event-booking-footer-action">
-              <motion.button
-                type="button"
-                whileTap={{ scale: 0.95 }}
-                className={`event-rsvp-cta-btn ${isRsvped ? "rsvp-going" : "rsvp-available"}`}
-                onClick={handleToggleRsvp}
-                disabled={loading}
-              >
-                {isRsvped ? (
-                  <>
-                    <CheckCircle2 size={16} />
-                    <span>You're Going (Attending)</span>
-                  </>
-                ) : (
-                  <>
-                    <Users size={16} />
-                    <span>RSVP / Save My Spot</span>
-                  </>
-                )}
-              </motion.button>
+              <div className="event-fb-actions-row">
+                <motion.button
+                  type="button"
+                  whileTap={{ scale: 0.95 }}
+                  className={`event-fb-btn event-btn-going ${userStatus === "going" ? "is-active" : ""}`}
+                  onClick={() => handleToggleStatus("going")}
+                  disabled={loading}
+                  title={
+                    userStatus === "going"
+                      ? "You are going (Click to remove)"
+                      : "Mark as Going"
+                  }
+                >
+                  <CheckCircle2 size={15} />
+                  <span>{userStatus === "going" ? "Going ✓" : "Going"}</span>
+                </motion.button>
+
+                <motion.button
+                  type="button"
+                  whileTap={{ scale: 0.95 }}
+                  className={`event-fb-btn event-btn-interested ${userStatus === "interested" ? "is-active" : ""}`}
+                  onClick={() => handleToggleStatus("interested")}
+                  disabled={loading}
+                  title={
+                    userStatus === "interested"
+                      ? "You are interested (Click to remove)"
+                      : "Mark as Interested"
+                  }
+                >
+                  <Sparkles size={15} />
+                  <span>
+                    {userStatus === "interested"
+                      ? "Interested ★"
+                      : "Interested"}
+                  </span>
+                </motion.button>
+              </div>
             </div>
           </div>
         </div>

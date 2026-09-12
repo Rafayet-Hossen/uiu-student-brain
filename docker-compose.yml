@@ -12,7 +12,11 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-student_brain} -d ${POSTGRES_DB:-student_brain}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-student_brain} -d ${POSTGRES_DB:-student_brain}",
+        ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -36,7 +40,7 @@ services:
       AUTO_SEED: ${AUTO_SEED:-true}
     volumes:
       - ./backend:/app
-      - media_data:/app/media
+      - ./backend/media:/app/media
     ports:
       - "8000:8000"
     depends_on:

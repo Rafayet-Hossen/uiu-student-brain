@@ -5,6 +5,7 @@ import {
   Routes,
   useLocation,
 } from "react-router-dom";
+import ErrorBoundary from "./components/ErrorBoundary";
 import Spinner from "./components/Spinner";
 import { useAuth } from "./features/auth/useAuth";
 import LoginPage from "./features/auth/pages/LoginPage";
@@ -13,6 +14,7 @@ import DashboardPage from "./features/dashboard/DashboardPage";
 import GradePlannerPage from "./features/grades/GradePlannerPage";
 import CommunityPage from "./features/community/CommunityPage";
 import StudyCenterPage from "./features/studycenter/StudyCenterPage";
+import QuizPage from "./features/quiz/QuizPage";
 
 function PageLoading() {
   return (
@@ -89,12 +91,26 @@ export default function AppRoutes() {
           element={<Navigate to="/study-center?tab=materials" replace />}
         />
         <Route
+          path="/quiz/:materialId"
+          element={
+            <ProtectedRoute>
+              <QuizPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/planner"
           element={<Navigate to="/study-center?tab=planner" replace />}
         />
         <Route
           path="/tracker"
           element={<Navigate to="/study-center?tab=tracker" replace />}
+        />
+        <Route
+          path="/timer"
+          element={
+            <Navigate to="/study-center?tab=tracker&subtab=timer" replace />
+          }
         />
         <Route
           path="/analytics"
@@ -104,7 +120,9 @@ export default function AppRoutes() {
           path="/grades"
           element={
             <ProtectedRoute>
-              <GradePlannerPage />
+              <ErrorBoundary>
+                <GradePlannerPage />
+              </ErrorBoundary>
             </ProtectedRoute>
           }
         />
@@ -112,7 +130,9 @@ export default function AppRoutes() {
           path="/community"
           element={
             <ProtectedRoute>
-              <CommunityPage />
+              <ErrorBoundary>
+                <CommunityPage />
+              </ErrorBoundary>
             </ProtectedRoute>
           }
         />

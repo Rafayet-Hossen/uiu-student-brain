@@ -126,3 +126,40 @@ class AIServiceUnitTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["risk_level"], "Low")
 
+    @patch("ai.services._call_gemini_structured")
+    def test_quiz_evaluation_endpoint(self, mock_call):
+        """Test POST /api/ai/quiz/evaluate/ endpoint."""
+        mock_call.return_value = {
+            "accuracy_percentage": 50.0,
+            "performance_tier": "Needs Review",
+            "weak_topics": ["Electrophiles"],
+            "mastered_topics": ["Nucleophiles"],
+            "study_recommendations": ["Review chapter 4 on organic mechanisms."],
+        }
+
+        url = reverse("ai-quiz-evaluate")
+        payload = {
+            "subject": "Chemistry",
+            "question_results": [
+                {
+                    "question": "What is an electrophile?",
+                    "selected_option": "Proton donor",
+                    "correct_option": "Electron lover",
+                    "is_correct": False,
+                    "topic": "Electrophiles",
+                },
+                {
+                    "question": "What is a nucleophile?",
+                    "selected_option": "Electron donor",
+                    "correct_option": "Electron donor",
+                    "is_correct": True,
+                    "topic": "Nucleophiles",
+                },
+            ],
+        }
+        response = self.client.post(url, data=payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["accuracy_percentage"], 50.0)
+        self.assertIn("Electrophiles", response.data["weak_topics"])
+
+

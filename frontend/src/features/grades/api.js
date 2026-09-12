@@ -16,6 +16,29 @@ export function deleteGradePlan(id) {
   return api.delete(`/grades/plans/${id}/`).then((res) => res.data);
 }
 
+export function getCourseRetakeAdvisor(cacheBust = false) {
+  const url = cacheBust
+    ? `/grades/retake-advisor/?_t=${Date.now()}`
+    : "/grades/retake-advisor/";
+  return api.get(url).then((res) => res.data);
+}
+
+export function updateCourseGrade(id, payload) {
+  return api.patch(`/grades/courses/${id}/`, payload).then((res) => res.data);
+}
+
+export function getCourseGrades() {
+  return api.get("/grades/courses/").then((res) => res.data);
+}
+
+export function createCourseGrade(payload) {
+  return api.post("/grades/courses/", payload).then((res) => res.data);
+}
+
+export function deleteCourseGrade(id) {
+  return api.delete(`/grades/courses/${id}/`).then((res) => res.data);
+}
+
 export function extractGradeErrorMessage(error) {
   const data = error?.response?.data;
 

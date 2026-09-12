@@ -3,6 +3,7 @@ from django.urls import path
 from .views import (
     CommentDetailView,
     CommentListCreateView,
+    CommentMarkHelpfulView,
     LeaderboardOptInToggleView,
     LeaderboardStatusView,
     LeaderboardView,
@@ -23,6 +24,7 @@ urlpatterns = [
     path("posts/<int:pk>/react/", PostReactionToggleView.as_view(), name="community-post-react"),
     path("posts/<int:pk>/comments/", CommentListCreateView.as_view(), name="community-comment-list-create"),
     path("comments/<int:pk>/", CommentDetailView.as_view(), name="community-comment-detail"),
+    path("comments/<int:pk>/mark-helpful/", CommentMarkHelpfulView.as_view(), name="community-comment-mark-helpful"),
 
     # Study Events & Meetups
     path("events/", StudyEventListCreateView.as_view(), name="community-event-list-create"),

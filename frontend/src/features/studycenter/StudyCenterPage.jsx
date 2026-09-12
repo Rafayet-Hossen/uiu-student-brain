@@ -4,6 +4,7 @@ import MaterialsPage from "../materials/MaterialsPage";
 import PlannerPage from "../planner/PlannerPage";
 import TrackerPage from "../tracker/TrackerPage";
 import AnalyticsPage from "../analytics/AnalyticsPage";
+import ErrorBoundary from "../../components/ErrorBoundary";
 
 export default function StudyCenterPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -12,9 +13,9 @@ export default function StudyCenterPage() {
   const tabs = [
     {
       id: "materials",
-      label: "Materials & AI Hub",
+      label: "Materials & Notes",
       icon: "📚",
-      desc: "Semesters, courses, lecture slides, books, and AI tutor consultation",
+      desc: "Semesters, courses, lecture slides, notes, and study assistant",
     },
     {
       id: "planner",
@@ -55,13 +56,17 @@ export default function StudyCenterPage() {
               <div>
                 <h1 className="study-center-main-title">Study Center</h1>
                 <p className="study-center-tagline">
-                  Your centralized academic workspace for curriculum materials, schedule planning, and performance intelligence.
+                  Your centralized academic workspace for curriculum materials,
+                  schedule planning, and performance intelligence.
                 </p>
               </div>
             </div>
 
             {/* Sub-Nav Tab Switcher Bar */}
-            <nav className="study-center-nav-tabs" aria-label="Study Center Modules">
+            <nav
+              className="study-center-nav-tabs"
+              aria-label="Study Center Modules"
+            >
               {tabs.map((tab) => {
                 const isActive = currentTab === tab.id;
                 return (
@@ -81,14 +86,15 @@ export default function StudyCenterPage() {
 
           {/* Active Tab View Body */}
           <div className="study-center-view-body">
-            {currentTab === "materials" && <MaterialsPage />}
-            {currentTab === "planner" && <PlannerPage />}
-            {currentTab === "tracker" && <TrackerPage />}
-            {currentTab === "analytics" && <AnalyticsPage />}
+            <ErrorBoundary key={currentTab}>
+              {currentTab === "materials" && <MaterialsPage />}
+              {currentTab === "planner" && <PlannerPage />}
+              {currentTab === "tracker" && <TrackerPage />}
+              {currentTab === "analytics" && <AnalyticsPage />}
+            </ErrorBoundary>
           </div>
         </div>
       </main>
     </div>
   );
 }
-

@@ -46,6 +46,10 @@ export const AVATAR_PRESETS = [
 ];
 
 export function getScholarAvatar(user) {
+  if (!user) return null;
+  if (user.profile_picture) return user.profile_picture;
+  if (user.avatar_url) return user.avatar_url;
+  if (user.avatar) return user.avatar;
   if (!user?.email && !user?.id) return null;
   const key = `studentbrain_avatar_${user.email || user.id}`;
   try {

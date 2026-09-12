@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
+  BookOpen,
   Bold,
   Check,
   CheckSquare,
@@ -10,6 +11,7 @@ import {
   Eye,
   FileDown,
   FileEdit,
+  FileText,
   Heading1,
   Heading2,
   Italic,
@@ -17,7 +19,6 @@ import {
   Quote,
   RotateCcw,
   Save,
-  Sparkles,
   Trash2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -93,7 +94,7 @@ Subject: ${material?.subject || "General"} | Date: ${new Date().toLocaleDateStri
 
   function handleInsertAISummary() {
     if (!material?.summary) return;
-    const summaryBlock = `\n\n### 🤖 AI Summary Import\n${material.summary}\n`;
+    const summaryBlock = `\n\n### 📋 Summary Overview\n${material.summary}\n`;
     setNotes((prev) => prev + summaryBlock);
   }
 
@@ -238,16 +239,16 @@ Subject: ${material?.subject || "General"} | Date: ${new Date().toLocaleDateStri
 
         {/* Right: AI Quick Inserts, Save Indicator, & Export Actions */}
         <div className="notepad-toolbar-right">
-          {/* Quick AI Inserts */}
+          {/* Quick Inserts */}
           {material?.summary && mode === "edit" && (
             <button
               type="button"
               className="notepad-ai-insert-btn"
               onClick={handleInsertAISummary}
-              title="Append AI Summary to notes"
+              title="Append summary to notes"
             >
-              <Sparkles size={12} />
-              <span>+ AI Summary</span>
+              <FileText size={12} />
+              <span>+ Summary</span>
             </button>
           )}
 
@@ -256,8 +257,9 @@ Subject: ${material?.subject || "General"} | Date: ${new Date().toLocaleDateStri
               type="button"
               className="notepad-ai-insert-btn"
               onClick={handleInsertKeyTopics}
-              title="Append Key Topics to notes"
+              title="Append key topics to notes"
             >
+              <BookOpen size={12} />
               <span>+ Key Topics</span>
             </button>
           )}

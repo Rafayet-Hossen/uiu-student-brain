@@ -24,6 +24,14 @@ export function getProfileSummary() {
   return api.get("/accounts/profile-summary/").then((res) => res.data);
 }
 
+export function getNotificationState() {
+  return api.get("/accounts/notifications/").then((res) => res.data);
+}
+
+export function saveNotificationState(payload) {
+  return api.post("/accounts/notifications/", payload).then((res) => res.data);
+}
+
 export function extractErrorMessage(error) {
   const data = error?.response?.data;
   if (!data) return "Something went wrong. Please try again.";

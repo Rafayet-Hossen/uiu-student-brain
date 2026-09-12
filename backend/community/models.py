@@ -8,6 +8,7 @@ class Post(models.Model):
         ("Exam Prep", "Exam Prep"),
         ("Study Group", "Study Group"),
         ("Course Help", "Course Help"),
+        ("Code Help", "Code Help"),
         ("Resources", "Resources"),
     ]
 
@@ -19,6 +20,17 @@ class Post(models.Model):
     title = models.CharField(max_length=255)
     content = models.TextField()
     category = models.CharField(max_length=50, choices=CATEGORIES, default="General")
+    code_snippet = models.TextField(blank=True, default="")
+    code_language = models.CharField(max_length=50, blank=True, default="python")
+    vscode_liveshare_url = models.URLField(max_length=500, blank=True, default="")
+    is_solved = models.BooleanField(default=False)
+    solved_comment = models.ForeignKey(
+        "Comment",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -41,6 +53,9 @@ class Comment(models.Model):
         related_name="community_comments",
     )
     content = models.TextField()
+    code_solution = models.TextField(blank=True, default="")
+    code_language = models.CharField(max_length=50, blank=True, default="python")
+    is_helpful = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

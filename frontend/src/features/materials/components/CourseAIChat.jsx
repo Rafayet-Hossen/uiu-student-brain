@@ -1,9 +1,19 @@
 import { useState, useEffect, useRef } from "react";
 import Button from "../../../components/Button";
 import Spinner from "../../../components/Spinner";
-import { getCourseChat, sendCourseChat, extractMaterialsErrorMessage } from "../api";
+import {
+  getCourseChat,
+  sendCourseChat,
+  extractMaterialsErrorMessage,
+} from "../api";
+import { formatRichContent } from "../../../lib/markdownHelper";
 
-export default function CourseAIChat({ courseId, courseTitle, courseCode, extractedTopics = [] }) {
+export default function CourseAIChat({
+  courseId,
+  courseTitle,
+  courseCode,
+  extractedTopics = [],
+}) {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
   const [loadingHistory, setLoadingHistory] = useState(true);
@@ -93,16 +103,18 @@ export default function CourseAIChat({ courseId, courseTitle, courseCode, extrac
           <div className="ai-avatar-badge">🎓</div>
           <div>
             <h4 className="chat-header-title">
-              AI Academic Tutor • {courseCode ? `[${courseCode}] ` : ""}{courseTitle}
+              Study Assistant • {courseCode ? `[${courseCode}] ` : ""}
+              {courseTitle}
             </h4>
             <p className="chat-header-subtitle">
-              Grounded in your uploaded lecture notes, PDFs, and syllabus topics.
+              Grounded in your uploaded lecture notes, PDFs, and syllabus
+              topics.
             </p>
           </div>
         </div>
         {extractedTopics.length > 0 && (
           <span className="badge badge-accent">
-            🧠 {extractedTopics.length} Knowledge Concepts Active
+            {extractedTopics.length} Syllabus Concepts Active
           </span>
         )}
       </div>
@@ -121,15 +133,19 @@ export default function CourseAIChat({ courseId, courseTitle, courseCode, extrac
         {loadingHistory ? (
           <div className="chat-loading-box">
             <Spinner standalone />
-            <p className="text-muted text-sm mt-2">Loading course consultation history...</p>
+            <p className="text-muted text-sm mt-2">
+              Loading course consultation history...
+            </p>
           </div>
         ) : messages.length === 0 ? (
           <div className="chat-empty-state">
-            <div className="chat-empty-icon">🤖</div>
-            <h4 className="chat-empty-title">Ask your Course AI Assistant</h4>
+            <div className="chat-empty-icon">🎓</div>
+            <h4 className="chat-empty-title">
+              Ask your Course Study Assistant
+            </h4>
             <p className="chat-empty-desc">
-              Ask questions about lecture notes, request step-by-step problem explanations,
-              or generate interactive quiz questions.
+              Ask questions about lecture notes, request step-by-step problem
+              explanations, or generate interactive quiz questions.
             </p>
             <div className="chat-suggestions-grid">
               {suggestions.map((s, idx) => (
@@ -154,8 +170,12 @@ export default function CourseAIChat({ courseId, courseTitle, courseCode, extrac
                   className={`chat-message-row ${isUser ? "chat-row-user" : "chat-row-assistant"}`}
                 >
                   {!isUser && <div className="chat-avatar-assistant">🎓</div>}
-                  <div className={`chat-bubble ${isUser ? "bubble-user" : "bubble-assistant"}`}>
-                    <div className="bubble-text">{m.content}</div>
+                  <div
+                    className={`chat-bubble ${isUser ? "bubble-user" : "bubble-assistant"}`}
+                  >
+                    <div className="bubble-text">
+                      {isUser ? m.content : formatRichContent(m.content)}
+                    </div>
                     <span className="bubble-time">
                       {new Date(m.created_at).toLocaleTimeString([], {
                         hour: "2-digit",
@@ -224,4 +244,3 @@ export default function CourseAIChat({ courseId, courseTitle, courseCode, extrac
     </div>
   );
 }
-

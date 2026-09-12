@@ -24,6 +24,7 @@ class QuizGenerationRequestSerializer(serializers.Serializer):
         choices=["Beginner", "Intermediate", "Advanced"],
         default="Intermediate",
     )
+    force_refresh = serializers.BooleanField(required=False, default=False)
 
 
 class RiskAssessmentRequestSerializer(serializers.Serializer):
@@ -39,4 +40,18 @@ class RiskAssessmentRequestSerializer(serializers.Serializer):
         required=False,
         default=list,
     )
+
+
+class QuestionResultSerializer(serializers.Serializer):
+    question = serializers.CharField(required=True)
+    selected_option = serializers.CharField(required=True, allow_blank=True)
+    correct_option = serializers.CharField(required=True)
+    is_correct = serializers.BooleanField(required=True)
+    topic = serializers.CharField(required=False, default="", allow_blank=True)
+
+
+class QuizEvaluationRequestSerializer(serializers.Serializer):
+    subject = serializers.CharField(required=True)
+    question_results = QuestionResultSerializer(many=True, required=True)
+
 

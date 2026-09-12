@@ -27,6 +27,11 @@ class PostSerializer(serializers.ModelSerializer):
             "title",
             "content",
             "category",
+            "code_snippet",
+            "code_language",
+            "vscode_liveshare_url",
+            "is_solved",
+            "solved_comment",
             "comments_count",
             "likes_count",
             "is_liked",
@@ -36,6 +41,7 @@ class PostSerializer(serializers.ModelSerializer):
         read_only_fields = [
             "id",
             "author",
+            "solved_comment",
             "comments_count",
             "likes_count",
             "is_liked",
@@ -54,16 +60,31 @@ class CommentSerializer(serializers.ModelSerializer):
             "post",
             "author",
             "content",
+            "code_solution",
+            "code_language",
+            "is_helpful",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "post", "author", "created_at", "updated_at"]
+        read_only_fields = [
+            "id",
+            "post",
+            "author",
+            "is_helpful",
+            "created_at",
+            "updated_at",
+        ]
 
 
 class StudyEventSerializer(serializers.ModelSerializer):
     creator = AuthorSummarySerializer(read_only=True)
     rsvp_count = serializers.IntegerField(read_only=True, default=0)
+    going_count = serializers.IntegerField(read_only=True, default=0)
+    interested_count = serializers.IntegerField(read_only=True, default=0)
+    going_count = serializers.SerializerMethodField()
+    interested_count = serializers.SerializerMethodField()
     is_rsvped = serializers.BooleanField(read_only=True, default=False)
+    user_rsvp_status = serializers.SerializerMethodField()
 
     class Meta:
         model = StudyEvent
@@ -78,7 +99,10 @@ class StudyEventSerializer(serializers.ModelSerializer):
             "end_time",
             "location",
             "rsvp_count",
+            "going_count",
+            "interested_count",
             "is_rsvped",
+            "user_rsvp_status",
             "created_at",
             "updated_at",
         ]
@@ -86,10 +110,30 @@ class StudyEventSerializer(serializers.ModelSerializer):
             "id",
             "creator",
             "rsvp_count",
+            "going_count",
+            "interested_count",
             "is_rsvped",
+            "user_rsvp_status",
             "created_at",
             "updated_at",
         ]
+
+    def get_going_count(self, obj) -> int:
+        if hasattr(obj, "going_count"):
+            return obj.going_count
+        return obj.rsvps.filter(status="going").count()
+
+    def get_interested_count(self, obj) -> int:
+        if hasattr(obj, "interested_count"):
+            return obj.interested_count
+        return obj.rsvps.filter(status__in=["interested", "going"]).count()
+
+    def get_user_rsvp_status(self, obj) -> str | None:
+        request = self.context.get("request")
+        if request and request.user and request.user.is_authenticated:
+            rsvp = obj.rsvps.filter(user=request.user).first()
+            return rsvp.status if rsvp else None
+        return None
 
     def validate(self, attrs):
         instance = self.instance

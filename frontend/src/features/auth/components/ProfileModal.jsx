@@ -25,9 +25,13 @@ import {
 import ScholarAvatar from "./ScholarAvatar";
 import { useAuth } from "../useAuth";
 
-export default function ProfileModal({ initialTab = "profile", onClose }) {
+export default function ProfileModal({ initialTab = "settings", onClose }) {
   const { user, updateUser, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState(initialTab); // "profile" | "performance" | "settings"
+  const [activeTab, setActiveTab] = useState(() => {
+    if (initialTab === "performance") return "performance";
+    if (initialTab === "profile") return "settings";
+    return "settings";
+  });
 
   const [fullName, setFullName] = useState(user?.full_name || "");
   const [department, setDepartment] = useState(user?.department || "");
@@ -39,6 +43,53 @@ export default function ProfileModal({ initialTab = "profile", onClose }) {
   const [currentAvatar, setCurrentAvatar] = useState(() =>
     getScholarAvatar(user),
   );
+
+  const [currentGpa, setCurrentGpa] = useState(() =>
+    user?.current_gpa !== null && user?.current_gpa !== undefined
+      ? String(user.current_gpa)
+      : "",
+  );
+  const [targetGpa, setTargetGpa] = useState(() =>
+    user?.target_gpa !== null && user?.target_gpa !== undefined
+      ? String(user.target_gpa)
+      : "",
+  );
+
+  const [notifAnnouncements, setNotifAnnouncements] = useState(() => {
+    return (
+      localStorage.getItem("student_brain_notif_announcements") !== "false"
+    );
+  });
+  const [notifComments, setNotifComments] = useState(() => {
+    return localStorage.getItem("student_brain_notif_comments") !== "false";
+  });
+  const [notifAcademic, setNotifAcademic] = useState(() => {
+    return localStorage.getItem("student_brain_notif_academic") !== "false";
+  });
+  const [notifSound, setNotifSound] = useState(() => {
+    return localStorage.getItem("student_brain_notif_sound") !== "false";
+  });
+
+  function handleToggleNotif(type) {
+    if (type === "announcements") {
+      const next = !notifAnnouncements;
+      setNotifAnnouncements(next);
+      localStorage.setItem("student_brain_notif_announcements", String(next));
+    } else if (type === "comments") {
+      const next = !notifComments;
+      setNotifComments(next);
+      localStorage.setItem("student_brain_notif_comments", String(next));
+    } else if (type === "academic") {
+      const next = !notifAcademic;
+      setNotifAcademic(next);
+      localStorage.setItem("student_brain_notif_academic", String(next));
+    } else if (type === "sound") {
+      const next = !notifSound;
+      setNotifSound(next);
+      localStorage.setItem("student_brain_notif_sound", String(next));
+    }
+    window.dispatchEvent(new Event("notificationPreferencesUpdated"));
+  }
 
   const [summaryData, setSummaryData] = useState(null);
   const [loadingSummary, setLoadingSummary] = useState(true);
@@ -57,6 +108,20 @@ export default function ProfileModal({ initialTab = "profile", onClose }) {
           setDepartment(data.user.department || "");
           setBio(data.user.bio || "");
           setTargetDailyMinutes(data.user.target_daily_minutes || 120);
+        }
+        if (data.performance) {
+          if (
+            data.performance.current_cgpa !== null &&
+            data.performance.current_cgpa !== undefined
+          ) {
+            setCurrentGpa(String(data.performance.current_cgpa));
+          }
+          if (
+            data.performance.target_gpa !== null &&
+            data.performance.target_gpa !== undefined
+          ) {
+            setTargetGpa(String(data.performance.target_gpa));
+          }
         }
       })
       .catch((err) => console.error("Failed to fetch profile summary", err))
@@ -100,7 +165,7 @@ export default function ProfileModal({ initialTab = "profile", onClose }) {
   function handleSelectPreset(presetId) {
     setCurrentAvatar(presetId);
     setScholarAvatar(user, presetId);
-    setSuccessMessage("Avatar preset applied! ✨");
+    setSuccessMessage("Avatar preset applied.");
     setTimeout(() => setSuccessMessage(""), 2500);
   }
 
@@ -123,10 +188,18 @@ export default function ProfileModal({ initialTab = "profile", onClose }) {
         department: department.trim(),
         bio: bio.trim(),
         target_daily_minutes: Number(targetDailyMinutes) || 120,
+        current_gpa: currentGpa === "" ? null : parseFloat(currentGpa),
+        target_gpa: targetGpa === "" ? null : parseFloat(targetGpa),
       };
       const updated = await updateProfile(payload);
       updateUser(updated);
-      setSuccessMessage("Profile details updated successfully! ✨");
+      try {
+        const freshSummary = await getProfileSummary();
+        setSummaryData(freshSummary);
+      } catch (e) {
+        console.error("Failed to refresh profile summary", e);
+      }
+      setSuccessMessage("Profile details updated successfully.");
       setTimeout(() => {
         if (onClose) onClose();
       }, 400);
@@ -204,7 +277,16 @@ export default function ProfileModal({ initialTab = "profile", onClose }) {
           <button
             type="button"
             className={`community-tab-btn ${activeTab === "performance" ? "tab-active" : ""}`}
-            onClick={() => setActiveTab("performance")}
+            onClick={() => {
+              setActiveTab("performance");
+              setLoadingSummary(true);
+              getProfileSummary()
+                .then((data) => setSummaryData(data))
+                .catch((err) =>
+                  console.error("Failed to refresh profile summary", err),
+                )
+                .finally(() => setLoadingSummary(false));
+            }}
           >
             📊 Overall Performance & Rank
           </button>
@@ -402,6 +484,48 @@ export default function ProfileModal({ initialTab = "profile", onClose }) {
               />
             </div>
 
+            <div className="modal-grid-2col" style={{ marginBottom: "16px" }}>
+              <div className="form-group">
+                <label
+                  className="form-label"
+                  style={{ fontWeight: 600, fontSize: "0.8125rem" }}
+                >
+                  🎓 Current CGPA (out of 4.00)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0.00"
+                  max="4.00"
+                  value={currentGpa}
+                  onChange={(e) => setCurrentGpa(e.target.value)}
+                  placeholder="e.g. 3.75"
+                  className="form-input-control"
+                  disabled={saving}
+                />
+              </div>
+
+              <div className="form-group">
+                <label
+                  className="form-label"
+                  style={{ fontWeight: 600, fontSize: "0.8125rem" }}
+                >
+                  🎯 Target CGPA Goal (out of 4.00)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0.00"
+                  max="4.00"
+                  value={targetGpa}
+                  onChange={(e) => setTargetGpa(e.target.value)}
+                  placeholder="e.g. 3.90"
+                  className="form-input-control"
+                  disabled={saving}
+                />
+              </div>
+            </div>
+
             <div className="modal-grid-2col">
               <div className="form-group">
                 <label
@@ -550,9 +674,12 @@ export default function ProfileModal({ initialTab = "profile", onClose }) {
                       }}
                     >
                       🎓{" "}
-                      {summaryData?.performance?.current_cgpa
+                      {typeof summaryData?.performance?.current_cgpa ===
+                      "number"
                         ? summaryData.performance.current_cgpa.toFixed(2)
-                        : "N/A"}
+                        : currentGpa
+                          ? Number(currentGpa).toFixed(2)
+                          : "N/A"}
                     </strong>
                     <span
                       style={{
@@ -562,9 +689,11 @@ export default function ProfileModal({ initialTab = "profile", onClose }) {
                       }}
                     >
                       Target:{" "}
-                      {summaryData?.performance?.target_gpa
+                      {typeof summaryData?.performance?.target_gpa === "number"
                         ? summaryData.performance.target_gpa.toFixed(2)
-                        : "Set Goal"}
+                        : targetGpa
+                          ? Number(targetGpa).toFixed(2)
+                          : "3.50"}
                     </span>
                   </div>
 
@@ -852,6 +981,185 @@ export default function ProfileModal({ initialTab = "profile", onClose }) {
                 </span>
               </div>
               <Badge variant="secondary">Active / Opted In</Badge>
+            </div>
+
+            {/* Notification Channels Dynamic Preferences */}
+            <div
+              style={{
+                background: "var(--color-surface)",
+                border: "1px solid var(--color-border)",
+                borderRadius: "var(--radius-md)",
+                padding: "16px",
+              }}
+            >
+              <strong
+                style={{
+                  display: "block",
+                  fontSize: "0.9375rem",
+                  marginBottom: "4px",
+                }}
+              >
+                🔔 Notification Channels & Dynamic Alerts
+              </strong>
+              <span
+                style={{
+                  display: "block",
+                  fontSize: "0.8125rem",
+                  color: "var(--color-text-muted)",
+                  marginBottom: "14px",
+                }}
+              >
+                Disable or enable notifications. Disabled channels will not
+                generate or display alerts.
+              </span>
+
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "12px",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <div>
+                    <strong style={{ fontSize: "0.875rem", display: "block" }}>
+                      📢 Campus Announcements & Events
+                    </strong>
+                    <span
+                      style={{
+                        fontSize: "0.75rem",
+                        color: "var(--color-text-muted)",
+                      }}
+                    >
+                      Faculty exam reviews, study sessions, and university
+                      circulars
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleNotif("announcements")}
+                    className={`filter-pill-btn ${notifAnnouncements ? "filter-pill-active" : ""}`}
+                    style={{
+                      minWidth: "88px",
+                      textAlign: "center",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {notifAnnouncements ? "✓ Enabled" : "✕ Disabled"}
+                  </button>
+                </div>
+
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <div>
+                    <strong style={{ fontSize: "0.875rem", display: "block" }}>
+                      💬 Comments & Discussion Replies
+                    </strong>
+                    <span
+                      style={{
+                        fontSize: "0.75rem",
+                        color: "var(--color-text-muted)",
+                      }}
+                    >
+                      Classmate comments on your posts and solutions marked
+                      helpful
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleNotif("comments")}
+                    className={`filter-pill-btn ${notifComments ? "filter-pill-active" : ""}`}
+                    style={{
+                      minWidth: "88px",
+                      textAlign: "center",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {notifComments ? "✓ Enabled" : "✕ Disabled"}
+                  </button>
+                </div>
+
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <div>
+                    <strong style={{ fontSize: "0.875rem", display: "block" }}>
+                      🎓 Academic Targets & Habit Streaks
+                    </strong>
+                    <span
+                      style={{
+                        fontSize: "0.75rem",
+                        color: "var(--color-text-muted)",
+                      }}
+                    >
+                      Target CGPA updates and daily study streak consistency
+                      reminders
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleNotif("academic")}
+                    className={`filter-pill-btn ${notifAcademic ? "filter-pill-active" : ""}`}
+                    style={{
+                      minWidth: "88px",
+                      textAlign: "center",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {notifAcademic ? "✓ Enabled" : "✕ Disabled"}
+                  </button>
+                </div>
+
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <div>
+                    <strong style={{ fontSize: "0.875rem", display: "block" }}>
+                      🔊 Audio & Alert Chimes
+                    </strong>
+                    <span
+                      style={{
+                        fontSize: "0.75rem",
+                        color: "var(--color-text-muted)",
+                      }}
+                    >
+                      Sound notifications when study timers or reminders
+                      complete
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleNotif("sound")}
+                    className={`filter-pill-btn ${notifSound ? "filter-pill-active" : ""}`}
+                    style={{
+                      minWidth: "88px",
+                      textAlign: "center",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {notifSound ? "✓ Enabled" : "✕ Disabled"}
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div

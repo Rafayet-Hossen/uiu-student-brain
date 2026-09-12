@@ -16,6 +16,7 @@ import {
   GraduationCap,
   Layers,
   Quote,
+  RotateCw,
   Sparkles,
   Target,
   TrendingUp,
@@ -53,6 +54,45 @@ const MOTIVATION_QUOTES = [
       "Live as if you were to die tomorrow. Learn as if you were to live forever.",
     author: "Mahatma Gandhi",
   },
+  {
+    quote:
+      "Discipline is choosing between what you want now and what you want most.",
+    author: "Abraham Lincoln",
+  },
+  {
+    quote:
+      "You don't have to be great to start, but you have to start to be great.",
+    author: "Zig Ziglar",
+  },
+  {
+    quote:
+      "The expert in anything was once a beginner. Consistency turns effort into mastery.",
+    author: "Helen Hayes",
+  },
+  {
+    quote:
+      "Focus on progress, not perfection. Every study session counts towards your dream.",
+    author: "Academic Wisdom",
+  },
+  {
+    quote:
+      "Small daily improvements over time lead to stunning long-term results.",
+    author: "Robin Sharma",
+  },
+  {
+    quote: "An investment in knowledge pays the best interest.",
+    author: "Benjamin Franklin",
+  },
+  {
+    quote:
+      "Believe in your preparation. The hard days are what make you strong.",
+    author: "Aly Raisman",
+  },
+  {
+    quote:
+      "Action is the foundational key to all academic and personal success.",
+    author: "Pablo Picasso",
+  },
 ];
 
 export default function DashboardPage() {
@@ -67,6 +107,14 @@ export default function DashboardPage() {
   const [quoteIndex, setQuoteIndex] = useState(0);
   const [flowDayOffset, setFlowDayOffset] = useState(0); // 0 = Today, 1 = Yesterday, 2 = 2 days ago, 3 = 3 days ago
   const [selectedScheduleModal, setSelectedScheduleModal] = useState(null);
+
+  // Auto-refresh motivation quote every 60 seconds (1 minute)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setQuoteIndex((prev) => (prev + 1) % MOTIVATION_QUOTES.length);
+    }, 60000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     async function loadDashboardData() {
@@ -199,21 +247,21 @@ export default function DashboardPage() {
               className="hero-left-copy"
             >
               <div className="hero-pill-tag">
-                <Sparkles size={14} className="tag-sparkle-icon" />
-                <span>The Academic Operating System</span>
+                <GraduationCap size={14} className="tag-sparkle-icon" />
+                <span>Academic Workspace</span>
                 <span className="hero-date-divider">•</span>
                 <span>{currentDate}</span>
               </div>
 
               <h1 className="hero-headline">
-                Study Smarter, <br />
-                <span className="hero-gradient-text">Not Harder.</span>
+                Organize Your Studies, <br />
+                <span className="hero-gradient-text">Track Your Mastery.</span>
               </h1>
 
               <p className="hero-subtext">
                 Welcome back, <strong>{user?.full_name || "Scholar"}</strong>.
-                Master routines, project GPA honors, maintain focus streaks, and
-                extract syllabus knowledge with AI.
+                Stay on top of your courses, manage class routines, track GPA
+                targets, and access your lecture notes & study materials.
               </p>
 
               <div className="hero-cta-button-group">
@@ -504,7 +552,7 @@ export default function DashboardPage() {
                 <div className="bento-icon-wrapper bg-indigo-subtle text-indigo">
                   <Calendar size={22} />
                 </div>
-                <Badge variant="primary">Schedule Engine</Badge>
+                <Badge variant="primary">📅 Smart Timetable</Badge>
               </div>
 
               <div className="bento-body">
@@ -625,7 +673,7 @@ export default function DashboardPage() {
                 <div className="bento-icon-wrapper bg-rose-subtle text-rose">
                   <FileText size={22} />
                 </div>
-                <Badge variant="danger">AI Parser</Badge>
+                <Badge variant="danger">✨ Smart Notes</Badge>
               </div>
 
               <div className="bento-body">
@@ -750,8 +798,8 @@ export default function DashboardPage() {
               <div className="bento-body">
                 <h3 className="bento-title">Scholar Community</h3>
                 <p className="bento-description">
-                  Ask exam questions, collaborate on coursework, RSVP for study
-                  groups, and climb the leaderboard.
+                  Ask exam questions, collaborate on coursework, attend campus
+                  study events, and climb the leaderboard.
                 </p>
 
                 <div className="community-meta-row">
@@ -942,8 +990,8 @@ export default function DashboardPage() {
                   }
                   title="Next Quote"
                 >
-                  <Sparkles size={14} />
-                  <span>Next Inspiration</span>
+                  <RotateCw size={13} />
+                  <span>Next Quote</span>
                 </button>
               </div>
               <p className="quote-body-text">

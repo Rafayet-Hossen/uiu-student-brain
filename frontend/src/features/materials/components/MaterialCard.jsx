@@ -7,7 +7,7 @@ import {
   Eye,
   FileCode,
   FileText,
-  Sparkles,
+  CheckCircle2,
   Tag,
   Trash2,
   Zap,
@@ -58,7 +58,10 @@ export default function MaterialCard({ material, onInspect, onDelete }) {
     >
       <Card className="premium-material-doc-card">
         {/* Top Thumbnail Banner */}
-        <div className="doc-thumbnail-banner" onClick={() => onInspect(material)}>
+        <div
+          className="doc-thumbnail-banner"
+          onClick={() => onInspect(material)}
+        >
           <div className="doc-banner-icon-wrap">
             <FileText size={32} className="text-primary" />
           </div>
@@ -67,14 +70,17 @@ export default function MaterialCard({ material, onInspect, onDelete }) {
             <Badge variant="primary" size="sm">
               {material.subject || "Course"}
             </Badge>
-            <Badge variant={getDifficultyVariant(material.difficulty_level)} size="sm">
+            <Badge
+              variant={getDifficultyVariant(material.difficulty_level)}
+              size="sm"
+            >
               {material.difficulty_level || "Intermediate"}
             </Badge>
           </div>
 
           <div className="doc-ai-verified-chip">
-            <Sparkles size={11} className="text-amber" />
-            <span>AI Analyzed</span>
+            <CheckCircle2 size={11} className="text-emerald" />
+            <span>Indexed</span>
           </div>
         </div>
 

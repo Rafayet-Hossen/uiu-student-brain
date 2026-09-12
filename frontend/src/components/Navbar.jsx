@@ -186,7 +186,7 @@ export default function Navbar() {
                           className="menu-option-btn"
                           onClick={() => {
                             setDropdownOpen(false);
-                            setProfileModalTab("profile");
+                            setProfileModalTab("settings");
                           }}
                         >
                           <User size={16} className="menu-option-icon" />
@@ -198,11 +198,11 @@ export default function Navbar() {
                           className="menu-option-btn"
                           onClick={() => {
                             setDropdownOpen(false);
-                            setProfileModalTab("security");
+                            setProfileModalTab("settings");
                           }}
                         >
                           <Settings size={16} className="menu-option-icon" />
-                          <span>Account Settings</span>
+                          <span>Preferences & Settings</span>
                         </button>
 
                         <div className="dropdown-menu-separator" />
@@ -250,7 +250,10 @@ export default function Navbar() {
       {/* Mobile Navigation Drawer */}
       <AnimatePresence>
         {mobileDrawerOpen && (
-          <div className="mobile-drawer-backdrop" onClick={() => setMobileDrawerOpen(false)}>
+          <div
+            className="mobile-drawer-backdrop"
+            onClick={() => setMobileDrawerOpen(false)}
+          >
             <motion.div
               initial={{ x: "100%" }}
               animate={{ x: 0 }}

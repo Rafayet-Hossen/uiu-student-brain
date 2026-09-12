@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   Award,
   BookOpen,
@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   ChevronRight,
   Clock,
+  Code2,
   Crown,
   FileText,
   Flame,
@@ -30,6 +31,7 @@ import Button from "../../components/Button";
 import Card from "../../components/Card";
 import EmptyState from "../../components/EmptyState";
 import ErrorState from "../../components/ErrorState";
+import ErrorBoundary from "../../components/ErrorBoundary";
 import Navbar from "../../components/Navbar";
 import { CardSkeleton } from "../../components/Skeleton";
 import ScholarAvatar from "../auth/components/ScholarAvatar";
@@ -60,6 +62,7 @@ import StudentCard from "./components/StudentCard";
 
 const CATEGORIES = [
   { label: "All Posts", value: "All", icon: BookOpen, count: null },
+  { label: "Code Help", value: "Code Help", icon: Code2, count: null },
   { label: "Exam Prep", value: "Exam Prep", icon: Zap, count: null },
   { label: "Course Help", value: "Course Help", icon: HelpCircle, count: null },
   { label: "Study Group", value: "Study Group", icon: Users, count: null },
@@ -84,6 +87,7 @@ export default function CommunityPage() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [postSearch, setPostSearch] = useState("");
   const [showPostModal, setShowPostModal] = useState(false);
+  const [modalCategory, setModalCategory] = useState("General");
   const [filterAuthor, setFilterAuthor] = useState("all"); // "all" | "my_posts"
 
   // Events state
@@ -114,7 +118,7 @@ export default function CommunityPage() {
         selectedCategory === "All" ? "" : selectedCategory,
         postSearch,
       );
-      setPosts(data);
+      setPosts(Array.isArray(data) ? data : data?.results || []);
     } catch (err) {
       setPostsError(extractCommunityErrorMessage(err));
     } finally {
@@ -128,7 +132,7 @@ export default function CommunityPage() {
     setEventsError("");
     try {
       const data = await getEvents(eventSearch);
-      setEvents(data);
+      setEvents(Array.isArray(data) ? data : data?.results || []);
     } catch (err) {
       setEventsError(extractCommunityErrorMessage(err));
     } finally {
@@ -142,7 +146,7 @@ export default function CommunityPage() {
     setStudentsError("");
     try {
       const data = await getStudents(studentSearch);
-      setStudents(data);
+      setStudents(Array.isArray(data) ? data : data?.results || []);
     } catch (err) {
       setStudentsError(extractCommunityErrorMessage(err));
     } finally {
@@ -175,6 +179,28 @@ export default function CommunityPage() {
     if (activeTab === "leaderboard") loadLeaderboard();
   }, [activeTab, selectedCategory, leaderboardTimeframe]);
 
+  // Dynamic debounced search listeners
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (activeTab === "posts") loadPosts();
+    }, 280);
+    return () => clearTimeout(timer);
+  }, [postSearch]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (activeTab === "events" || activeTab === "posts") loadEvents();
+    }, 280);
+    return () => clearTimeout(timer);
+  }, [eventSearch]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (activeTab === "network") loadStudents();
+    }, 280);
+    return () => clearTimeout(timer);
+  }, [studentSearch]);
+
   // Handle post creation
   async function handleCreatePost(payload) {
     const newPost = await createPost(payload);
@@ -185,6 +211,13 @@ export default function CommunityPage() {
   // Handle post deletion
   function handleDeletePost(postId) {
     setPosts((prev) => prev.filter((p) => p.id !== postId));
+  }
+
+  // Handle post update
+  function handleUpdatePost(updatedPost) {
+    setPosts((prev) =>
+      prev.map((p) => (p.id === updatedPost.id ? updatedPost : p)),
+    );
   }
 
   // Handle event creation
@@ -200,20 +233,24 @@ export default function CommunityPage() {
   }
 
   // Handle RSVP toggle
-  async function handleToggleRSVP(eventId) {
+  async function handleToggleRSVP(eventId, status = "going") {
     try {
-      const result = await toggleEventRSVP(eventId);
+      const result = await toggleEventRSVP(eventId, status);
       setEvents((prev) =>
         prev.map((e) =>
           e.id === eventId
             ? {
                 ...e,
-                is_attending: result.is_attending,
+                is_attending: result.user_rsvp_status === "going",
+                user_rsvp_status: result.user_rsvp_status,
                 rsvps_count: result.rsvps_count,
+                going_count: result.going_count,
+                interested_count: result.interested_count,
               }
             : e,
         ),
       );
+      return result;
     } catch (err) {
       console.error("Failed to RSVP", err);
     }
@@ -247,19 +284,69 @@ export default function CommunityPage() {
     }
   }
 
-  // Filter posts by user if "My Posts" selected
-  const displayedPosts =
-    filterAuthor === "my_posts"
-      ? posts.filter((p) => p.author?.id === user?.id)
-      : posts;
+  // Dynamic real-time filtered posts
+  const displayedPosts = useMemo(() => {
+    const rawList = Array.isArray(posts) ? posts : [];
+    let list =
+      filterAuthor === "my_posts"
+        ? rawList.filter((p) => p && p.author?.id === user?.id)
+        : rawList;
+    if (selectedCategory && selectedCategory !== "All") {
+      list = list.filter((p) => p && p.category === selectedCategory);
+    }
+    if (postSearch.trim()) {
+      const q = postSearch.toLowerCase();
+      list = list.filter(
+        (p) =>
+          p &&
+          ((p.title && p.title.toLowerCase().includes(q)) ||
+            (p.content && p.content.toLowerCase().includes(q)) ||
+            (p.author?.full_name &&
+              p.author.full_name.toLowerCase().includes(q)) ||
+            (p.category && p.category.toLowerCase().includes(q)) ||
+            (p.code_snippet && p.code_snippet.toLowerCase().includes(q))),
+      );
+    }
+    return list;
+  }, [posts, filterAuthor, selectedCategory, postSearch, user?.id]);
+
+  // Dynamic real-time filtered events
+  const displayedEvents = useMemo(() => {
+    const rawList = Array.isArray(events) ? events : [];
+    if (!eventSearch.trim()) return rawList;
+    const q = eventSearch.toLowerCase();
+    return rawList.filter(
+      (e) =>
+        e &&
+        ((e.title && e.title.toLowerCase().includes(q)) ||
+          (e.subject && e.subject.toLowerCase().includes(q)) ||
+          (e.description && e.description.toLowerCase().includes(q)) ||
+          (e.location && e.location.toLowerCase().includes(q))),
+    );
+  }, [events, eventSearch]);
+
+  // Dynamic real-time filtered students
+  const displayedStudents = useMemo(() => {
+    const rawList = Array.isArray(students) ? students : [];
+    if (!studentSearch.trim()) return rawList;
+    const q = studentSearch.toLowerCase();
+    return rawList.filter(
+      (s) =>
+        s &&
+        ((s.full_name && s.full_name.toLowerCase().includes(q)) ||
+          (s.email && s.email.toLowerCase().includes(q)) ||
+          (s.department && s.department.toLowerCase().includes(q))),
+    );
+  }, [students, studentSearch]);
 
   const rankings = leaderboardData?.rankings || [];
   const topThree = rankings.slice(0, 3);
 
   // Category post counters
   const getCategoryCount = (catValue) => {
-    if (catValue === "All") return posts.length;
-    return posts.filter((p) => p.category === catValue).length;
+    const rawList = Array.isArray(posts) ? posts : [];
+    if (catValue === "All") return rawList.length;
+    return rawList.filter((p) => p && p.category === catValue).length;
   };
 
   return (
@@ -276,7 +363,8 @@ export default function CommunityPage() {
                 <span>Student Community & Knowledge Hub</span>
               </h1>
               <p className="page-description">
-                Ask questions, share syllabus summaries, join campus study groups, and climb the academic leaderboard.
+                Ask questions, share syllabus summaries, join campus study
+                groups, and climb the academic leaderboard.
               </p>
             </div>
 
@@ -286,6 +374,7 @@ export default function CommunityPage() {
                 if (activeTab === "events") {
                   setShowEventForm(!showEventForm);
                 } else {
+                  setModalCategory("General");
                   setShowPostModal(true);
                 }
               }}
@@ -301,7 +390,10 @@ export default function CommunityPage() {
         </div>
 
         {/* Primary Tab Navigation Pills */}
-        <div className="community-main-tabs-wrapper" style={{ marginBottom: "24px" }}>
+        <div
+          className="community-main-tabs-wrapper"
+          style={{ marginBottom: "24px" }}
+        >
           <div className="community-tabs-bar">
             <button
               type="button"
@@ -360,26 +452,60 @@ export default function CommunityPage() {
                   <button
                     type="button"
                     className="quick-creator-input-trigger"
-                    onClick={() => setShowPostModal(true)}
+                    onClick={() => {
+                      setModalCategory("General");
+                      setShowPostModal(true);
+                    }}
                   >
                     <span>Share or Ask Something to Everyone?</span>
                   </button>
                 </div>
                 <div className="quick-creator-bottom">
                   <div className="quick-creator-chips">
-                    <span className="quick-chip-item">
+                    <span
+                      className="quick-chip-item"
+                      onClick={() => {
+                        setModalCategory("General");
+                        setShowPostModal(true);
+                      }}
+                    >
                       <FileText size={14} className="text-indigo" />
                       <span>Note / Topic</span>
                     </span>
-                    <span className="quick-chip-item">
+                    <span
+                      className="quick-chip-item"
+                      onClick={() => {
+                        setModalCategory("Exam Prep");
+                        setShowPostModal(true);
+                      }}
+                    >
                       <Zap size={14} className="text-amber" />
                       <span>Exam Question</span>
+                    </span>
+                    <span
+                      className="quick-chip-item"
+                      onClick={() => {
+                        setModalCategory("Code Help");
+                        setShowPostModal(true);
+                      }}
+                      style={{
+                        background: "rgba(16, 185, 129, 0.12)",
+                        borderColor: "rgba(16, 185, 129, 0.35)",
+                        color: "#10b981",
+                        fontWeight: 600,
+                      }}
+                    >
+                      <Code2 size={14} className="text-emerald" />
+                      <span>💻 Code & Live Share</span>
                     </span>
                   </div>
                   <Button
                     variant="primary"
                     size="sm"
-                    onClick={() => setShowPostModal(true)}
+                    onClick={() => {
+                      setModalCategory("General");
+                      setShowPostModal(true);
+                    }}
                     icon={Plus}
                   >
                     Create Post
@@ -455,7 +581,13 @@ export default function CommunityPage() {
 
               {/* 4. Loading Skeletons */}
               {postsLoading && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "16px",
+                  }}
+                >
                   <CardSkeleton />
                   <CardSkeleton />
                 </div>
@@ -489,6 +621,7 @@ export default function CommunityPage() {
                       key={post.id}
                       post={post}
                       onDeleted={handleDeletePost}
+                      onUpdated={handleUpdatePost}
                     />
                   ))}
                 </div>
@@ -500,9 +633,17 @@ export default function CommunityPage() {
               {/* Sidebar Widget 1: Academic Channels / Topics */}
               <Card className="sidebar-widget-card">
                 <div className="sidebar-widget-header">
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
                     <Tag size={16} className="text-indigo" />
-                    <strong className="sidebar-widget-title">Course Topics & Channels</strong>
+                    <strong className="sidebar-widget-title">
+                      Course Topics & Channels
+                    </strong>
                   </div>
                 </div>
 
@@ -520,7 +661,13 @@ export default function CommunityPage() {
                         }`}
                         onClick={() => setSelectedCategory(cat.value)}
                       >
-                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "10px",
+                          }}
+                        >
                           <Icon size={16} className="text-muted" />
                           <span>{cat.label}</span>
                         </div>
@@ -534,9 +681,17 @@ export default function CommunityPage() {
               {/* Sidebar Widget 2: Upcoming Study Events Preview */}
               <Card className="sidebar-widget-card">
                 <div className="sidebar-widget-header">
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
                     <Calendar size={16} className="text-emerald" />
-                    <strong className="sidebar-widget-title">Upcoming Study Sessions</strong>
+                    <strong className="sidebar-widget-title">
+                      Upcoming Study Sessions
+                    </strong>
                   </div>
                   <button
                     type="button"
@@ -552,9 +707,12 @@ export default function CommunityPage() {
                     events.slice(0, 3).map((event) => (
                       <div key={event.id} className="sidebar-event-item">
                         <div>
-                          <strong className="sidebar-event-title">{event.title}</strong>
+                          <strong className="sidebar-event-title">
+                            {event.title}
+                          </strong>
                           <span className="sidebar-event-meta">
-                            🗓️ {event.event_date} • ⏰ {event.start_time?.slice(0, 5)}
+                            🗓️ {event.event_date} • ⏰{" "}
+                            {event.start_time?.slice(0, 5)}
                           </span>
                         </div>
                         <Button
@@ -562,7 +720,7 @@ export default function CommunityPage() {
                           size="sm"
                           onClick={() => handleToggleRSVP(event.id)}
                         >
-                          {event.is_attending ? "Going" : "RSVP"}
+                          {event.is_attending ? "✓ Going" : "+ Going"}
                         </Button>
                       </div>
                     ))
@@ -578,9 +736,17 @@ export default function CommunityPage() {
               {topThree.length > 0 && (
                 <Card className="sidebar-widget-card">
                   <div className="sidebar-widget-header">
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                      }}
+                    >
                       <Trophy size={16} className="text-amber" />
-                      <strong className="sidebar-widget-title">Top Scholars This Week</strong>
+                      <strong className="sidebar-widget-title">
+                        Top Scholars This Week
+                      </strong>
                     </div>
                     <button
                       type="button"
@@ -593,7 +759,10 @@ export default function CommunityPage() {
 
                   <div className="sidebar-top-scholars">
                     {topThree.map((scholar, idx) => (
-                      <div key={scholar.user_id} className="sidebar-scholar-row">
+                      <div
+                        key={scholar.user_id}
+                        className="sidebar-scholar-row"
+                      >
                         <div className="scholar-rank-medal">
                           {idx === 0 ? "🥇" : idx === 1 ? "🥈" : "🥉"}
                         </div>
@@ -601,7 +770,9 @@ export default function CommunityPage() {
                           <strong className="scholar-row-name">
                             {scholar.full_name || scholar.email?.split("@")[0]}
                           </strong>
-                          <span className="scholar-row-pts">{scholar.total_points} XP</span>
+                          <span className="scholar-row-pts">
+                            {scholar.total_points} XP
+                          </span>
                         </div>
                       </div>
                     ))}
@@ -647,7 +818,12 @@ export default function CommunityPage() {
                   onKeyDown={(e) => e.key === "Enter" && loadEvents()}
                   className="form-input-control"
                 />
-                <Button size="sm" variant="secondary" onClick={loadEvents} icon={Search}>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={loadEvents}
+                  icon={Search}
+                >
                   Search
                 </Button>
               </div>
@@ -670,9 +846,22 @@ export default function CommunityPage() {
               />
             )}
 
-            {!eventsLoading && !eventsError && events.length > 0 && (
+            {!eventsLoading &&
+              !eventsError &&
+              events.length > 0 &&
+              displayedEvents.length === 0 && (
+                <EmptyState
+                  icon={Search}
+                  title="No matching study events"
+                  description={`No study events match "${eventSearch}".`}
+                  actionLabel="Clear Search"
+                  onAction={() => setEventSearch("")}
+                />
+              )}
+
+            {!eventsLoading && !eventsError && displayedEvents.length > 0 && (
               <div className="events-grid">
-                {events.map((event) => (
+                {displayedEvents.map((event) => (
                   <EventCard
                     key={event.id}
                     event={event}
@@ -703,7 +892,12 @@ export default function CommunityPage() {
                   onKeyDown={(e) => e.key === "Enter" && loadStudents()}
                   className="form-input-control"
                 />
-                <Button size="sm" variant="secondary" onClick={loadStudents} icon={Search}>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={loadStudents}
+                  icon={Search}
+                >
                   Search
                 </Button>
               </div>
@@ -724,17 +918,32 @@ export default function CommunityPage() {
               />
             )}
 
-            {!studentsLoading && !studentsError && students.length > 0 && (
-              <div className="students-grid">
-                {students.map((student) => (
-                  <StudentCard
-                    key={student.id}
-                    student={student}
-                    onToggleFollow={handleToggleFollow}
-                  />
-                ))}
-              </div>
-            )}
+            {!studentsLoading &&
+              !studentsError &&
+              students.length > 0 &&
+              displayedStudents.length === 0 && (
+                <EmptyState
+                  icon={Search}
+                  title="No students match search"
+                  description={`No scholars match "${studentSearch}".`}
+                  actionLabel="Clear Search"
+                  onAction={() => setStudentSearch("")}
+                />
+              )}
+
+            {!studentsLoading &&
+              !studentsError &&
+              displayedStudents.length > 0 && (
+                <div className="students-grid">
+                  {displayedStudents.map((student) => (
+                    <StudentCard
+                      key={student.id}
+                      student={student}
+                      onToggleFollow={handleToggleFollow}
+                    />
+                  ))}
+                </div>
+              )}
           </div>
         )}
 
@@ -770,13 +979,20 @@ export default function CommunityPage() {
 
               <div className="leaderboard-participants-count">
                 <span>
-                  👥 {leaderboardData?.total_participants || 0} Opted-In Scholars
+                  👥 {leaderboardData?.total_participants || 0} Opted-In
+                  Scholars
                 </span>
               </div>
             </div>
 
             {leaderboardLoading && (
-              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "16px",
+                }}
+              >
                 <CardSkeleton />
                 <CardSkeleton />
               </div>
@@ -824,14 +1040,19 @@ export default function CommunityPage() {
 
         {/* Discussion Creator Modal */}
         {showPostModal && (
-          <div className="modal-backdrop" onClick={() => setShowPostModal(false)}>
+          <div
+            className="modal-backdrop"
+            onClick={() => setShowPostModal(false)}
+          >
             <div
               className="modal-content-card"
               onClick={(e) => e.stopPropagation()}
               style={{ maxWidth: "600px" }}
             >
               <div className="modal-header-row">
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "10px" }}
+                >
                   <div
                     style={{
                       width: "36px",
@@ -847,8 +1068,15 @@ export default function CommunityPage() {
                     <MessageSquare size={20} />
                   </div>
                   <div>
-                    <h3 className="modal-title">Start a Discussion or Question</h3>
-                    <span style={{ fontSize: "0.8125rem", color: "var(--color-text-muted)" }}>
+                    <h3 className="modal-title">
+                      Start a Discussion or Question
+                    </h3>
+                    <span
+                      style={{
+                        fontSize: "0.8125rem",
+                        color: "var(--color-text-muted)",
+                      }}
+                    >
                       Share with your fellow university scholars
                     </span>
                   </div>
@@ -863,6 +1091,7 @@ export default function CommunityPage() {
               </div>
 
               <PostForm
+                initialCategory={modalCategory}
                 onSubmit={handleCreatePost}
                 onCancel={() => setShowPostModal(false)}
               />

@@ -1,3 +1,4 @@
+import json
 from rest_framework import status
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
@@ -95,6 +96,25 @@ class CourseDetailView(APIView):
             status=status.HTTP_200_OK,
         )
 
+    def patch(self, request, pk):
+        serializer = CourseSerializer(data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        course = services.update_course(
+            user=request.user,
+            course_id=pk,
+            title=serializer.validated_data.get("title"),
+            code=serializer.validated_data.get("code"),
+            color=serializer.validated_data.get("color"),
+            description=serializer.validated_data.get("description"),
+        )
+        return Response(
+            CourseSerializer(course, context={"request": request}).data,
+            status=status.HTTP_200_OK,
+        )
+
+    def put(self, request, pk):
+        return self.patch(request, pk)
+
     def delete(self, request, pk):
         services.delete_course(user=request.user, course_id=pk)
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -164,9 +184,15 @@ class GlobalMaterialListCreateView(APIView):
         serializer.is_valid(raise_exception=True)
 
         course_id = request.data.get("course") or request.data.get("course_id")
+        parsed_course_id = None
+        if course_id is not None:
+            try:
+                parsed_course_id = int(course_id)
+            except (ValueError, TypeError):
+                parsed_course_id = None
         material = services.create_study_material(
             user=request.user,
-            course_id=int(course_id) if course_id else None,
+            course_id=parsed_course_id,
             title=serializer.validated_data["title"],
             material_type=serializer.validated_data.get("material_type", "document"),
             category=serializer.validated_data.get("category", "Lecture Note"),
@@ -192,11 +218,23 @@ class StudyMaterialDetailView(APIView):
         )
 
     def patch(self, request, pk):
-        content_text = request.data.get("content", request.data.get("content_text", ""))
-        material = services.update_study_material_notepad(
+        title = request.data.get("title")
+        content_text = request.data.get("content", request.data.get("content_text"))
+        category = request.data.get("category")
+        tags = request.data.get("tags")
+        if isinstance(tags, str):
+            try:
+                tags = json.loads(tags)
+            except Exception:
+                tags = [t.strip() for t in tags.split(",") if t.strip()]
+
+        material = services.update_study_material(
             user=request.user,
             material_id=pk,
+            title=title,
             content_text=content_text,
+            category=category,
+            tags=tags,
         )
         return Response(
             StudyMaterialSerializer(material, context={"request": request}).data,
@@ -251,3 +289,52 @@ class CourseChatView(APIView):
             CourseChatMessageSerializer(reply).data,
             status=status.HTTP_201_CREATED,
         )
+
+
+# ============================================================
+# EXPORT PDF & FILE DOWNLOAD VIEWS
+# ============================================================
+
+class StudyMaterialExportPDFView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        material = services.get_user_material(user=request.user, material_id=pk)
+        from .pdf_service import generate_material_analysis_pdf
+        from django.http import HttpResponse
+
+        pdf_bytes = generate_material_analysis_pdf(material)
+
+        safe_title = "".join(
+            c for c in (material.title or "study_analysis") if c.isalnum() or c in ("-", "_")
+        ).rstrip()
+        filename = f"{safe_title}_analysis_report.pdf"
+
+        response = HttpResponse(pdf_bytes, content_type="application/pdf")
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        return response
+
+
+class StudyMaterialDownloadView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        material = services.get_user_material(user=request.user, material_id=pk)
+        from django.http import FileResponse, HttpResponse, Http404
+
+        if material.file and material.file.storage.exists(material.file.name):
+            return FileResponse(
+                material.file.open("rb"),
+                as_attachment=True,
+                filename=material.file.name.split("/")[-1],
+            )
+
+        if material.content_text:
+            safe_title = "".join(
+                c for c in (material.title or "material") if c.isalnum() or c in ("-", "_")
+            ).rstrip()
+            response = HttpResponse(material.content_text, content_type="text/plain; charset=utf-8")
+            response["Content-Disposition"] = f'attachment; filename="{safe_title}.txt"'
+            return response
+
+        raise Http404("Document file not found on server.")

@@ -1,8 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Button from "../../../components/Button";
 import FormError from "../../../components/FormError";
 import Input from "../../../components/Input";
-import { createStudySession, updateStudySession } from "../api";
+import {
+  createStudySession,
+  getStudySessions,
+  updateStudySession,
+} from "../api";
 
 function getInitialForm() {
   return {
@@ -41,8 +45,36 @@ export default function StudySessionForm({
   const [form, setForm] = useState(() => sessionToForm(session));
   const [error, setError] = useState("");
   const [internalSubmitting, setInternalSubmitting] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
 
   const submitting = Boolean(externalSubmitting || internalSubmitting);
+
+  useEffect(() => {
+    getStudySessions()
+      .then((sessions) => {
+        if (Array.isArray(sessions)) {
+          const subs = new Set();
+          sessions.forEach((s) => {
+            if (s.subject && typeof s.subject === "string") {
+              const clean = s.subject.trim();
+              if (clean) subs.add(clean);
+            }
+          });
+          setSuggestions(Array.from(subs));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const matchingSuggestions = useMemo(() => {
+    if (!form.subject) return suggestions.slice(0, 5);
+    const lower = form.subject.toLowerCase();
+    return suggestions
+      .filter(
+        (s) => s.toLowerCase().includes(lower) && s.toLowerCase() !== lower,
+      )
+      .slice(0, 5);
+  }, [suggestions, form.subject]);
 
   useEffect(() => {
     setForm(sessionToForm(session));
@@ -133,12 +165,57 @@ export default function StudySessionForm({
         name="subject"
         label="Subject / Topic Studied"
         type="text"
-        placeholder="e.g. Linear Algebra, Neural Networks, DBMS"
+        placeholder="e.g. SE Lab, Linear Algebra, DBMS"
         value={form.subject}
         onChange={handleChange}
         disabled={submitting}
         required
+        list="tracker-subject-datalist"
       />
+
+      <datalist id="tracker-subject-datalist">
+        {suggestions.map((sub, idx) => (
+          <option key={idx} value={sub} />
+        ))}
+      </datalist>
+
+      {matchingSuggestions.length > 0 && (
+        <div
+          style={{
+            marginTop: "-10px",
+            marginBottom: "14px",
+            display: "flex",
+            gap: "6px",
+            flexWrap: "wrap",
+            alignItems: "center",
+          }}
+        >
+          <span
+            style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}
+          >
+            ⚡ Past subjects:
+          </span>
+          {matchingSuggestions.map((sub, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => setForm((prev) => ({ ...prev, subject: sub }))}
+              style={{
+                background: "var(--color-surface-subtle)",
+                border: "1px solid var(--color-border)",
+                borderRadius: "12px",
+                padding: "2px 8px",
+                fontSize: "0.75rem",
+                color: "var(--color-primary)",
+                cursor: "pointer",
+                fontWeight: 500,
+              }}
+            >
+              + {sub}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="planner-time-row">
         <Input

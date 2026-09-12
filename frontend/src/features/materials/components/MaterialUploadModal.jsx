@@ -102,11 +102,12 @@ export default function MaterialUploadModal({ onClose, onCreated }) {
       >
         <div className="modal-header-row">
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <span style={{ fontSize: "1.6rem" }}>🤖</span>
+            <span style={{ fontSize: "1.6rem" }}>📚</span>
             <div>
-              <h3 className="modal-title">Upload & Analyze Study Material</h3>
+              <h3 className="modal-title">Upload & Index Study Material</h3>
               <span className="modal-subtitle">
-                AI extracts key topics, concepts, and self-study questions automatically.
+                Index syllabus concepts, summaries, and key topics for your
+                courses.
               </span>
             </div>
           </div>
@@ -169,7 +170,8 @@ export default function MaterialUploadModal({ onClose, onCreated }) {
           {/* Paste notes or text content */}
           <div className="form-group">
             <label className="form-label">
-              📝 Study Notes / Document Text (Paste lecture notes, syllabus, transcript)
+              📝 Study Notes / Document Text (Paste lecture notes, syllabus,
+              transcript)
             </label>
             <textarea
               value={content}
@@ -233,7 +235,8 @@ export default function MaterialUploadModal({ onClose, onCreated }) {
                   }}
                 >
                   <span>
-                    📄 <strong>{file.name}</strong> ({(file.size / 1024).toFixed(1)} KB)
+                    📄 <strong>{file.name}</strong> (
+                    {(file.size / 1024).toFixed(1)} KB)
                   </span>
                   <button
                     type="button"

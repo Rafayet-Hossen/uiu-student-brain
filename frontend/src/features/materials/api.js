@@ -61,6 +61,11 @@ export const createCourse = async (semesterId, payload) => {
   return res.data;
 };
 
+export const updateCourse = async (id, payload) => {
+  const res = await apiClient.patch(`/materials/courses/${id}/`, payload);
+  return res.data;
+};
+
 export const deleteCourse = async (id) => {
   const res = await apiClient.delete(`/materials/courses/${id}/`);
   return res.data;
@@ -121,35 +126,135 @@ export const createMaterial = async (
   courseIdOrPayload,
   maybeFormData = null,
 ) => {
-  if (maybeFormData) {
+  // Case 1: Called with single object payload: createMaterial(payload)
+  if (
+    !maybeFormData &&
+    typeof courseIdOrPayload === "object" &&
+    !(typeof FormData !== "undefined" && courseIdOrPayload instanceof FormData)
+  ) {
+    const res = await apiClient.post("/materials/", courseIdOrPayload);
+    return res.data;
+  }
+
+  // Case 2: Called with courseId and data (either FormData or JSON object)
+  const numericCourseId =
+    courseIdOrPayload && !isNaN(Number(courseIdOrPayload))
+      ? Number(courseIdOrPayload)
+      : null;
+
+  const data = maybeFormData !== null ? maybeFormData : courseIdOrPayload;
+  const isFormData =
+    typeof FormData !== "undefined" && data instanceof FormData;
+
+  if (numericCourseId) {
     const res = await apiClient.post(
-      `/materials/courses/${courseIdOrPayload}/materials/`,
-      maybeFormData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      },
+      `/materials/courses/${numericCourseId}/materials/`,
+      data,
+      isFormData
+        ? {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        : undefined,
     );
     return res.data;
   }
-  const res = await apiClient.post("/materials/", courseIdOrPayload);
+
+  // Fallback: If no valid numeric courseId, submit to global materials endpoint
+  const res = await apiClient.post(
+    "/materials/",
+    data,
+    isFormData
+      ? {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      : undefined,
+  );
   return res.data;
 };
 
 export const updateMaterial = async (id, payload) => {
-  const res = await apiClient.patch(`/materials/${id}/`, payload);
-  return res.data;
+  try {
+    const res = await apiClient.patch(`/materials/${id}/`, payload);
+    return res.data;
+  } catch (err) {
+    if (err?.response?.status === 404) {
+      const res2 = await apiClient.patch(
+        `/materials/materials/${id}/`,
+        payload,
+      );
+      return res2.data;
+    }
+    throw err;
+  }
 };
 
 export const deleteMaterial = async (id) => {
-  const res = await apiClient.delete(`/materials/${id}/`);
-  return res.data;
+  try {
+    const res = await apiClient.delete(`/materials/${id}/`);
+    return res.data;
+  } catch (err) {
+    if (err?.response?.status === 404) {
+      const res2 = await apiClient.delete(`/materials/materials/${id}/`);
+      return res2.data;
+    }
+    throw err;
+  }
 };
 
 export const analyzeMaterial = async (id) => {
   const res = await apiClient.post(`/materials/${id}/analyze/`);
   return res.data;
+};
+
+export const exportMaterialAnalysisPDF = async (
+  id,
+  title = "study_analysis",
+) => {
+  const res = await apiClient.get(`/materials/${id}/export-pdf/`, {
+    responseType: "blob",
+  });
+  const blob = new Blob([res.data], { type: "application/pdf" });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  const safeTitle = (title || "study_analysis")
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]/g, "_")
+    .replace(/_+/g, "_")
+    .slice(0, 50);
+  link.setAttribute("download", `${safeTitle}_AI_Analysis.pdf`);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+  return true;
+};
+
+export const downloadMaterialFile = async (id, title = "document") => {
+  const res = await apiClient.get(`/materials/${id}/download/`, {
+    responseType: "blob",
+  });
+  // Check Content-Disposition header if available
+  let filename = `${title || "document"}`;
+  const disposition = res.headers["content-disposition"];
+  if (disposition && disposition.includes("filename=")) {
+    const match = disposition.match(/filename="?([^"]+)"?/);
+    if (match && match[1]) filename = match[1];
+  }
+  const blob = new Blob([res.data]);
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", filename);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+  return true;
 };
 
 // ============================================================
@@ -164,6 +269,33 @@ export const getCourseChat = async (courseId) => {
 export const sendCourseChat = async (courseId, message) => {
   const res = await apiClient.post(`/materials/courses/${courseId}/chat/`, {
     message,
+  });
+  return res.data;
+};
+
+// ============================================================
+// FEATURE #8: AI QUIZ & ASSESSMENT API
+// ============================================================
+
+export const generateQuiz = async ({
+  subject,
+  topics,
+  num_questions = 5,
+  difficulty = "Intermediate",
+}) => {
+  const res = await apiClient.post("/ai/quiz/generate/", {
+    subject,
+    topics,
+    num_questions,
+    difficulty,
+  });
+  return res.data;
+};
+
+export const evaluateQuiz = async ({ subject, question_results }) => {
+  const res = await apiClient.post("/ai/quiz/evaluate/", {
+    subject,
+    question_results,
   });
   return res.data;
 };

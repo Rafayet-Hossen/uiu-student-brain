@@ -191,7 +191,7 @@ export default function AuthOrbitalShowcase() {
                 fontSize="7.5"
                 fontWeight="700"
                 fill="#ffffff"
-                fontFamily="Space Grotesk, sans-serif"
+                fontFamily="Plus Jakarta Sans, Inter, sans-serif"
               >
                 Student Dashboard
               </text>

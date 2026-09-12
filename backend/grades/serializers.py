@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import GradePlan
+from .models import CourseGrade, GradePlan
 
 
 class GradePlanSerializer(serializers.ModelSerializer):
@@ -46,3 +46,21 @@ class GradePlanSerializer(serializers.ModelSerializer):
             )
 
         return attrs
+
+
+class CourseGradeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CourseGrade
+        fields = [
+            "id",
+            "course_code",
+            "course_name",
+            "credits",
+            "grade_point",
+            "grade_letter",
+            "semester",
+            "is_retake",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at"]

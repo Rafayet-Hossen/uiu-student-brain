@@ -7,18 +7,38 @@ import {
   deleteSemester,
   getCourses,
   createCourse,
+  updateCourse,
   deleteCourse,
   getMaterials,
   createMaterial,
   deleteMaterial,
   analyzeMaterial,
+  exportMaterialAnalysisPDF,
+  downloadMaterialFile,
   extractMaterialsErrorMessage,
 } from "./api";
+import {
+  FileText,
+  Globe,
+  FileEdit,
+  Download,
+  FileDown,
+  Trash2,
+  ExternalLink,
+  Sparkles,
+  BookOpen,
+  MessageSquare,
+  Plus,
+  Search,
+  Pencil,
+} from "lucide-react";
 import CreateSemesterModal from "./components/CreateSemesterModal";
 import CreateCourseModal from "./components/CreateCourseModal";
 import AddMaterialModal from "./components/AddMaterialModal";
 import MaterialAnalysisModal from "./components/MaterialAnalysisModal";
 import CourseAIChat from "./components/CourseAIChat";
+import CourseNotesWorkspace from "./components/CourseNotesWorkspace";
+import { formatRichContent } from "../../lib/markdownHelper";
 
 export default function MaterialsPage() {
   // Semesters state
@@ -35,6 +55,8 @@ export default function MaterialsPage() {
   const [materials, setMaterials] = useState([]);
   const [loadingMaterials, setLoadingMaterials] = useState(false);
   const [analyzingId, setAnalyzingId] = useState(null);
+  const [exportingPdfId, setExportingPdfId] = useState(null);
+  const [downloadingFileId, setDownloadingFileId] = useState(null);
 
   // Active Workspace Sub-Tab: 'materials' | 'chat'
   const [workspaceTab, setWorkspaceTab] = useState("materials");
@@ -43,12 +65,15 @@ export default function MaterialsPage() {
   const [courseSearch, setCourseSearch] = useState("");
   const [materialSearch, setMaterialSearch] = useState("");
   const [materialFilter, setMaterialFilter] = useState("all"); // 'all' | 'document' | 'link' | 'note'
+  const [activeNoteToOpen, setActiveNoteToOpen] = useState(null);
 
   // Modals
   const [isCreateSemesterOpen, setIsCreateSemesterOpen] = useState(false);
   const [isCreateCourseOpen, setIsCreateCourseOpen] = useState(false);
+  const [editingCourse, setEditingCourse] = useState(null);
   const [isAddMaterialOpen, setIsAddMaterialOpen] = useState(false);
-  const [selectedAnalysisMaterial, setSelectedAnalysisMaterial] = useState(null);
+  const [selectedAnalysisMaterial, setSelectedAnalysisMaterial] =
+    useState(null);
 
   const [submittingSemester, setSubmittingSemester] = useState(false);
   const [submittingCourse, setSubmittingCourse] = useState(false);
@@ -102,7 +127,10 @@ export default function MaterialsPage() {
       if (data.length > 0) {
         if (keepCourseId && data.some((c) => c.id === keepCourseId)) {
           setSelectedCourseId(keepCourseId);
-        } else if (!selectedCourseId || !data.some((c) => c.id === selectedCourseId)) {
+        } else if (
+          !selectedCourseId ||
+          !data.some((c) => c.id === selectedCourseId)
+        ) {
           setSelectedCourseId(data[0].id);
         }
       } else {
@@ -183,7 +211,11 @@ export default function MaterialsPage() {
   };
 
   const handleDeleteSemester = async (sem) => {
-    if (!window.confirm(`Delete semester "${sem.name}" and all associated courses and materials?`)) {
+    if (
+      !window.confirm(
+        `Delete semester "${sem.name}" and all associated courses and materials?`,
+      )
+    ) {
       return;
     }
     try {
@@ -195,15 +227,21 @@ export default function MaterialsPage() {
     }
   };
 
-  const handleCreateCourse = async (payload) => {
-    if (!selectedSemesterId) return;
+  const handleSaveCourse = async (payload) => {
     try {
       setSubmittingCourse(true);
       setErrorMsg("");
-      const created = await createCourse(selectedSemesterId, payload);
-      setSuccessMsg(`Course "${created.title}" added to ${selectedSemester?.name}!`);
-      setIsCreateCourseOpen(false);
-      await fetchCourses(selectedSemesterId, created.id);
+      if (editingCourse) {
+        const updated = await updateCourse(editingCourse.id, payload);
+        setIsCreateCourseOpen(false);
+        setEditingCourse(null);
+        await fetchCourses(selectedSemesterId, updated.id);
+      } else {
+        if (!selectedSemesterId) return;
+        const created = await createCourse(selectedSemesterId, payload);
+        setIsCreateCourseOpen(false);
+        await fetchCourses(selectedSemesterId, created.id);
+      }
     } catch (err) {
       setErrorMsg(extractMaterialsErrorMessage(err));
     } finally {
@@ -211,8 +249,17 @@ export default function MaterialsPage() {
     }
   };
 
+  const handleOpenEditCourse = (course) => {
+    setEditingCourse(course);
+    setIsCreateCourseOpen(true);
+  };
+
   const handleDeleteCourse = async (course) => {
-    if (!window.confirm(`Delete course "${course.title}" and all its study materials?`)) {
+    if (
+      !window.confirm(
+        `Delete course "${course.title}" and all its study materials?`,
+      )
+    ) {
       return;
     }
     try {
@@ -260,15 +307,42 @@ export default function MaterialsPage() {
       const updated = await analyzeMaterial(matId);
       setSuccessMsg(`AI analysis completed for "${updated.title}"!`);
 
-      setMaterials((prev) =>
-        prev.map((m) => (m.id === matId ? updated : m))
-      );
+      setMaterials((prev) => prev.map((m) => (m.id === matId ? updated : m)));
       await fetchCourses(selectedSemesterId, selectedCourseId);
       setSelectedAnalysisMaterial(updated);
     } catch (err) {
       setErrorMsg(extractMaterialsErrorMessage(err));
     } finally {
       setAnalyzingId(null);
+    }
+  };
+
+  const handleDownloadPdfReport = async (mat) => {
+    try {
+      setExportingPdfId(mat.id);
+      setErrorMsg("");
+      await exportMaterialAnalysisPDF(mat.id, mat.title);
+      setSuccessMsg(`Downloaded AI Analysis PDF report for "${mat.title}"!`);
+    } catch (err) {
+      setErrorMsg(extractMaterialsErrorMessage(err));
+    } finally {
+      setExportingPdfId(null);
+    }
+  };
+
+  const handleDownloadFile = async (mat) => {
+    try {
+      setDownloadingFileId(mat.id);
+      setErrorMsg("");
+      await downloadMaterialFile(mat.id, mat.title);
+    } catch (err) {
+      if (mat.file_url) {
+        window.open(mat.file_url, "_blank");
+      } else {
+        setErrorMsg(extractMaterialsErrorMessage(err));
+      }
+    } finally {
+      setDownloadingFileId(null);
     }
   };
 
@@ -280,20 +354,41 @@ export default function MaterialsPage() {
       (c) =>
         c.title.toLowerCase().includes(term) ||
         (c.code && c.code.toLowerCase().includes(term)) ||
-        (c.description && c.description.toLowerCase().includes(term))
+        (c.description && c.description.toLowerCase().includes(term)),
     );
   }, [courses, courseSearch]);
+
+  // Filtered materials
+  const filteredMaterials = useMemo(() => {
+    let list = materials;
+    if (materialFilter && materialFilter !== "all") {
+      list = list.filter((m) => m.material_type === materialFilter);
+    }
+    if (materialSearch.trim()) {
+      const term = materialSearch.toLowerCase();
+      list = list.filter(
+        (m) =>
+          (m.title && m.title.toLowerCase().includes(term)) ||
+          (m.category && m.category.toLowerCase().includes(term)) ||
+          (m.summary && m.summary.toLowerCase().includes(term)) ||
+          (m.key_topics &&
+            Array.isArray(m.key_topics) &&
+            m.key_topics.some((t) => t.toLowerCase().includes(term))),
+      );
+    }
+    return list;
+  }, [materials, materialFilter, materialSearch]);
 
   const getMaterialTypeIcon = (type) => {
     switch (type) {
       case "document":
-        return "📄";
+        return <FileText size={18} className="text-primary" />;
       case "link":
-        return "🔗";
+        return <Globe size={18} className="text-emerald" />;
       case "note":
-        return "📝";
+        return <FileEdit size={18} className="text-amber" />;
       default:
-        return "📁";
+        return <BookOpen size={18} className="text-primary" />;
     }
   };
 
@@ -306,7 +401,9 @@ export default function MaterialsPage() {
           {loadingSemesters ? (
             <span className="text-muted text-sm">Loading terms...</span>
           ) : semesters.length === 0 ? (
-            <span className="text-muted text-sm">No semesters created yet.</span>
+            <span className="text-muted text-sm">
+              No semesters created yet.
+            </span>
           ) : (
             <div className="semester-pills-list">
               {semesters.map((sem) => {
@@ -319,7 +416,11 @@ export default function MaterialsPage() {
                     onClick={() => setSelectedSemesterId(sem.id)}
                   >
                     <span>{sem.name}</span>
-                    {sem.is_current && <span className="current-term-dot" title="Current Term">•</span>}
+                    {sem.is_current && (
+                      <span className="current-term-dot" title="Current Term">
+                        •
+                      </span>
+                    )}
                   </button>
                 );
               })}
@@ -342,7 +443,7 @@ export default function MaterialsPage() {
               onClick={() => handleDeleteSemester(selectedSemester)}
               title="Delete Semester"
             >
-              🗑️
+              <Trash2 size={15} />
             </button>
           )}
         </div>
@@ -360,7 +461,10 @@ export default function MaterialsPage() {
       {successMsg && (
         <div className="alert-banner alert-banner-success mb-4">
           <span>{successMsg}</span>
-          <button className="alert-dismiss-btn" onClick={() => setSuccessMsg("")}>
+          <button
+            className="alert-dismiss-btn"
+            onClick={() => setSuccessMsg("")}
+          >
             ✕
           </button>
         </div>
@@ -405,7 +509,9 @@ export default function MaterialsPage() {
             </div>
           ) : !selectedSemester ? (
             <div className="sidebar-empty-state">
-              <p className="empty-text">Create a semester to start enrolling courses.</p>
+              <p className="empty-text">
+                Create a semester to start enrolling courses.
+              </p>
               <Button
                 variant="outline"
                 size="sm"
@@ -416,7 +522,9 @@ export default function MaterialsPage() {
             </div>
           ) : filteredCourses.length === 0 ? (
             <div className="sidebar-empty-state">
-              <p className="empty-text">No courses in {selectedSemester.name}.</p>
+              <p className="empty-text">
+                No courses in {selectedSemester.name}.
+              </p>
               <Button
                 variant="outline"
                 size="sm"
@@ -436,32 +544,71 @@ export default function MaterialsPage() {
                     onClick={() => setSelectedCourseId(c.id)}
                     style={{ borderLeftColor: c.color || "#2563eb" }}
                   >
-                    <div className="project-card-top">
-                      {c.code ? (
-                        <span
-                          className="course-code-badge"
-                          style={{
-                            backgroundColor: `${c.color || "#2563eb"}15`,
-                            color: c.color || "#2563eb",
-                            borderColor: `${c.color || "#2563eb"}35`,
-                          }}
-                        >
-                          {c.code}
-                        </span>
-                      ) : (
-                        <span className="course-code-badge">Course</span>
-                      )}
+                    <div
+                      className="project-card-top"
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        {c.code ? (
+                          <span
+                            className="course-code-badge"
+                            style={{
+                              backgroundColor: `${c.color || "#2563eb"}15`,
+                              color: c.color || "#2563eb",
+                              borderColor: `${c.color || "#2563eb"}35`,
+                            }}
+                          >
+                            {c.code}
+                          </span>
+                        ) : (
+                          <span className="course-code-badge">Course</span>
+                        )}
 
-                      {c.analyzed_materials_count > 0 && (
-                        <span className="badge badge-accent badge-xs">
-                          ✨ {c.analyzed_materials_count} Analyzed
-                        </span>
-                      )}
+                        {c.analyzed_materials_count > 0 && (
+                          <span className="badge badge-accent badge-xs">
+                            {c.analyzed_materials_count} Summaries
+                          </span>
+                        )}
+                      </div>
+
+                      <button
+                        type="button"
+                        className="btn-icon-subtle"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenEditCourse(c);
+                        }}
+                        title="Edit Course"
+                        style={{
+                          background: "transparent",
+                          border: "none",
+                          cursor: "pointer",
+                          padding: "4px",
+                          borderRadius: "4px",
+                          color: "var(--color-text-muted)",
+                          display: "inline-flex",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Pencil size={13} />
+                      </button>
                     </div>
                     <h4 className="project-card-title">{c.title}</h4>
                     <div className="project-card-stats">
                       <span className="card-stat-text">
-                        {c.materials_count} {c.materials_count === 1 ? "material" : "materials"}
+                        {c.materials_count}{" "}
+                        {c.materials_count === 1 ? "material" : "materials"}
                       </span>
                       {c.extracted_topics?.length > 0 && (
                         <span className="card-stat-topics">
@@ -520,23 +667,37 @@ export default function MaterialsPage() {
                         {selectedCourse.code}
                       </span>
                     )}
-                    <span className="badge badge-subtle">{selectedSemester?.name}</span>
+                    <span className="badge badge-subtle">
+                      {selectedSemester?.name}
+                    </span>
                     <span className="badge badge-subtle">
                       {selectedCourse.materials_count} Materials
                     </span>
                     {selectedCourse.analyzed_materials_count > 0 && (
                       <span className="badge badge-accent">
-                        ✨ {selectedCourse.analyzed_materials_count} AI Analyzed
+                        {selectedCourse.analyzed_materials_count} Summaries
                       </span>
                     )}
                   </div>
-                  <h2 className="banner-project-title">{selectedCourse.title}</h2>
+                  <h2 className="banner-project-title">
+                    {selectedCourse.title}
+                  </h2>
                   {selectedCourse.description && (
-                    <p className="banner-project-desc">{selectedCourse.description}</p>
+                    <p className="banner-project-desc">
+                      {selectedCourse.description}
+                    </p>
                   )}
                 </div>
 
                 <div className="banner-action-buttons">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleOpenEditCourse(selectedCourse)}
+                    icon={Pencil}
+                  >
+                    Edit Course
+                  </Button>
                   <Button
                     variant="primary"
                     onClick={() => setIsAddMaterialOpen(true)}
@@ -549,19 +710,19 @@ export default function MaterialsPage() {
                     onClick={() => handleDeleteCourse(selectedCourse)}
                     title="Delete Course"
                   >
-                    🗑️
+                    <Trash2 size={16} />
                   </button>
                 </div>
               </div>
 
-              {/* Workspace Tab Switcher (Materials vs AI Tutor Chat) */}
+              {/* Workspace Tab Switcher (Materials vs Study Assistant Chat) */}
               <div className="course-workspace-nav-tabs">
                 <button
                   type="button"
                   className={`course-nav-tab ${workspaceTab === "materials" ? "course-tab-active" : ""}`}
                   onClick={() => setWorkspaceTab("materials")}
                 >
-                  <span className="tab-icon">📚</span>
+                  <BookOpen size={16} />
                   <span>Course Materials ({materials.length})</span>
                 </button>
                 <button
@@ -569,9 +730,9 @@ export default function MaterialsPage() {
                   className={`course-nav-tab ${workspaceTab === "chat" ? "course-tab-active" : ""}`}
                   onClick={() => setWorkspaceTab("chat")}
                 >
-                  <span className="tab-icon">💬</span>
-                  <span>AI Study Assistant & Q&A</span>
-                  <span className="badge badge-accent badge-xs">Gemini</span>
+                  <MessageSquare size={16} />
+                  <span>Course Study Assistant & Q&A</span>
+                  <span className="badge badge-accent badge-xs">Assistant</span>
                 </button>
               </div>
 
@@ -579,23 +740,25 @@ export default function MaterialsPage() {
               {workspaceTab === "materials" && (
                 <>
                   {/* Aggregated Syllabus Topics Bar */}
-                  {selectedCourse.extracted_topics && selectedCourse.extracted_topics.length > 0 && (
-                    <div className="project-topics-syllabus-box">
-                      <div className="syllabus-header">
-                        <span className="syllabus-icon">🎓</span>
-                        <span className="syllabus-title">
-                          AI Knowledge Graph & Extracted Topics ({selectedCourse.extracted_topics.length})
-                        </span>
-                      </div>
-                      <div className="syllabus-chips-wrap">
-                        {selectedCourse.extracted_topics.map((top, idx) => (
-                          <span key={idx} className="syllabus-chip">
-                            {top}
+                  {selectedCourse.extracted_topics &&
+                    selectedCourse.extracted_topics.length > 0 && (
+                      <div className="project-topics-syllabus-box">
+                        <div className="syllabus-header">
+                          <span className="syllabus-icon">🎓</span>
+                          <span className="syllabus-title">
+                            Course Topics & Syllabus Map (
+                            {selectedCourse.extracted_topics.length})
                           </span>
-                        ))}
+                        </div>
+                        <div className="syllabus-chips-wrap">
+                          {selectedCourse.extracted_topics.map((top, idx) => (
+                            <span key={idx} className="syllabus-chip">
+                              {top}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
                   {/* Filter and Search Bar for Materials */}
                   <div className="materials-toolbar-row">
@@ -617,19 +780,41 @@ export default function MaterialsPage() {
                       ))}
                     </div>
 
-                    <div className="materials-search-field">
-                      <input
-                        type="text"
-                        className="form-input form-input-sm"
-                        placeholder="Search within this course..."
-                        value={materialSearch}
-                        onChange={(e) => setMaterialSearch(e.target.value)}
-                      />
-                    </div>
+                    {materialFilter !== "note" && (
+                      <div className="materials-search-field">
+                        <input
+                          type="text"
+                          className="form-input form-input-sm"
+                          placeholder="Search within this course..."
+                          value={materialSearch}
+                          onChange={(e) => setMaterialSearch(e.target.value)}
+                        />
+                      </div>
+                    )}
                   </div>
 
-                  {/* Materials Grid */}
-                  {loadingMaterials ? (
+                  {/* NOTE WORKSPACE OR REGULAR MATERIALS GRID */}
+                  {materialFilter === "note" ? (
+                    <CourseNotesWorkspace
+                      course={selectedCourse}
+                      notes={materials}
+                      onRefresh={async () => {
+                        await fetchMaterials(selectedCourseId);
+                        try {
+                          const freshCourses =
+                            await getCourses(selectedSemesterId);
+                          setCourses(freshCourses);
+                        } catch (e) {
+                          console.error("Course list refresh error:", e);
+                        }
+                      }}
+                      onAnalyze={handleAnalyzeMaterial}
+                      analyzingId={analyzingId}
+                      onViewAnalysis={(mat) => setSelectedAnalysisMaterial(mat)}
+                      activeNoteToOpen={activeNoteToOpen}
+                      onClearActiveNoteToOpen={() => setActiveNoteToOpen(null)}
+                    />
+                  ) : loadingMaterials ? (
                     <div className="materials-grid-loading">
                       <Spinner standalone />
                     </div>
@@ -638,8 +823,8 @@ export default function MaterialsPage() {
                       <div className="empty-card-icon">📤</div>
                       <h4>No materials uploaded yet</h4>
                       <p>
-                        Upload lecture slides, PDF textbook chapters, save web references,
-                        or write lecture notes to analyze with AI.
+                        Upload lecture slides, PDF textbook chapters, save web
+                        references, or write lecture notes to analyze with AI.
                       </p>
                       <Button
                         variant="primary"
@@ -648,14 +833,47 @@ export default function MaterialsPage() {
                         + Add First Study Material
                       </Button>
                     </div>
+                  ) : filteredMaterials.length === 0 ? (
+                    <div className="materials-empty-card">
+                      <div className="empty-card-icon">🔍</div>
+                      <h4>No matching materials found</h4>
+                      <p>
+                        No items match your filter or search query "
+                        {materialSearch}".
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setMaterialSearch("");
+                          setMaterialFilter("all");
+                        }}
+                      >
+                        Reset Filter
+                      </Button>
+                    </div>
                   ) : (
                     <div className="materials-cards-grid">
-                      {materials.map((mat) => {
+                      {filteredMaterials.map((mat) => {
                         const isAnalyzed = !!mat.analyzed_at;
                         const isCurrentlyAnalyzing = analyzingId === mat.id;
 
                         return (
-                          <div key={mat.id} className="material-item-card">
+                          <div
+                            key={mat.id}
+                            className={`material-item-card mat-card-${mat.material_type} ${mat.material_type === "note" ? "material-item-card-clickable" : ""}`}
+                            onClick={
+                              mat.material_type === "note"
+                                ? () => {
+                                    setActiveNoteToOpen({
+                                      ...mat,
+                                      initialMode: "edit",
+                                    });
+                                    setMaterialFilter("note");
+                                  }
+                                : undefined
+                            }
+                          >
                             <div className="mat-card-header">
                               <div className="mat-type-icon-box">
                                 {getMaterialTypeIcon(mat.material_type)}
@@ -664,48 +882,129 @@ export default function MaterialsPage() {
                                 <span className="mat-type-badge">
                                   {mat.material_type.toUpperCase()}
                                 </span>
-                                <h4 className="mat-title-text" title={mat.title}>
+                                <h4
+                                  className="mat-title-text"
+                                  title={mat.title}
+                                >
                                   {mat.title}
                                 </h4>
                               </div>
                             </div>
 
                             <div className="mat-card-body">
+                              {/* Document Card Presentation */}
                               {mat.material_type === "document" && (
-                                <div className="mat-file-meta">
-                                  <span>📄 Document</span>
-                                  {mat.formatted_file_size && (
-                                    <span className="mat-size-pill">
-                                      {mat.formatted_file_size}
+                                <div className="mat-document-block">
+                                  <div className="mat-file-meta">
+                                    <span className="mat-type-pill">
+                                      <FileText size={13} />
+                                      <span>PDF / Slides</span>
                                     </span>
-                                  )}
+                                    {mat.formatted_file_size && (
+                                      <span className="mat-size-pill">
+                                        {mat.formatted_file_size}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="mat-document-desc">
+                                    {mat.content_text
+                                      ? mat.content_text.length > 120
+                                        ? `${mat.content_text.slice(0, 120)}...`
+                                        : mat.content_text
+                                      : "Course reading slide & textbook chapter indexed for review and AI quiz generation."}
+                                  </p>
                                 </div>
                               )}
 
+                              {/* Rich Resource Link Presentation */}
                               {mat.material_type === "link" && (
-                                <div className="mat-link-meta">
+                                <div className="mat-resource-link-block">
+                                  <div className="mat-resource-domain-row">
+                                    <span className="mat-verified-domain-pill">
+                                      <Globe size={12} />
+                                      <span>
+                                        {(() => {
+                                          try {
+                                            return new URL(
+                                              mat.link_url,
+                                            ).hostname.replace(/^www\./, "");
+                                          } catch {
+                                            return "External Reference";
+                                          }
+                                        })()}
+                                      </span>
+                                    </span>
+                                    <span className="mat-link-badge-tag">
+                                      Web Resource
+                                    </span>
+                                  </div>
+
+                                  <p className="mat-resource-desc">
+                                    {mat.content_text
+                                      ? mat.content_text.length > 120
+                                        ? `${mat.content_text.slice(0, 120)}...`
+                                        : mat.content_text
+                                      : "Curated external study reference and syllabus resource for course mastery."}
+                                  </p>
+
                                   <a
                                     href={mat.link_url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="mat-external-link"
+                                    className="mat-resource-cta-btn"
+                                    onClick={(e) => e.stopPropagation()}
                                   >
-                                    🔗 Open Resource ↗
+                                    <span>Visit Resource</span>
+                                    <ExternalLink
+                                      size={13}
+                                      className="mat-link-arrow"
+                                    />
                                   </a>
                                 </div>
                               )}
 
-                              {mat.content_text && (
-                                <p className="mat-excerpt-text">
-                                  {mat.content_text.slice(0, 140)}
-                                  {mat.content_text.length > 140 ? "..." : ""}
-                                </p>
+                              {/* Course Note Presentation */}
+                              {mat.material_type === "note" && (
+                                <div className="mat-note-block">
+                                  <div className="mat-note-pill-row">
+                                    <span className="mat-note-type-pill">
+                                      <FileEdit size={12} />
+                                      <span>Course Note • Scratchpad</span>
+                                    </span>
+                                    {mat.content_text && (
+                                      <span className="mat-note-words-chip">
+                                        {mat.content_text.trim().split(/\s+/).filter(Boolean).length} words
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="mat-note-desc">
+                                    {mat.content_text
+                                      ? mat.content_text.length > 120
+                                        ? `${mat.content_text.slice(0, 120)}...`
+                                        : mat.content_text
+                                      : "Personal study note. Click to open in Notepad editor to review or edit your notes."}
+                                  </p>
+                                  {mat.content_text ? (
+                                    <div
+                                      className="mat-note-formatted-preview"
+                                      title="Formatted note preview (click card or Edit Note to open in Notepad)"
+                                    >
+                                      {formatRichContent(mat.content_text)}
+                                    </div>
+                                  ) : (
+                                    <p className="mat-note-desc">
+                                      Personal study note. Click to open in Notepad editor to review or edit your notes.
+                                    </p>
+                                  )}
+                                </div>
                               )}
 
-                              {/* AI Summary Snippet if Analyzed */}
+                              {/* Summary Snippet if Analyzed */}
                               {isAnalyzed && mat.ai_analysis?.summary && (
                                 <div className="mat-ai-snippet-box">
-                                  <span className="ai-snippet-label">✨ AI Executive Summary:</span>
+                                  <span className="ai-snippet-label">
+                                    Key Summary:
+                                  </span>
                                   <p className="ai-snippet-text">
                                     {mat.ai_analysis.summary.slice(0, 120)}...
                                   </p>
@@ -713,48 +1012,119 @@ export default function MaterialsPage() {
                               )}
                             </div>
 
-                            <div className="mat-card-footer">
+                            <div
+                              className="mat-card-footer"
+                              onClick={(e) => e.stopPropagation()}
+                            >
                               <div className="mat-status-slot">
                                 {isAnalyzed ? (
-                                  <span className="badge badge-accent">
-                                    ✨ {mat.ai_analysis?.key_topics?.length || 0} Topics
+                                  <span
+                                    className="mat-status-chip mat-status-analyzed"
+                                    title="AI concepts and topics extracted"
+                                  >
+                                    <BookOpen
+                                      size={12}
+                                      className="mat-chip-icon text-emerald"
+                                    />
+                                    <span>
+                                      {mat.ai_analysis?.key_topics?.length || 0}{" "}
+                                      Key Topics
+                                    </span>
                                   </span>
                                 ) : (
-                                  <span className="badge badge-subtle">
-                                    ⏳ Not Analyzed
+                                  <span
+                                    className="mat-status-chip mat-status-pending"
+                                    title="This material is ready to be analyzed by AI"
+                                  >
+                                    <Sparkles
+                                      size={12}
+                                      className="mat-chip-icon text-amber"
+                                    />
+                                    <span>Ready for AI Analysis</span>
                                   </span>
                                 )}
                               </div>
 
                               <div className="mat-actions-slot">
-                                {mat.file_url && (
-                                  <a
-                                    href={mat.file_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="btn-icon-link"
-                                    title="Download / View File"
+                                {mat.material_type === "note" && (
+                                  <button
+                                    type="button"
+                                    className="btn-action-view-note"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setActiveNoteToOpen({
+                                        ...mat,
+                                        initialMode: "edit",
+                                      });
+                                      setMaterialFilter("note");
+                                    }}
+                                    title="Open in Notepad"
                                   >
-                                    ⬇️
-                                  </a>
+                                    <FileEdit size={13} />
+                                    <span>Edit Note</span>
+                                  </button>
+                                )}
+
+                                {(mat.file_url ||
+                                  mat.material_type === "document") && (
+                                  <button
+                                    type="button"
+                                    className="btn-icon-link"
+                                    onClick={() => handleDownloadFile(mat)}
+                                    title={
+                                      downloadingFileId === mat.id
+                                        ? "Downloading file..."
+                                        : "Download File"
+                                    }
+                                    disabled={downloadingFileId === mat.id}
+                                  >
+                                    <Download size={14} />
+                                  </button>
                                 )}
 
                                 {isAnalyzed ? (
-                                  <button
-                                    type="button"
-                                    className="btn-action-ai-report"
-                                    onClick={() => setSelectedAnalysisMaterial(mat)}
-                                  >
-                                    📖 View Report
-                                  </button>
+                                  <>
+                                    <button
+                                      type="button"
+                                      className="btn-icon-link btn-icon-pdf"
+                                      onClick={() =>
+                                        handleDownloadPdfReport(mat)
+                                      }
+                                      title={
+                                        exportingPdfId === mat.id
+                                          ? "Generating PDF..."
+                                          : "Download Academic PDF Report"
+                                      }
+                                      disabled={exportingPdfId === mat.id}
+                                    >
+                                      <FileDown size={14} />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="btn-action-ai-report"
+                                      onClick={() =>
+                                        setSelectedAnalysisMaterial(mat)
+                                      }
+                                    >
+                                      <Sparkles size={13} />
+                                      <span>Study Analysis</span>
+                                    </button>
+                                  </>
                                 ) : (
                                   <button
                                     type="button"
                                     className="btn-action-ai-analyze"
-                                    onClick={() => handleAnalyzeMaterial(mat.id)}
+                                    onClick={() =>
+                                      handleAnalyzeMaterial(mat.id)
+                                    }
                                     disabled={isCurrentlyAnalyzing}
                                   >
-                                    {isCurrentlyAnalyzing ? "✨ Analyzing..." : "✨ Analyze"}
+                                    <Sparkles size={13} />
+                                    <span>
+                                      {isCurrentlyAnalyzing
+                                        ? "Analyzing..."
+                                        : "Generate Insights"}
+                                    </span>
                                   </button>
                                 )}
 
@@ -764,7 +1134,7 @@ export default function MaterialsPage() {
                                   onClick={() => handleDeleteMaterial(mat)}
                                   title="Delete Material"
                                 >
-                                  🗑️
+                                  <Trash2 size={14} />
                                 </button>
                               </div>
                             </div>
@@ -800,10 +1170,14 @@ export default function MaterialsPage() {
 
       <CreateCourseModal
         isOpen={isCreateCourseOpen}
-        onClose={() => setIsCreateCourseOpen(false)}
-        onSubmit={handleCreateCourse}
+        onClose={() => {
+          setIsCreateCourseOpen(false);
+          setEditingCourse(null);
+        }}
+        onSubmit={handleSaveCourse}
         submitting={submittingCourse}
         semesterName={selectedSemester?.name || "Selected Semester"}
+        course={editingCourse}
       />
 
       <AddMaterialModal

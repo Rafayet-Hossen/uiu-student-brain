@@ -12,6 +12,10 @@ export function createPost(payload) {
   return api.post("/community/posts/", payload).then((res) => res.data);
 }
 
+export function updatePost(id, payload) {
+  return api.patch(`/community/posts/${id}/`, payload).then((res) => res.data);
+}
+
 export function deletePost(id) {
   return api.delete(`/community/posts/${id}/`).then((res) => res.data);
 }
@@ -37,6 +41,12 @@ export function deleteComment(id) {
   return api.delete(`/community/comments/${id}/`).then((res) => res.data);
 }
 
+export function markCommentHelpful(commentId) {
+  return api
+    .post(`/community/comments/${commentId}/mark-helpful/`)
+    .then((res) => res.data);
+}
+
 // Study Events
 export function getEvents(search) {
   const params = {};
@@ -52,12 +62,14 @@ export function deleteEvent(id) {
   return api.delete(`/community/events/${id}/`).then((res) => res.data);
 }
 
-export function toggleEventRSVP(id) {
-  return api.post(`/community/events/${id}/rsvp/`).then((res) => res.data);
+export function toggleEventRSVP(id, status = "going") {
+  return api
+    .post(`/community/events/${id}/rsvp/`, { status })
+    .then((res) => res.data);
 }
 
-export function toggleEventRsvp(id) {
-  return toggleEventRSVP(id);
+export function toggleEventRsvp(id, status = "going") {
+  return toggleEventRSVP(id, status);
 }
 
 // Student Network

@@ -17,10 +17,14 @@ urlpatterns = [
     path("materials/stats/", views.MaterialStatsView.as_view(), name="materials-stats"),
     path("materials/<int:pk>/", views.StudyMaterialDetailView.as_view(), name="materials-material-detail"),
     path("materials/<int:pk>/analyze/", views.StudyMaterialAnalyzeView.as_view(), name="materials-material-analyze"),
+    path("materials/<int:pk>/export-pdf/", views.StudyMaterialExportPDFView.as_view(), name="materials-material-export-pdf"),
+    path("materials/<int:pk>/download/", views.StudyMaterialDownloadView.as_view(), name="materials-material-download"),
 
     # Direct top-level shortcuts for compatibility
     path("", views.GlobalMaterialListCreateView.as_view(), name="material-list-create"),
     path("stats/", views.MaterialStatsView.as_view(), name="material-stats"),
     path("<int:pk>/", views.StudyMaterialDetailView.as_view(), name="material-detail"),
     path("<int:pk>/analyze/", views.StudyMaterialAnalyzeView.as_view(), name="material-analyze"),
+    path("<int:pk>/export-pdf/", views.StudyMaterialExportPDFView.as_view(), name="material-export-pdf"),
+    path("<int:pk>/download/", views.StudyMaterialDownloadView.as_view(), name="material-download"),
 ]

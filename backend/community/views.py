@@ -88,6 +88,14 @@ class CommentDetailView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class CommentMarkHelpfulView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        result = services.mark_comment_helpful(comment_id=pk, user=request.user)
+        return Response(result, status=status.HTTP_200_OK)
+
+
 class StudyEventListCreateView(generics.ListCreateAPIView):
     serializer_class = StudyEventSerializer
     permission_classes = [IsAuthenticated]

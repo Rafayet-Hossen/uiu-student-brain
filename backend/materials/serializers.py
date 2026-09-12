@@ -82,6 +82,7 @@ class StudyMaterialSerializer(serializers.ModelSerializer):
     file_url = serializers.SerializerMethodField()
     formatted_file_size = serializers.SerializerMethodField()
     course_title = serializers.CharField(source="course.title", read_only=True)
+    course_code = serializers.CharField(source="course.code", read_only=True)
     content = serializers.CharField(source="content_text", required=False, allow_blank=True, default="")
     is_analyzed = serializers.BooleanField(read_only=True)
 
@@ -91,6 +92,7 @@ class StudyMaterialSerializer(serializers.ModelSerializer):
             "id",
             "course",
             "course_title",
+            "course_code",
             "user",
             "title",
             "material_type",
@@ -121,6 +123,7 @@ class StudyMaterialSerializer(serializers.ModelSerializer):
             "user",
             "course",
             "course_title",
+            "course_code",
             "file_size_bytes",
             "formatted_file_size",
             "word_count",
@@ -134,9 +137,10 @@ class StudyMaterialSerializer(serializers.ModelSerializer):
     def get_file_url(self, obj) -> str | None:
         if obj.file:
             request = self.context.get("request")
+            download_path = f"/api/materials/{obj.id}/download/"
             if request:
-                return request.build_absolute_uri(obj.file.url)
-            return obj.file.url
+                return request.build_absolute_uri(download_path)
+            return download_path
         return None
 
     def get_formatted_file_size(self, obj) -> str:
@@ -208,14 +212,15 @@ class StudyMaterialCreateSerializer(serializers.ModelSerializer):
         m_type = attrs.get("material_type", "document")
         file_obj = attrs.get("file")
         link_url = attrs.get("link_url")
-        content_text = attrs.get("content_text", "").strip()
+        content_text = (attrs.get("content_text") or attrs.get("content") or "").strip()
+        attrs["content_text"] = content_text
 
         if m_type == "document" and not file_obj and not content_text:
             raise serializers.ValidationError("Please upload a file or provide document text.")
         if m_type == "link" and not link_url:
             raise serializers.ValidationError("A valid URL is required for resource link materials.")
         if m_type == "note" and not content_text:
-            raise serializers.ValidationError("Note content cannot be empty.")
+            attrs["content_text"] = "New note draft."
 
         return attrs
 

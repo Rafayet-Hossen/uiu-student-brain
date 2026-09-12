@@ -1,4 +1,5 @@
 import io
+import logging
 import mimetypes
 import re
 import xml.etree.ElementTree as ET
@@ -10,6 +11,8 @@ from rest_framework.exceptions import NotFound, ValidationError
 
 from ai import services as ai_services
 from .models import Course, CourseChatMessage, Semester, StudyMaterial
+
+logger = logging.getLogger(__name__)
 
 
 def estimate_reading_time(text: str) -> int:
@@ -178,6 +181,31 @@ def delete_course(*, user, course_id: int) -> None:
     course.delete()
 
 
+def update_course(
+    *,
+    user,
+    course_id: int,
+    title: Optional[str] = None,
+    code: Optional[str] = None,
+    color: Optional[str] = None,
+    description: Optional[str] = None,
+) -> Course:
+    course = get_user_course(user=user, course_id=course_id)
+    if title is not None:
+        clean_title = title.strip()
+        if not clean_title:
+            raise ValidationError({"title": ["Course title cannot be blank."]})
+        course.title = clean_title
+    if code is not None:
+        course.code = code.strip().upper()
+    if color is not None:
+        course.color = color.strip() if color else "#2563eb"
+    if description is not None:
+        course.description = description.strip()
+    course.save()
+    return course
+
+
 # ============================================================
 # MATERIAL SERVICES
 # ============================================================
@@ -247,16 +275,20 @@ def create_study_material(
     content_text: str = "",
     tags: Optional[List[str]] = None,
 ) -> StudyMaterial:
-    # If course_id is not provided, associate with current/first course or create default
-    if not course_id:
+    course = None
+    if course_id is not None:
+        try:
+            course = get_user_course(user=user, course_id=int(course_id))
+        except Exception:
+            course = None
+
+    if not course:
         curr_sem = Semester.objects.filter(user=user, is_current=True).first() or Semester.objects.filter(user=user).first()
         if not curr_sem:
             curr_sem = Semester.objects.create(user=user, name="Current Semester", is_current=True)
         course = Course.objects.filter(semester=curr_sem, user=user).first()
         if not course:
             course = Course.objects.create(semester=curr_sem, user=user, code="GEN 101", title="General Studies")
-    else:
-        course = get_user_course(user=user, course_id=course_id)
 
     file_size_bytes = 0
     extracted_text = content_text.strip()
@@ -288,13 +320,37 @@ def create_study_material(
     )
 
 
-def update_study_material_notepad(*, user, material_id: int, content_text: str) -> StudyMaterial:
+def update_study_material(
+    *,
+    user,
+    material_id: int,
+    title: Optional[str] = None,
+    content_text: Optional[str] = None,
+    category: Optional[str] = None,
+    tags: Optional[List[str]] = None,
+) -> StudyMaterial:
     material = get_user_material(user=user, material_id=material_id)
-    material.content_text = content_text
-    material.word_count = len(content_text.split())
-    material.estimated_reading_time = estimate_reading_time(content_text)
-    material.save(update_fields=["content_text", "word_count", "estimated_reading_time", "updated_at"])
+    update_fields = ["updated_at"]
+    if title is not None and title.strip():
+        material.title = title.strip()
+        update_fields.append("title")
+    if content_text is not None:
+        material.content_text = content_text
+        material.word_count = len(content_text.split())
+        material.estimated_reading_time = estimate_reading_time(content_text)
+        update_fields.extend(["content_text", "word_count", "estimated_reading_time"])
+    if category is not None and category.strip():
+        material.category = category.strip()
+        update_fields.append("category")
+    if tags is not None:
+        material.tags = tags
+        update_fields.append("tags")
+    material.save(update_fields=list(set(update_fields)))
     return material
+
+
+def update_study_material_notepad(*, user, material_id: int, content_text: str) -> StudyMaterial:
+    return update_study_material(user=user, material_id=material_id, content_text=content_text)
 
 
 def delete_study_material(*, user, material_id: int) -> None:
@@ -321,12 +377,26 @@ def analyze_material_with_ai(*, user, material_id: int) -> StudyMaterial:
             material.file.open("rb")
             file_bytes = material.file.read()
             material.file.close()
+            if material.file.storage.exists(material.file.name):
+                material.file.open("rb")
+                file_bytes = material.file.read()
+                material.file.close()
 
             guessed, _ = mimetypes.guess_type(material.file.name)
             if guessed:
                 mime_type = guessed
+                guessed, _ = mimetypes.guess_type(material.file.name)
+                if guessed:
+                    mime_type = guessed
+            else:
+                logger.warning(
+                    f"Physical file '{material.file.name}' not found in storage for material {material.id}. Falling back to text content."
+                )
         except Exception as e:
             raise ValidationError(f"Failed to read file for AI analysis: {e}")
+            logger.warning(
+                f"Could not read physical file '{material.file.name}': {e}. Falling back to text content."
+            )
 
     if material.content_text:
         raw_text = material.content_text

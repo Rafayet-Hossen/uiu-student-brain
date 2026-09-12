@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, Copy, ExternalLink, FileText } from "lucide-react";
+import { Check, Copy, ExternalLink } from "lucide-react";
 
 export function formatRichContent(text) {
   if (!text) return null;
@@ -36,17 +36,39 @@ export function formatRichContent(text) {
       return;
     }
 
-    // Blockquote
-    if (line.trim().startsWith(">")) {
+    const trimmed = line.trim();
+
+    // Horizontal Rule
+    if (trimmed === "---" || trimmed === "***" || trimmed === "___") {
+      elements.push(
+        <hr key={`hr-${lineIndex}`} className="academic-divider" />,
+      );
+      return;
+    }
+
+    // Blockquote (supports `> text` or `> * bullet text`)
+    if (trimmed.startsWith(">")) {
+      let quoteContent = trimmed.replace(/^>\s?/, "");
+      if (quoteContent.startsWith("* ") || quoteContent.startsWith("- ")) {
+        quoteContent = quoteContent.slice(2);
+      }
       elements.push(
         <blockquote key={`quote-${lineIndex}`} className="academic-blockquote">
-          {parseInlineFormatting(line.replace(/^>\s?/, ""))}
+          {parseInlineFormatting(quoteContent)}
         </blockquote>,
       );
       return;
     }
 
     // Headings
+    if (line.startsWith("#### ")) {
+      elements.push(
+        <h5 key={`h4-${lineIndex}`} className="academic-content-h4">
+          {parseInlineFormatting(line.slice(5))}
+        </h5>,
+      );
+      return;
+    }
     if (line.startsWith("### ")) {
       elements.push(
         <h4 key={`h3-${lineIndex}`} className="academic-content-h3">
@@ -72,21 +94,66 @@ export function formatRichContent(text) {
       return;
     }
 
+    // Checklist item (- [ ] or - [x] or * [ ] or * [x])
+    if (
+      trimmed.startsWith("- [ ] ") ||
+      trimmed.startsWith("- [x] ") ||
+      trimmed.startsWith("- [X] ") ||
+      trimmed.startsWith("* [ ] ") ||
+      trimmed.startsWith("* [x] ") ||
+      trimmed.startsWith("* [X] ")
+    ) {
+      const isChecked =
+        trimmed.startsWith("- [x] ") ||
+        trimmed.startsWith("- [X] ") ||
+        trimmed.startsWith("* [x] ") ||
+        trimmed.startsWith("* [X] ");
+      const text = trimmed.slice(6);
+      elements.push(
+        <div
+          key={`check-${lineIndex}`}
+          className={`academic-checklist-item ${isChecked ? "checklist-checked" : ""}`}
+        >
+          <span className="checklist-box">{isChecked ? "☑" : "☐"}</span>
+          <span className={isChecked ? "line-through text-muted" : ""}>
+            {parseInlineFormatting(text)}
+          </span>
+        </div>,
+      );
+      return;
+    }
+
+    // Numbered item: 1. 2. 3.
+    const numMatch = trimmed.match(/^(\d+)\.\s+(.*)$/);
+    if (numMatch) {
+      elements.push(
+        <div key={`num-${lineIndex}`} className="academic-numbered-item">
+          <span className="academic-number-badge">{numMatch[1]}.</span>
+          <span>{parseInlineFormatting(numMatch[2])}</span>
+        </div>,
+      );
+      return;
+    }
+
     // Bullet list
-    if (line.trim().startsWith("- ") || line.trim().startsWith("* ")) {
+    if (
+      trimmed.startsWith("- ") ||
+      trimmed.startsWith("* ") ||
+      trimmed.startsWith("• ")
+    ) {
       elements.push(
         <div key={`li-${lineIndex}`} className="academic-list-item">
           <span className="academic-bullet">•</span>
-          <span>{parseInlineFormatting(line.trim().slice(2))}</span>
+          <span>{parseInlineFormatting(trimmed.replace(/^[-*•]\s+/, ""))}</span>
         </div>,
       );
       return;
     }
 
     // Regular paragraph or empty line
-    if (line.trim() === "") {
+    if (trimmed === "") {
       elements.push(
-        <div key={`empty-${lineIndex}`} style={{ height: "8px" }} />,
+        <div key={`empty-${lineIndex}`} className="academic-line-spacer" />,
       );
     } else {
       elements.push(
@@ -110,11 +177,24 @@ export function formatRichContent(text) {
   return elements;
 }
 
-function parseInlineFormatting(str) {
+export function parseInlineFormatting(str) {
   if (!str) return "";
 
+  // Replace common math and arrow notation cleanly
+  const cleanStr = str
+    .replace(/\\rightarrow/g, " → ")
+    .replace(/\\leftarrow/g, " ← ")
+    .replace(/\\leftrightarrow/g, " ↔ ")
+    .replace(/\\Rightarrow/g, " ⇒ ")
+    .replace(/\\Leftarrow/g, " ⇐ ")
+    .replace(/\\cdot/g, " · ")
+    .replace(/\\approx/g, " ≈ ")
+    .replace(/\\neq/g, " ≠ ")
+    .replace(/\\leq/g, " ≤ ")
+    .replace(/\\geq/g, " ≥ ");
+
   // Split by inline code `code`
-  const parts = str.split(/(`[^`]+`)/g);
+  const parts = cleanStr.split(/(`[^`]+`)/g);
 
   return parts.map((part, index) => {
     if (part.startsWith("`") && part.endsWith("`") && part.length >= 2) {
@@ -139,27 +219,45 @@ function parseInlineFormatting(str) {
         );
       }
 
-      // URLs detector
-      const urlRegex = /(https?:\/\/[^\s]+)/g;
-      const urlParts = bPart.split(urlRegex);
-      return urlParts.map((uPart, uIndex) => {
-        if (uPart.match(urlRegex)) {
+      // Italic *text* or _text_
+      const italicParts = bPart.split(/(\*[^*]+\*|_[^_]+_)/g);
+      return italicParts.map((iPart, iIndex) => {
+        if (
+          (iPart.startsWith("*") && iPart.endsWith("*") && iPart.length >= 3) ||
+          (iPart.startsWith("_") && iPart.endsWith("_") && iPart.length >= 3)
+        ) {
           return (
-            <a
-              key={`${index}-${bIndex}-${uIndex}`}
-              href={uPart}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="academic-link-chip"
+            <em
+              key={`${index}-${bIndex}-${iIndex}`}
+              className="italic font-medium"
             >
-              <span>
-                {uPart.replace(/^https?:\/\/(www\.)?/, "").slice(0, 30)}...
-              </span>
-              <ExternalLink size={12} />
-            </a>
+              {iPart.slice(1, -1)}
+            </em>
           );
         }
-        return uPart;
+
+        // URLs detector
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        const urlParts = iPart.split(urlRegex);
+        return urlParts.map((uPart, uIndex) => {
+          if (uPart.match(urlRegex)) {
+            return (
+              <a
+                key={`${index}-${bIndex}-${iIndex}-${uIndex}`}
+                href={uPart}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="academic-link-chip"
+              >
+                <span>
+                  {uPart.replace(/^https?:\/\/(www\.)?/, "").slice(0, 30)}...
+                </span>
+                <ExternalLink size={12} />
+              </a>
+            );
+          }
+          return uPart;
+        });
       });
     });
   });

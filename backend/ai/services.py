@@ -1,5 +1,7 @@
+import hashlib
 import logging
 from typing import Any, Dict, List, Optional
+from django.core.cache import cache
 from google.genai import types
 from google.genai.errors import APIError
 
@@ -21,11 +23,12 @@ def _call_gemini_structured(
     response_schema: Any,
     system_instruction: Optional[str] = None,
     temperature: float = 0.3,
+    models: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     """Helper that invokes Gemini API with automatic model fallback if 503 or overload occurs."""
     client = get_gemini_client()
 
-    models_to_try = [PRIMARY_MODEL, FALLBACK_MODEL]
+    models_to_try = models or [PRIMARY_MODEL, FALLBACK_MODEL]
 
     for model_name in models_to_try:
         try:
@@ -110,8 +113,19 @@ def generate_topic_quiz(
     topics: List[str],
     num_questions: int = 5,
     difficulty: str = "Intermediate",
+    force_refresh: bool = False,
 ) -> Dict[str, Any]:
-    """Feature #8: Generates an academic multiple-choice test for concept assessment."""
+    """Generates an academic multiple-choice test for concept assessment with instant caching and fast model priority."""
+    clean_topics = sorted(t.strip().lower() for t in topics if t.strip())
+    raw_key = f"quiz_{subject.strip().lower()}_{'_'.join(clean_topics)}_{difficulty}_{num_questions}"
+    cache_key = f"ai_quiz_{hashlib.md5(raw_key.encode('utf-8')).hexdigest()}"
+
+    if not force_refresh:
+        cached = cache.get(cache_key)
+        if cached:
+            logger.info(f"Returning cached quiz for {subject} ({cache_key})")
+            return cached
+
     prompt = f"""
     Create an academic multiple-choice assessment for the course '{subject}'.
     Difficulty level: {difficulty}.
@@ -125,12 +139,16 @@ def generate_topic_quiz(
     - Attach the specific sub-topic tag to each question.
     """
 
-    return _call_gemini_structured(
+    result = _call_gemini_structured(
         contents=prompt,
         response_schema=QuizGenerationResult,
         system_instruction="You are a rigorous university professor creating fair, high-yield diagnostic examination questions.",
-        temperature=0.4,
+        temperature=0.3,
+        models=[FALLBACK_MODEL, PRIMARY_MODEL],
     )
+
+    cache.set(cache_key, result, timeout=86400)
+    return result
 
 
 def analyze_quiz_weakness(

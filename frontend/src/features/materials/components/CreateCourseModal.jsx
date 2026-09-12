@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from "../../../components/Button";
 
 const COLOR_OPTIONS = [
@@ -17,12 +17,28 @@ export default function CreateCourseModal({
   onSubmit,
   submitting,
   semesterName,
+  course = null,
 }) {
   const [code, setCode] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [color, setColor] = useState(COLOR_OPTIONS[0].value);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (course) {
+      setCode(course.code || "");
+      setTitle(course.title || "");
+      setDescription(course.description || "");
+      setColor(course.color || COLOR_OPTIONS[0].value);
+    } else {
+      setCode("");
+      setTitle("");
+      setDescription("");
+      setColor(COLOR_OPTIONS[0].value);
+    }
+    setError("");
+  }, [course, isOpen]);
 
   if (!isOpen) return null;
 
@@ -51,8 +67,14 @@ export default function CreateCourseModal({
         <div className="modal-header-row">
           <div>
             <h3 className="modal-title">Add Course</h3>
+            <h3 className="modal-title">
+              {course ? "Edit Course" : "Add Course"}
+            </h3>
             <p className="modal-subtitle">
-              Adding to <span className="text-accent font-semibold">{semesterName}</span>
+              Adding to{" "}
+              <span className="text-accent font-semibold">{semesterName}</span>
+              {course ? "Update details for " : "Adding to "}
+              <span className="text-accent font-semibold">{semesterName}</span>
             </p>
           </div>
           <button
@@ -65,7 +87,9 @@ export default function CreateCourseModal({
           </button>
         </div>
 
-        {error && <div className="alert-banner alert-banner-error">{error}</div>}
+        {error && (
+          <div className="alert-banner alert-banner-error">{error}</div>
+        )}
 
         <form onSubmit={handleSubmit} className="modal-body-content">
           <div className="form-row-grid">
@@ -141,12 +165,9 @@ export default function CreateCourseModal({
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              loading={submitting}
-            >
+            <Button type="submit" variant="primary" loading={submitting}>
               Create Course
+              {course ? "Save Changes" : "Create Course"}
             </Button>
           </div>
         </form>
@@ -154,4 +175,3 @@ export default function CreateCourseModal({
     </div>
   );
 }
-
