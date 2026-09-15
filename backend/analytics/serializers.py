@@ -27,11 +27,26 @@ class WeeklyTrendItemSerializer(serializers.Serializer):
     sessions = serializers.IntegerField()
 
 
+class SubjectAdherenceDetailSerializer(serializers.Serializer):
+    subject = serializers.CharField()
+    scheduled_slots = serializers.IntegerField(default=0)
+    scheduled_hours = serializers.FloatField(default=0.0)
+    logged_hours_this_week = serializers.FloatField(default=0.0)
+    is_covered = serializers.BooleanField(default=False)
+    progress_percent = serializers.FloatField(default=0.0)
+    status = serializers.CharField(default="Pending")
+
+
 class ScheduleAdherenceSerializer(serializers.Serializer):
     active_schedules_count = serializers.IntegerField()
     scheduled_subjects = serializers.ListField(child=serializers.CharField())
     covered_subjects_this_week = serializers.ListField(child=serializers.CharField())
     adherence_rate = serializers.FloatField()
+    subject_details = SubjectAdherenceDetailSerializer(many=True, required=False, default=list)
+    total_scheduled_hours = serializers.FloatField(required=False, default=0.0)
+    total_studied_hours_this_week = serializers.FloatField(required=False, default=0.0)
+    consistency_label = serializers.CharField(required=False, default="Getting Started")
+    motivational_tip = serializers.CharField(required=False, default="")
 
 
 class AnalyticsSummarySerializer(serializers.Serializer):

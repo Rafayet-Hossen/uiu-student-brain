@@ -72,6 +72,20 @@ export default function QuizPage() {
     }
   }, [materialId]);
 
+  const [generationStep, setGenerationStep] = useState(0);
+
+  // Dynamic step animation while generating quiz
+  useEffect(() => {
+    if (!generatingQuiz) {
+      setGenerationStep(0);
+      return;
+    }
+    const timer = setInterval(() => {
+      setGenerationStep((prev) => (prev + 1) % 4);
+    }, 700);
+    return () => clearInterval(timer);
+  }, [generatingQuiz]);
+
   // Timer while test is running
   useEffect(() => {
     if (!quiz || evaluationResult) return;
@@ -266,8 +280,35 @@ export default function QuizPage() {
             <div className="generating-steps-pill">
               <span className="live-dot" />
               <span>
-                Synthesizing syllabus definitions & practice questions...
+                {
+                  [
+                    "Extracting syllabus concepts & key definitions...",
+                    "Formulating diagnostic multiple-choice questions...",
+                    "Calibrating plausible options & detailed explanations...",
+                    "Finalizing dynamic examination test...",
+                  ][generationStep]
+                }
               </span>
+            </div>
+            <div
+              style={{
+                width: "240px",
+                height: "4px",
+                background: "var(--color-border)",
+                borderRadius: "4px",
+                overflow: "hidden",
+                marginTop: "14px",
+              }}
+            >
+              <div
+                style={{
+                  height: "100%",
+                  width: `${((generationStep + 1) / 4) * 100}%`,
+                  background:
+                    "linear-gradient(90deg, var(--color-primary), #06b6d4)",
+                  transition: "width 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
+                }}
+              />
             </div>
           </div>
         )}

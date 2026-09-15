@@ -56,7 +56,7 @@ export default function StudyCenterPage() {
               <div>
                 <h1 className="study-center-main-title">Study Center</h1>
                 <p className="study-center-tagline">
-                  Your centralized academic workspace for curriculum materials,
+                  Your centralized academic hub for curriculum materials,
                   schedule planning, and performance intelligence.
                 </p>
               </div>

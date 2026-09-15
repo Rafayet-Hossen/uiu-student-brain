@@ -45,7 +45,7 @@ const INITIAL_NOTIFICATIONS = [
     title: "👍 3 Scholars upvoted your DBMS notes!",
     message:
       "Your uploaded study material 'DBMS MID Solve' was marked helpful by classmates in your batch.",
-    link: "/materials",
+    link: "/study-center?tab=materials",
     read: false,
   },
   {
@@ -76,22 +76,56 @@ const INITIAL_NOTIFICATIONS = [
   },
 ];
 
+function getStoredNotifications() {
+  try {
+    const savedReadIds = localStorage.getItem(
+      "student_brain_read_notification_ids",
+    );
+    if (savedReadIds) {
+      const parsed = JSON.parse(savedReadIds);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        const readSet = new Set(parsed.map(String));
+        return INITIAL_NOTIFICATIONS.map((n) => ({
+          ...n,
+          read: readSet.has(String(n.id)),
+        }));
+      }
+    }
+  } catch (e) {
+    console.error("Failed to parse stored notification ids:", e);
+  }
+  return INITIAL_NOTIFICATIONS;
+}
+
 export default function NotificationCenter() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("all"); // "all" | "comment" | "announcement" | "academic"
-  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState(getStoredNotifications);
 
   const dropdownRef = useRef(null);
 
   // Sync with backend on mount, user change, or dropdown open for cross-device persistence
   useEffect(() => {
+    let isMounted = true;
     if (!user) return;
+
     getNotificationState()
       .then((state) => {
-        if (state?.read_notification_ids) {
+        if (!isMounted) return;
+        if (
+          state?.read_notification_ids &&
+          Array.isArray(state.read_notification_ids)
+        ) {
           const readSet = new Set(state.read_notification_ids.map(String));
+          try {
+            localStorage.setItem(
+              "student_brain_read_notification_ids",
+              JSON.stringify(Array.from(readSet)),
+            );
+          } catch {}
+
           setNotifications((prev) =>
             prev.map((n) => ({
               ...n,
@@ -103,14 +137,54 @@ export default function NotificationCenter() {
       .catch((err) => {
         console.error("Notification state load error:", err);
       });
+
+    return () => {
+      isMounted = false;
+    };
   }, [user?.id, isOpen]);
 
+  // Keep all pages, tabs, and components 100% synchronized in real time
   useEffect(() => {
-    localStorage.setItem(
-      "student_brain_notifications_v4",
-      JSON.stringify(notifications),
-    );
-  }, [notifications]);
+    function handleSync(e) {
+      const readIds = e?.detail?.readIds;
+      if (Array.isArray(readIds)) {
+        const readSet = new Set(readIds.map(String));
+        setNotifications((prev) =>
+          prev.map((n) => ({
+            ...n,
+            read: readSet.has(String(n.id)),
+          })),
+        );
+      }
+    }
+
+    function handleStorageChange(e) {
+      if (e.key === "student_brain_read_notification_ids") {
+        try {
+          const parsed = JSON.parse(e.newValue || "[]");
+          if (Array.isArray(parsed)) {
+            const readSet = new Set(parsed.map(String));
+            setNotifications((prev) =>
+              prev.map((n) => ({
+                ...n,
+                read: readSet.has(String(n.id)),
+              })),
+            );
+          }
+        } catch {}
+      }
+    }
+
+    window.addEventListener("studentBrainNotificationsChanged", handleSync);
+    window.addEventListener("storage", handleStorageChange);
+    return () => {
+      window.removeEventListener(
+        "studentBrainNotificationsChanged",
+        handleSync,
+      );
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
 
   // Click outside to close dropdown
   useEffect(() => {
@@ -174,12 +248,103 @@ export default function NotificationCenter() {
       e.preventDefault();
       e.stopPropagation();
     }
-    const allIds = notifications.map((n) => n.id);
+    const allIds = notifications.map((n) => String(n.id));
+
+    // 1. Immediately update local state
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+
+    // 2. Persist to localStorage synchronously
+    try {
+      localStorage.setItem(
+        "student_brain_read_notification_ids",
+        JSON.stringify(allIds),
+      );
+    } catch {}
+
+    // 3. Broadcast real-time event across current window
+    window.dispatchEvent(
+      new CustomEvent("studentBrainNotificationsChanged", {
+        detail: { readIds: allIds },
+      }),
+    );
+
+    // 4. Save to backend database for cross-device persistence
     saveNotificationState({
       mark_all: true,
       all_ids: allIds,
-    }).catch(() => {});
+    }).catch((err) => {
+      console.error("Backend notification sync error:", err);
+    });
+  }
+
+  function handleMarkSingleRead(id, e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    const readId = String(id);
+    let currentReadIds = [];
+    try {
+      const saved = localStorage.getItem("student_brain_read_notification_ids");
+      currentReadIds = saved ? JSON.parse(saved) : [];
+    } catch {}
+    const updatedIds = Array.from(new Set([...currentReadIds, readId]));
+
+    try {
+      localStorage.setItem(
+        "student_brain_read_notification_ids",
+        JSON.stringify(updatedIds),
+      );
+    } catch {}
+
+    setNotifications((prev) =>
+      prev.map((n) => (String(n.id) === readId ? { ...n, read: true } : n)),
+    );
+
+    window.dispatchEvent(
+      new CustomEvent("studentBrainNotificationsChanged", {
+        detail: { readIds: updatedIds },
+      }),
+    );
+
+    saveNotificationState({ read_id: readId }).catch((err) => {
+      console.error("Failed to mark single notif read in backend:", err);
+    });
+  }
+
+  function handleMarkSingleUnread(id, e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    const unreadId = String(id);
+    let currentReadIds = [];
+    try {
+      const saved = localStorage.getItem("student_brain_read_notification_ids");
+      currentReadIds = saved ? JSON.parse(saved) : [];
+    } catch {}
+    const updatedIds = currentReadIds.filter((x) => String(x) !== unreadId);
+
+    try {
+      localStorage.setItem(
+        "student_brain_read_notification_ids",
+        JSON.stringify(updatedIds),
+      );
+    } catch {}
+
+    setNotifications((prev) =>
+      prev.map((n) => (String(n.id) === unreadId ? { ...n, read: false } : n)),
+    );
+
+    window.dispatchEvent(
+      new CustomEvent("studentBrainNotificationsChanged", {
+        detail: { readIds: updatedIds },
+      }),
+    );
+
+    saveNotificationState({ unread_id: unreadId }).catch((err) => {
+      console.error("Failed to mark single notif unread in backend:", err);
+    });
   }
 
   // Direct seamless navigation to destination page
@@ -189,10 +354,34 @@ export default function NotificationCenter() {
       e.stopPropagation();
     }
 
-    // Mark as read locally and in backend
+    const readId = String(notif.id);
+    let currentReadIds = [];
+    try {
+      const saved = localStorage.getItem("student_brain_read_notification_ids");
+      currentReadIds = saved ? JSON.parse(saved) : [];
+    } catch {}
+    const updatedIds = Array.from(new Set([...currentReadIds, readId]));
+
+    try {
+      localStorage.setItem(
+        "student_brain_read_notification_ids",
+        JSON.stringify(updatedIds),
+      );
+    } catch {}
+
+    // Mark as read locally
     setNotifications((prev) =>
       prev.map((n) => (n.id === notif.id ? { ...n, read: true } : n)),
     );
+
+    // Broadcast change
+    window.dispatchEvent(
+      new CustomEvent("studentBrainNotificationsChanged", {
+        detail: { readIds: updatedIds },
+      }),
+    );
+
+    // Persist to backend
     saveNotificationState({ read_id: notif.id }).catch(() => {});
 
     // Close notification dropdown immediately
@@ -277,12 +466,17 @@ export default function NotificationCenter() {
                   cursor: unreadCount === 0 ? "default" : "pointer",
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: "5px",
+                  gap: "6px",
+                  fontWeight: 600,
                 }}
-                title="Mark all notifications as read"
+                title={
+                  unreadCount > 0
+                    ? "Mark all notifications as read"
+                    : "All notifications are already marked as read"
+                }
               >
                 <CheckCheck size={14} />
-                <span>{unreadCount > 0 ? "Mark all as read" : "All read"}</span>
+                <span>Mark all as read</span>
               </button>
             </div>
 
@@ -302,7 +496,7 @@ export default function NotificationCenter() {
                 className={`notif-tab-item ${activeTab === "comment" ? "tab-item-active" : ""}`}
                 onClick={() => setActiveTab("comment")}
               >
-                <span>Comment</span>
+                <span>Comments</span>
                 {countByTab.comment > 0 && (
                   <span className="notif-tab-count-pill">
                     {countByTab.comment}
@@ -315,7 +509,7 @@ export default function NotificationCenter() {
                 className={`notif-tab-item ${activeTab === "announcement" ? "tab-item-active" : ""}`}
                 onClick={() => setActiveTab("announcement")}
               >
-                <span>Status</span>
+                <span>Announcements</span>
                 {countByTab.announcement > 0 && (
                   <span className="notif-tab-count-pill">
                     {countByTab.announcement}
@@ -328,7 +522,7 @@ export default function NotificationCenter() {
                 className={`notif-tab-item ${activeTab === "academic" ? "tab-item-active" : ""}`}
                 onClick={() => setActiveTab("academic")}
               >
-                <span>Resolved</span>
+                <span>Academic</span>
                 {countByTab.academic > 0 && (
                   <span className="notif-tab-count-pill">
                     {countByTab.academic}
@@ -383,8 +577,16 @@ export default function NotificationCenter() {
                         </span>
                       </div>
 
-                      {/* Purple "Open" Button */}
-                      <div className="notif-card-action-bar">
+                      {/* Action Bar: Open + Mark as read / Mark unread */}
+                      <div
+                        className="notif-card-action-bar"
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          marginTop: "8px",
+                        }}
+                      >
                         <button
                           type="button"
                           className="notif-purple-open-btn"
@@ -392,6 +594,27 @@ export default function NotificationCenter() {
                         >
                           Open
                         </button>
+
+                        {!notif.read ? (
+                          <button
+                            type="button"
+                            className="notif-card-mark-read-btn"
+                            onClick={(e) => handleMarkSingleRead(notif.id, e)}
+                            title="Mark this notification as read"
+                          >
+                            <CheckCheck size={13} />
+                            <span>Mark as read</span>
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className="notif-card-mark-unread-btn"
+                            onClick={(e) => handleMarkSingleUnread(notif.id, e)}
+                            title="Mark this notification as unread"
+                          >
+                            <span>Mark unread</span>
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -399,7 +622,7 @@ export default function NotificationCenter() {
               )}
             </div>
 
-            {/* Panel Footer */}
+            {/* Panel Footer - Clean status, NO duplicate button */}
             <div
               style={{
                 padding: "10px 16px",
@@ -418,40 +641,8 @@ export default function NotificationCenter() {
               >
                 {unreadCount > 0
                   ? `${unreadCount} unread notification${unreadCount > 1 ? "s" : ""}`
-                  : "All caught up!"}
+                  : "All caught up! No unread notifications."}
               </span>
-              <button
-                type="button"
-                onClick={handleMarkAllRead}
-                disabled={unreadCount === 0}
-                style={{
-                  background:
-                    unreadCount > 0
-                      ? "var(--color-primary-subtle, rgba(99, 102, 241, 0.1))"
-                      : "transparent",
-                  border:
-                    unreadCount > 0
-                      ? "1px solid var(--color-primary, #6366f1)"
-                      : "1px solid transparent",
-                  color:
-                    unreadCount > 0
-                      ? "var(--color-primary, #6366f1)"
-                      : "var(--color-text-muted)",
-                  fontWeight: 600,
-                  fontSize: "0.8rem",
-                  padding: "4px 10px",
-                  borderRadius: "6px",
-                  cursor: unreadCount === 0 ? "default" : "pointer",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  transition: "all 0.15s ease",
-                }}
-                title="Mark all notifications as read"
-              >
-                <CheckCheck size={14} />
-                <span>Mark all as read</span>
-              </button>
             </div>
           </motion.div>
         )}

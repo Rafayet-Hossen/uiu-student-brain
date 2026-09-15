@@ -79,6 +79,17 @@ class NotificationStateView(APIView):
             current_raw = []
         current_ids = set(str(x) for x in current_raw if len(str(x)) > 1)
 
+        # If marking all as unread:
+        if data.get("mark_all_unread"):
+            current_ids.clear()
+            state.read_notification_ids = []
+
+        # If marking single ID unread:
+        unread_id = data.get("unread_id")
+        if unread_id:
+            current_ids.discard(str(unread_id))
+            state.read_notification_ids = list(current_ids)
+
         # If marking all as read:
         if data.get("mark_all") or data.get("all"):
             all_ids = data.get("all_ids", [])
@@ -91,6 +102,7 @@ class NotificationStateView(APIView):
             state.read_notification_ids = list(current_ids)
 
         # If marking single ID:
+        # If marking single ID read:
         read_id = data.get("read_id") or data.get("notification_id")
         if read_id:
             current_ids.add(str(read_id))

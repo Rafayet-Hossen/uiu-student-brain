@@ -142,9 +142,9 @@ def generate_topic_quiz(
     result = _call_gemini_structured(
         contents=prompt,
         response_schema=QuizGenerationResult,
-        system_instruction="You are a rigorous university professor creating fair, high-yield diagnostic examination questions.",
-        temperature=0.3,
-        models=[FALLBACK_MODEL, PRIMARY_MODEL],
+        system_instruction="You are a university professor creating fair, high-yield examination questions. Keep questions, options, and explanations clear, concise, and academically rigorous.",
+        temperature=0.2,
+        models=[PRIMARY_MODEL, FALLBACK_MODEL],
     )
 
     cache.set(cache_key, result, timeout=86400)

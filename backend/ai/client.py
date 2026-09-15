@@ -5,8 +5,8 @@ from rest_framework.exceptions import ValidationError
 
 _client = None
 
-PRIMARY_MODEL = "gemini-3.7-flash"
-FALLBACK_MODEL = "gemini-3.5-flash-lite"
+PRIMARY_MODEL = "gemini-3.5-flash-lite"
+FALLBACK_MODEL = "gemini-3.1-flash-lite"
 
 
 def get_gemini_client() -> genai.Client:

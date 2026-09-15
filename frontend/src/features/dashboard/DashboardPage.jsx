@@ -248,7 +248,7 @@ export default function DashboardPage() {
             >
               <div className="hero-pill-tag">
                 <GraduationCap size={14} className="tag-sparkle-icon" />
-                <span>Academic Workspace</span>
+                <span>Academic Hub</span>
                 <span className="hero-date-divider">•</span>
                 <span>{currentDate}</span>
               </div>

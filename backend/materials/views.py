@@ -303,7 +303,15 @@ class StudyMaterialExportPDFView(APIView):
         from .pdf_service import generate_material_analysis_pdf
         from django.http import HttpResponse
 
-        pdf_bytes = generate_material_analysis_pdf(material)
+        try:
+            pdf_bytes = generate_material_analysis_pdf(material)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"PDF export error for material {pk}: {e}", exc_info=True)
+            return Response(
+                {"error": f"Failed to generate study analysis PDF: {str(e)}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         safe_title = "".join(
             c for c in (material.title or "study_analysis") if c.isalnum() or c in ("-", "_")

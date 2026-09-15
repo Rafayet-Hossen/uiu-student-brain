@@ -84,7 +84,7 @@ export default function LoginPage() {
             <div className="auth-sb-card-header">
               <h2 className="auth-sb-title">Welcome Back</h2>
               <p className="auth-sb-subtitle">
-                Sign in to your academic workspace to continue.
+                Sign in to your StudentBrain portal to continue.
               </p>
             </div>
 
@@ -145,7 +145,7 @@ export default function LoginPage() {
                 className="auth-sb-primary-btn"
                 disabled={!isValid || submitting}
               >
-                {submitting ? "Signing in..." : "Sign In to Workspace"}
+                {submitting ? "Signing in..." : "Sign In"}
               </button>
             </form>
 
@@ -158,7 +158,7 @@ export default function LoginPage() {
               className="auth-sb-secondary-btn"
               onClick={() =>
                 setNotice(
-                  "Institutional Single Sign-On (Google Workspace) is in test mode. Please sign in with your email.",
+                  "Institutional Single Sign-On (Google Workspace) is coming soon. Please continue with your student email and password.",
                 )
               }
               disabled={submitting}

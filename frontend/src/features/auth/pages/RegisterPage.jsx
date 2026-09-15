@@ -182,9 +182,7 @@ export default function RegisterPage() {
                 className="auth-sb-primary-btn"
                 disabled={!isValid || submitting}
               >
-                {submitting
-                  ? "Creating Account..."
-                  : "Create Workspace Account"}
+                {submitting ? "Creating Account..." : "Create Account"}
               </button>
             </form>
 
@@ -197,7 +195,7 @@ export default function RegisterPage() {
               className="auth-sb-secondary-btn"
               onClick={() =>
                 setNotice(
-                  "Institutional Single Sign-On (Google Workspace) is currently in test mode. Please register with your email.",
+                  "Institutional Single Sign-On (Google Workspace) is coming soon. Please register with your student email.",
                 )
               }
               disabled={submitting}

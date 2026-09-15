@@ -106,11 +106,75 @@ def get_analytics_dashboard_data(*, user, reference_date: date = None) -> Dict[s
     if scheduled_subjects:
         adherence_rate = round((len(covered_scheduled_subjects) / len(scheduled_subjects)) * 100, 1)
 
+    # Detailed per-course adherence breakdown
+    subject_details = []
+    total_sched_mins = 0
+    total_covered_mins = 0
+
+    for subj in sorted(scheduled_subjects):
+        subj_schedules = schedules.filter(subject=subj)
+        subj_sched_mins = 0
+        slot_days_count = 0
+        for s in subj_schedules:
+            if s.start_time and s.end_time:
+                slot_duration = (s.end_time.hour * 60 + s.end_time.minute) - (s.start_time.hour * 60 + s.start_time.minute)
+                if slot_duration > 0:
+                    days_mult = len(s.days) if isinstance(s.days, list) and len(s.days) > 0 else 1
+                    subj_sched_mins += (slot_duration * days_mult)
+                    slot_days_count += days_mult
+                else:
+                    slot_days_count += 1
+            else:
+                slot_days_count += 1
+
+        studied_mins = week_sessions.filter(subject__iexact=subj).aggregate(total=Sum("duration_minutes"))["total"] or 0
+        total_sched_mins += subj_sched_mins
+        total_covered_mins += studied_mins
+        is_covered = studied_mins > 0 or subj in studied_subjects_this_week
+
+        progress_pct = 0.0
+        if subj_sched_mins > 0:
+            progress_pct = round(min(100.0, (studied_mins / subj_sched_mins) * 100), 1)
+        elif is_covered:
+            progress_pct = 100.0
+
+        status_tag = "Completed" if progress_pct >= 100 else ("In Progress" if progress_pct > 0 else "Pending")
+
+        subject_details.append({
+            "subject": subj,
+            "scheduled_slots": slot_days_count,
+            "scheduled_hours": round(subj_sched_mins / 60, 1),
+            "logged_hours_this_week": round(studied_mins / 60, 1),
+            "is_covered": is_covered,
+            "progress_percent": progress_pct,
+            "status": status_tag,
+        })
+
+    total_sched_hours = round(total_sched_mins / 60, 1)
+    total_studied_hours = round(total_covered_mins / 60, 1)
+
+    if adherence_rate >= 80:
+        consistency_label = "Optimal Adherence"
+        motivational_tip = "Outstanding routine discipline! You're consistently hitting your planned curriculum targets."
+    elif adherence_rate >= 50:
+        consistency_label = "Moderate Progress"
+        uncovered = list(scheduled_subjects - studied_subjects_this_week)
+        tip_subj = uncovered[0] if uncovered else "your remaining courses"
+        motivational_tip = f"Good progress! Complete a focus session for '{tip_subj}' to maximize your adherence score."
+    else:
+        consistency_label = "Attention Needed"
+        motivational_tip = "You have scheduled routines waiting. Log a quick study session in the Study Tracker to get started."
+
     schedule_adherence = {
         "active_schedules_count": active_schedules_count,
         "scheduled_subjects": list(scheduled_subjects),
         "covered_subjects_this_week": list(covered_scheduled_subjects),
         "adherence_rate": adherence_rate,
+        "subject_details": subject_details,
+        "total_scheduled_hours": total_sched_hours,
+        "total_studied_hours_this_week": total_studied_hours,
+        "consistency_label": consistency_label,
+        "motivational_tip": motivational_tip,
     }
 
     # 4. Productivity Insights Generator

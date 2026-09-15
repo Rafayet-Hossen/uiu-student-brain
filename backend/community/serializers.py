@@ -18,6 +18,15 @@ class PostSerializer(serializers.ModelSerializer):
     comments_count = serializers.IntegerField(read_only=True, default=0)
     likes_count = serializers.IntegerField(read_only=True, default=0)
     is_liked = serializers.BooleanField(read_only=True, default=False)
+    code_snippet = serializers.CharField(required=False, allow_blank=True, allow_null=True, default="")
+    code_language = serializers.CharField(required=False, allow_blank=True, default="python")
+    vscode_liveshare_url = serializers.CharField(required=False, allow_blank=True, allow_null=True, default="")
+
+    def validate_code_snippet(self, value):
+        return value or ""
+
+    def validate_vscode_liveshare_url(self, value):
+        return value or ""
 
     class Meta:
         model = Post

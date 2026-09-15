@@ -88,7 +88,12 @@ export default function PostForm({
 
   // Study Group fields
   const [groupGoal, setGroupGoal] = useState("");
-  const [groupFormat, setGroupFormat] = useState("Campus Library 4th Floor");
+  const [groupMode, setGroupMode] = useState("offline"); // "offline" | "online"
+  const [groupLocation, setGroupLocation] = useState(
+    "Campus Library 4th Floor",
+  );
+  const [onlinePlatform, setOnlinePlatform] = useState("Google Meet");
+  const [onlineMeetingLink, setOnlineMeetingLink] = useState("");
   const [groupSize, setGroupSize] = useState("2-3 Members Needed");
   const [groupSchedule, setGroupSchedule] = useState("");
 
@@ -174,8 +179,23 @@ export default function PostForm({
         );
         return;
       }
-      finalTitle = `[Study Group] ${groupGoal.trim()} • ${groupSize}`;
-      finalContent = `**Group Purpose**: ${groupGoal.trim()}\n**Meeting Format / Location**: ${groupFormat.trim()}\n**Target Capacity**: ${groupSize}\n\n### Schedule & Roadmap:\n${groupSchedule.trim()}`;
+      if (groupMode === "offline" && !groupLocation.trim()) {
+        setError(
+          "Please specify the campus location / room for the in-person study session.",
+        );
+        return;
+      }
+      const modeLabel = groupMode === "online" ? "🌐 Online" : "📍 In-Person";
+      finalTitle = `[Study Group - ${modeLabel}] ${groupGoal.trim()} • ${groupSize}`;
+
+      let locationDetails = "";
+      if (groupMode === "online") {
+        locationDetails = `**Format**: Online Virtual Session\n**Platform**: ${onlinePlatform}\n${onlineMeetingLink.trim() ? `**Meeting Link**: [Join Online Session](${onlineMeetingLink.trim()})\n` : ""}`;
+      } else {
+        locationDetails = `**Format**: In-Person (Offline Campus)\n**Campus Location / Room**: ${groupLocation.trim()}\n`;
+      }
+
+      finalContent = `**Group Purpose / Course**: ${groupGoal.trim()}\n${locationDetails}**Target Capacity**: ${groupSize}\n\n### Schedule & Roadmap:\n${groupSchedule.trim()}`;
     } else if (category === "Resources") {
       if (!resourceTitle.trim() || !resourceOverview.trim()) {
         setError("Please provide a resource title and overview description.");
@@ -195,6 +215,9 @@ export default function PostForm({
         code_snippet: snippet,
         code_language: codeLanguage,
         vscode_liveshare_url: liveUrl,
+        code_snippet: snippet || "",
+        code_language: codeLanguage || "python",
+        vscode_liveshare_url: liveUrl || "",
       };
 
       if (onSubmit) {
@@ -232,15 +255,6 @@ export default function PostForm({
           }}
         >
           <span>Select Post Category</span>
-          <span
-            style={{
-              fontSize: "0.75rem",
-              color: "var(--color-primary)",
-              fontWeight: 600,
-            }}
-          >
-            Form adjusts for {category}
-          </span>
         </label>
 
         <div className="post-category-selector-grid">
@@ -691,17 +705,192 @@ export default function PostForm({
             </div>
           </div>
 
+          {/* Study Group Mode Selector: Offline vs Online */}
           <div className="form-group" style={{ marginBottom: 0 }}>
-            <label className="form-label">Meeting Format & Location *</label>
-            <input
-              type="text"
-              className="form-input"
-              value={groupFormat}
-              onChange={(e) => setGroupFormat(e.target.value)}
-              placeholder="e.g., Campus Library 4th floor or Discord Study Room"
-              disabled={loading}
-              required
-            />
+            <label className="form-label">Study Session Format *</label>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "10px",
+                marginBottom: "10px",
+              }}
+            >
+              <button
+                type="button"
+                className={`category-selector-card ${
+                  groupMode === "offline" ? "is-selected" : ""
+                }`}
+                style={{
+                  justifyContent: "center",
+                  padding: "10px 14px",
+                  cursor: "pointer",
+                }}
+                onClick={() => setGroupMode("offline")}
+              >
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
+                  <span style={{ fontSize: "1.1rem" }}>📍</span>
+                  <div style={{ textAlign: "left" }}>
+                    <div style={{ fontWeight: 600, fontSize: "0.85rem" }}>
+                      In-Person (Offline)
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "0.7rem",
+                        color: "var(--color-text-muted)",
+                      }}
+                    >
+                      Campus library, study room, or lab
+                    </div>
+                  </div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                className={`category-selector-card ${
+                  groupMode === "online" ? "is-selected" : ""
+                }`}
+                style={{
+                  justifyContent: "center",
+                  padding: "10px 14px",
+                  cursor: "pointer",
+                }}
+                onClick={() => setGroupMode("online")}
+              >
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
+                  <span style={{ fontSize: "1.1rem" }}>🌐</span>
+                  <div style={{ textAlign: "left" }}>
+                    <div style={{ fontWeight: 600, fontSize: "0.85rem" }}>
+                      Virtual (Online)
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "0.7rem",
+                        color: "var(--color-text-muted)",
+                      }}
+                    >
+                      Google Meet, Discord, Zoom
+                    </div>
+                  </div>
+                </div>
+              </button>
+            </div>
+
+            {/* Offline-specific options */}
+            {groupMode === "offline" && (
+              <div>
+                <label
+                  className="form-label"
+                  style={{ fontSize: "0.8rem", marginBottom: "4px" }}
+                >
+                  Campus Location & Room *
+                </label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={groupLocation}
+                  onChange={(e) => setGroupLocation(e.target.value)}
+                  placeholder="e.g., Campus Library 4th Floor Study Room A"
+                  disabled={loading}
+                  required
+                />
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "6px",
+                    marginTop: "6px",
+                  }}
+                >
+                  {[
+                    "Library 4th Floor",
+                    "Campus Study Room B",
+                    "Cafeteria Discussion Zone",
+                    "Department Lab 402",
+                  ].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => setGroupLocation(preset)}
+                      style={{
+                        fontSize: "0.7rem",
+                        padding: "3px 8px",
+                        borderRadius: "12px",
+                        border: "1px solid var(--color-border)",
+                        background:
+                          groupLocation === preset
+                            ? "var(--color-primary-light)"
+                            : "var(--color-bg-secondary)",
+                        color:
+                          groupLocation === preset
+                            ? "var(--color-primary)"
+                            : "var(--color-text-muted)",
+                        cursor: "pointer",
+                      }}
+                    >
+                      + {preset}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Online-specific options */}
+            {groupMode === "online" && (
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1.2fr 1.8fr",
+                  gap: "10px",
+                }}
+              >
+                <div>
+                  <label
+                    className="form-label"
+                    style={{ fontSize: "0.8rem", marginBottom: "4px" }}
+                  >
+                    Platform *
+                  </label>
+                  <select
+                    className="form-input"
+                    value={onlinePlatform}
+                    onChange={(e) => setOnlinePlatform(e.target.value)}
+                    style={{ width: "100%", padding: "8px 12px" }}
+                    disabled={loading}
+                  >
+                    <option value="Google Meet">Google Meet</option>
+                    <option value="Discord">Discord Voice / Stage</option>
+                    <option value="Zoom">Zoom Meeting</option>
+                    <option value="Microsoft Teams">Microsoft Teams</option>
+                    <option value="Slack">Slack Huddle</option>
+                    <option value="Other Virtual Room">
+                      Other Virtual Room
+                    </option>
+                  </select>
+                </div>
+                <div>
+                  <label
+                    className="form-label"
+                    style={{ fontSize: "0.8rem", marginBottom: "4px" }}
+                  >
+                    Meeting / Channel Link (Optional)
+                  </label>
+                  <input
+                    type="url"
+                    className="form-input"
+                    value={onlineMeetingLink}
+                    onChange={(e) => setOnlineMeetingLink(e.target.value)}
+                    placeholder="https://meet.google.com/xyz-abcd-efg"
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="form-group" style={{ marginBottom: 0 }}>

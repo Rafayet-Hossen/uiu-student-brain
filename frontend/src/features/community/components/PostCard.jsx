@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import {
   Bookmark,
+  BookOpen,
+  Calendar,
   Check,
   CheckCircle2,
   ChevronDown,
@@ -13,6 +15,7 @@ import {
   FileText,
   HelpCircle,
   Laptop,
+  MapPin,
   MessageSquare,
   MoreHorizontal,
   Send,
@@ -21,6 +24,8 @@ import {
   ThumbsUp,
   Trash2,
   Users,
+  Video,
+  Wifi,
   X,
   Zap,
 } from "lucide-react";
@@ -44,17 +49,420 @@ import {
 } from "../api";
 
 const CATEGORY_CONFIG = {
-  "Code Help": { icon: Code2, variant: "primary", label: "Code Help" },
-  "Exam Prep": { icon: Zap, variant: "accent", label: "Exam Prep" },
-  "Course Help": { icon: HelpCircle, variant: "primary", label: "Course Help" },
-  "Study Group": { icon: Users, variant: "success", label: "Study Group" },
-  Resources: { icon: FileText, variant: "default", label: "Resources" },
+  "Code Help": {
+    icon: Code2,
+    variant: "primary",
+    label: "Code Help",
+    accentColor: "#6366f1",
+    themeClass: "post-theme-code",
+    gradient: "linear-gradient(90deg, #6366f1, #8b5cf6)",
+  },
+  "Exam Prep": {
+    icon: Zap,
+    variant: "accent",
+    label: "Exam Prep",
+    accentColor: "#f59e0b",
+    themeClass: "post-theme-exam",
+    gradient: "linear-gradient(90deg, #f59e0b, #ef4444)",
+  },
+  "Course Help": {
+    icon: HelpCircle,
+    variant: "primary",
+    label: "Course Help",
+    accentColor: "#0ea5e9",
+    themeClass: "post-theme-course",
+    gradient: "linear-gradient(90deg, #0ea5e9, #3b82f6)",
+  },
+  "Study Group": {
+    icon: Users,
+    variant: "success",
+    label: "Study Group",
+    accentColor: "#10b981",
+    themeClass: "post-theme-study",
+    gradient: "linear-gradient(90deg, #10b981, #06b6d4)",
+  },
+  Resources: {
+    icon: FileText,
+    variant: "default",
+    label: "Resources",
+    accentColor: "#8b5cf6",
+    themeClass: "post-theme-resource",
+    gradient: "linear-gradient(90deg, #8b5cf6, #ec4899)",
+  },
   General: {
     icon: MessageSquare,
     variant: "default",
     label: "General Discussion",
+    accentColor: "#64748b",
+    themeClass: "post-theme-general",
+    gradient: "linear-gradient(90deg, #64748b, #94a3b8)",
   },
 };
+
+function parseStructuredPost(category, content = "") {
+  if (!content) return { isStructured: false };
+
+  if (category === "Study Group") {
+    const formatMatch = content.match(/\*\*Format\*\*:\s*([^\n]+)/i);
+    const purposeMatch = content.match(
+      /\*\*Group Purpose \/ Course\*\*:\s*([^\n]+)/i,
+    );
+    const platformMatch = content.match(/\*\*Platform\*\*:\s*([^\n]+)/i);
+    const locationMatch = content.match(
+      /\*\*Campus Location \/ Room\*\*:\s*([^\n]+)/i,
+    );
+    const linkMatch = content.match(
+      /\[(?:Join Online Session|Meeting Link|Join Session)\]\(([^)]+)\)/i,
+    );
+    const capacityMatch = content.match(/\*\*Target Capacity\*\*:\s*([^\n]+)/i);
+    const scheduleParts = content.split(/### Schedule & Roadmap:\s*/i);
+    const schedule = scheduleParts.length > 1 ? scheduleParts[1].trim() : "";
+
+    if (formatMatch || purposeMatch || schedule) {
+      const formatStr = formatMatch ? formatMatch[1].trim() : "";
+      const isOnline =
+        formatStr.toLowerCase().includes("online") ||
+        Boolean(platformMatch) ||
+        Boolean(linkMatch);
+
+      return {
+        isStructured: true,
+        type: "study-group",
+        isOnline,
+        format:
+          formatStr ||
+          (isOnline ? "Online Virtual Session" : "In-Person (Offline Campus)"),
+        purpose: purposeMatch ? purposeMatch[1].trim() : "",
+        platform: platformMatch ? platformMatch[1].trim() : "",
+        location: locationMatch ? locationMatch[1].trim() : "",
+        meetingLink: linkMatch ? linkMatch[1].trim() : "",
+        capacity: capacityMatch ? capacityMatch[1].trim() : "",
+        schedule,
+      };
+    }
+  }
+
+  if (category === "Course Help") {
+    const courseMatch = content.match(/\*\*Course\*\*:\s*([^\n]+)/i);
+    const topicMatch = content.match(/\*\*Topic \/ Chapter\*\*:\s*([^\n]+)/i);
+    const doubtParts = content.split(/### Question & Problem Details:\s*/i);
+    const doubt = doubtParts.length > 1 ? doubtParts[1].trim() : "";
+
+    if (courseMatch || topicMatch || doubt) {
+      return {
+        isStructured: true,
+        type: "course-help",
+        course: courseMatch ? courseMatch[1].trim() : "",
+        topic: topicMatch ? topicMatch[1].trim() : "",
+        doubt: doubt || content,
+      };
+    }
+  }
+
+  if (category === "Exam Prep") {
+    const courseMatch = content.match(/\*\*Course \/ Subject\*\*:\s*([^\n]+)/i);
+    const examMatch = content.match(/\*\*Target Exam\*\*:\s*([^\n]+)/i);
+    const topicsMatch = content.match(/\*\*Key Focus Topics\*\*:\s*([^\n]+)/i);
+    const questionParts = content.split(
+      /### Exam Prep Discussion & Questions:\s*/i,
+    );
+    const questions = questionParts.length > 1 ? questionParts[1].trim() : "";
+
+    if (courseMatch || examMatch || questions) {
+      return {
+        isStructured: true,
+        type: "exam-prep",
+        course: courseMatch ? courseMatch[1].trim() : "",
+        examType: examMatch ? examMatch[1].trim() : "",
+        topics: topicsMatch ? topicsMatch[1].trim() : "",
+        questions: questions || content,
+      };
+    }
+  }
+
+  if (category === "Resources") {
+    const nameMatch = content.match(/\*\*Resource Name\*\*:\s*([^\n]+)/i);
+    const courseMatch = content.match(/\*\*Course \/ Subject\*\*:\s*([^\n]+)/i);
+    const typeMatch = content.match(/\*\*Resource Type\*\*:\s*([^\n]+)/i);
+    const linkMatch = content.match(/\[Access Resource\]\(([^)]+)\)/i);
+    const overviewParts = content.split(/### Overview & Contents:\s*/i);
+    const overview = overviewParts.length > 1 ? overviewParts[1].trim() : "";
+
+    if (nameMatch || typeMatch || overview) {
+      return {
+        isStructured: true,
+        type: "resource",
+        name: nameMatch ? nameMatch[1].trim() : "",
+        course: courseMatch ? courseMatch[1].trim() : "",
+        resourceType: typeMatch ? typeMatch[1].trim() : "Reference",
+        link: linkMatch ? linkMatch[1].trim() : "",
+        overview: overview || content,
+      };
+    }
+  }
+
+  return { isStructured: false };
+}
+
+function renderThemedContent(post) {
+  const structured = parseStructuredPost(post.category, post.content);
+
+  if (structured.isStructured && structured.type === "study-group") {
+    const rawLink = structured.meetingLink;
+    const cleanUrl = rawLink
+      ? rawLink.startsWith("http")
+        ? rawLink
+        : `https://${rawLink}`
+      : null;
+
+    return (
+      <div className="themed-post-container theme-study-group-body">
+        {/* Meta Badge Ribbon */}
+        <div className="study-ribbon-bar">
+          <div className="study-ribbon-left">
+            {structured.isOnline ? (
+              <span className="live-status-pill online-pill">
+                <span className="live-pulse-dot" />
+                <Wifi size={12} />
+                <span>Online Session</span>
+              </span>
+            ) : (
+              <span className="live-status-pill offline-pill">
+                <MapPin size={12} />
+                <span>In-Person Campus</span>
+              </span>
+            )}
+
+            {structured.platform && (
+              <span className="study-tag-chip">
+                <Laptop size={12} />
+                <span>{structured.platform}</span>
+              </span>
+            )}
+
+            {structured.location && (
+              <span className="study-tag-chip location-chip">
+                <MapPin size={12} />
+                <span>{structured.location}</span>
+              </span>
+            )}
+          </div>
+
+          {structured.capacity && (
+            <span className="capacity-tag-chip">
+              <Users size={12} />
+              <span>{structured.capacity}</span>
+            </span>
+          )}
+        </div>
+
+        {/* Live Meeting Join Card (if meeting link present) */}
+        {cleanUrl && (
+          <motion.div
+            whileHover={{ scale: 1.01 }}
+            className="study-meeting-action-banner"
+          >
+            <div className="meeting-banner-info">
+              <div className="meeting-icon-bubble">
+                <Video size={16} />
+              </div>
+              <div className="meeting-banner-text">
+                <strong className="meeting-banner-title">
+                  Virtual Study Room Ready
+                </strong>
+                <span className="meeting-banner-sub">
+                  Platform: {structured.platform || "Online Video Conference"}
+                </span>
+              </div>
+            </div>
+            <a
+              href={cleanUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="meeting-direct-join-btn"
+            >
+              <ExternalLink size={13} />
+              <span>Join Online Room</span>
+            </a>
+          </motion.div>
+        )}
+
+        {/* Goal / Purpose */}
+        {structured.purpose && (
+          <div className="study-purpose-box">
+            <span className="study-field-label">Group Focus / Course:</span>
+            <span className="study-field-value">{structured.purpose}</span>
+          </div>
+        )}
+
+        {/* Schedule & Roadmap */}
+        {structured.schedule && (
+          <div className="study-schedule-card">
+            <div className="study-schedule-header">
+              <Calendar size={14} className="text-emerald" />
+              <strong>Schedule & Session Roadmap</strong>
+            </div>
+            <div className="study-schedule-body">
+              {formatRichContent(structured.schedule)}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (structured.isStructured && structured.type === "course-help") {
+    return (
+      <div className="themed-post-container theme-course-help-body">
+        <div className="course-help-ribbon">
+          {structured.course && (
+            <span className="course-code-badge">
+              <BookOpen size={12} />
+              <span>{structured.course}</span>
+            </span>
+          )}
+          {structured.topic && (
+            <span className="course-topic-badge">
+              <span>Topic: {structured.topic}</span>
+            </span>
+          )}
+        </div>
+
+        {structured.doubt && (
+          <div className="course-doubt-box">
+            <div className="course-doubt-header">
+              <HelpCircle size={14} className="text-sky" />
+              <strong>Question & Problem Details</strong>
+            </div>
+            <div className="course-doubt-content">
+              {formatRichContent(structured.doubt)}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (structured.isStructured && structured.type === "exam-prep") {
+    const topicList = structured.topics
+      ? structured.topics
+          .split(/[,;\n]+/)
+          .map((t) => t.trim())
+          .filter(Boolean)
+      : [];
+
+    return (
+      <div className="themed-post-container theme-exam-prep-body">
+        <div className="exam-ribbon-bar">
+          {structured.examType && (
+            <span className="exam-target-badge">
+              <Zap size={12} />
+              <span>{structured.examType}</span>
+            </span>
+          )}
+          {structured.course && (
+            <span className="exam-course-badge">
+              <BookOpen size={12} />
+              <span>{structured.course}</span>
+            </span>
+          )}
+        </div>
+
+        {topicList.length > 0 && (
+          <div className="exam-topics-container">
+            <span className="exam-topics-label">Focus Topics:</span>
+            <div className="exam-topics-chips">
+              {topicList.map((t, i) => (
+                <span key={i} className="exam-topic-chip">
+                  #{t}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {structured.questions && (
+          <div className="exam-questions-box">
+            <div className="exam-questions-header">
+              <FileText size={14} className="text-amber" />
+              <strong>Exam Prep Inquiries & Discussion</strong>
+            </div>
+            <div className="exam-questions-content">
+              {formatRichContent(structured.questions)}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (structured.isStructured && structured.type === "resource") {
+    const rawLink = structured.link;
+    const cleanUrl = rawLink
+      ? rawLink.startsWith("http")
+        ? rawLink
+        : `https://${rawLink}`
+      : null;
+
+    return (
+      <div className="themed-post-container theme-resource-body">
+        <div className="resource-ribbon-bar">
+          <span className="resource-type-badge">
+            <FileText size={12} />
+            <span>{structured.resourceType}</span>
+          </span>
+          {structured.course && (
+            <span className="resource-course-badge">
+              <BookOpen size={12} />
+              <span>{structured.course}</span>
+            </span>
+          )}
+        </div>
+
+        {cleanUrl && (
+          <motion.a
+            whileHover={{ scale: 1.01 }}
+            href={cleanUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="resource-access-banner"
+          >
+            <div className="resource-access-info">
+              <ExternalLink size={16} />
+              <div>
+                <strong>Access Study Material</strong>
+                <span>Open external resource link</span>
+              </div>
+            </div>
+            <span className="resource-open-pill">
+              <span>Open Link</span>
+              <ExternalLink size={12} />
+            </span>
+          </motion.a>
+        )}
+
+        {structured.overview && (
+          <div className="resource-overview-box">
+            <div className="resource-overview-header">
+              <Sparkles size={13} className="text-purple" />
+              <strong>Overview & Contents</strong>
+            </div>
+            <div className="resource-overview-content">
+              {formatRichContent(structured.overview)}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Fallback for standard or General posts
+  return (
+    <div className="social-post-markdown-content">
+      {formatRichContent(post.content)}
+    </div>
+  );
+}
 
 const CODE_LANGUAGES = [
   { value: "python", label: "Python" },
@@ -414,12 +822,22 @@ export default function PostCard({ post, onDeleted, onUpdated }) {
 
   return (
     <motion.div
-      whileHover={{ y: -4 }}
-      transition={{ duration: 0.2, ease: "easeOut" }}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -3 }}
+      transition={{ duration: 0.22, ease: "easeOut" }}
       style={{ marginBottom: "20px" }}
       id={`post-${currentPost.id}`}
     >
-      <Card className="premium-social-post-card">
+      <Card
+        className={`premium-social-post-card ${catConfig.themeClass || ""}`}
+      >
+        {/* Animated Top Category Accent Ribbon */}
+        <div
+          className="social-card-accent-bar"
+          style={{ background: catConfig.gradient }}
+        />
+
         {/* Top Header Row */}
         <div className="social-post-header">
           <div className="social-post-author-row">
@@ -701,9 +1119,8 @@ export default function PostCard({ post, onDeleted, onUpdated }) {
               <h3 className="social-post-title">{currentPost.title}</h3>
             )}
 
-            <div className="social-post-markdown-content">
-              {formatRichContent(currentPost.content)}
-            </div>
+            {/* Specialized Category Themed Body & Rich Content */}
+            {renderThemedContent(currentPost)}
 
             {/* VS Code Live Share Banner */}
             {currentPost.vscode_liveshare_url && (
@@ -767,7 +1184,7 @@ export default function PostCard({ post, onDeleted, onUpdated }) {
           </div>
         )}
 
-        {/* Bottom Interactive Action Bar */}
+        {/* Bottom Interactive Action Bar - Responsive For All Devices */}
         <div className="social-post-footer">
           <div className="social-action-buttons">
             <motion.button
@@ -786,7 +1203,9 @@ export default function PostCard({ post, onDeleted, onUpdated }) {
                   className={isLiked ? "text-primary fill-primary" : ""}
                 />
               </motion.div>
-              <span>{isLiked ? "Upvoted" : "Upvote"}</span>
+              <span className="desktop-action-label">
+                {isLiked ? "Upvoted" : "Upvote"}
+              </span>
               <span className="pill-count-badge">{likesCount}</span>
             </motion.button>
 
@@ -797,7 +1216,10 @@ export default function PostCard({ post, onDeleted, onUpdated }) {
               onClick={handleToggleComments}
             >
               <MessageSquare size={15} />
-              <span>Discussion & Solutions</span>
+              <span className="desktop-action-label">
+                Discussion & Solutions
+              </span>
+              <span className="mobile-action-label">Solutions</span>
               <span className="pill-count-badge">{commentsCount}</span>
               {showComments ? (
                 <ChevronUp size={13} />
@@ -808,17 +1230,23 @@ export default function PostCard({ post, onDeleted, onUpdated }) {
 
             <button
               type="button"
-              className="social-action-pill desktop-only"
+              className="social-action-pill social-share-btn"
               onClick={handleSharePost}
               title="Native Share"
             >
-              <Share2 size={14} />
-              <span>{copiedLink ? "Copied" : "Share"}</span>
+              {copiedLink ? (
+                <Check size={14} className="text-emerald" />
+              ) : (
+                <Share2 size={14} />
+              )}
+              <span className="desktop-action-label">
+                {copiedLink ? "Copied" : "Share"}
+              </span>
             </button>
 
             <button
               type="button"
-              className={`social-action-pill ${isBookmarked ? "pill-bookmarked" : ""}`}
+              className={`social-action-pill social-bookmark-btn ${isBookmarked ? "pill-bookmarked" : ""}`}
               onClick={handleToggleBookmark}
               title={isBookmarked ? "Remove Bookmark" : "Save Bookmark"}
             >
@@ -828,7 +1256,7 @@ export default function PostCard({ post, onDeleted, onUpdated }) {
                 strokeWidth={isBookmarked ? 2.8 : 2}
                 className={isBookmarked ? "text-amber" : ""}
               />
-              <span className="desktop-only">
+              <span className="desktop-action-label">
                 {isBookmarked ? "Bookmarked" : "Bookmark"}
               </span>
             </button>

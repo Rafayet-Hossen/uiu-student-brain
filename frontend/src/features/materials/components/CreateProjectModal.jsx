@@ -22,7 +22,12 @@ const COMMON_SUBJECTS = [
   "Mechanical Engineering",
 ];
 
-export default function CreateProjectModal({ isOpen, onClose, onSubmit, submitting }) {
+export default function CreateProjectModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  submitting,
+}) {
   const [title, setTitle] = useState("");
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
@@ -59,9 +64,10 @@ export default function CreateProjectModal({ isOpen, onClose, onSubmit, submitti
       >
         <div className="modal-header-row">
           <div>
-            <h3 className="modal-title">Create Subject Project</h3>
+            <h3 className="modal-title">Create Course Subject</h3>
             <p className="modal-subtitle">
-              Set up a dedicated workspace to organize notes, book PDFs, and links.
+              Organize lecture notes, textbook PDFs, and reference links for
+              this course.
             </p>
           </div>
           <button
@@ -74,7 +80,9 @@ export default function CreateProjectModal({ isOpen, onClose, onSubmit, submitti
           </button>
         </div>
 
-        {error && <div className="alert-banner alert-banner-error">{error}</div>}
+        {error && (
+          <div className="alert-banner alert-banner-error">{error}</div>
+        )}
 
         <form onSubmit={handleSubmit} className="modal-body-content">
           <div className="form-group">
@@ -136,7 +144,7 @@ export default function CreateProjectModal({ isOpen, onClose, onSubmit, submitti
           </div>
 
           <div className="form-group">
-            <label className="form-label">Workspace Accent Color</label>
+            <label className="form-label">Course Theme Color</label>
             <div className="color-swatch-picker">
               {COLOR_OPTIONS.map((c) => (
                 <button
@@ -160,11 +168,7 @@ export default function CreateProjectModal({ isOpen, onClose, onSubmit, submitti
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              loading={submitting}
-            >
+            <Button type="submit" variant="primary" loading={submitting}>
               Create Project
             </Button>
           </div>

@@ -79,7 +79,7 @@ export default function AuthOrbitalShowcase() {
           <span className="auth-orbital-title-highlight">Dashboard</span>
         </h1>
         <p className="auth-orbital-subtitle">
-          Your centralized workspace for routines, GPA projection, and
+          Your centralized academic portal for routines, GPA projection, and
           collaborative study.
         </p>
       </div>

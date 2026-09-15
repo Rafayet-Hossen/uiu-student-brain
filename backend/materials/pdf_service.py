@@ -1,4 +1,5 @@
 import io
+import re
 from datetime import datetime
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
@@ -12,6 +13,16 @@ from reportlab.platypus import (
     HRFlowable,
 )
 from reportlab.pdfgen import canvas
+
+
+def safe_pdf_text(text) -> str:
+    """Escapes raw ampersands and special XML characters so ReportLab Paragraph never fails to parse."""
+    if not text:
+        return ""
+    s = str(text)
+    # Replace unescaped & with &amp;
+    s = re.sub(r"&(?!(?:amp|lt|gt|quot|apos|bull|nbsp|#\d+|#x[0-9a-fA-F]+);)", "&amp;", s)
+    return s
 
 
 class NumberedCanvas(canvas.Canvas):
@@ -291,17 +302,18 @@ def generate_material_analysis_pdf(material) -> bytes:
     type_label = type_labels.get(mat_type, "ACADEMIC STUDY MATERIAL")
 
     elements.append(Paragraph(f"&bull; &nbsp; {type_label}", material_type_style))
-    doc_title = getattr(material, "title", None) or "Study Material Analysis"
+    raw_doc_title = getattr(material, "title", None) or "Study Material Analysis"
+    doc_title = safe_pdf_text(raw_doc_title)
     elements.append(Paragraph(doc_title, doc_title_style))
 
     # ---------------------------------------------------------
     # 3. ACADEMIC METADATA MATRIX (532pt)
     # ---------------------------------------------------------
-    course_name = material.course.title if getattr(material, "course", None) else "Academic Coursework"
-    course_code = getattr(material.course, "code", "") if getattr(material, "course", None) else ""
-    semester_name = getattr(material.course.semester, "name", "") if getattr(material, "course", None) and getattr(material.course.semester, "name", None) else "Active Academic Term"
+    course_name = safe_pdf_text(material.course.title if getattr(material, "course", None) else "Academic Coursework")
+    course_code = safe_pdf_text(getattr(material.course, "code", "") if getattr(material, "course", None) else "")
+    semester_name = safe_pdf_text(getattr(material.course.semester, "name", "") if getattr(material, "course", None) and getattr(material.course.semester, "name", None) else "Active Academic Term")
     analysis = getattr(material, "ai_analysis", {}) or {}
-    difficulty = analysis.get("difficulty", "Intermediate")
+    difficulty = safe_pdf_text(analysis.get("difficulty", "Intermediate"))
     key_topics = analysis.get("key_topics", []) or []
     formulas = analysis.get("key_formulas_or_definitions", []) or []
 
@@ -339,11 +351,12 @@ def generate_material_analysis_pdf(material) -> bytes:
     # ---------------------------------------------------------
     # 4. SECTION 01: EXECUTIVE ACADEMIC SUMMARY
     # ---------------------------------------------------------
-    summary_text = (
+    raw_summary_text = (
         analysis.get("summary")
         or getattr(material, "content_text", None)
         or "No comprehensive study summary is available for this material yet. Generate AI analysis in the Study Center to produce a structured executive synthesis."
     )
+    summary_text = safe_pdf_text(raw_summary_text)
 
     elements.append(Paragraph("<b>01 &nbsp;|&nbsp; EXECUTIVE ACADEMIC SUMMARY</b>", section_header_style))
 
@@ -378,7 +391,7 @@ def generate_material_analysis_pdf(material) -> bytes:
             num_pill = f"#{idx:02d}"
             topics_data.append([
                 Paragraph(f"<b>{num_pill}</b>", topic_num_style),
-                Paragraph(topic, topic_title_style),
+                Paragraph(safe_pdf_text(topic), topic_title_style),
             ])
 
         topics_table = Table(topics_data, colWidths=[36, 496])
@@ -409,7 +422,7 @@ def generate_material_analysis_pdf(material) -> bytes:
         for item in formulas:
             formula_data.append([
                 Paragraph("&bull;", ParagraphStyle("Bul", parent=meta_label_style, textColor=c_emerald, fontSize=8)),
-                Paragraph(item, formula_code_style),
+                Paragraph(safe_pdf_text(item), formula_code_style),
             ])
 
         formula_table = Table(formula_data, colWidths=[18, 514])
