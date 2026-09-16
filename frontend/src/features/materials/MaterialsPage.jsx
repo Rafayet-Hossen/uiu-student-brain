@@ -31,6 +31,10 @@ import {
   Plus,
   Search,
   Pencil,
+  Bot,
+  Check,
+  Tag,
+  X,
 } from "lucide-react";
 import CreateSemesterModal from "./components/CreateSemesterModal";
 import CreateCourseModal from "./components/CreateCourseModal";
@@ -65,6 +69,7 @@ export default function MaterialsPage() {
   const [courseSearch, setCourseSearch] = useState("");
   const [materialSearch, setMaterialSearch] = useState("");
   const [materialFilter, setMaterialFilter] = useState("all"); // 'all' | 'document' | 'link' | 'note'
+  const [selectedTopicFilter, setSelectedTopicFilter] = useState(null);
   const [activeNoteToOpen, setActiveNoteToOpen] = useState(null);
 
   // Modals
@@ -178,9 +183,16 @@ export default function MaterialsPage() {
   // When selected course changes or filter changes, load materials
   useEffect(() => {
     if (selectedCourseId) {
+      setSelectedTopicFilter(null);
       fetchMaterials(selectedCourseId);
     }
-  }, [selectedCourseId, materialFilter, materialSearch]);
+  }, [selectedCourseId]);
+
+  useEffect(() => {
+    if (selectedCourseId) {
+      fetchMaterials(selectedCourseId);
+    }
+  }, [materialFilter, materialSearch]);
 
   // Selected objects
   const selectedSemester = useMemo(() => {
@@ -358,11 +370,118 @@ export default function MaterialsPage() {
     );
   }, [courses, courseSearch]);
 
+  // Dynamic Summary Count for the active course
+  const dynamicSummaryCount = useMemo(() => {
+    return materials.filter((m) => !!m.analyzed_at || !!m.ai_analysis).length;
+  }, [materials]);
+
+  // Dynamically aggregate syllabus concepts from both course extracted_topics AND actual uploaded materials
+  const dynamicSyllabusTopics = useMemo(() => {
+    const topicMap = new Map();
+
+    // 1. Course-level extracted topics
+    if (
+      selectedCourse?.extracted_topics &&
+      Array.isArray(selectedCourse.extracted_topics)
+    ) {
+      selectedCourse.extracted_topics.forEach((top) => {
+        if (top && typeof top === "string") {
+          const clean = top.trim().replace(/^["']|["']$/g, "");
+          if (clean) topicMap.set(clean, 0);
+        }
+      });
+    }
+
+    // 2. Scan materials (key_topics, ai_analysis.key_topics, note headings)
+    materials.forEach((m) => {
+      const matTopics = new Set();
+      if (Array.isArray(m.key_topics)) {
+        m.key_topics.forEach((t) => {
+          if (t && typeof t === "string")
+            matTopics.add(t.trim().replace(/^["']|["']$/g, ""));
+        });
+      }
+      if (m.ai_analysis && Array.isArray(m.ai_analysis.key_topics)) {
+        m.ai_analysis.key_topics.forEach((t) => {
+          if (t && typeof t === "string")
+            matTopics.add(t.trim().replace(/^["']|["']$/g, ""));
+        });
+      }
+      if (m.material_type === "note" && m.content_text) {
+        m.content_text
+          .split("\n")
+          .slice(0, 30)
+          .forEach((line) => {
+            const trimmed = line.trim();
+            if (trimmed.startsWith("## ") || trimmed.startsWith("### ")) {
+              const h = trimmed.replace(/^#+\s*/, "").trim();
+              if (
+                h &&
+                h.length > 2 &&
+                h.length < 40 &&
+                !h.toLowerCase().includes("table of")
+              ) {
+                matTopics.add(h);
+              }
+            }
+          });
+      }
+
+      matTopics.forEach((t) => {
+        topicMap.set(t, (topicMap.get(t) || 0) + 1);
+      });
+    });
+
+    // Count associations for topics that were in course extracted_topics
+    topicMap.forEach((count, top) => {
+      if (count === 0) {
+        const tLower = top.toLowerCase();
+        const matches = materials.filter((m) => {
+          const inTitle = m.title?.toLowerCase().includes(tLower);
+          const inKeyTopics =
+            Array.isArray(m.key_topics) &&
+            m.key_topics.some((kt) => kt.toLowerCase().includes(tLower));
+          const inAi =
+            Array.isArray(m.ai_analysis?.key_topics) &&
+            m.ai_analysis.key_topics.some((kt) =>
+              kt.toLowerCase().includes(tLower),
+            );
+          const inSummary = m.summary?.toLowerCase().includes(tLower);
+          return inTitle || inKeyTopics || inAi || inSummary;
+        }).length;
+        topicMap.set(top, matches);
+      }
+    });
+
+    return Array.from(topicMap.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  }, [selectedCourse, materials]);
+
   // Filtered materials
   const filteredMaterials = useMemo(() => {
     let list = materials;
     if (materialFilter && materialFilter !== "all") {
       list = list.filter((m) => m.material_type === materialFilter);
+    }
+    if (selectedTopicFilter) {
+      const tLower = selectedTopicFilter.toLowerCase();
+      list = list.filter((m) => {
+        const inTitle = m.title?.toLowerCase().includes(tLower);
+        const inKeyTopics =
+          Array.isArray(m.key_topics) &&
+          m.key_topics.some((t) => t.toLowerCase().includes(tLower));
+        const inAi =
+          Array.isArray(m.ai_analysis?.key_topics) &&
+          m.ai_analysis.key_topics.some((t) =>
+            t.toLowerCase().includes(tLower),
+          );
+        const inSummary = m.summary?.toLowerCase().includes(tLower);
+        const inNotes =
+          m.material_type === "note" &&
+          m.content_text?.toLowerCase().includes(tLower);
+        return inTitle || inKeyTopics || inAi || inSummary || inNotes;
+      });
     }
     if (materialSearch.trim()) {
       const term = materialSearch.toLowerCase();
@@ -377,7 +496,7 @@ export default function MaterialsPage() {
       );
     }
     return list;
-  }, [materials, materialFilter, materialSearch]);
+  }, [materials, materialFilter, materialSearch, selectedTopicFilter]);
 
   const getMaterialTypeIcon = (type) => {
     switch (type) {
@@ -576,8 +695,15 @@ export default function MaterialsPage() {
                         )}
 
                         {c.analyzed_materials_count > 0 && (
-                          <span className="badge badge-accent badge-xs">
-                            {c.analyzed_materials_count} Summaries
+                          <span
+                            className="badge-summary-pill"
+                            style={{
+                              fontSize: "0.6875rem",
+                              padding: "2px 8px",
+                            }}
+                          >
+                            <Sparkles size={10} />
+                            <span>{c.analyzed_materials_count} Summaries</span>
                           </span>
                         )}
                       </div>
@@ -673,9 +799,18 @@ export default function MaterialsPage() {
                     <span className="badge badge-subtle">
                       {selectedCourse.materials_count} Materials
                     </span>
-                    {selectedCourse.analyzed_materials_count > 0 && (
-                      <span className="badge badge-accent">
-                        {selectedCourse.analyzed_materials_count} Summaries
+                    {(dynamicSummaryCount > 0 ||
+                      (selectedCourse.analyzed_materials_count &&
+                        selectedCourse.analyzed_materials_count > 0)) && (
+                      <span className="badge-summary-pill">
+                        <Sparkles size={11} />
+                        <span>
+                          {Math.max(
+                            dynamicSummaryCount,
+                            selectedCourse.analyzed_materials_count || 0,
+                          )}{" "}
+                          Summaries
+                        </span>
                       </span>
                     )}
                   </div>
@@ -732,31 +867,114 @@ export default function MaterialsPage() {
                 >
                   <MessageSquare size={16} />
                   <span>Course Study Assistant & Q&A</span>
-                  <span className="badge badge-accent badge-xs">Assistant</span>
+                  <span className="badge-assistant-pill">
+                    <Bot size={11} />
+                    <span>Assistant</span>
+                  </span>
                 </button>
               </div>
 
               {/* TAB 1: MATERIALS */}
               {workspaceTab === "materials" && (
                 <>
-                  {/* Aggregated Syllabus Topics Bar */}
-                  {selectedCourse.extracted_topics &&
-                    selectedCourse.extracted_topics.length > 0 && (
+                  {/* Aggregated Dynamic Syllabus Topics Bar */}
+                  {dynamicSyllabusTopics &&
+                    dynamicSyllabusTopics.length > 0 && (
                       <div className="project-topics-syllabus-box">
                         <div className="syllabus-header">
-                          <span className="syllabus-icon">🎓</span>
-                          <span className="syllabus-title">
-                            Course Topics & Syllabus Map (
-                            {selectedCourse.extracted_topics.length})
-                          </span>
-                        </div>
-                        <div className="syllabus-chips-wrap">
-                          {selectedCourse.extracted_topics.map((top, idx) => (
-                            <span key={idx} className="syllabus-chip">
-                              {top}
+                          <div className="syllabus-header-title-wrap">
+                            <span className="syllabus-icon">🎓</span>
+                            <span className="syllabus-title">
+                              Course Topics & Syllabus Map (
+                              {dynamicSyllabusTopics.length})
                             </span>
-                          ))}
+                          </div>
+                          {selectedTopicFilter && (
+                            <button
+                              type="button"
+                              className="btn-clear-syllabus-filter"
+                              onClick={() => setSelectedTopicFilter(null)}
+                              title="Clear topic filter"
+                            >
+                              <X size={13} />
+                              <span>Clear Filter</span>
+                            </button>
+                          )}
                         </div>
+
+                        <div className="syllabus-chips-wrap">
+                          <button
+                            type="button"
+                            className={`syllabus-chip-btn ${!selectedTopicFilter ? "syllabus-chip-active" : ""}`}
+                            onClick={() => setSelectedTopicFilter(null)}
+                          >
+                            <span>All Topics</span>
+                            <span className="syllabus-chip-count">
+                              {materials.length}
+                            </span>
+                          </button>
+                          {dynamicSyllabusTopics.map((top, idx) => {
+                            const isSelected = selectedTopicFilter === top.name;
+                            return (
+                              <button
+                                key={idx}
+                                type="button"
+                                className={`syllabus-chip-btn ${isSelected ? "syllabus-chip-active" : ""}`}
+                                onClick={() =>
+                                  setSelectedTopicFilter(
+                                    isSelected ? null : top.name,
+                                  )
+                                }
+                                title={`Filter materials related to ${top.name}`}
+                              >
+                                <Tag size={11} className="syllabus-chip-icon" />
+                                <span>{top.name}</span>
+                                {top.count > 0 && (
+                                  <span className="syllabus-chip-count">
+                                    {top.count}
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {selectedTopicFilter && (
+                          <div className="syllabus-filter-banner">
+                            <div className="syllabus-filter-banner-text">
+                              <Tag size={13} />
+                              <span>
+                                Showing materials for:{" "}
+                                <strong>{selectedTopicFilter}</strong> (
+                                {filteredMaterials.length} found)
+                              </span>
+                            </div>
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: "8px",
+                                alignItems: "center",
+                              }}
+                            >
+                              <button
+                                type="button"
+                                className="syllabus-filter-banner-btn"
+                                onClick={() => setWorkspaceTab("chat")}
+                              >
+                                <Bot size={13} />
+                                <span>Ask Assistant about this</span>
+                              </button>
+                              <button
+                                type="button"
+                                className="syllabus-filter-banner-close"
+                                onClick={() => setSelectedTopicFilter(null)}
+                                title="Dismiss filter"
+                              >
+                                <X size={13} />
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -973,7 +1191,13 @@ export default function MaterialsPage() {
                                     </span>
                                     {mat.content_text && (
                                       <span className="mat-note-words-chip">
-                                        {mat.content_text.trim().split(/\s+/).filter(Boolean).length} words
+                                        {
+                                          mat.content_text
+                                            .trim()
+                                            .split(/\s+/)
+                                            .filter(Boolean).length
+                                        }{" "}
+                                        words
                                       </span>
                                     )}
                                   </div>
@@ -993,7 +1217,9 @@ export default function MaterialsPage() {
                                     </div>
                                   ) : (
                                     <p className="mat-note-desc">
-                                      Personal study note. Click to open in Notepad editor to review or edit your notes.
+                                      Personal study note. Click to open in
+                                      Notepad editor to review or edit your
+                                      notes.
                                     </p>
                                   )}
                                 </div>

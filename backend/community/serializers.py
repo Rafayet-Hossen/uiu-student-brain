@@ -93,6 +93,7 @@ class StudyEventSerializer(serializers.ModelSerializer):
     going_count = serializers.SerializerMethodField()
     interested_count = serializers.SerializerMethodField()
     is_rsvped = serializers.BooleanField(read_only=True, default=False)
+    is_attending = serializers.SerializerMethodField()
     user_rsvp_status = serializers.SerializerMethodField()
 
     class Meta:
@@ -111,6 +112,7 @@ class StudyEventSerializer(serializers.ModelSerializer):
             "going_count",
             "interested_count",
             "is_rsvped",
+            "is_attending",
             "user_rsvp_status",
             "created_at",
             "updated_at",
@@ -122,6 +124,7 @@ class StudyEventSerializer(serializers.ModelSerializer):
             "going_count",
             "interested_count",
             "is_rsvped",
+            "is_attending",
             "user_rsvp_status",
             "created_at",
             "updated_at",
@@ -136,6 +139,12 @@ class StudyEventSerializer(serializers.ModelSerializer):
         if hasattr(obj, "interested_count"):
             return obj.interested_count
         return obj.rsvps.filter(status__in=["interested", "going"]).count()
+
+    def get_is_attending(self, obj) -> bool:
+        request = self.context.get("request")
+        if request and request.user and request.user.is_authenticated:
+            return obj.rsvps.filter(user=request.user, status="going").exists()
+        return False
 
     def get_user_rsvp_status(self, obj) -> str | None:
         request = self.context.get("request")

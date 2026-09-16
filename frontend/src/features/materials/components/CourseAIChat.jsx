@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { BookOpen } from "lucide-react";
 import Button from "../../../components/Button";
 import Spinner from "../../../components/Spinner";
 import {
@@ -113,8 +114,9 @@ export default function CourseAIChat({
           </div>
         </div>
         {extractedTopics.length > 0 && (
-          <span className="badge badge-accent">
-            {extractedTopics.length} Syllabus Concepts Active
+          <span className="badge-concepts-pill">
+            <BookOpen size={13} />
+            <span>{extractedTopics.length} Syllabus Concepts Active</span>
           </span>
         )}
       </div>

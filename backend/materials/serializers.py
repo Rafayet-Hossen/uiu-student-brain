@@ -69,12 +69,21 @@ class CourseSerializer(serializers.ModelSerializer):
         for mat in obj.materials.all():
             if mat.key_topics:
                 for t in mat.key_topics:
-                    if t and isinstance(t, str):
-                        topics.add(t.strip())
-            elif mat.ai_analysis:
+                    if t and isinstance(t, str) and len(t.strip()) > 1:
+                        topics.add(t.strip().strip("'\""))
+            elif mat.ai_analysis and isinstance(mat.ai_analysis, dict):
                 for t in mat.ai_analysis.get("key_topics", []):
-                    if t and isinstance(t, str):
-                        topics.add(t.strip())
+                    if t and isinstance(t, str) and len(t.strip()) > 1:
+                        topics.add(t.strip().strip("'\""))
+
+            # Also extract from note headings if note has rich content
+            if mat.material_type == "note" and mat.content_text:
+                for line in mat.content_text.splitlines()[:25]:
+                    sline = line.strip()
+                    if sline.startswith("## ") or sline.startswith("### "):
+                        cand = sline.lstrip("#").strip()
+                        if 2 < len(cand) < 45 and not cand.lower().startswith("table of"):
+                            topics.add(cand)
         return sorted(list(topics))
 
 

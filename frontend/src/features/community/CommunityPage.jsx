@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import {
   Award,
   BookOpen,
@@ -96,6 +96,7 @@ export default function CommunityPage() {
   const [eventsError, setEventsError] = useState("");
   const [eventSearch, setEventSearch] = useState("");
   const [showEventForm, setShowEventForm] = useState(false);
+  const [rsvpLoadingId, setRsvpLoadingId] = useState(null);
 
   // Students state
   const [students, setStudents] = useState([]);
@@ -235,6 +236,7 @@ export default function CommunityPage() {
   // Handle RSVP toggle
   async function handleToggleRSVP(eventId, status = "going") {
     try {
+      setRsvpLoadingId(eventId);
       const result = await toggleEventRSVP(eventId, status);
       setEvents((prev) =>
         prev.map((e) =>
@@ -243,7 +245,7 @@ export default function CommunityPage() {
                 ...e,
                 is_attending: result.user_rsvp_status === "going",
                 user_rsvp_status: result.user_rsvp_status,
-                rsvps_count: result.rsvps_count,
+                rsvps_count: result.rsvps_count || result.rsvp_count,
                 going_count: result.going_count,
                 interested_count: result.interested_count,
               }
@@ -253,6 +255,8 @@ export default function CommunityPage() {
       return result;
     } catch (err) {
       console.error("Failed to RSVP", err);
+    } finally {
+      setRsvpLoadingId(null);
     }
   }
 
@@ -348,6 +352,91 @@ export default function CommunityPage() {
     if (catValue === "All") return rawList.length;
     return rawList.filter((p) => p && p.category === catValue).length;
   };
+
+  // Refs for sticky & dynamic feed-aligned sidebar auto-scroll
+  const sidebarRef = useRef(null);
+  const isUserScrollingSidebarRef = useRef(false);
+  const isHoveringSidebarRef = useRef(false);
+  const sidebarScrollTimeoutRef = useRef(null);
+
+  // Sync sidebar scroll smoothly ONLY when user reaches near the end of the post page
+  useEffect(() => {
+    if (activeTab !== "posts") return;
+
+    const handleSidebarScroll = () => {
+      isUserScrollingSidebarRef.current = true;
+      if (sidebarScrollTimeoutRef.current) {
+        clearTimeout(sidebarScrollTimeoutRef.current);
+      }
+      sidebarScrollTimeoutRef.current = setTimeout(() => {
+        isUserScrollingSidebarRef.current = false;
+      }, 700);
+    };
+
+    const sidebarEl = sidebarRef.current;
+    if (sidebarEl) {
+      sidebarEl.addEventListener("scroll", handleSidebarScroll, {
+        passive: true,
+      });
+    }
+
+    const handleWindowScroll = () => {
+      // If user is hovering or manually scrolling sidebar, do not override their scroll
+      if (
+        isUserScrollingSidebarRef.current ||
+        isHoveringSidebarRef.current ||
+        !sidebarRef.current
+      ) {
+        return;
+      }
+
+      const windowScrollY = window.scrollY || window.pageYOffset;
+      const totalDocHeight = document.documentElement.scrollHeight;
+      const viewportHeight = window.innerHeight;
+      const maxDocScroll = totalDocHeight - viewportHeight;
+
+      if (maxDocScroll <= 80) return;
+
+      // Maximum scrollable distance inside the sticky sidebar
+      const sidebarMaxScroll =
+        sidebarRef.current.scrollHeight - sidebarRef.current.clientHeight;
+
+      if (sidebarMaxScroll <= 10) return;
+
+      // User requirement: Sidebar stays completely fixed until approx ~10cm (~400px) remains before the end of the post page.
+      // Only during this final stretch does the sidebar smoothly scroll to align its bottom with the page bottom.
+      const triggerDistance = Math.min(420, Math.max(120, maxDocScroll * 0.35));
+      const remainingDistance = Math.max(0, maxDocScroll - windowScrollY);
+
+      let targetSidebarScroll = 0;
+
+      if (remainingDistance < triggerDistance) {
+        // Progress from 0 (at ~10cm before end) to 1 (at bottom of the post page)
+        const progressInEndZone = 1 - remainingDistance / triggerDistance;
+        // Smooth ease curve (smoothstep) for seamless alignment
+        const eased =
+          progressInEndZone * progressInEndZone * (3 - 2 * progressInEndZone);
+        targetSidebarScroll = eased * sidebarMaxScroll;
+      }
+
+      sidebarRef.current.scrollTo({
+        top: targetSidebarScroll,
+        behavior: "auto",
+      });
+    };
+
+    window.addEventListener("scroll", handleWindowScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", handleWindowScroll);
+      if (sidebarEl) {
+        sidebarEl.removeEventListener("scroll", handleSidebarScroll);
+      }
+      if (sidebarScrollTimeoutRef.current) {
+        clearTimeout(sidebarScrollTimeoutRef.current);
+      }
+    };
+  }, [activeTab]);
 
   return (
     <div className="app-screen">
@@ -628,8 +717,17 @@ export default function CommunityPage() {
               )}
             </div>
 
-            {/* RIGHT SIDEBAR (30% on desktop) */}
-            <aside className="community-sidebar-column">
+            {/* RIGHT SIDEBAR (Sticky + Dual Scroll with Feed Bottom Alignment) */}
+            <aside
+              ref={sidebarRef}
+              className="community-sidebar-column"
+              onMouseEnter={() => {
+                isHoveringSidebarRef.current = true;
+              }}
+              onMouseLeave={() => {
+                isHoveringSidebarRef.current = false;
+              }}
+            >
               {/* Sidebar Widget 1: Academic Channels / Topics */}
               <Card className="sidebar-widget-card">
                 <div className="sidebar-widget-header">
@@ -704,26 +802,45 @@ export default function CommunityPage() {
 
                 <div className="sidebar-events-list">
                   {events.length > 0 ? (
-                    events.slice(0, 3).map((event) => (
-                      <div key={event.id} className="sidebar-event-item">
-                        <div>
-                          <strong className="sidebar-event-title">
-                            {event.title}
-                          </strong>
-                          <span className="sidebar-event-meta">
-                            🗓️ {event.event_date} • ⏰{" "}
-                            {event.start_time?.slice(0, 5)}
-                          </span>
+                    events.slice(0, 3).map((event) => {
+                      const isGoing =
+                        event.user_rsvp_status === "going" ||
+                        Boolean(event.is_attending);
+                      const isLoading = rsvpLoadingId === event.id;
+
+                      return (
+                        <div key={event.id} className="sidebar-event-item">
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <strong
+                              className="sidebar-event-title"
+                              style={{
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {event.title}
+                            </strong>
+                            <span className="sidebar-event-meta">
+                              🗓️ {event.event_date} • ⏰{" "}
+                              {event.start_time?.slice(0, 5)}
+                            </span>
+                          </div>
+                          <Button
+                            variant={isGoing ? "success" : "outline"}
+                            size="sm"
+                            loading={isLoading}
+                            disabled={isLoading}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleRSVP(event.id, "going");
+                            }}
+                          >
+                            {isGoing ? "✓ Going" : "+ Going"}
+                          </Button>
                         </div>
-                        <Button
-                          variant={event.is_attending ? "success" : "outline"}
-                          size="sm"
-                          onClick={() => handleToggleRSVP(event.id)}
-                        >
-                          {event.is_attending ? "✓ Going" : "+ Going"}
-                        </Button>
-                      </div>
-                    ))
+                      );
+                    })
                   ) : (
                     <p className="sidebar-empty-text">
                       No upcoming campus sessions. Host one for your peers!

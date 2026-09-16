@@ -198,9 +198,14 @@ def get_analytics_dashboard_data(*, user, reference_date: date = None) -> Dict[s
 
         if gpa_summary:
             if gpa_summary["possible"] and gpa_summary["required_gpa"] is not None:
-                insights.append(f"🎓 Target GPA Goal: Maintain a {gpa_summary['required_gpa']:.2f} average on remaining {gpa_summary['remaining_credits']} credits.")
+                insights.append(f"🎓 Target GPA Goal: Maintain a {gpa_summary['required_gpa']:.2f} average on remaining {gpa_summary['remaining_credits']:.0f} credits.")
             elif not gpa_summary["possible"]:
-                insights.append("⚠️ Target GPA Alert: Target GPA requires higher than 4.0 average. Consider adjusting target GPA.")
+                completed_cr = gpa_summary["completed_credits"]
+                total_cr = gpa_summary["total_credits"]
+                curr_gpa = gpa_summary["current_gpa"]
+                rem_cr = gpa_summary["remaining_credits"]
+                max_cgpa = round(((curr_gpa * completed_cr) + (4.0 * rem_cr)) / total_cr, 2) if total_cr > 0 else 4.0
+                insights.append(f"🎓 Target GPA Strategy: Reaching {gpa_summary['target_gpa']:.2f} requires >4.0 GPA. Max possible without retakes is {max_cgpa:.2f}. Retaking 1–2 previous courses or setting target to {max_cgpa:.2f} will make your goal achievable.")
 
     return {
         "summary": {

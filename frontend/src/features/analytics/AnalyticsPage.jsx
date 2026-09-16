@@ -81,7 +81,8 @@ export default function AnalyticsPage() {
               <span>Academic & Focus Analytics</span>
             </h1>
             <p className="page-description">
-              Comprehensive academic intelligence: focus time trends, subject distribution, GPA forecast, and routine adherence.
+              Comprehensive academic intelligence: focus time trends, subject
+              distribution, GPA forecast, and routine adherence.
             </p>
           </div>
 
@@ -118,7 +119,7 @@ export default function AnalyticsPage() {
       {/* Loaded Analytics Dashboard */}
       {!loading && !error && data && (
         <div>
-          {/* KPI Summary Grid with 4 distinct styled cards */}
+          {/* KPI Summary Grid with 4 dynamic, responsive cards */}
           <div className="stats-cards-row">
             {/* Card 1: Focus Investment */}
             <Card variant="stat" className="stat-indigo">
@@ -133,9 +134,27 @@ export default function AnalyticsPage() {
                   {totalHours}h {remainingMins}m
                 </strong>
               </div>
-              <span className="stat-footer-subtext">
-                {totalSessions} study sessions logged
-              </span>
+              {/* Progress bar towards 15h weekly goal */}
+              <div className="stat-progress-track">
+                <div
+                  className="stat-progress-bar bg-indigo"
+                  style={{
+                    width: `${Math.min(100, Math.round((totalStudyMinutes / (15 * 60)) * 100))}%`,
+                  }}
+                />
+              </div>
+              <div className="stat-metric-footer">
+                <span className="stat-micro-badge badge-indigo-subtle">
+                  {Math.min(
+                    100,
+                    Math.round((totalStudyMinutes / (15 * 60)) * 100),
+                  )}
+                  % of 15h Goal
+                </span>
+                <span className="stat-footer-subtext">
+                  {totalSessions} sessions
+                </span>
+              </div>
             </Card>
 
             {/* Card 2: Subject Breadth */}
@@ -151,9 +170,29 @@ export default function AnalyticsPage() {
                   {totalSubjects} Subjects
                 </strong>
               </div>
-              <span className="stat-footer-subtext">
-                Avg session: {avgSessionMinutes} mins
-              </span>
+              {/* Progress bar representing subject coverage */}
+              <div className="stat-progress-track">
+                <div
+                  className="stat-progress-bar bg-emerald"
+                  style={{ width: `${Math.min(100, totalSubjects * 25)}%` }}
+                />
+              </div>
+              <div className="stat-metric-footer">
+                <span className="stat-micro-badge badge-emerald-subtle">
+                  {totalSubjects >= 4
+                    ? "Broad Mastery"
+                    : totalSubjects >= 2
+                      ? "Balanced Focus"
+                      : totalSubjects === 1
+                        ? "Deep Focus"
+                        : "No Subjects"}
+                </span>
+                <span className="stat-footer-subtext">
+                  {avgSessionMinutes > 0
+                    ? `Avg ${avgSessionMinutes}m`
+                    : "No sessions"}
+                </span>
+              </div>
             </Card>
 
             {/* Card 3: Academic Standing */}
@@ -171,11 +210,29 @@ export default function AnalyticsPage() {
                     : "N/A"}
                 </strong>
               </div>
-              <span className="stat-footer-subtext">
-                {gpaSummary && typeof gpaSummary.target_gpa === "number"
-                  ? `Target Goal: ${gpaSummary.target_gpa.toFixed(2)} CGPA`
-                  : "No GPA target configured"}
-              </span>
+              {/* Progress bar representing GPA on 4.0 scale */}
+              <div className="stat-progress-track">
+                <div
+                  className="stat-progress-bar bg-amber"
+                  style={{
+                    width: `${gpaSummary && gpaSummary.current_gpa ? Math.min(100, Math.round((gpaSummary.current_gpa / 4.0) * 100)) : 0}%`,
+                  }}
+                />
+              </div>
+              <div className="stat-metric-footer">
+                <span className="stat-micro-badge badge-amber-subtle">
+                  {gpaSummary?.target_gpa && gpaSummary?.current_gpa
+                    ? gpaSummary.target_gpa - gpaSummary.current_gpa > 0
+                      ? `+${(gpaSummary.target_gpa - gpaSummary.current_gpa).toFixed(2)} to Goal`
+                      : "Goal Reached! 🌟"
+                    : "Scale / 4.00"}
+                </span>
+                <span className="stat-footer-subtext">
+                  {gpaSummary?.remaining_credits
+                    ? `${gpaSummary.remaining_credits} cr left`
+                    : "Goal Active"}
+                </span>
+              </div>
             </Card>
 
             {/* Card 4: Routine Adherence */}
@@ -187,13 +244,29 @@ export default function AnalyticsPage() {
                 </div>
               </div>
               <div className="stat-number-row">
-                <strong className="stat-metric-value">
-                  {adherenceRate}%
-                </strong>
+                <strong className="stat-metric-value">{adherenceRate}%</strong>
               </div>
-              <span className="stat-footer-subtext">
-                {coveredCount} of {scheduledCount} weekly routines covered
-              </span>
+              {/* Progress bar representing adherence */}
+              <div className="stat-progress-track">
+                <div
+                  className="stat-progress-bar bg-rose"
+                  style={{ width: `${adherenceRate}%` }}
+                />
+              </div>
+              <div className="stat-metric-footer">
+                <span className="stat-micro-badge badge-rose-subtle">
+                  {adherenceRate >= 80
+                    ? "On Track 🌟"
+                    : adherenceRate >= 50
+                      ? "Moderate ⚡"
+                      : adherenceRate > 0
+                        ? "Needs Focus 🎯"
+                        : "0% Adherent"}
+                </span>
+                <span className="stat-footer-subtext">
+                  {coveredCount}/{scheduledCount} routines
+                </span>
+              </div>
             </Card>
           </div>
 
@@ -201,17 +274,64 @@ export default function AnalyticsPage() {
           {insights.length > 0 && (
             <div className="analytics-insights-banner">
               <div className="insights-banner-header">
-                <Sparkles size={18} className="text-primary" />
-                <h3 className="insights-banner-title">
-                  Smart Academic Intelligence & Recommendations
-                </h3>
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
+                  <Sparkles size={18} className="text-primary" />
+                  <h3 className="insights-banner-title">
+                    Smart Academic Intelligence & Recommendations
+                  </h3>
+                </div>
+                <span className="badge badge-primary badge-sm">
+                  {insights.length} Actionable Insights
+                </span>
               </div>
-              <div className="insights-cards-list">
-                {insights.map((insight, idx) => (
-                  <div key={idx} className="insight-chip-item">
-                    <span>{insight}</span>
-                  </div>
-                ))}
+              <div className="insights-cards-grid">
+                {insights.map((insight, idx) => {
+                  const isGpa =
+                    insight.includes("GPA") || insight.includes("🎓");
+                  const isRoutine =
+                    insight.includes("Routine") ||
+                    insight.includes("Adherence") ||
+                    insight.includes("Schedule") ||
+                    insight.includes("📅");
+                  const isSubject =
+                    insight.includes("Subject") ||
+                    insight.includes("Focus") ||
+                    insight.includes("Time");
+
+                  let icon = <Sparkles size={16} className="text-primary" />;
+                  let category = "Academic Strategy";
+                  let cardClass = "insight-card-primary";
+
+                  if (isGpa) {
+                    icon = <GraduationCap size={16} className="text-amber" />;
+                    category = "GPA Trajectory Strategy";
+                    cardClass = "insight-card-amber";
+                  } else if (isRoutine) {
+                    icon = <Calendar size={16} className="text-rose" />;
+                    category = "Routine & Habit";
+                    cardClass = "insight-card-rose";
+                  } else if (isSubject) {
+                    icon = <BookOpen size={16} className="text-emerald" />;
+                    category = "Study Distribution";
+                    cardClass = "insight-card-emerald";
+                  }
+
+                  return (
+                    <div key={idx} className={`insight-rich-card ${cardClass}`}>
+                      <div className="insight-card-icon-col">{icon}</div>
+                      <div className="insight-card-body">
+                        <div className="insight-card-meta">
+                          <span className="insight-category-tag">
+                            {category}
+                          </span>
+                        </div>
+                        <p className="insight-card-text">{insight}</p>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -219,7 +339,9 @@ export default function AnalyticsPage() {
           {/* Analytics Visual Charts Grid */}
           <div className="analytics-charts-grid">
             <WeeklyTrendChart trend={data.weekly_trend} />
-            <SubjectDistributionChart distribution={data.subject_distribution} />
+            <SubjectDistributionChart
+              distribution={data.subject_distribution}
+            />
             <GpaTrajectoryCard gpaSummary={data.gpa_summary} />
             <ScheduleAdherenceCard adherence={data.schedule_adherence} />
           </div>
