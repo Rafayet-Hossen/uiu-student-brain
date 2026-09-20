@@ -345,6 +345,9 @@ def seed():
                 subject=sess["subject"],
                 duration_minutes=sess["mins"],
                 session_date=session_date,
+                status="completed",
+                actual_started_at=timezone.now() - timedelta(days=sess["days_ago"], hours=2),
+                actual_completed_at=timezone.now() - timedelta(days=sess["days_ago"], hours=1),
                 notes=sess["notes"],
             )
 
@@ -602,6 +605,102 @@ def seed():
         material_type="link",
         link_url="https://www.ncbi.nlm.nih.gov/",
         content_text="GenBank, BLAST, and structural biological database reference for metabolic pathway mapping.",
+    )
+
+    # Link Jamil's first session to material and attach diagnostic quiz
+    m1 = StudyMaterial.objects.filter(course=c1, user=jamil).first()
+    j_completed_sess = StudySession.objects.filter(user=jamil, status="completed").first()
+    if j_completed_sess and m1:
+        j_completed_sess.course = c1
+        j_completed_sess.material = m1
+        j_completed_sess.quiz_taken = True
+        j_completed_sess.quiz_score = 4
+        j_completed_sess.quiz_accuracy = 80.0
+        j_completed_sess.quiz_results = {
+            "total_questions": 5,
+            "correct_count": 4,
+            "accuracy": 80.0,
+            "weak_topics": ["Negative Weight Cycle Detection"],
+            "mastered_topics": ["Dijkstra Algorithm", "Priority Queues", "Adjacency Matrix"],
+            "recommendations": [
+                "Review Bellman-Ford relaxation condition for negative cycles.",
+                "Practice 2-3 LeetCode problems on Floyd-Warshall all-pairs shortest paths.",
+            ],
+            "questions": [
+                {
+                    "question": "What is the time complexity of Dijkstra's algorithm with a binary min-heap?",
+                    "options": ["O(V^2)", "O((V + E) log V)", "O(V * E)", "O(E log E)"],
+                    "selected_option": "O((V + E) log V)",
+                    "correct_option": "O((V + E) log V)",
+                    "is_correct": True,
+                    "topic": "Dijkstra Algorithm",
+                    "explanation": "With an adjacency list and binary min-heap, Dijkstra runs in O((V + E) log V) time.",
+                },
+                {
+                    "question": "Which algorithm can detect negative weight cycles in a directed graph?",
+                    "options": ["Dijkstra's Algorithm", "Prim's Algorithm", "Bellman-Ford Algorithm", "Kruskal's Algorithm"],
+                    "selected_option": "Dijkstra's Algorithm",
+                    "correct_option": "Bellman-Ford Algorithm",
+                    "is_correct": False,
+                    "topic": "Negative Weight Cycle Detection",
+                    "explanation": "Bellman-Ford checks if any edge can still be relaxed after V-1 iterations to detect negative cycles.",
+                },
+                {
+                    "question": "What data structure is optimal for extracting minimum distance vertex in Dijkstra?",
+                    "options": ["Stack", "Binary Min-Heap / Priority Queue", "Queue", "Hash Table"],
+                    "selected_option": "Binary Min-Heap / Priority Queue",
+                    "correct_option": "Binary Min-Heap / Priority Queue",
+                    "is_correct": True,
+                    "topic": "Priority Queues",
+                    "explanation": "Min-Heap allows finding the minimum distance vertex in O(log V) time.",
+                },
+                {
+                    "question": "In an adjacency matrix representation, what is the space complexity for V vertices?",
+                    "options": ["O(V)", "O(V + E)", "O(V^2)", "O(E^2)"],
+                    "selected_option": "O(V^2)",
+                    "correct_option": "O(V^2)",
+                    "is_correct": True,
+                    "topic": "Adjacency Matrix",
+                    "explanation": "A V x V matrix requires O(V^2) memory storage.",
+                },
+                {
+                    "question": "Can Dijkstra's algorithm handle graphs with negative edge weights?",
+                    "options": ["Always yes", "No, it may yield incorrect shortest paths", "Only for DAGs", "Only if undirected"],
+                    "selected_option": "No, it may yield incorrect shortest paths",
+                    "correct_option": "No, it may yield incorrect shortest paths",
+                    "is_correct": True,
+                    "topic": "Dijkstra Algorithm",
+                    "explanation": "Dijkstra assumes visited vertex distances are finalized, which fails when negative edges exist.",
+                },
+            ],
+        }
+        j_completed_sess.save()
+
+    # Create scheduled upcoming sessions for Jamil
+    StudySession.objects.create(
+        user=jamil,
+        course=c1,
+        material=m1,
+        subject="Graph Algorithms & Shortest Paths",
+        duration_minutes=60,
+        session_date=today,
+        start_time=time(21, 0),
+        end_time=time(22, 0),
+        status="scheduled",
+        notes="Deep dive into Dijkstra and Bellman-Ford implementation.",
+    )
+    m2 = StudyMaterial.objects.filter(course=c2, user=jamil).first()
+    StudySession.objects.create(
+        user=jamil,
+        course=c2,
+        material=m2,
+        subject="Database Indexing & Query Tuning",
+        duration_minutes=45,
+        session_date=today + timedelta(days=1),
+        start_time=time(10, 0),
+        end_time=time(10, 45),
+        status="scheduled",
+        notes="Review B+ tree structure and index scan vs sequential scan.",
     )
 
     print("✨ Successfully generated 7 Bangladeshi scholar demo accounts with complete data across all features!")

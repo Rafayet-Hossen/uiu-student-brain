@@ -1,11 +1,16 @@
 from django.urls import path
 
 from .views import (
+    CompleteSessionView,
+    ExtendSessionView,
+    GenerateSessionQuizView,
     RewardsListView,
+    StartSessionView,
     StreakSummaryView,
     StudyGoalView,
     StudySessionDetailView,
     StudySessionListCreateView,
+    SubmitSessionQuizView,
 )
 
 urlpatterns = [
@@ -18,6 +23,31 @@ urlpatterns = [
         "sessions/<int:pk>/",
         StudySessionDetailView.as_view(),
         name="study-session-detail",
+    ),
+    path(
+        "sessions/<int:pk>/start/",
+        StartSessionView.as_view(),
+        name="study-session-start",
+    ),
+    path(
+        "sessions/<int:pk>/complete/",
+        CompleteSessionView.as_view(),
+        name="study-session-complete",
+    ),
+    path(
+        "sessions/<int:pk>/extend/",
+        ExtendSessionView.as_view(),
+        name="study-session-extend",
+    ),
+    path(
+        "sessions/<int:pk>/quiz/generate/",
+        GenerateSessionQuizView.as_view(),
+        name="study-session-quiz-generate",
+    ),
+    path(
+        "sessions/<int:pk>/quiz/submit/",
+        SubmitSessionQuizView.as_view(),
+        name="study-session-quiz-submit",
     ),
     path(
         "streaks/",

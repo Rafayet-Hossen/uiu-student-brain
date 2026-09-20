@@ -1,13 +1,17 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
+  Award,
   Binary,
   BookOpen,
   Calendar,
+  CheckCircle2,
   Clock,
   Code2,
   Cpu,
   Database,
+  FileText,
   Pencil,
+  Plus,
   Sparkles,
   StickyNote,
   Timer,
@@ -90,11 +94,12 @@ function getSubjectTheme(subject = "") {
   };
 }
 
-function formatDuration(minutes) {
+function formatDuration(minutes, extended = 0) {
   const m = Number(minutes) || 0;
-  if (m < 60) return `${m} min${m === 1 ? "" : "s"}`;
-  const hours = Math.floor(m / 60);
-  const remainingMins = m % 60;
+  const total = m + (Number(extended) || 0);
+  if (total < 60) return `${total} min${total === 1 ? "" : "s"}`;
+  const hours = Math.floor(total / 60);
+  const remainingMins = total % 60;
   if (remainingMins === 0) return `${hours} hr${hours === 1 ? "" : "s"}`;
   return `${hours}h ${remainingMins}m`;
 }
@@ -135,21 +140,36 @@ function formatDisplayDate(dateStr) {
   }
 }
 
-export default function StudySessionCard({ session, onEdit, onDelete }) {
+export default function StudySessionCard({
+  session,
+  onEdit,
+  onDelete,
+  onExtend,
+  onTakeQuiz,
+  onViewDiagnostic,
+}) {
+  const [extending, setExtending] = useState(false);
+
   const {
     icon: ThemeIcon,
     themeClass,
     label,
   } = useMemo(() => getSubjectTheme(session?.subject), [session?.subject]);
 
+  const course = session?.course_details;
+  const material = session?.material_details;
+
   const categoryTag = useMemo(() => {
+    if (course?.title) {
+      return course.code ? `[${course.code}] ${course.title}` : course.title;
+    }
     if (!label) return "Focus Session";
     const subStr = (session?.subject || "").toString().toLowerCase().trim();
     if (label.toLowerCase().trim() === subStr) {
       return "Core Course Module";
     }
     return label;
-  }, [label, session?.subject]);
+  }, [label, course, session?.subject]);
 
   const {
     formatted: dateText,
@@ -160,7 +180,17 @@ export default function StudySessionCard({ session, onEdit, onDelete }) {
     [session?.session_date],
   );
 
-  const durationText = formatDuration(session?.duration_minutes);
+  const durationText = formatDuration(session?.duration_minutes, session?.extended_minutes);
+
+  const handleExtend = async (mins) => {
+    if (!onExtend) return;
+    try {
+      setExtending(true);
+      await onExtend(session, mins);
+    } finally {
+      setExtending(false);
+    }
+  };
 
   return (
     <div className={`study-session-card ${themeClass}`}>
@@ -185,8 +215,23 @@ export default function StudySessionCard({ session, onEdit, onDelete }) {
           <div className="session-duration-pill">
             <Timer size={14} />
             <span>{durationText}</span>
+            {session.extended_minutes > 0 && (
+              <span className="text-xs text-success font-bold ml-1">
+                (+{session.extended_minutes}m)
+              </span>
+            )}
           </div>
         </div>
+
+        {/* Linked Material Section */}
+        {material && (
+          <div className="session-linked-material-chip">
+            <FileText size={12} className="text-primary flex-shrink-0" />
+            <span className="text-xs truncate font-medium" title={material.title}>
+              {material.title}
+            </span>
+          </div>
+        )}
 
         {/* Metadata Badges */}
         <div className="session-meta-row">
@@ -209,7 +254,45 @@ export default function StudySessionCard({ session, onEdit, onDelete }) {
               <span>{session.start_time.slice(0, 5)}</span>
             </div>
           )}
+
+          <div className="session-meta-chip">
+            <span className={`status-pill pill-${session.status || "completed"}`}>
+              {session.status === "completed" ? "Completed" : session.status}
+            </span>
+          </div>
         </div>
+
+        {/* Quiz Diagnostic Pill if taken */}
+        {session.quiz_taken ? (
+          <div className="session-quiz-badge-row">
+            <div className="flex items-center gap-1 text-xs font-semibold text-amber">
+              <Sparkles size={13} />
+              <span>
+                AI Quiz Score: {session.quiz_score}/{session.quiz_results?.total_questions || 5} ({session.quiz_accuracy}%)
+              </span>
+            </div>
+            {onViewDiagnostic && (
+              <button
+                type="button"
+                className="btn-view-diagnostic-link"
+                onClick={() => onViewDiagnostic(session)}
+              >
+                View Report ↗
+              </button>
+            )}
+          </div>
+        ) : session.status === "completed" && onTakeQuiz ? (
+          <div className="session-quiz-prompt-row">
+            <button
+              type="button"
+              className="btn-take-quiz-prompt"
+              onClick={() => onTakeQuiz(session)}
+            >
+              <Sparkles size={13} />
+              <span>Take AI Concept Quiz</span>
+            </button>
+          </div>
+        ) : null}
 
         {/* Notes Preview */}
         {session.notes ? (
@@ -229,26 +312,55 @@ export default function StudySessionCard({ session, onEdit, onDelete }) {
 
         {/* Footer Actions */}
         <div className="session-card-actions">
-          <Button
-            variant="ghost"
-            size="sm"
-            icon={Pencil}
-            className="session-action-btn edit-btn"
-            onClick={() => onEdit(session)}
-            aria-label={`Edit ${session.subject} session`}
-          >
-            Edit
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            icon={Trash2}
-            className="session-action-btn delete-btn"
-            onClick={() => onDelete(session.id)}
-            aria-label={`Delete ${session.subject} session`}
-          >
-            Delete
-          </Button>
+          {session.status === "completed" && onExtend && (
+            <div className="flex items-center gap-1 mr-auto">
+              <span className="text-xs text-muted">Extend:</span>
+              <button
+                type="button"
+                className="btn-chip-extend"
+                disabled={extending}
+                onClick={() => handleExtend(15)}
+                title="Add 15 extra minutes to goal"
+              >
+                +15m
+              </button>
+              <button
+                type="button"
+                className="btn-chip-extend"
+                disabled={extending}
+                onClick={() => handleExtend(30)}
+                title="Add 30 extra minutes to goal"
+              >
+                +30m
+              </button>
+            </div>
+          )}
+
+          {onEdit && (
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={Pencil}
+              className="session-action-btn edit-btn"
+              onClick={() => onEdit(session)}
+              aria-label={`Edit ${session.subject} session`}
+            >
+              Edit
+            </Button>
+          )}
+
+          {onDelete && (
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={Trash2}
+              className="session-action-btn delete-btn"
+              onClick={() => onDelete(session.id)}
+              aria-label={`Delete ${session.subject} session`}
+            >
+              Delete
+            </Button>
+          )}
         </div>
       </div>
     </div>

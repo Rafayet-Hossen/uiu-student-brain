@@ -33,9 +33,9 @@ class RewardsAndStreaksTests(APITestCase):
     def test_streak_calculation_active_streak(self):
         today = date.today()
         # 3 consecutive days including today
-        StudySession.objects.create(user=self.user, subject="Math", duration_minutes=60, session_date=today)
-        StudySession.objects.create(user=self.user, subject="Physics", duration_minutes=45, session_date=today - timedelta(days=1))
-        StudySession.objects.create(user=self.user, subject="Chemistry", duration_minutes=50, session_date=today - timedelta(days=2))
+        StudySession.objects.create(user=self.user, subject="Math", duration_minutes=60, session_date=today, status="completed")
+        StudySession.objects.create(user=self.user, subject="Physics", duration_minutes=45, session_date=today - timedelta(days=1), status="completed")
+        StudySession.objects.create(user=self.user, subject="Chemistry", duration_minutes=50, session_date=today - timedelta(days=2), status="completed")
 
         stats = calculate_user_streaks(user=self.user, reference_date=today)
         self.assertEqual(stats["current_streak"], 3)
@@ -49,8 +49,8 @@ class RewardsAndStreaksTests(APITestCase):
     def test_streak_calculation_streak_alive_from_yesterday(self):
         today = date.today()
         # Studied yesterday and 2 days ago, but not today yet
-        StudySession.objects.create(user=self.user, subject="Math", duration_minutes=40, session_date=today - timedelta(days=1))
-        StudySession.objects.create(user=self.user, subject="Physics", duration_minutes=40, session_date=today - timedelta(days=2))
+        StudySession.objects.create(user=self.user, subject="Math", duration_minutes=40, session_date=today - timedelta(days=1), status="completed")
+        StudySession.objects.create(user=self.user, subject="Physics", duration_minutes=40, session_date=today - timedelta(days=2), status="completed")
 
         stats = calculate_user_streaks(user=self.user, reference_date=today)
         self.assertEqual(stats["current_streak"], 2)
@@ -60,8 +60,8 @@ class RewardsAndStreaksTests(APITestCase):
     def test_streak_breaks_after_missed_day(self):
         today = date.today()
         # Studied 3 days ago and 4 days ago, but missed yesterday and today
-        StudySession.objects.create(user=self.user, subject="Math", duration_minutes=60, session_date=today - timedelta(days=3))
-        StudySession.objects.create(user=self.user, subject="Physics", duration_minutes=60, session_date=today - timedelta(days=4))
+        StudySession.objects.create(user=self.user, subject="Math", duration_minutes=60, session_date=today - timedelta(days=3), status="completed")
+        StudySession.objects.create(user=self.user, subject="Physics", duration_minutes=60, session_date=today - timedelta(days=4), status="completed")
 
         stats = calculate_user_streaks(user=self.user, reference_date=today)
         self.assertEqual(stats["current_streak"], 0)
@@ -70,7 +70,7 @@ class RewardsAndStreaksTests(APITestCase):
     def test_rewards_unlock_dynamically(self):
         today = date.today()
         # 1 session of 300 minutes (5 hours) today
-        StudySession.objects.create(user=self.user, subject="Algorithms", duration_minutes=300, session_date=today)
+        StudySession.objects.create(user=self.user, subject="Algorithms", duration_minutes=300, session_date=today, status="completed")
 
         rewards = get_user_rewards(user=self.user, reference_date=today)
         rewards_map = {r["id"]: r for r in rewards}

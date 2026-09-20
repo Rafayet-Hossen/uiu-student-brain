@@ -1,31 +1,218 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from typing import Any, Dict, List
-from django.db.models import QuerySet, Sum
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.db.models import F, QuerySet, Sum
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
+
+from ai.services import analyze_quiz_weakness, generate_topic_quiz
 from .models import StudyGoal, StudySession
 
 
+def expire_overdue_sessions(*, user=None) -> int:
+    """Auto-expires scheduled sessions whose booked time window has passed without being started."""
+    today = timezone.localdate() if hasattr(timezone, "localdate") else date.today()
+    now_time = timezone.localtime().time() if hasattr(timezone, "localtime") else datetime.now().time()
+
+    query = StudySession.objects.filter(status="scheduled")
+    if user is not None:
+        query = query.filter(user=user)
+
+    expired_count = 0
+    sessions_to_update = []
+
+    for session in query:
+        is_overdue = False
+        if session.session_date < today:
+            is_overdue = True
+        elif session.session_date == today:
+            if session.end_time and now_time > session.end_time:
+                is_overdue = True
+            elif session.start_time:
+                # Add duration buffer
+                expected_end = (
+                    datetime.combine(today, session.start_time)
+                    + timedelta(minutes=session.duration_minutes)
+                ).time()
+                if now_time > expected_end:
+                    is_overdue = True
+
+        if is_overdue:
+            session.status = "missed"
+            sessions_to_update.append(session)
+            expired_count += 1
+
+    if sessions_to_update:
+        StudySession.objects.bulk_update(sessions_to_update, ["status", "updated_at"])
+
+    return expired_count
+
+
 def get_user_study_sessions(*, user) -> QuerySet[StudySession]:
-    return StudySession.objects.filter(user=user)
+    expire_overdue_sessions(user=user)
+    return StudySession.objects.filter(user=user).select_related("course", "material")
 
 
 def get_user_study_session(*, user, session_id: int) -> StudySession:
-    return get_object_or_404(StudySession, id=session_id, user=user)
+    expire_overdue_sessions(user=user)
+    return get_object_or_404(
+        StudySession.objects.select_related("course", "material"),
+        id=session_id,
+        user=user,
+    )
 
 
 def create_study_session(*, user, validated_data) -> StudySession:
+    # Auto calculate end_time if start_time provided and end_time missing
+    start_time = validated_data.get("start_time")
+    duration = validated_data.get("duration_minutes", 60)
+    if start_time and not validated_data.get("end_time"):
+        today = date.today()
+        end_dt = datetime.combine(today, start_time) + timedelta(minutes=duration)
+        validated_data["end_time"] = end_dt.time()
+
     return StudySession.objects.create(user=user, **validated_data)
 
 
 def update_study_session(*, session: StudySession, validated_data) -> StudySession:
     for field, value in validated_data.items():
         setattr(session, field, value)
+
+    if session.start_time and not session.end_time:
+        today = date.today()
+        end_dt = datetime.combine(today, session.start_time) + timedelta(
+            minutes=session.duration_minutes
+        )
+        session.end_time = end_dt.time()
+
     session.save()
     return session
 
 
 def delete_study_session(*, session: StudySession) -> None:
     session.delete()
+
+
+def start_study_session(*, session: StudySession) -> StudySession:
+    if session.status not in ["scheduled", "in_progress"]:
+        raise ValidationError(f"Session with status '{session.status}' cannot be started.")
+
+    session.status = "in_progress"
+    if not session.actual_started_at:
+        session.actual_started_at = timezone.now()
+    session.save(update_fields=["status", "actual_started_at", "updated_at"])
+    return session
+
+
+def complete_study_session(*, session: StudySession) -> StudySession:
+    if not session.actual_started_at:
+        session.actual_started_at = timezone.now()
+    session.actual_completed_at = timezone.now()
+    session.status = "completed"
+    session.save(update_fields=["status", "actual_started_at", "actual_completed_at", "updated_at"])
+    return session
+
+
+def extend_study_session(*, session: StudySession, extra_minutes: int) -> StudySession:
+    if extra_minutes <= 0:
+        raise ValidationError("Extra study minutes must be greater than 0.")
+
+    session.extended_minutes += extra_minutes
+    session.save(update_fields=["extended_minutes", "updated_at"])
+    return session
+
+
+def generate_session_quiz(*, session: StudySession, force_refresh: bool = False) -> Dict[str, Any]:
+    topics: List[str] = []
+    difficulty = "Intermediate"
+    subject = session.subject or "Study Session"
+
+    if session.material:
+        material = session.material
+        if material.key_topics:
+            topics.extend([str(t) for t in material.key_topics if str(t).strip()])
+        if not topics and material.title:
+            topics.append(material.title)
+        if material.difficulty_level:
+            difficulty = material.difficulty_level
+        if session.course:
+            subject = f"{session.course.title} - {material.title}"
+        else:
+            subject = material.title
+    elif session.course:
+        subject = session.course.title
+        topics = [session.subject]
+    else:
+        topics = [session.subject]
+
+    if not topics:
+        topics = [subject]
+
+    return generate_topic_quiz(
+        subject=subject,
+        topics=topics,
+        num_questions=5,
+        difficulty=difficulty,
+        force_refresh=force_refresh,
+    )
+
+
+def submit_session_quiz(*, session: StudySession, question_results: List[Dict[str, Any]]) -> StudySession:
+    if not question_results:
+        raise ValidationError("Quiz question answers are required.")
+
+    total = len(question_results)
+    correct_count = sum(1 for q in question_results if q.get("is_correct", False))
+    accuracy = round((correct_count / total * 100), 1) if total > 0 else 0.0
+
+    try:
+        analysis = analyze_quiz_weakness(
+            subject=session.subject,
+            question_results=question_results,
+        )
+    except Exception:
+        weak_topics = []
+        mastered_topics = []
+        for q in question_results:
+            topic = q.get("topic") or session.subject
+            if q.get("is_correct"):
+                if topic not in mastered_topics:
+                    mastered_topics.append(topic)
+            else:
+                if topic not in weak_topics:
+                    weak_topics.append(topic)
+        analysis = {
+            "weak_topics": weak_topics or ["Core definitions and concepts"],
+            "mastered_topics": mastered_topics or ["Foundational review"],
+            "recommendations": [
+                "Review the linked study notes on identified weak topics.",
+                "Practice active recall problems before exam day.",
+            ],
+        }
+
+    session.quiz_taken = True
+    session.quiz_score = correct_count
+    session.quiz_accuracy = accuracy
+    session.quiz_results = {
+        "total_questions": total,
+        "correct_count": correct_count,
+        "accuracy": accuracy,
+        "weak_topics": analysis.get("weak_topics", []),
+        "mastered_topics": analysis.get("mastered_topics", []),
+        "recommendations": analysis.get("recommendations", []),
+        "questions": question_results,
+    }
+    session.save(
+        update_fields=[
+            "quiz_taken",
+            "quiz_score",
+            "quiz_accuracy",
+            "quiz_results",
+            "updated_at",
+        ]
+    )
+    return session
 
 
 def get_or_create_user_goal(*, user) -> StudyGoal:
@@ -42,28 +229,35 @@ def update_user_goal(*, user, daily_goal_minutes: int) -> StudyGoal:
 
 def calculate_user_streaks(*, user, reference_date: date = None) -> Dict[str, Any]:
     if reference_date is None:
-        reference_date = date.today()
+        reference_date = timezone.localdate() if hasattr(timezone, "localdate") else date.today()
 
-    sessions = StudySession.objects.filter(user=user)
-    session_dates = set(sessions.values_list("session_date", flat=True))
+    expire_overdue_sessions(user=user)
 
-    total_sessions_count = sessions.count()
-    total_minutes = sessions.aggregate(total=Sum("duration_minutes"))["total"] or 0
+    # STRICT RULE: Only completed sessions count towards streaks, goals, and statistics!
+    completed_sessions = StudySession.objects.filter(user=user, status="completed")
+    session_dates = set(completed_sessions.values_list("session_date", flat=True))
+
+    total_sessions_count = completed_sessions.count()
+    total_minutes = (
+        completed_sessions.aggregate(
+            total=Sum(F("duration_minutes") + F("extended_minutes"))
+        )["total"]
+        or 0
+    )
 
     today_minutes = (
-        sessions.filter(session_date=reference_date).aggregate(total=Sum("duration_minutes"))["total"]
+        completed_sessions.filter(session_date=reference_date).aggregate(
+            total=Sum(F("duration_minutes") + F("extended_minutes"))
+        )["total"]
         or 0
     )
 
     goal = get_or_create_user_goal(user=user)
     daily_goal_minutes = goal.daily_goal_minutes
-    daily_goal_achieved = today_minutes >= daily_goal_minutes
+    daily_goal_achieved = today_minutes >= daily_goal_minutes and today_minutes > 0
     studied_today = reference_date in session_dates
 
-    # Current streak calculation:
-    # If studied today -> count backwards from reference_date
-    # If not studied today, but studied yesterday -> streak is still active, count backwards from yesterday
-    # Otherwise -> 0
+    # Current streak calculation
     current_streak = 0
     if reference_date in session_dates:
         check_date = reference_date
@@ -95,7 +289,9 @@ def calculate_user_streaks(*, user, reference_date: date = None) -> Dict[str, An
     for i in range(6, -1, -1):
         day_date = reference_date - timedelta(days=i)
         day_minutes = (
-            sessions.filter(session_date=day_date).aggregate(total=Sum("duration_minutes"))["total"]
+            completed_sessions.filter(session_date=day_date).aggregate(
+                total=Sum(F("duration_minutes") + F("extended_minutes"))
+            )["total"]
             or 0
         )
         weekly_consistency.append(
@@ -144,7 +340,7 @@ def get_user_rewards(*, user, reference_date: date = None) -> List[Dict[str, Any
         {
             "id": "first_step",
             "name": "First Step",
-            "description": "Log your first study session to ignite your learning journey.",
+            "description": "Complete your first scheduled study session to ignite your learning journey.",
             "icon": "🌱",
             "category": "milestone",
             "unlocked": total_sessions >= 1,
@@ -192,7 +388,7 @@ def get_user_rewards(*, user, reference_date: date = None) -> List[Dict[str, Any
         {
             "id": "focus_5h",
             "name": "Focus Initiate",
-            "description": "Accumulate at least 5 hours (300 minutes) of dedicated study time.",
+            "description": "Accumulate at least 5 hours (300 minutes) of completed study time.",
             "icon": "⏱️",
             "category": "duration",
             "unlocked": total_minutes >= 300,

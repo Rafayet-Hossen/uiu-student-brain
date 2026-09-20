@@ -10,12 +10,17 @@ from .serializers import (
 )
 from .services import (
     calculate_user_streaks,
+    complete_study_session,
     create_study_session,
     delete_study_session,
+    extend_study_session,
+    generate_session_quiz,
     get_or_create_user_goal,
     get_user_rewards,
     get_user_study_session,
     get_user_study_sessions,
+    start_study_session,
+    submit_session_quiz,
     update_study_session,
     update_user_goal,
 )
@@ -53,6 +58,61 @@ class StudySessionDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def perform_destroy(self, instance):
         delete_study_session(session=instance)
+
+
+class StartSessionView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        session = get_user_study_session(user=request.user, session_id=pk)
+        updated_session = start_study_session(session=session)
+        serializer = StudySessionSerializer(updated_session, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class CompleteSessionView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        session = get_user_study_session(user=request.user, session_id=pk)
+        updated_session = complete_study_session(session=session)
+        serializer = StudySessionSerializer(updated_session, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ExtendSessionView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        extra_minutes = int(request.data.get("extra_minutes", 15))
+        session = get_user_study_session(user=request.user, session_id=pk)
+        updated_session = extend_study_session(session=session, extra_minutes=extra_minutes)
+        serializer = StudySessionSerializer(updated_session, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class GenerateSessionQuizView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        force_refresh = bool(request.data.get("force_refresh", False))
+        session = get_user_study_session(user=request.user, session_id=pk)
+        quiz_data = generate_session_quiz(session=session, force_refresh=force_refresh)
+        return Response(quiz_data, status=status.HTTP_200_OK)
+
+
+class SubmitSessionQuizView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        question_results = request.data.get("question_results", [])
+        session = get_user_study_session(user=request.user, session_id=pk)
+        updated_session = submit_session_quiz(
+            session=session,
+            question_results=question_results,
+        )
+        serializer = StudySessionSerializer(updated_session, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class StreakSummaryView(APIView):

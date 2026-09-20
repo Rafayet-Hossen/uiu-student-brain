@@ -1,19 +1,26 @@
 import { useEffect, useState, useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import {
+  AlertCircle,
   Award,
+  BookOpen,
   Calendar,
+  CheckCircle2,
   Clock,
+  FileText,
   Flame,
+  Layers,
   Pencil,
+  Play,
   Plus,
+  RotateCcw,
+  Search,
   Sparkles,
   Timer,
   Trash2,
   TrendingUp,
   X,
   Zap,
-  Search,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Badge from "../../components/Badge";
@@ -23,22 +30,30 @@ import EmptyState from "../../components/EmptyState";
 import ErrorState from "../../components/ErrorState";
 import { CardSkeleton } from "../../components/Skeleton";
 import {
+  completeStudySession,
   createStudySession,
   deleteStudySession,
+  extendStudySession,
   extractTrackerErrorMessage,
   getRewards,
   getStreakSummary,
   getStudySessions,
+  startStudySession,
   updateStudySession,
 } from "./api";
 import RewardsShelf from "./components/RewardsShelf";
 import StreakCard from "./components/StreakCard";
 import StudySessionCard from "./components/StudySessionCard";
 import StudySessionForm from "./components/StudySessionForm";
+import ScheduledSessionCard from "./components/ScheduledSessionCard";
+import BookSessionModal from "./components/BookSessionModal";
+import SessionQuizModal from "./components/SessionQuizModal";
+import QuizDiagnosticModal from "./components/QuizDiagnosticModal";
 import FocusTimer from "./components/FocusTimer";
 
 export default function TrackerPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const subtabParam = searchParams.get("subtab");
 
   const [sessions, setSessions] = useState([]);
@@ -46,13 +61,27 @@ export default function TrackerPage() {
   const [rewards, setRewards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [showForm, setShowForm] = useState(false);
+
+  // Modals state
+  const [isBookModalOpen, setIsBookModalOpen] = useState(false);
+  const [isQuizModalOpen, setIsQuizModalOpen] = useState(false);
+  const [isDiagnosticModalOpen, setIsDiagnosticModalOpen] = useState(false);
+  const [activeQuizSession, setActiveQuizSession] = useState(null);
+  const [activeTimerSession, setActiveTimerSession] = useState(null);
+
+  const [showEditForm, setShowEditForm] = useState(false);
   const [editingSession, setEditingSession] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [sessionSearch, setSessionSearch] = useState("");
-  const [activeTab, setActiveTab] = useState(() =>
-    subtabParam === "timer" ? "timer" : "sessions",
-  ); // "sessions" | "timer" | "rewards"
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState("all");
+
+  const [activeTab, setActiveTab] = useState(() => {
+    if (subtabParam === "timer") return "timer";
+    if (subtabParam === "scheduled") return "scheduled";
+    if (subtabParam === "rewards") return "rewards";
+    if (subtabParam === "history") return "history";
+    return "scheduled";
+  });
 
   async function loadTrackerData() {
     setLoading(true);
@@ -87,10 +116,98 @@ export default function TrackerPage() {
     loadTrackerData();
   }, []);
 
-  async function handleCreate(payload) {
-    setSubmitting(true);
-    setError("");
+  // Session state transition handlers
+  const handleStartSession = async (session) => {
+    try {
+      const updated = await startStudySession(session.id);
+      setActiveTimerSession(updated);
+      setActiveTab("timer");
+      setSearchParams({ tab: "tracker", subtab: "timer" });
+      await loadTrackerData();
+    } catch (err) {
+      setError(extractTrackerErrorMessage(err));
+    }
+  };
 
+  const handleCompleteSession = async (session) => {
+    try {
+      const updated = await completeStudySession(session.id);
+      setActiveTimerSession(null);
+      await loadTrackerData();
+      // Prompt quiz
+      setActiveQuizSession(updated);
+      setIsQuizModalOpen(true);
+    } catch (err) {
+      setError(extractTrackerErrorMessage(err));
+    }
+  };
+
+  const handleExtendSession = async (session, mins = 15) => {
+    try {
+      await extendStudySession(session.id, mins);
+      await loadTrackerData();
+    } catch (err) {
+      setError(extractTrackerErrorMessage(err));
+    }
+  };
+
+  const handleOpenQuiz = (session) => {
+    setActiveQuizSession(session);
+    setIsQuizModalOpen(true);
+  };
+
+  const handleOpenDiagnostic = (session) => {
+    setActiveQuizSession(session);
+    setIsDiagnosticModalOpen(true);
+  };
+
+  const handleQuizCompleted = async (updatedSession) => {
+    await loadTrackerData();
+    setActiveQuizSession(updatedSession);
+    setIsDiagnosticModalOpen(true);
+  };
+
+  const handleReschedule = (session) => {
+    setIsBookModalOpen(true);
+  };
+
+  const handleEdit = (session) => {
+    setEditingSession(session);
+    setShowEditForm(true);
+  };
+
+  const handleDelete = async (sessionId) => {
+    const confirmed = window.confirm(
+      "Remove this study session from your schedule and habit logs?",
+    );
+    if (!confirmed) return;
+
+    try {
+      await deleteStudySession(sessionId);
+      await loadTrackerData();
+    } catch (err) {
+      setError(extractTrackerErrorMessage(err));
+    }
+  };
+
+  const handleUpdate = async (id, payload) => {
+    setSubmitting(true);
+    try {
+      const session = await updateStudySession(id, payload);
+      await loadTrackerData();
+      setShowEditForm(false);
+      setEditingSession(null);
+      return session;
+    } catch (err) {
+      setError(extractTrackerErrorMessage(err));
+      throw err;
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleCreate = async (payload) => {
+    setSubmitting(true);
     try {
       const session = await createStudySession(payload);
       await loadTrackerData();
@@ -101,93 +218,51 @@ export default function TrackerPage() {
     } finally {
       setSubmitting(false);
     }
-  }
-
-  async function handleUpdate(id, payload) {
-    setSubmitting(true);
-    setError("");
-
-    try {
-      const session = await updateStudySession(id, payload);
-      await loadTrackerData();
-      return session;
-    } catch (err) {
-      setError(extractTrackerErrorMessage(err));
-      throw err;
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  function handleCreated() {
-    setEditingSession(null);
-    setShowForm(false);
-    setError("");
-  }
-
-  function handleUpdated() {
-    setEditingSession(null);
-    setShowForm(false);
-    setError("");
-  }
-
-  function handleCancelForm() {
-    setEditingSession(null);
-    setShowForm(false);
-  }
-
-  function handleEdit(session) {
-    setEditingSession(session);
-    setShowForm(true);
-    setError("");
-  }
-
-  async function handleDelete(sessionId) {
-    const confirmed = window.confirm(
-      "Remove this study session from your habit logs?",
-    );
-
-    if (!confirmed) return;
-
-    try {
-      setError("");
-      await deleteStudySession(sessionId);
-      await loadTrackerData();
-
-      if (editingSession?.id === sessionId) {
-        setEditingSession(null);
-        setShowForm(false);
-      }
-    } catch (err) {
-      setError(extractTrackerErrorMessage(err));
-    }
-  }
-
-  function handleAddSession() {
-    setEditingSession(null);
-    setShowForm((current) => !current);
-    setError("");
-  }
+  };
 
   const safeSessions = Array.isArray(sessions) ? sessions : [];
+  const todayStr = new Date().toISOString().split("T")[0];
 
-  const totalStudyMinutes = safeSessions.reduce(
-    (total, session) => total + Number(session?.duration_minutes || 0),
-    0,
-  );
+  // Today's Scheduled Sessions
+  const todaysSessions = useMemo(() => {
+    return safeSessions.filter(
+      (s) => s?.session_date === todayStr || s?.status === "in_progress",
+    );
+  }, [safeSessions, todayStr]);
+
+  // Upcoming Scheduled Sessions (Future dates)
+  const upcomingSessions = useMemo(() => {
+    return safeSessions.filter(
+      (s) => s?.session_date > todayStr && s?.status === "scheduled",
+    );
+  }, [safeSessions, todayStr]);
+
+  // Completed Sessions
+  const completedSessions = useMemo(() => {
+    return safeSessions.filter((s) => s?.status === "completed");
+  }, [safeSessions]);
+
+  // Filtered History list
+  const filteredHistorySessions = useMemo(() => {
+    let list = safeSessions;
+    if (selectedStatusFilter !== "all") {
+      list = list.filter((s) => s?.status === selectedStatusFilter);
+    }
+    if (sessionSearch.trim()) {
+      const q = sessionSearch.toLowerCase();
+      list = list.filter(
+        (s) =>
+          (s?.subject && s.subject.toLowerCase().includes(q)) ||
+          (s?.notes && s.notes.toLowerCase().includes(q)) ||
+          (s?.session_date && s.session_date.toLowerCase().includes(q)),
+      );
+    }
+    return list;
+  }, [safeSessions, selectedStatusFilter, sessionSearch]);
+
+  const totalStudyMinutes = streakData?.total_minutes ?? 0;
   const totalHours = Math.floor(totalStudyMinutes / 60);
   const remainingMins = totalStudyMinutes % 60;
-
-  const filteredSessions = useMemo(() => {
-    if (!sessionSearch.trim()) return safeSessions;
-    const q = sessionSearch.toLowerCase();
-    return safeSessions.filter(
-      (s) =>
-        (s?.subject && s.subject.toLowerCase().includes(q)) ||
-        (s?.notes && s.notes.toLowerCase().includes(q)) ||
-        (s?.session_date && s.session_date.toLowerCase().includes(q)),
-    );
-  }, [safeSessions, sessionSearch]);
 
   const availableSubjects = useMemo(() => {
     const set = new Set();
@@ -208,18 +283,21 @@ export default function TrackerPage() {
               <span>Study Tracker & Focus Habits</span>
             </h1>
             <p className="page-description">
-              Log focused learning sessions, maintain uninterrupted habit
-              streaks, and unlock academic milestone badges.
+              Schedule time-gated focus blocks with uploaded course materials,
+              complete strict consistency goals, and test conceptual retention
+              with Gemini AI diagnostic quizzes.
             </p>
           </div>
 
-          <Button
-            variant={showForm && !editingSession ? "secondary" : "primary"}
-            onClick={handleAddSession}
-            icon={showForm && !editingSession ? X : Plus}
-          >
-            {showForm && !editingSession ? "Close Form" : "Log Study Session"}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="primary"
+              onClick={() => setIsBookModalOpen(true)}
+              icon={Plus}
+            >
+              Book Study Session
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -229,72 +307,11 @@ export default function TrackerPage() {
           streakData={streakData}
           totalHours={totalHours}
           remainingMins={remainingMins}
-          sessionCount={sessions.length}
+          sessionCount={completedSessions.length}
         />
       </div>
 
-      {/* Session Form Modal */}
-      <AnimatePresence>
-        {showForm && (
-          <div
-            className="tracker-session-modal-overlay"
-            onClick={(e) => {
-              if (e.target === e.currentTarget) {
-                handleCancelForm();
-              }
-            }}
-          >
-            <motion.div
-              className="tracker-session-modal-dialog"
-              initial={{ opacity: 0, scale: 0.96, y: 14 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96, y: 14 }}
-              transition={{ duration: 0.2 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="tracker-modal-header">
-                <div className="tracker-modal-title-box">
-                  <span className="tracker-modal-icon">⏱️</span>
-                  <div>
-                    <h3 className="tracker-modal-heading">
-                      {editingSession
-                        ? "Edit Study Session"
-                        : "Log Study Session"}
-                    </h3>
-                    <p className="tracker-modal-subheading">
-                      {editingSession
-                        ? "Update details for this logged study session."
-                        : "Record your focused time to build consistency streaks."}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  className="tracker-modal-close-btn"
-                  onClick={handleCancelForm}
-                  title="Close modal"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              <div className="tracker-modal-body">
-                <StudySessionForm
-                  session={editingSession}
-                  onCreate={handleCreate}
-                  onUpdate={handleUpdate}
-                  onCreated={handleCreated}
-                  onUpdated={handleUpdated}
-                  onCancel={handleCancelForm}
-                  submitting={submitting}
-                />
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* Tabs Bar */}
+      {/* Navigation Tabs Bar */}
       <div
         className="community-tabs-bar"
         style={{
@@ -304,6 +321,20 @@ export default function TrackerPage() {
           overflowX: "auto",
         }}
       >
+        <button
+          type="button"
+          className={`community-tab-btn ${
+            activeTab === "scheduled" ? "tab-active" : ""
+          }`}
+          onClick={() => {
+            setActiveTab("scheduled");
+            setSearchParams({ tab: "tracker", subtab: "scheduled" });
+          }}
+        >
+          <Calendar size={16} />
+          <span>📅 Today's Schedule ({todaysSessions.length})</span>
+        </button>
+
         <button
           type="button"
           className={`community-tab-btn ${
@@ -317,19 +348,21 @@ export default function TrackerPage() {
           <Timer size={16} />
           <span>⏱️ Focus Timer (Pomodoro)</span>
         </button>
+
         <button
           type="button"
           className={`community-tab-btn ${
-            activeTab === "sessions" ? "tab-active" : ""
+            activeTab === "history" ? "tab-active" : ""
           }`}
           onClick={() => {
-            setActiveTab("sessions");
-            setSearchParams({ tab: "tracker", subtab: "sessions" });
+            setActiveTab("history");
+            setSearchParams({ tab: "tracker", subtab: "history" });
           }}
         >
           <Clock size={16} />
-          <span>Session Logs ({sessions.length})</span>
+          <span>📜 Session History ({safeSessions.length})</span>
         </button>
+
         <button
           type="button"
           className={`community-tab-btn ${
@@ -341,7 +374,7 @@ export default function TrackerPage() {
           }}
         >
           <Award size={16} />
-          <span>Milestone Badges ({rewards.length})</span>
+          <span>🏆 Milestone Badges ({rewards.length})</span>
         </button>
       </div>
 
@@ -363,21 +396,99 @@ export default function TrackerPage() {
         />
       )}
 
-      {/* TAB 1: SESSIONS LIST */}
-      {/* TAB 1: FOCUS TIMER */}
+      {/* ============================================================ */}
+      {/* TAB 1: TODAY'S SCHEDULED SESSIONS */}
+      {/* ============================================================ */}
+      {!loading && !error && activeTab === "scheduled" && (
+        <div className="tracker-tab-content">
+          {/* Strict Attendance Notice */}
+          <div className="alert-banner alert-banner-info mb-4">
+            <span>
+              ℹ️ <strong>Strict Time-Gate Rule:</strong> Sessions must be
+              started during their scheduled time window. Only completed sessions
+              contribute to your daily goal, active streak, and leaderboard rank.
+            </span>
+          </div>
+
+          {todaysSessions.length === 0 ? (
+            <EmptyState
+              icon={Calendar}
+              title="No study sessions scheduled for today"
+              description="Book a dedicated focus block linked with your course notes to maintain your streak and trigger post-session AI quizzes."
+              actionLabel="Book Study Session for Today"
+              onAction={() => setIsBookModalOpen(true)}
+            />
+          ) : (
+            <div className="scheduled-sessions-grid mb-6">
+              {todaysSessions.map((session) => (
+                <ScheduledSessionCard
+                  key={session.id}
+                  session={session}
+                  onStart={handleStartSession}
+                  onComplete={handleCompleteSession}
+                  onExtend={handleExtendSession}
+                  onTakeQuiz={handleOpenQuiz}
+                  onViewDiagnostic={handleOpenDiagnostic}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onReschedule={handleReschedule}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Upcoming Days Preview if available */}
+          {upcomingSessions.length > 0 && (
+            <div className="mt-6 pt-4 border-t">
+              <h3 className="text-sm font-bold text-muted uppercase tracking-wider mb-3">
+                Upcoming Focus Sessions
+              </h3>
+              <div className="scheduled-sessions-grid">
+                {upcomingSessions.map((session) => (
+                  <ScheduledSessionCard
+                    key={session.id}
+                    session={session}
+                    onStart={handleStartSession}
+                    onComplete={handleCompleteSession}
+                    onExtend={handleExtendSession}
+                    onTakeQuiz={handleOpenQuiz}
+                    onViewDiagnostic={handleOpenDiagnostic}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onReschedule={handleReschedule}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* TAB 2: FOCUS TIMER */}
+      {/* ============================================================ */}
       {!loading && !error && activeTab === "timer" && (
         <FocusTimer
+          activeSession={activeTimerSession}
           onSessionCompleted={async (payload) => {
-            await handleCreate(payload);
+            if (activeTimerSession) {
+              return await completeStudySession(activeTimerSession.id);
+            } else {
+              return await handleCreate(payload);
+            }
           }}
+          onExtendSession={handleExtendSession}
+          onTakeQuiz={handleOpenQuiz}
           availableSubjects={availableSubjects}
         />
       )}
 
-      {/* TAB 2: SESSIONS LIST */}
-      {!loading && !error && activeTab === "sessions" && (
+      {/* ============================================================ */}
+      {/* TAB 3: SESSION HISTORY & QUIZ DIAGNOSTICS */}
+      {/* ============================================================ */}
+      {!loading && !error && activeTab === "history" && (
         <>
-          {sessions.length > 0 && (
+          {safeSessions.length > 0 && (
             <div
               style={{
                 display: "flex",
@@ -390,7 +501,7 @@ export default function TrackerPage() {
             >
               <div
                 className="community-search-box"
-                style={{ flex: "1", maxWidth: "380px" }}
+                style={{ flex: "1", maxWidth: "340px" }}
               >
                 <input
                   type="text"
@@ -400,44 +511,66 @@ export default function TrackerPage() {
                   className="form-input form-input-sm"
                 />
               </div>
-              <span className="text-xs text-muted">
-                Showing {filteredSessions.length} of {sessions.length} sessions
-              </span>
+
+              {/* Status Filter Chips */}
+              <div className="flex gap-1 flex-wrap items-center">
+                {["all", "completed", "scheduled", "in_progress", "missed"].map(
+                  (st) => (
+                    <button
+                      key={st}
+                      type="button"
+                      className={`filter-status-chip ${
+                        selectedStatusFilter === st ? "active" : ""
+                      }`}
+                      onClick={() => setSelectedStatusFilter(st)}
+                    >
+                      {st === "all"
+                        ? "All Logs"
+                        : st === "in_progress"
+                          ? "In Progress"
+                          : st.charAt(0).toUpperCase() + st.slice(1)}
+                    </button>
+                  ),
+                )}
+              </div>
             </div>
           )}
 
-          {sessions.length === 0 && !showForm ? (
+          {safeSessions.length === 0 ? (
             <EmptyState
               icon={Timer}
-              title="No study sessions logged yet"
-              description="Use the Focus Timer or log a completed study block to start your consistency streak flame."
-              actionLabel="Start Focus Timer"
-              onAction={() => {
-                setActiveTab("timer");
-                setSearchParams({ tab: "tracker", subtab: "timer" });
-              }}
+              title="No study sessions recorded yet"
+              description="Schedule a focus block or start the timer to log completed sessions and unlock diagnostic quizzes."
+              actionLabel="Book Study Session"
+              onAction={() => setIsBookModalOpen(true)}
             />
-          ) : filteredSessions.length === 0 ? (
+          ) : filteredHistorySessions.length === 0 ? (
             <div className="materials-empty-card my-3">
               <div className="empty-card-icon">🔍</div>
               <h4>No sessions found</h4>
-              <p>No logged study blocks match "{sessionSearch}".</p>
+              <p>No logged study blocks match your filter criteria.</p>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setSessionSearch("")}
+                onClick={() => {
+                  setSessionSearch("");
+                  setSelectedStatusFilter("all");
+                }}
               >
-                Clear Search
+                Clear Filters
               </Button>
             </div>
           ) : (
             <div className="study-sessions-grid">
-              {filteredSessions.map((session) => (
+              {filteredHistorySessions.map((session) => (
                 <StudySessionCard
                   key={session.id}
                   session={session}
                   onEdit={handleEdit}
                   onDelete={handleDelete}
+                  onExtend={handleExtendSession}
+                  onTakeQuiz={handleOpenQuiz}
+                  onViewDiagnostic={handleOpenDiagnostic}
                 />
               ))}
             </div>
@@ -445,14 +578,115 @@ export default function TrackerPage() {
         </>
       )}
 
-      {/* TAB 2: REWARDS SHELF */}
-      {/* TAB 3: REWARDS SHELF */}
+      {/* ============================================================ */}
+      {/* TAB 4: MILESTONE BADGES */}
+      {/* ============================================================ */}
       {!loading && !error && activeTab === "rewards" && (
         <RewardsShelf
           rewards={rewards}
           currentStreak={streakData?.current_streak || 0}
         />
       )}
+
+      {/* ============================================================ */}
+      {/* MODALS */}
+      {/* ============================================================ */}
+
+      {/* 1. Book Session Modal */}
+      <BookSessionModal
+        isOpen={isBookModalOpen}
+        onClose={() => setIsBookModalOpen(false)}
+        onSessionBooked={async () => {
+          await loadTrackerData();
+        }}
+        onNavigateToMaterials={() => {
+          navigate("/study-center/materials");
+        }}
+      />
+
+      {/* 2. AI Quiz Modal */}
+      <SessionQuizModal
+        session={activeQuizSession}
+        isOpen={isQuizModalOpen}
+        onClose={() => setIsQuizModalOpen(false)}
+        onQuizCompleted={handleQuizCompleted}
+      />
+
+      {/* 3. AI Quiz Diagnostic Report Modal */}
+      <QuizDiagnosticModal
+        session={activeQuizSession}
+        isOpen={isDiagnosticModalOpen}
+        onClose={() => setIsDiagnosticModalOpen(false)}
+        onRetakeQuiz={handleOpenQuiz}
+      />
+
+      {/* 4. Edit Session Form Modal */}
+      <AnimatePresence>
+        {showEditForm && editingSession && (
+          <div
+            className="tracker-session-modal-overlay"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setShowEditForm(false);
+                setEditingSession(null);
+              }
+            }}
+          >
+            <motion.div
+              className="tracker-session-modal-dialog"
+              initial={{ opacity: 0, scale: 0.96, y: 14 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 14 }}
+              transition={{ duration: 0.2 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="tracker-modal-header">
+                <div className="tracker-modal-title-box">
+                  <span className="tracker-modal-icon">⏱️</span>
+                  <div>
+                    <h3 className="tracker-modal-heading">Edit Study Session</h3>
+                    <p className="tracker-modal-subheading">
+                      Update details for this study block.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="tracker-modal-close-btn"
+                  onClick={() => {
+                    setShowEditForm(false);
+                    setEditingSession(null);
+                  }}
+                  title="Close modal"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="tracker-modal-body">
+                <StudySessionForm
+                  session={editingSession}
+                  onCreate={handleCreate}
+                  onUpdate={handleUpdate}
+                  onCreated={() => {
+                    setShowEditForm(false);
+                    setEditingSession(null);
+                  }}
+                  onUpdated={() => {
+                    setShowEditForm(false);
+                    setEditingSession(null);
+                  }}
+                  onCancel={() => {
+                    setShowEditForm(false);
+                    setEditingSession(null);
+                  }}
+                  submitting={submitting}
+                />
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

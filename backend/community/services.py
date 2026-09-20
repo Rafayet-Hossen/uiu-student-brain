@@ -2,7 +2,7 @@ from datetime import date, timedelta
 from typing import Any, Dict, List
 from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db.models import Count, Exists, OuterRef, Q, QuerySet, Sum
+from django.db.models import Count, Exists, F, OuterRef, Q, QuerySet, Sum
 
 from tracker.models import StudySession
 from tracker.services import calculate_user_streaks, get_user_rewards
@@ -283,13 +283,16 @@ def get_leaderboard(
 
     entries: List[Dict[str, Any]] = []
     for u in users:
-        sessions = StudySession.objects.filter(user=u)
+        sessions = StudySession.objects.filter(user=u, status="completed")
         total_sessions = sessions.count()
-        total_mins = sessions.aggregate(total=Sum("duration_minutes"))["total"] or 0
+        total_mins = (
+            sessions.aggregate(total=Sum(F("duration_minutes") + F("extended_minutes")))["total"]
+            or 0
+        )
 
         weekly_mins = (
             sessions.filter(session_date__gte=week_start, session_date__lte=reference_date)
-            .aggregate(total=Sum("duration_minutes"))["total"]
+            .aggregate(total=Sum(F("duration_minutes") + F("extended_minutes")))["total"]
             or 0
         )
 
@@ -363,12 +366,15 @@ def get_leaderboard(
             current_user_entry = ranked_entry
 
     if not user_profile.is_opted_in:
-        user_sessions = StudySession.objects.filter(user=user)
+        user_sessions = StudySession.objects.filter(user=user, status="completed")
         total_sessions = user_sessions.count()
-        total_mins = user_sessions.aggregate(total=Sum("duration_minutes"))["total"] or 0
+        total_mins = (
+            user_sessions.aggregate(total=Sum(F("duration_minutes") + F("extended_minutes")))["total"]
+            or 0
+        )
         weekly_mins = (
             user_sessions.filter(session_date__gte=week_start, session_date__lte=reference_date)
-            .aggregate(total=Sum("duration_minutes"))["total"]
+            .aggregate(total=Sum(F("duration_minutes") + F("extended_minutes")))["total"]
             or 0
         )
         streaks = calculate_user_streaks(user=user, reference_date=reference_date)

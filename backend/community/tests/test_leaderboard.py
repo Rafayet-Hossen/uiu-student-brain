@@ -40,12 +40,14 @@ class LeaderboardApiTests(APITestCase):
             subject="Algorithms",
             duration_minutes=60,
             session_date=today,
+            status="completed",
         )
         StudySession.objects.create(
             user=self.user1,
             subject="Algorithms",
             duration_minutes=120,
             session_date=today - timedelta(days=2),
+            status="completed",
         )
 
         # Bob study sessions (180 mins today, 120 mins yesterday = 300 mins)
@@ -54,12 +56,14 @@ class LeaderboardApiTests(APITestCase):
             subject="Physics",
             duration_minutes=180,
             session_date=today,
+            status="completed",
         )
         StudySession.objects.create(
             user=self.user2,
             subject="Physics",
             duration_minutes=120,
             session_date=today - timedelta(days=1),
+            status="completed",
         )
 
         # Charlie study sessions (200 mins today, but Charlie will NOT opt in)
@@ -68,6 +72,7 @@ class LeaderboardApiTests(APITestCase):
             subject="Chemistry",
             duration_minutes=200,
             session_date=today,
+            status="completed",
         )
 
     def test_leaderboard_status_default(self):
