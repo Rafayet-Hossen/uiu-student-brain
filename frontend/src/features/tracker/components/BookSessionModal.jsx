@@ -108,12 +108,16 @@ export default function BookSessionModal({
         setMaterials(matList);
         if (matList.length > 0) {
           setSelectedMaterialId(String(matList[0].id));
-          const course = courses.find((c) => String(c.id) === String(selectedCourseId));
+          const course = courses.find(
+            (c) => String(c.id) === String(selectedCourseId),
+          );
           const codePrefix = course?.code ? `[${course.code}] ` : "";
           setSubject(`${codePrefix}${matList[0].title}`);
         } else {
           setSelectedMaterialId("");
-          const course = courses.find((c) => String(c.id) === String(selectedCourseId));
+          const course = courses.find(
+            (c) => String(c.id) === String(selectedCourseId),
+          );
           const codePrefix = course?.code ? `[${course.code}] ` : "";
           setSubject(course ? `${codePrefix}${course.title}` : "Study Session");
         }
@@ -136,7 +140,9 @@ export default function BookSessionModal({
   const handleMaterialChange = (matId) => {
     setSelectedMaterialId(matId);
     const chosen = materials.find((m) => String(m.id) === String(matId));
-    const course = courses.find((c) => String(c.id) === String(selectedCourseId));
+    const course = courses.find(
+      (c) => String(c.id) === String(selectedCourseId),
+    );
     const codePrefix = course?.code ? `[${course.code}] ` : "";
     if (chosen) {
       setSubject(`${codePrefix}${chosen.title}`);
@@ -386,7 +392,11 @@ export default function BookSessionModal({
           {/* 4. Date & Start Time */}
           <div
             className="grid grid-cols-2 gap-3 mb-3"
-            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "12px",
+            }}
           >
             <div className="form-group">
               <div className="flex justify-between items-center mb-1">

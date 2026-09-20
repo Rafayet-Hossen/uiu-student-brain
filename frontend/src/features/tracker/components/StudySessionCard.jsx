@@ -180,7 +180,10 @@ export default function StudySessionCard({
     [session?.session_date],
   );
 
-  const durationText = formatDuration(session?.duration_minutes, session?.extended_minutes);
+  const durationText = formatDuration(
+    session?.duration_minutes,
+    session?.extended_minutes,
+  );
 
   const handleExtend = async (mins) => {
     if (!onExtend) return;
@@ -227,7 +230,10 @@ export default function StudySessionCard({
         {material && (
           <div className="session-linked-material-chip">
             <FileText size={12} className="text-primary flex-shrink-0" />
-            <span className="text-xs truncate font-medium" title={material.title}>
+            <span
+              className="text-xs truncate font-medium"
+              title={material.title}
+            >
               {material.title}
             </span>
           </div>
@@ -256,7 +262,9 @@ export default function StudySessionCard({
           )}
 
           <div className="session-meta-chip">
-            <span className={`status-pill pill-${session.status || "completed"}`}>
+            <span
+              className={`status-pill pill-${session.status || "completed"}`}
+            >
               {session.status === "completed" ? "Completed" : session.status}
             </span>
           </div>
@@ -268,7 +276,9 @@ export default function StudySessionCard({
             <div className="flex items-center gap-1 text-xs font-semibold text-amber">
               <Sparkles size={13} />
               <span>
-                AI Quiz Score: {session.quiz_score}/{session.quiz_results?.total_questions || 5} ({session.quiz_accuracy}%)
+                AI Quiz Score: {session.quiz_score}/
+                {session.quiz_results?.total_questions || 5} (
+                {session.quiz_accuracy}%)
               </span>
             </div>
             {onViewDiagnostic && (

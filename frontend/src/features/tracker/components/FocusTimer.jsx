@@ -135,7 +135,8 @@ export default function FocusTimer({
     if (activeMode === "stopwatch") {
       setStopwatchSeconds(0);
     } else {
-      const mode = TIMER_MODES.find((m) => m.id === activeMode) || TIMER_MODES[0];
+      const mode =
+        TIMER_MODES.find((m) => m.id === activeMode) || TIMER_MODES[0];
       const secs = mode.minutes * 60;
       setTotalSeconds(secs);
       setSecondsRemaining(secs);
@@ -158,7 +159,11 @@ export default function FocusTimer({
 
   const handleCompleteAndLog = async () => {
     const elapsedMins = getElapsedMinutes();
-    const finalSubject = (customSubject.trim() || subject || "Focus Session").trim();
+    const finalSubject = (
+      customSubject.trim() ||
+      subject ||
+      "Focus Session"
+    ).trim();
 
     if (onSessionCompleted) {
       try {
@@ -172,9 +177,17 @@ export default function FocusTimer({
           notes: notes.trim() || `Completed ${activeMode} focus timer session.`,
           status: "completed",
         });
-        setCompletedSessionData(res || activeSession || { subject: finalSubject, duration_minutes: elapsedMins });
+        setCompletedSessionData(
+          res ||
+            activeSession || {
+              subject: finalSubject,
+              duration_minutes: elapsedMins,
+            },
+        );
         setShowCompletionOptions(true);
-        setSessionSuccess(`Completed ${elapsedMins}m focus session! Streak updated 🔥`);
+        setSessionSuccess(
+          `Completed ${elapsedMins}m focus session! Streak updated 🔥`,
+        );
       } catch (err) {
         console.error("Failed to save focus timer session", err);
       } finally {
@@ -225,12 +238,7 @@ export default function FocusTimer({
       <div className="focus-timer-hero-container">
         <div className="focus-timer-dial">
           <svg className="timer-svg-ring" viewBox="0 0 200 200">
-            <circle
-              className="timer-ring-track"
-              cx="100"
-              cy="100"
-              r="86"
-            />
+            <circle className="timer-ring-track" cx="100" cy="100" r="86" />
             <circle
               className="timer-ring-indicator"
               cx="100"
@@ -363,7 +371,10 @@ export default function FocusTimer({
           <span>Active Study Topic & Details</span>
         </h4>
 
-        <div className="modal-grid-2col" style={{ gap: "12px", marginBottom: "12px" }}>
+        <div
+          className="modal-grid-2col"
+          style={{ gap: "12px", marginBottom: "12px" }}
+        >
           <div className="form-group">
             <label className="form-label text-xs">Subject / Category</label>
             <select
@@ -376,7 +387,9 @@ export default function FocusTimer({
             >
               <option value="General Study">General Study</option>
               <option value="Exam Preparation">Exam Preparation</option>
-              <option value="Problem Solving / Code">Problem Solving / Code</option>
+              <option value="Problem Solving / Code">
+                Problem Solving / Code
+              </option>
               <option value="Syllabus Review">Syllabus Review</option>
               {availableSubjects.map((sub, idx) => (
                 <option key={idx} value={sub}>
@@ -400,7 +413,10 @@ export default function FocusTimer({
             </div>
           )}
 
-          <div className="form-group" style={{ gridColumn: subject === "Custom" ? "span 2" : "auto" }}>
+          <div
+            className="form-group"
+            style={{ gridColumn: subject === "Custom" ? "span 2" : "auto" }}
+          >
             <label className="form-label text-xs">Session Notes / Goals</label>
             <input
               type="text"

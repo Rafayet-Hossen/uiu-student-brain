@@ -55,7 +55,12 @@ export default function ScheduledSessionCard({
   // Determine timing & readiness status
   const { isToday, isUpcoming, isPastTime, timeWindowText } = useMemo(() => {
     if (!session?.session_date) {
-      return { isToday: false, isUpcoming: false, isPastTime: false, timeWindowText: "" };
+      return {
+        isToday: false,
+        isUpcoming: false,
+        isPastTime: false,
+        timeWindowText: "",
+      };
     }
 
     const todayStr = new Date().toISOString().split("T")[0];
@@ -136,9 +141,13 @@ export default function ScheduledSessionCard({
               <span
                 className="course-chip-badge"
                 style={{
-                  background: course.color ? `${course.color}15` : "var(--color-surface-subtle)",
+                  background: course.color
+                    ? `${course.color}15`
+                    : "var(--color-surface-subtle)",
                   color: course.color || "var(--color-primary)",
-                  borderColor: course.color ? `${course.color}40` : "var(--color-border)",
+                  borderColor: course.color
+                    ? `${course.color}40`
+                    : "var(--color-border)",
                 }}
               >
                 {course.code || course.title}
@@ -158,7 +167,10 @@ export default function ScheduledSessionCard({
             <span>
               {session.duration_minutes}m
               {session.extended_minutes > 0 && (
-                <strong className="text-success"> +{session.extended_minutes}m</strong>
+                <strong className="text-success">
+                  {" "}
+                  +{session.extended_minutes}m
+                </strong>
               )}
             </span>
           </div>
@@ -174,7 +186,10 @@ export default function ScheduledSessionCard({
             <div className="flex items-center gap-1 text-xs text-muted mb-1">
               <FileText size={12} className="text-primary" />
               <span className="font-medium text-xs">Linked Material:</span>
-              <span className="text-xs truncate font-semibold text-primary" title={material.title}>
+              <span
+                className="text-xs truncate font-semibold text-primary"
+                title={material.title}
+              >
                 {material.title}
               </span>
             </div>
@@ -219,8 +234,12 @@ export default function ScheduledSessionCard({
           <div className="quiz-result-summary-strip">
             <Sparkles size={14} className="text-amber" />
             <span>
-              AI Diagnostic Score: <strong>{session.quiz_score}/{session.quiz_results?.total_questions || 5}</strong> (
-              {session.quiz_accuracy || 0}%)
+              AI Diagnostic Score:{" "}
+              <strong>
+                {session.quiz_score}/
+                {session.quiz_results?.total_questions || 5}
+              </strong>{" "}
+              ({session.quiz_accuracy || 0}%)
             </span>
           </div>
         )}

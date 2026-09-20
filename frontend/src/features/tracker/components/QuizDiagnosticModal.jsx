@@ -47,7 +47,8 @@ export default function QuizDiagnosticModal({
         label: "Mastery Achieved",
         icon: "🏆",
         colorClass: "tier-mastery",
-        summary: "Excellent conceptual grasp! You demonstrated high proficiency on this material.",
+        summary:
+          "Excellent conceptual grasp! You demonstrated high proficiency on this material.",
       };
     }
     if (accuracy >= 60) {
@@ -55,14 +56,16 @@ export default function QuizDiagnosticModal({
         label: "Proficient Pace",
         icon: "⚡",
         colorClass: "tier-proficient",
-        summary: "Good understanding of core principles, with a few sub-topics that require review.",
+        summary:
+          "Good understanding of core principles, with a few sub-topics that require review.",
       };
     }
     return {
       label: "Needs Revision",
       icon: "⚠️",
       colorClass: "tier-needs-work",
-      summary: "Identified several knowledge gaps. Review the weak topics below before exam day.",
+      summary:
+        "Identified several knowledge gaps. Review the weak topics below before exam day.",
     };
   };
 
@@ -108,7 +111,10 @@ export default function QuizDiagnosticModal({
         </div>
 
         {/* Modal Body */}
-        <div className="tracker-modal-body" style={{ maxHeight: "78vh", overflowY: "auto" }}>
+        <div
+          className="tracker-modal-body"
+          style={{ maxHeight: "78vh", overflowY: "auto" }}
+        >
           {/* Top Score Banner */}
           <div className={`diagnostic-score-hero ${tier.colorClass}`}>
             <div className="score-dial-box">
@@ -131,7 +137,11 @@ export default function QuizDiagnosticModal({
           {/* Weak Topics & Mastered Topics 2-Col Grid */}
           <div
             className="grid grid-cols-2 gap-3 my-4"
-            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "14px",
+            }}
           >
             {/* Weak Topics */}
             <div className="diagnostic-topics-card card-weak">
@@ -169,7 +179,9 @@ export default function QuizDiagnosticModal({
                   ))}
                 </ul>
               ) : (
-                <p className="text-xs text-muted">Continue practicing to solidify concepts.</p>
+                <p className="text-xs text-muted">
+                  Continue practicing to solidify concepts.
+                </p>
               )}
             </div>
           </div>
@@ -199,7 +211,10 @@ export default function QuizDiagnosticModal({
                 Detailed Question Breakdown
               </h4>
 
-              <div className="space-y-2" style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <div
+                className="space-y-2"
+                style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+              >
                 {questions.map((q, idx) => {
                   const isCorrect = q.is_correct;
                   const isExpanded = expandedQuestionIdx === idx;
@@ -216,14 +231,28 @@ export default function QuizDiagnosticModal({
                       >
                         <div className="flex items-center gap-2 flex-1 text-left">
                           {isCorrect ? (
-                            <CheckCircle2 size={16} className="text-success flex-shrink-0" />
+                            <CheckCircle2
+                              size={16}
+                              className="text-success flex-shrink-0"
+                            />
                           ) : (
-                            <XCircle size={16} className="text-danger flex-shrink-0" />
+                            <XCircle
+                              size={16}
+                              className="text-danger flex-shrink-0"
+                            />
                           )}
-                          <span className="text-xs font-semibold">Q{idx + 1}:</span>
-                          <span className="text-xs truncate font-medium">{q.question}</span>
+                          <span className="text-xs font-semibold">
+                            Q{idx + 1}:
+                          </span>
+                          <span className="text-xs truncate font-medium">
+                            {q.question}
+                          </span>
                         </div>
-                        {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        {isExpanded ? (
+                          <ChevronUp size={16} />
+                        ) : (
+                          <ChevronDown size={16} />
+                        )}
                       </button>
 
                       {isExpanded && (
@@ -234,9 +263,15 @@ export default function QuizDiagnosticModal({
 
                           <div className="text-xs space-y-1 mb-2">
                             <div className="flex items-center gap-1">
-                              <span className="text-muted font-medium">Your Answer:</span>
+                              <span className="text-muted font-medium">
+                                Your Answer:
+                              </span>
                               <span
-                                className={isCorrect ? "text-success font-semibold" : "text-danger font-semibold"}
+                                className={
+                                  isCorrect
+                                    ? "text-success font-semibold"
+                                    : "text-danger font-semibold"
+                                }
                               >
                                 {q.selected_option || "(None)"}
                               </span>
@@ -244,7 +279,9 @@ export default function QuizDiagnosticModal({
 
                             {!isCorrect && (
                               <div className="flex items-center gap-1">
-                                <span className="text-muted font-medium">Correct Answer:</span>
+                                <span className="text-muted font-medium">
+                                  Correct Answer:
+                                </span>
                                 <span className="text-success font-semibold">
                                   {q.correct_option}
                                 </span>
@@ -254,7 +291,9 @@ export default function QuizDiagnosticModal({
 
                           {q.explanation && (
                             <div className="explanation-bubble">
-                              <span className="font-semibold block mb-1">💡 Explanation:</span>
+                              <span className="font-semibold block mb-1">
+                                💡 Explanation:
+                              </span>
                               <span>{q.explanation}</span>
                             </div>
                           )}
@@ -283,7 +322,12 @@ export default function QuizDiagnosticModal({
               </Button>
             )}
 
-            <Button variant="primary" size="sm" onClick={onClose} className="ml-auto">
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={onClose}
+              className="ml-auto"
+            >
               Done / Close
             </Button>
           </div>

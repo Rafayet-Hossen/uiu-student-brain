@@ -405,8 +405,9 @@ export default function TrackerPage() {
           <div className="alert-banner alert-banner-info mb-4">
             <span>
               ℹ️ <strong>Strict Time-Gate Rule:</strong> Sessions must be
-              started during their scheduled time window. Only completed sessions
-              contribute to your daily goal, active streak, and leaderboard rank.
+              started during their scheduled time window. Only completed
+              sessions contribute to your daily goal, active streak, and
+              leaderboard rank.
             </span>
           </div>
 
@@ -644,7 +645,9 @@ export default function TrackerPage() {
                 <div className="tracker-modal-title-box">
                   <span className="tracker-modal-icon">⏱️</span>
                   <div>
-                    <h3 className="tracker-modal-heading">Edit Study Session</h3>
+                    <h3 className="tracker-modal-heading">
+                      Edit Study Session
+                    </h3>
                     <p className="tracker-modal-subheading">
                       Update details for this study block.
                     </p>

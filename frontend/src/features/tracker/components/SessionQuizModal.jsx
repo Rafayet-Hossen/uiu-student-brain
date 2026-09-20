@@ -49,7 +49,9 @@ export default function SessionQuizModal({
       .catch((err) => {
         if (!isMounted) return;
         console.error("Failed to generate session quiz", err);
-        setError("Failed to generate AI quiz for this study material. Please try again.");
+        setError(
+          "Failed to generate AI quiz for this study material. Please try again.",
+        );
       })
       .finally(() => {
         if (isMounted) setLoading(false);
@@ -90,7 +92,9 @@ export default function SessionQuizModal({
 
   const handleSubmitQuiz = async () => {
     if (answeredCount < totalQuestions) {
-      setError("Please answer all questions before submitting your diagnostic test.");
+      setError(
+        "Please answer all questions before submitting your diagnostic test.",
+      );
       return;
     }
 
@@ -119,7 +123,10 @@ export default function SessionQuizModal({
         };
       });
 
-      const updatedSession = await submitSessionQuiz(session.id, questionResults);
+      const updatedSession = await submitSessionQuiz(
+        session.id,
+        questionResults,
+      );
       if (onQuizCompleted) {
         onQuizCompleted(updatedSession);
       }
@@ -235,7 +242,9 @@ export default function SessionQuizModal({
                     🏷️ {currentQuestion.topic}
                   </span>
                 )}
-                <h4 className="quiz-question-text">{currentQuestion.question}</h4>
+                <h4 className="quiz-question-text">
+                  {currentQuestion.question}
+                </h4>
 
                 {/* Options List */}
                 <div className="quiz-options-list mt-3">

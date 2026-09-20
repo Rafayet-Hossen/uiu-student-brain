@@ -17296,7 +17296,11 @@ html[data-theme="dark"] .native-reader-main-viewport {
 
 /* Post-Session Prompt Banner */
 .post-session-celebration-card {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(59, 130, 246, 0.1));
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.1),
+    rgba(59, 130, 246, 0.1)
+  );
   border: 1px solid rgba(16, 185, 129, 0.3);
   border-radius: 12px;
   padding: 14px;
@@ -17597,4 +17601,3 @@ html[data-theme="dark"] .native-reader-main-viewport {
   color: var(--color-text-muted);
   line-height: 1.4;
 }
-
