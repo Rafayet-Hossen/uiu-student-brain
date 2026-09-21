@@ -71,6 +71,7 @@ graph TD
 ```
 
 ### Core Architectural Principles:
+
 1. **Service Layer Separation**: Views in `views.py` remain ultra-thin — they only deserialize requests, enforce JWT authentication/permissions, and return JSON responses. **All business logic, mathematical projections, and AI pipelines live exclusively in `services.py`**.
 2. **Stateless JWT Security**: Dual-token strategy with short-lived Access Tokens (15 min) and persistent Refresh Tokens (7 days). The frontend Axios client includes automatic queue-based refresh interceptors.
 3. **Dynamic Host Resolution**: Frontend client automatically resolves its API base URL from `window.location.hostname`, ensuring seamless cross-device, local LAN, and tunnel accessibility without recompilation.
@@ -83,118 +84,129 @@ graph TD
 ---
 
 ### 1. Authentication & Security Engine (`accounts`)
-* **Purpose**: Secure onboarding, biometric-friendly identity management, and credential authorization.
-* **How It Works**:
-  * Employs custom `User` model inheriting from `AbstractBaseUser` and `PermissionsMixin` with email as unique identifier.
-  * Passwords hashed via PBKDF2 with SHA-256 and automatic salt rotation.
-  * Profile management supports customized avatars, bio, department/major, student ID, and institution name.
-  * Dual-token JWT lifecycle: Access token attached to all requests via `Authorization: Bearer <token>`; token expiration is automatically caught by Axios interceptors to request a new token seamlessly without logging out the student.
+
+- **Purpose**: Secure onboarding, biometric-friendly identity management, and credential authorization.
+- **How It Works**:
+  - Employs custom `User` model inheriting from `AbstractBaseUser` and `PermissionsMixin` with email as unique identifier.
+  - Passwords hashed via PBKDF2 with SHA-256 and automatic salt rotation.
+  - Profile management supports customized avatars, bio, department/major, student ID, and institution name.
+  - Dual-token JWT lifecycle: Access token attached to all requests via `Authorization: Bearer <token>`; token expiration is automatically caught by Axios interceptors to request a new token seamlessly without logging out the student.
 
 ---
 
 ### 2. Study Schedule Maker & Routine Planner (`planner`)
-* **Purpose**: Weekly time-blocking, class routine organization, and assignment deadline tracking.
-* **How It Works**:
-  * Students create recurring weekly schedule blocks specifying subject, start time, end time, location/room, multi-day recurring chips (e.g. *Mon, Wed, Fri*), color theme, and assignment deadlines.
-  * Built-in validation guarantees schedule integrity (`start_time < end_time`).
-  * Real-time sorting and filter tabs allow viewing today's upcoming classes or the full 7-day academic grid.
+
+- **Purpose**: Weekly time-blocking, class routine organization, and assignment deadline tracking.
+- **How It Works**:
+  - Students create recurring weekly schedule blocks specifying subject, start time, end time, location/room, multi-day recurring chips (e.g. _Mon, Wed, Fri_), color theme, and assignment deadlines.
+  - Built-in validation guarantees schedule integrity (`start_time < end_time`).
+  - Real-time sorting and filter tabs allow viewing today's upcoming classes or the full 7-day academic grid.
 
 ---
 
 ### 3. Grade Planner & GPA Projection Engine (`grades`)
-* **Purpose**: Degree credit audits, cumulative GPA tracking, and mathematical required score forecasting.
-* **How It Works**:
-  * Tracks total degree credits, completed credits, current cumulative GPA, and target graduation GPA.
-  * Dynamically computes the **Exact Required GPA** needed across all remaining credit hours using weighted quality points formulas.
-  * Feasibility Audit: If the required GPA exceeds $4.00$, the system highlights the goal in warning amber with actionable guidance to adjust the target.
+
+- **Purpose**: Degree credit audits, cumulative GPA tracking, and mathematical required score forecasting.
+- **How It Works**:
+  - Tracks total degree credits, completed credits, current cumulative GPA, and target graduation GPA.
+  - Dynamically computes the **Exact Required GPA** needed across all remaining credit hours using weighted quality points formulas.
+  - Feasibility Audit: If the required GPA exceeds $4.00$, the system highlights the goal in warning amber with actionable guidance to adjust the target.
 
 ---
 
 ### 4. Scheduled Study Tracker & Focus Sessions (`tracker`)
-* **Purpose**: Real-time focus tracking with calendar scheduling, material linking, and time-gating.
-* **How It Works**:
-  * **Scheduled Focus Blocks**: Students book study sessions with a scheduled date, start time, duration, linked course, and uploaded study material note/document.
-  * **Strict Time-Gating**: Sessions are locked until the scheduled start time arrives, preventing premature completions and fostering true academic discipline.
-  * **Live Focus Timer**: Includes full-screen focus mode, pause/resume, and extension options (+15m, +30m, +45m) with real-time goal progress updates.
-  * **Multi-Format Session Logging**: Supports scheduled sessions, live Pomodoro sessions, and retroactive manual logging.
+
+- **Purpose**: Real-time focus tracking with calendar scheduling, material linking, and time-gating.
+- **How It Works**:
+  - **Scheduled Focus Blocks**: Students book study sessions with a scheduled date, start time, duration, linked course, and uploaded study material note/document.
+  - **Strict Time-Gating**: Sessions are locked until the scheduled start time arrives, preventing premature completions and fostering true academic discipline.
+  - **Live Focus Timer**: Includes full-screen focus mode, pause/resume, and extension options (+15m, +30m, +45m) with real-time goal progress updates.
+  - **Multi-Format Session Logging**: Supports scheduled sessions, live Pomodoro sessions, and retroactive manual logging.
 
 ---
 
 ### 5. Post-Session Gemini AI Diagnostic Testing & Weak Topic Reports
-* **Purpose**: Verifies concept mastery immediately upon finishing a study block and pinpoints weak areas.
-* **How It Works**:
-  * **Instant Quiz Trigger**: When a student completes a focus session linked to a study material, they can immediately launch a **Gemini AI Diagnostic Assessment**.
-  * **Concept Extraction**: Backend feeds the study material text to `gemini-2.0-flash`, generating 4–5 multiple-choice questions assessing core concepts, edge cases, and principles.
-  * **Diagnostic Weak Topic Report**:
-    * Highlights overall score percentage and mastery badge (*Proficient*, *Review Needed*, etc.).
-    * Outlines specifically detected **Weak Topics** where the student missed questions.
-    * Generates personalized AI study recommendations and key takeaways.
+
+- **Purpose**: Verifies concept mastery immediately upon finishing a study block and pinpoints weak areas.
+- **How It Works**:
+  - **Instant Quiz Trigger**: When a student completes a focus session linked to a study material, they can immediately launch a **Gemini AI Diagnostic Assessment**.
+  - **Concept Extraction**: Backend feeds the study material text to `gemini-2.0-flash`, generating 4–5 multiple-choice questions assessing core concepts, edge cases, and principles.
+  - **Diagnostic Weak Topic Report**:
+    - Highlights overall score percentage and mastery badge (_Proficient_, _Review Needed_, etc.).
+    - Outlines specifically detected **Weak Topics** where the student missed questions.
+    - Generates personalized AI study recommendations and key takeaways.
 
 ---
 
 ### 6. Study Materials Hub, Native Reader & PDF Exporter (`materials`)
-* **Purpose**: Centralized course document repository, rich Markdown notes editor, in-browser reader, and PDF export.
-* **How It Works**:
-  * **Multi-Format Support**: Upload lecture slides, syllabus documents, textbooks, and notes (`.pdf`, `.docx`, `.txt`, `.md`, `.csv`).
-  * **Multimodal Text Extraction**: Powered by `pypdf` and XML docx parsers, automatically extracting plain text from uploaded files on save.
-  * **AI Analysis Pipeline**: Runs background Gemini AI analysis on uploaded materials to extract key topics, chapter summaries, formula sheets, and study cheat-sheets.
-  * **Native Document Reader**: Full-screen reader with dark/light modes, table of contents generator, and instant text search.
-  * **PDF Export Engine**: Built on Python `reportlab`, generating formatted downloadable PDF study guides with university branding.
+
+- **Purpose**: Centralized course document repository, rich Markdown notes editor, in-browser reader, and PDF export.
+- **How It Works**:
+  - **Multi-Format Support**: Upload lecture slides, syllabus documents, textbooks, and notes (`.pdf`, `.docx`, `.txt`, `.md`, `.csv`).
+  - **Multimodal Text Extraction**: Powered by `pypdf` and XML docx parsers, automatically extracting plain text from uploaded files on save.
+  - **AI Analysis Pipeline**: Runs background Gemini AI analysis on uploaded materials to extract key topics, chapter summaries, formula sheets, and study cheat-sheets.
+  - **Native Document Reader**: Full-screen reader with dark/light modes, table of contents generator, and instant text search.
+  - **PDF Export Engine**: Built on Python `reportlab`, generating formatted downloadable PDF study guides with university branding.
 
 ---
 
 ### 7. Course-Specific AI Chat Assistant
-* **Purpose**: 24/7 AI tutor grounded exclusively in the student's enrolled course materials.
-* **How It Works**:
-  * Students can open an interactive AI chat interface within any course.
-  * The backend constructs a dynamic context window containing extracted lecture summaries, note transcripts, and key topics.
-  * Gemini AI answers student questions with precise citations, step-by-step mathematical proofs, and conceptual analogies.
+
+- **Purpose**: 24/7 AI tutor grounded exclusively in the student's enrolled course materials.
+- **How It Works**:
+  - Students can open an interactive AI chat interface within any course.
+  - The backend constructs a dynamic context window containing extracted lecture summaries, note transcripts, and key topics.
+  - Gemini AI answers student questions with precise citations, step-by-step mathematical proofs, and conceptual analogies.
 
 ---
 
 ### 8. Gamified Rewards, Streaks & Milestone Badges (`tracker`)
-* **Purpose**: Fosters consistent daily learning habits through streak mechanics and milestone achievements.
-* **How It Works**:
-  * **Custom Daily Goals**: Students configure daily target focus minutes (default: 60 min).
-  * **Continuous Streak Engine**: Analyzes unique session dates in chronological order to detect active streaks, preserved streaks, or gap resets.
-  * **8 Tiered Milestone Badges**:
-    * 🌱 **First Step**: First focus session logged.
-    * 🔥 **Ignition Flame**: 3-day consecutive study streak.
-    * ⚡ **Unstoppable Momentum**: 7-day consecutive streak.
-    * 👑 **Academic Master**: 14-day consecutive streak.
-    * ⏱️ **Focus Initiate**: 5 hours (300 mins) total study.
-    * 📚 **Deep Scholar**: 20 hours (1,200 mins) total study.
-    * 🏆 **Centurion of Knowledge**: 100 hours (6,000 mins) total study.
-    * 🎯 **Daily Champion**: Hit daily target today.
+
+- **Purpose**: Fosters consistent daily learning habits through streak mechanics and milestone achievements.
+- **How It Works**:
+  - **Custom Daily Goals**: Students configure daily target focus minutes (default: 60 min).
+  - **Continuous Streak Engine**: Analyzes unique session dates in chronological order to detect active streaks, preserved streaks, or gap resets.
+  - **8 Tiered Milestone Badges**:
+    - 🌱 **First Step**: First focus session logged.
+    - 🔥 **Ignition Flame**: 3-day consecutive study streak.
+    - ⚡ **Unstoppable Momentum**: 7-day consecutive streak.
+    - 👑 **Academic Master**: 14-day consecutive streak.
+    - ⏱️ **Focus Initiate**: 5 hours (300 mins) total study.
+    - 📚 **Deep Scholar**: 20 hours (1,200 mins) total study.
+    - 🏆 **Centurion of Knowledge**: 100 hours (6,000 mins) total study.
+    - 🎯 **Daily Champion**: Hit daily target today.
 
 ---
 
 ### 9. Cross-Module Academic Analytics Dashboard (`analytics`)
-* **Purpose**: Visual intelligence aggregating data from Tracker, Planner, Materials, and Grade Planner.
-* **How It Works**:
-  * **Weekly Focus Histogram**: 7-day bar chart detailing daily focus minutes.
-  * **Subject Investment Distribution**: Multi-colored segmented progress bar showing proportional focus per course.
-  * **Schedule Adherence Audit**: Measures alignment between scheduled classes and actual study time.
-  * **Academic Intelligence Feed**: Automated heuristics recommending balance adjustments, rest days, or exam prep focus.
+
+- **Purpose**: Visual intelligence aggregating data from Tracker, Planner, Materials, and Grade Planner.
+- **How It Works**:
+  - **Weekly Focus Histogram**: 7-day bar chart detailing daily focus minutes.
+  - **Subject Investment Distribution**: Multi-colored segmented progress bar showing proportional focus per course.
+  - **Schedule Adherence Audit**: Measures alignment between scheduled classes and actual study time.
+  - **Academic Intelligence Feed**: Automated heuristics recommending balance adjustments, rest days, or exam prep focus.
 
 ---
 
 ### 10. Student Community, Discussions & Study Events (`community`)
-* **Purpose**: Peer collaboration, academic Q&A forums, study groups, and campus review sessions.
-* **How It Works**:
-  * **Discussions Hub**: Categorized forum (*General, Exam Prep, Study Groups, Course Help, Resources*) with nested comments and live upvote reactions.
-  * **Study Events & RSVP**: Students create in-person or virtual exam prep events with live attendee RSVP tracking.
-  * **Peer Social Directory**: Follow/unfollow classmates, search scholars by major, and view public achievement stats.
+
+- **Purpose**: Peer collaboration, academic Q&A forums, study groups, and campus review sessions.
+- **How It Works**:
+  - **Discussions Hub**: Categorized forum (_General, Exam Prep, Study Groups, Course Help, Resources_) with nested comments and live upvote reactions.
+  - **Study Events & RSVP**: Students create in-person or virtual exam prep events with live attendee RSVP tracking.
+  - **Peer Social Directory**: Follow/unfollow classmates, search scholars by major, and view public achievement stats.
 
 ---
 
 ### 11. Privacy-Preserving Global Study Leaderboard (`community`)
-* **Purpose**: Healthy academic competition with strict privacy controls.
-* **How It Works**:
-  * **Opt-In Privacy Guard**: Students control leaderboard visibility via `is_opted_in` flag; opted-out student data remains 100% private.
-  * **Custom Academic Motto**: Display personalized inspiration quotes on profile badges.
-  * **3 Filtering Modes**: Weekly Focus (last 7 days), Streak Masters (active streaks), and All-Time Focus (lifetime total).
-  * **Top 3 Podium**: Elevated podium displaying Gold, Silver, and Bronze student cards.
+
+- **Purpose**: Healthy academic competition with strict privacy controls.
+- **How It Works**:
+  - **Opt-In Privacy Guard**: Students control leaderboard visibility via `is_opted_in` flag; opted-out student data remains 100% private.
+  - **Custom Academic Motto**: Display personalized inspiration quotes on profile badges.
+  - **3 Filtering Modes**: Weekly Focus (last 7 days), Streak Masters (active streaks), and All-Time Focus (lifetime total).
+  - **Top 3 Podium**: Elevated podium displaying Gold, Silver, and Bronze student cards.
 
 ---
 
@@ -203,11 +215,12 @@ graph TD
 ### A. Weighted Credit GPA Projection & Feasibility Math
 
 Let:
-* $C_{curr} = \text{Completed Credits}$
-* $C_{tot} = \text{Total Program Credits}$
-* $C_{rem} = C_{tot} - C_{curr} = \text{Remaining Credits}$
-* $GPA_{curr} = \text{Current Cumulative GPA}$
-* $GPA_{target} = \text{Target Cumulative GPA}$
+
+- $C_{curr} = \text{Completed Credits}$
+- $C_{tot} = \text{Total Program Credits}$
+- $C_{rem} = C_{tot} - C_{curr} = \text{Remaining Credits}$
+- $GPA_{curr} = \text{Current Cumulative GPA}$
+- $GPA_{target} = \text{Target Cumulative GPA}$
 
 The required GPA ($GPA_{req}$) on the remaining credits is computed as:
 
@@ -237,12 +250,12 @@ flowchart TD
 ```
 
 1. **Current Streak**:
-   * If today's date $D_0 \in \text{Dates}$: $S_{curr} = 1 + \text{count consecutive prior days } (D_0 - 1, D_0 - 2, \dots)$.
-   * If $D_0 \notin \text{Dates}$ but $(D_0 - 1) \in \text{Dates}$: Streak is alive for today. Count backwards from yesterday.
-   * If $(D_0 - 1) \notin \text{Dates}$: Streak resets to $0$.
+   - If today's date $D_0 \in \text{Dates}$: $S_{curr} = 1 + \text{count consecutive prior days } (D_0 - 1, D_0 - 2, \dots)$.
+   - If $D_0 \notin \text{Dates}$ but $(D_0 - 1) \in \text{Dates}$: Streak is alive for today. Count backwards from yesterday.
+   - If $(D_0 - 1) \notin \text{Dates}$: Streak resets to $0$.
 2. **Longest Streak**:
-   * Sort all unique dates chronologically: $\Delta(D_{i}, D_{i-1}) = 1 \implies \text{increment streak counter}$.
-   * Keep running maximum across all recorded history.
+   - Sort all unique dates chronologically: $\Delta(D_{i}, D_{i-1}) = 1 \implies \text{increment streak counter}$.
+   - Keep running maximum across all recorded history.
 
 ---
 
@@ -269,9 +282,10 @@ $$\text{Adherence Rate (\%)} = \frac{|\text{Scheduled Courses} \cap \text{Studie
 ### E. Multi-Tier Deterministic Leaderboard Ranking Engine
 
 Ranks participants with zero ambiguity using prioritized deterministic tie-breakers:
-* **Weekly Focus**: Primary: $\text{weekly\_minutes} \downarrow$, Secondary: $\text{current\_streak} \downarrow$, Tertiary: $\text{total\_minutes} \downarrow$, Quaternary: $\text{full\_name} \uparrow$.
-* **Streak Masters**: Primary: $\text{current\_streak} \downarrow$, Secondary: $\text{longest\_streak} \downarrow$, Tertiary: $\text{weekly\_minutes} \downarrow$, Quaternary: $\text{full\_name} \uparrow$.
-* **All-Time Focus**: Primary: $\text{total\_minutes} \downarrow$, Secondary: $\text{total\_sessions} \downarrow$, Tertiary: $\text{current\_streak} \downarrow$, Quaternary: $\text{full\_name} \uparrow$.
+
+- **Weekly Focus**: Primary: $\text{weekly\_minutes} \downarrow$, Secondary: $\text{current\_streak} \downarrow$, Tertiary: $\text{total\_minutes} \downarrow$, Quaternary: $\text{full\_name} \uparrow$.
+- **Streak Masters**: Primary: $\text{current\_streak} \downarrow$, Secondary: $\text{longest\_streak} \downarrow$, Tertiary: $\text{weekly\_minutes} \downarrow$, Quaternary: $\text{full\_name} \uparrow$.
+- **All-Time Focus**: Primary: $\text{total\_minutes} \downarrow$, Secondary: $\text{total\_sessions} \downarrow$, Tertiary: $\text{current\_streak} \downarrow$, Quaternary: $\text{full\_name} \uparrow$.
 
 ---
 
@@ -360,18 +374,21 @@ erDiagram
 ### Quick Start with Docker (Recommended)
 
 1. **Clone the repository**:
+
    ```bash
    git clone https://github.com/Rafayet-Hossen/student-brain.git
    cd student-brain
    ```
 
 2. **Configure environment variables**:
+
    ```bash
    cp .env.example .env
    # Add your GEMINI_API_KEY in .env
    ```
 
 3. **Start all services**:
+
    ```bash
    docker compose up -d --build
    ```
@@ -388,15 +405,19 @@ erDiagram
 StudentBrain includes built-in scripts to test and present your app on multiple devices:
 
 ### Option 1: Access from Other Computers on the Same Wi-Fi / LAN
+
 ```bash
 ./scripts/share_network.sh
 ```
+
 Open `http://<YOUR_LOCAL_IP>:5173` on any computer, phone, or tablet connected to your Wi-Fi.
 
 ### Option 2: Instant Public Internet Access (Cloudflare Tunnel)
+
 ```bash
 ./scripts/share_tunnel.sh
 ```
+
 This generates a live public HTTPS link (e.g., `https://random-words.trycloudflare.com`) accessible from anywhere in the world!
 
 ---
@@ -406,6 +427,7 @@ This generates a live public HTTPS link (e.g., `https://random-words.trycloudfla
 ### Deploying on Debian 13 (Trixie) / Ubuntu Linux VPS
 
 1. **Clone and run the automated deployment script**:
+
    ```bash
    git clone https://github.com/Rafayet-Hossen/student-brain.git /opt/student-brain
    cd /opt/student-brain
@@ -429,24 +451,24 @@ This generates a live public HTTPS link (e.g., `https://random-words.trycloudfla
 
 All pre-seeded demo accounts share the password: **`Password123!`**
 
-| # | Scholar Name | Email | Department & Major | Focus Highlights |
-|---|--------------|-------|--------------------|------------------|
-| 1 | **Baitun Nahar Bithy** | `baitun.bithy@example.com` | Biochemistry & Molecular Biology | 🥇 **Rank #1** (48h focus, 10-day streak, 3.98 GPA, Organic Review Host) |
-| 2 | **Jamil Hossain** | `jamil.hossain@example.com` | Computer Science & Engineering (CSE) | 🥈 **Rank #2** (38h focus, 8-day streak, 3.95 GPA, LeetCode Bootcamp Host) |
-| 3 | **Saptarshi Biswas Supty** | `saptarshi.supty@example.com` | Applied Mathematics & Statistics | 🥉 **Rank #3** (29h focus, 6-day streak, 3.96 GPA, Real Analysis proofs) |
-| 4 | **Sourav Saha** | `souravs.aha@example.com` | Software Engineering (SWE) | 🏅 **Rank #4** (21h focus, 5-day streak, Distributed Systems & Cloud) |
-| 5 | **Rayhan Chowdhury** | `rayhan.chowdhury@example.com` | Mechanical & Mechatronics Engineering | 🏅 **Rank #5** (17h focus, Robotics & Microcontrollers, CAD FEA) |
-| 6 | **Rafiq Al Mustafa** | `rafiq.mustafa@example.com` | Electrical & Electronic Engineering (EEE) | 🏅 **Rank #6** (12h focus, Signals & Linear Systems, Semiconductors) |
-| 7 | **Shofiqur Rahaman** | `shofiqur.rahaman@example.com` | Economics & Quantitative Finance | 🏅 **Rank #7** (8h focus, Econometrics & OLS Regression) |
+| #   | Scholar Name               | Email                          | Department & Major                        | Focus Highlights                                                           |
+| --- | -------------------------- | ------------------------------ | ----------------------------------------- | -------------------------------------------------------------------------- |
+| 1   | **Baitun Nahar Bithy**     | `baitun.bithy@example.com`     | Biochemistry & Molecular Biology          | 🥇 **Rank #1** (48h focus, 10-day streak, 3.98 GPA, Organic Review Host)   |
+| 2   | **Jamil Hossain**          | `jamil.hossain@example.com`    | Computer Science & Engineering (CSE)      | 🥈 **Rank #2** (38h focus, 8-day streak, 3.95 GPA, LeetCode Bootcamp Host) |
+| 3   | **Saptarshi Biswas Supty** | `saptarshi.supty@example.com`  | Applied Mathematics & Statistics          | 🥉 **Rank #3** (29h focus, 6-day streak, 3.96 GPA, Real Analysis proofs)   |
+| 4   | **Sourav Saha**            | `souravs.aha@example.com`      | Software Engineering (SWE)                | 🏅 **Rank #4** (21h focus, 5-day streak, Distributed Systems & Cloud)      |
+| 5   | **Rayhan Chowdhury**       | `rayhan.chowdhury@example.com` | Mechanical & Mechatronics Engineering     | 🏅 **Rank #5** (17h focus, Robotics & Microcontrollers, CAD FEA)           |
+| 6   | **Rafiq Al Mustafa**       | `rafiq.mustafa@example.com`    | Electrical & Electronic Engineering (EEE) | 🏅 **Rank #6** (12h focus, Signals & Linear Systems, Semiconductors)       |
+| 7   | **Shofiqur Rahaman**       | `shofiqur.rahaman@example.com` | Economics & Quantitative Finance          | 🏅 **Rank #7** (8h focus, Econometrics & OLS Regression)                   |
 
 ---
 
 ## 👨‍💻 Project Team & Contributors
 
-* **Rafayet Hossen** — Full-Stack Architecture, Study Tracker, Gemini AI Diagnostic Testing, Academic Analytics Dashboard, DevOps & Deployment.
-* **Sourav Saha** — Community Discussions Hub, Study Events Engine, Global Leaderboard Service.
-* **Baitun Nahar Bithy** — Academic UI/UX Design System, Grade Planner & GPA Forecasting Engine.
-* **Saptarshi Biswas Supty** — Academic UI/UX Design System, Study Schedule Maker & Routine Planner.
+- **Rafayet Hossen** — Full-Stack Architecture, Study Tracker, Gemini AI Diagnostic Testing, Academic Analytics Dashboard, DevOps & Deployment.
+- **Sourav Saha** — Community Discussions Hub, Study Events Engine, Global Leaderboard Service.
+- **Baitun Nahar Bithy** — Academic UI/UX Design System, Grade Planner & GPA Forecasting Engine.
+- **Saptarshi Biswas Supty** — Academic UI/UX Design System, Study Schedule Maker & Routine Planner.
 
 ---
 
