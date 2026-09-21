@@ -50,3 +50,25 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
 class ProfileSummarySerializer(serializers.Serializer):
     user = UserSerializer()
     performance = serializers.DictField()
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    sender_name = serializers.CharField(source="sender.full_name", read_only=True)
+    sender_avatar = serializers.CharField(source="sender.avatar", read_only=True, default="")
+
+    class Meta:
+        from .models import Notification
+        model = Notification
+        fields = [
+            "id",
+            "category",
+            "title",
+            "message",
+            "link",
+            "metadata",
+            "is_read",
+            "created_at",
+            "sender_name",
+            "sender_avatar",
+        ]
+

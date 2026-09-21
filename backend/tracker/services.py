@@ -1,5 +1,6 @@
 from datetime import date, datetime, timedelta
 from typing import Any, Dict, List
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import F, QuerySet, Sum
@@ -111,7 +112,32 @@ def complete_study_session(*, session: StudySession) -> StudySession:
     session.actual_completed_at = timezone.now()
     session.status = "completed"
     session.save(update_fields=["status", "actual_started_at", "actual_completed_at", "updated_at"])
+
+    # Check for newly unlocked milestones / badges and notify user
+    try:
+        from accounts.models import create_user_notification
+        rewards = get_user_rewards(user=session.user)
+        for r in rewards:
+            if r.get("unlocked"):
+                badge_name = r.get("name", "Study Badge")
+                badge_desc = r.get("description", "")
+                badge_icon = r.get("icon", "🏆")
+                create_user_notification(
+                    recipient=session.user,
+                    category="milestone",
+                    title=f"{badge_icon} Badge Unlocked: {badge_name}!",
+                    message=f"Outstanding work! You've unlocked the '{badge_name}' milestone: {badge_desc}",
+                    link="/study-center?tab=tracker",
+                    metadata={
+                        "dedup_key": f"badge_{r.get('id')}_{session.user.id}",
+                        "reward_id": r.get("id"),
+                    },
+                )
+    except Exception:
+        pass
+
     return session
+
 
 
 def extend_study_session(*, session: StudySession, extra_minutes: int) -> StudySession:
@@ -124,6 +150,21 @@ def extend_study_session(*, session: StudySession, extra_minutes: int) -> StudyS
 
 
 def generate_session_quiz(*, session: StudySession, force_refresh: bool = False) -> Dict[str, Any]:
+    # 1. Instant return if session already has generated quiz questions
+    if not force_refresh and session.quiz_results and isinstance(session.quiz_results, dict):
+        saved_questions = session.quiz_results.get("questions")
+        if saved_questions and len(saved_questions) >= 3:
+            return session.quiz_results
+
+    # 2. Check material-level cache if material is linked
+    mat_cache_key = None
+    if session.material_id:
+        mat_cache_key = f"quiz_mat_{session.material_id}"
+        if not force_refresh:
+            cached_quiz = cache.get(mat_cache_key)
+            if cached_quiz and isinstance(cached_quiz, dict) and cached_quiz.get("questions"):
+                return cached_quiz
+
     topics: List[str] = []
     difficulty = "Intermediate"
     subject = session.subject or "Study Session"
@@ -149,13 +190,18 @@ def generate_session_quiz(*, session: StudySession, force_refresh: bool = False)
     if not topics:
         topics = [subject]
 
-    return generate_topic_quiz(
+    quiz_result = generate_topic_quiz(
         subject=subject,
         topics=topics,
         num_questions=5,
         difficulty=difficulty,
         force_refresh=force_refresh,
     )
+
+    if mat_cache_key and quiz_result and quiz_result.get("questions"):
+        cache.set(mat_cache_key, quiz_result, timeout=86400 * 7)
+
+    return quiz_result
 
 
 def submit_session_quiz(*, session: StudySession, question_results: List[Dict[str, Any]]) -> StudySession:

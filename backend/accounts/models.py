@@ -61,3 +61,81 @@ class UserNotificationState(models.Model):
 
     def __str__(self):
         return f"NotificationState for {self.user.email}"
+
+
+class Notification(models.Model):
+    CATEGORY_CHOICES = [
+        ("session", "Study Session"),
+        ("milestone", "Milestone / Badge"),
+        ("comment", "Comment"),
+        ("reaction", "Reaction"),
+        ("event", "Study Event"),
+        ("academic", "Academic"),
+        ("system", "System"),
+    ]
+
+    recipient = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="notifications",
+    )
+    sender = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="sent_notifications",
+    )
+    category = models.CharField(
+        max_length=50,
+        choices=CATEGORY_CHOICES,
+        default="system",
+    )
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+    link = models.CharField(max_length=500, blank=True, default="")
+    metadata = models.JSONField(default=dict, blank=True)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"[{self.category}] {self.title} -> {self.recipient.email}"
+
+
+def create_user_notification(
+    *,
+    recipient,
+    title: str,
+    message: str,
+    category: str = "system",
+    link: str = "",
+    sender=None,
+    metadata: dict = None,
+) -> Notification:
+    """Safely create notification with deduplication key support."""
+    if metadata is None:
+        metadata = {}
+
+    dedup_key = metadata.get("dedup_key")
+    if dedup_key:
+        exists = Notification.objects.filter(
+            recipient=recipient,
+            category=category,
+            metadata__dedup_key=dedup_key,
+        ).exists()
+        if exists:
+            return None
+
+    return Notification.objects.create(
+        recipient=recipient,
+        sender=sender,
+        category=category,
+        title=title,
+        message=message,
+        link=link,
+        metadata=metadata,
+    )
+

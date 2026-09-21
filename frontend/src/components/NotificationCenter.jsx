@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bell, CheckCheck, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -76,20 +76,66 @@ const INITIAL_NOTIFICATIONS = [
   },
 ];
 
+function normalizeNotification(n, readSet) {
+  const isRead = Boolean(n.is_read) || (readSet && readSet.has(String(n.id)));
+  const dateObj = n.created_at ? new Date(n.created_at) : new Date();
+  const day = String(dateObj.getDate()).padStart(2, "0");
+  const month = dateObj.toLocaleString("en-US", { month: "short" });
+
+  let tab = "all";
+  if (n.category === "comment" || n.category === "reaction") tab = "comment";
+  else if (n.category === "announcement" || n.category === "event")
+    tab = "announcement";
+  else if (
+    n.category === "academic" ||
+    n.category === "session" ||
+    n.category === "milestone"
+  )
+    tab = "academic";
+
+  return {
+    id: n.id,
+    category: n.category || "system",
+    tab,
+    day,
+    month,
+    dateFormatted: `${day} ${month} • ${(n.category || "NOTIFICATION").toUpperCase()}`,
+    title: n.title,
+    message: n.message,
+    link: n.link || "/study-center?tab=tracker",
+    read: Boolean(isRead),
+    metadata: n.metadata || {},
+    sender_name: n.sender_name,
+  };
+}
+
 function getStoredNotifications() {
   try {
     const savedReadIds = localStorage.getItem(
       "student_brain_read_notification_ids",
     );
-    if (savedReadIds) {
-      const parsed = JSON.parse(savedReadIds);
+    const readSet = savedReadIds
+      ? new Set((JSON.parse(savedReadIds) || []).map(String))
+      : new Set();
+
+    const cachedNotifs = localStorage.getItem(
+      "student_brain_cached_notifications",
+    );
+    if (cachedNotifs) {
+      const parsed = JSON.parse(cachedNotifs);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        const readSet = new Set(parsed.map(String));
-        return INITIAL_NOTIFICATIONS.map((n) => ({
+        return parsed.map((n) => ({
           ...n,
-          read: readSet.has(String(n.id)),
+          read: Boolean(n.read || readSet.has(String(n.id))),
         }));
       }
+    }
+
+    if (savedReadIds && readSet.size > 0) {
+      return INITIAL_NOTIFICATIONS.map((n) => ({
+        ...n,
+        read: readSet.has(String(n.id)),
+      }));
     }
   } catch (e) {
     console.error("Failed to parse stored notification ids:", e);
@@ -107,41 +153,57 @@ export default function NotificationCenter() {
   const dropdownRef = useRef(null);
 
   // Sync with backend on mount, user change, or dropdown open for cross-device persistence
-  useEffect(() => {
-    let isMounted = true;
+  const fetchNotifications = useCallback(async () => {
     if (!user) return;
-
-    getNotificationState()
-      .then((state) => {
-        if (!isMounted) return;
-        if (
-          state?.read_notification_ids &&
-          Array.isArray(state.read_notification_ids)
-        ) {
-          const readSet = new Set(state.read_notification_ids.map(String));
+    try {
+      const state = await getNotificationState();
+      if (
+        state?.notifications &&
+        Array.isArray(state.notifications) &&
+        state.notifications.length > 0
+      ) {
+        const readSet = new Set(
+          (state.read_notification_ids || []).map(String),
+        );
+        const mapped = state.notifications.map((n) =>
+          normalizeNotification(n, readSet),
+        );
+        setNotifications(mapped);
+        try {
+          localStorage.setItem(
+            "student_brain_cached_notifications",
+            JSON.stringify(mapped),
+          );
+        } catch {}
+      } else if (
+        state?.read_notification_ids &&
+        Array.isArray(state.read_notification_ids)
+      ) {
+        const readSet = new Set(state.read_notification_ids.map(String));
+        setNotifications((prev) => {
+          const updated = prev.map((n) => ({
+            ...n,
+            read: readSet.has(String(n.id)),
+          }));
           try {
             localStorage.setItem(
-              "student_brain_read_notification_ids",
-              JSON.stringify(Array.from(readSet)),
+              "student_brain_cached_notifications",
+              JSON.stringify(updated),
             );
           } catch {}
+          return updated;
+        });
+      }
+    } catch (err) {
+      console.error("Notification state load error:", err);
+    }
+  }, [user]);
 
-          setNotifications((prev) =>
-            prev.map((n) => ({
-              ...n,
-              read: readSet.has(String(n.id)),
-            })),
-          );
-        }
-      })
-      .catch((err) => {
-        console.error("Notification state load error:", err);
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [user?.id, isOpen]);
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 25000);
+    return () => clearInterval(interval);
+  }, [fetchNotifications, isOpen]);
 
   // Keep all pages, tabs, and components 100% synchronized in real time
   useEffect(() => {
@@ -149,12 +211,19 @@ export default function NotificationCenter() {
       const readIds = e?.detail?.readIds;
       if (Array.isArray(readIds)) {
         const readSet = new Set(readIds.map(String));
-        setNotifications((prev) =>
-          prev.map((n) => ({
+        setNotifications((prev) => {
+          const updated = prev.map((n) => ({
             ...n,
             read: readSet.has(String(n.id)),
-          })),
-        );
+          }));
+          try {
+            localStorage.setItem(
+              "student_brain_cached_notifications",
+              JSON.stringify(updated),
+            );
+          } catch {}
+          return updated;
+        });
       }
     }
 
@@ -164,12 +233,19 @@ export default function NotificationCenter() {
           const parsed = JSON.parse(e.newValue || "[]");
           if (Array.isArray(parsed)) {
             const readSet = new Set(parsed.map(String));
-            setNotifications((prev) =>
-              prev.map((n) => ({
+            setNotifications((prev) => {
+              const updated = prev.map((n) => ({
                 ...n,
                 read: readSet.has(String(n.id)),
-              })),
-            );
+              }));
+              try {
+                localStorage.setItem(
+                  "student_brain_cached_notifications",
+                  JSON.stringify(updated),
+                );
+              } catch {}
+              return updated;
+            });
           }
         } catch {}
       }
@@ -243,15 +319,24 @@ export default function NotificationCenter() {
     academic: enabledNotifications.filter((n) => n.tab === "academic").length,
   };
 
-  function handleMarkAllRead(e) {
+  async function handleMarkAllRead(e) {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
     const allIds = notifications.map((n) => String(n.id));
 
-    // 1. Immediately update local state
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    // 1. Immediately update local state & cache
+    setNotifications((prev) => {
+      const updated = prev.map((n) => ({ ...n, read: true }));
+      try {
+        localStorage.setItem(
+          "student_brain_cached_notifications",
+          JSON.stringify(updated),
+        );
+      } catch {}
+      return updated;
+    });
 
     // 2. Persist to localStorage synchronously
     try {
@@ -269,15 +354,36 @@ export default function NotificationCenter() {
     );
 
     // 4. Save to backend database for cross-device persistence
-    saveNotificationState({
-      mark_all: true,
-      all_ids: allIds,
-    }).catch((err) => {
+    try {
+      const resp = await saveNotificationState({
+        mark_all: true,
+        all_ids: allIds,
+      });
+      if (
+        resp?.notifications &&
+        Array.isArray(resp.notifications) &&
+        resp.notifications.length > 0
+      ) {
+        const readSet = new Set(
+          (resp.read_notification_ids || allIds).map(String),
+        );
+        const mapped = resp.notifications.map((n) =>
+          normalizeNotification(n, readSet),
+        );
+        setNotifications(mapped);
+        try {
+          localStorage.setItem(
+            "student_brain_cached_notifications",
+            JSON.stringify(mapped),
+          );
+        } catch {}
+      }
+    } catch (err) {
       console.error("Backend notification sync error:", err);
-    });
+    }
   }
 
-  function handleMarkSingleRead(id, e) {
+  async function handleMarkSingleRead(id, e) {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
@@ -297,9 +403,18 @@ export default function NotificationCenter() {
       );
     } catch {}
 
-    setNotifications((prev) =>
-      prev.map((n) => (String(n.id) === readId ? { ...n, read: true } : n)),
-    );
+    setNotifications((prev) => {
+      const updated = prev.map((n) =>
+        String(n.id) === readId ? { ...n, read: true } : n,
+      );
+      try {
+        localStorage.setItem(
+          "student_brain_cached_notifications",
+          JSON.stringify(updated),
+        );
+      } catch {}
+      return updated;
+    });
 
     window.dispatchEvent(
       new CustomEvent("studentBrainNotificationsChanged", {
@@ -307,9 +422,30 @@ export default function NotificationCenter() {
       }),
     );
 
-    saveNotificationState({ read_id: readId }).catch((err) => {
+    try {
+      const resp = await saveNotificationState({ read_id: readId });
+      if (
+        resp?.notifications &&
+        Array.isArray(resp.notifications) &&
+        resp.notifications.length > 0
+      ) {
+        const readSet = new Set(
+          (resp.read_notification_ids || updatedIds).map(String),
+        );
+        const mapped = resp.notifications.map((n) =>
+          normalizeNotification(n, readSet),
+        );
+        setNotifications(mapped);
+        try {
+          localStorage.setItem(
+            "student_brain_cached_notifications",
+            JSON.stringify(mapped),
+          );
+        } catch {}
+      }
+    } catch (err) {
       console.error("Failed to mark single notif read in backend:", err);
-    });
+    }
   }
 
   function handleMarkSingleUnread(id, e) {
@@ -332,9 +468,18 @@ export default function NotificationCenter() {
       );
     } catch {}
 
-    setNotifications((prev) =>
-      prev.map((n) => (String(n.id) === unreadId ? { ...n, read: false } : n)),
-    );
+    setNotifications((prev) => {
+      const updated = prev.map((n) =>
+        String(n.id) === unreadId ? { ...n, read: false } : n,
+      );
+      try {
+        localStorage.setItem(
+          "student_brain_cached_notifications",
+          JSON.stringify(updated),
+        );
+      } catch {}
+      return updated;
+    });
 
     window.dispatchEvent(
       new CustomEvent("studentBrainNotificationsChanged", {

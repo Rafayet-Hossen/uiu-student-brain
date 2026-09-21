@@ -19,10 +19,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import Button from "../../../components/Button";
 
 const TIMER_MODES = [
-  { id: "pomodoro", label: "🍅 Pomodoro (25m)", minutes: 25 },
-  { id: "deep", label: "⚡ Deep Focus (50m)", minutes: 50 },
+  { id: "standardFocus", label: "🎯 Standard Focus (25m)", minutes: 25 },
+  { id: "deep", label: "⚡ Deep Work Sprint (50m)", minutes: 50 },
   { id: "shortBreak", label: "☕ Short Break (5m)", minutes: 5 },
-  { id: "longBreak", label: "🌴 Long Break (15m)", minutes: 15 },
+  { id: "longBreak", label: "🌴 Extended Break (15m)", minutes: 15 },
   { id: "stopwatch", label: "⏱️ Open Stopwatch", minutes: 0 },
 ];
 
@@ -33,7 +33,7 @@ export default function FocusTimer({
   onTakeQuiz,
   availableSubjects = [],
 }) {
-  const [activeMode, setActiveMode] = useState("pomodoro");
+  const [activeMode, setActiveMode] = useState("standardFocus");
   const [totalSeconds, setTotalSeconds] = useState(25 * 60);
   const [secondsRemaining, setSecondsRemaining] = useState(25 * 60);
   const [stopwatchSeconds, setStopwatchSeconds] = useState(0);

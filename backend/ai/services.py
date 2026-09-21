@@ -127,27 +127,27 @@ def generate_topic_quiz(
             return cached
 
     prompt = f"""
-    Create an academic multiple-choice assessment for the course '{subject}'.
+    Create a rapid academic multiple-choice assessment for '{subject}'.
     Difficulty level: {difficulty}.
-    Target number of questions: {num_questions}.
-    Topics to cover: {', '.join(topics)}.
+    Number of questions: {num_questions}.
+    Topics: {', '.join(topics)}.
 
-    Guidelines:
-    - Exactly 4 plausible options per question.
+    Rules:
+    - 4 distinct options per question.
     - Zero-based index for correct_answer_index (0, 1, 2, or 3).
-    - Provide an insightful explanation for each answer.
-    - Attach the specific sub-topic tag to each question.
+    - Provide a concise 1-sentence explanation for the correct answer.
+    - Attach the concise sub-topic tag.
     """
 
     result = _call_gemini_structured(
         contents=prompt,
         response_schema=QuizGenerationResult,
-        system_instruction="You are a university professor creating fair, high-yield examination questions. Keep questions, options, and explanations clear, concise, and academically rigorous.",
-        temperature=0.2,
+        system_instruction="You are an expert university examiner generating concise, high-yield diagnostic questions. Keep questions, options, and explanations brief and direct for rapid evaluation.",
+        temperature=0.1,
         models=[PRIMARY_MODEL, FALLBACK_MODEL],
     )
 
-    cache.set(cache_key, result, timeout=86400)
+    cache.set(cache_key, result, timeout=86400 * 7)
     return result
 
 

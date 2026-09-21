@@ -25,11 +25,24 @@ export default function SessionQuizModal({
   onQuizCompleted,
 }) {
   const [loading, setLoading] = useState(true);
+  const [loadingStep, setLoadingStep] = useState(0);
   const [error, setError] = useState("");
   const [quizData, setQuizData] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState({}); // { [questionIndex]: optionIndex }
   const [submitting, setSubmitting] = useState(false);
+
+  // Cycling loading step animation
+  useEffect(() => {
+    if (!loading) {
+      setLoadingStep(0);
+      return;
+    }
+    const interval = setInterval(() => {
+      setLoadingStep((prev) => (prev + 1) % 3);
+    }, 1100);
+    return () => clearInterval(interval);
+  }, [loading]);
 
   // Load Quiz
   useEffect(() => {
@@ -153,10 +166,10 @@ export default function SessionQuizModal({
         exit={{ opacity: 0, scale: 0.95, y: 16 }}
         transition={{ duration: 0.2 }}
         onClick={(e) => e.stopPropagation()}
-        style={{ maxWidth: "620px" }}
+        style={{ maxWidth: "640px", width: "95vw" }}
       >
         {/* Header */}
-        <div className="tracker-modal-header">
+        <div className="tracker-modal-header session-quiz-header">
           <div className="tracker-modal-title-box">
             <span className="tracker-modal-icon">✨</span>
             <div>
@@ -164,8 +177,8 @@ export default function SessionQuizModal({
                 AI Diagnostic Concept Test
               </h3>
               <p className="tracker-modal-subheading">
-                Course: <strong>{session?.subject}</strong> • 5 Targeted
-                Questions
+                Course: <strong>{session?.subject}</strong> •{" "}
+                {totalQuestions || 5} Questions
               </p>
             </div>
           </div>
@@ -180,17 +193,55 @@ export default function SessionQuizModal({
           </button>
         </div>
 
-        {/* Modal Body */}
-        <div className="tracker-modal-body" style={{ minHeight: "340px" }}>
+        {/* Scrollable Modal Body */}
+        <div className="session-quiz-scroll-body">
           {loading && (
-            <div className="quiz-loading-state py-12 text-center">
-              <Spinner size="lg" />
-              <p className="mt-3 font-semibold text-primary">
-                Gemini AI is generating targeted assessment questions...
+            <div className="quiz-loading-container">
+              <div className="quiz-loading-ai-halo">
+                <div className="quiz-loading-pulse-ring" />
+                <div className="quiz-loading-icon-badge">
+                  <Sparkles size={28} className="quiz-loading-sparkle-anim" />
+                </div>
+              </div>
+
+              <h4 className="quiz-loading-title">
+                Gemini AI is Formulating Diagnostic Test
+              </h4>
+              <p className="quiz-loading-subtitle">
+                Targeted assessment for <strong>{session?.subject}</strong>
               </p>
-              <p className="text-xs text-muted mt-1">
-                Analyzing key topics from "{session?.subject}"
-              </p>
+
+              {/* Multi-step progress indicator */}
+              <div className="quiz-loading-steps-card">
+                <div
+                  className={`quiz-loading-step-item ${loadingStep >= 0 ? "step-active" : ""}`}
+                >
+                  <span className="step-dot" />
+                  <span className="step-text">
+                    Analyzing course syllabus & key concepts
+                  </span>
+                </div>
+                <div
+                  className={`quiz-loading-step-item ${loadingStep >= 1 ? "step-active" : ""}`}
+                >
+                  <span className="step-dot" />
+                  <span className="step-text">
+                    Generating targeted multiple-choice questions
+                  </span>
+                </div>
+                <div
+                  className={`quiz-loading-step-item ${loadingStep >= 2 ? "step-active" : ""}`}
+                >
+                  <span className="step-dot" />
+                  <span className="step-text">
+                    Calibrating diagnostic evaluation rubric
+                  </span>
+                </div>
+              </div>
+
+              <div className="quiz-loading-shimmer-track">
+                <div className="quiz-loading-shimmer-bar" />
+              </div>
             </div>
           )}
 
@@ -202,15 +253,15 @@ export default function SessionQuizModal({
           )}
 
           {!loading && !error && currentQuestion && (
-            <div>
+            <div className="session-quiz-content-wrapper">
               {/* Question Progress Bar & Steps */}
-              <div className="quiz-progress-bar-container mb-4">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs font-semibold text-primary">
+              <div className="quiz-progress-bar-container">
+                <div className="quiz-progress-meta-row">
+                  <span className="quiz-progress-step-text">
                     Question {currentIndex + 1} of {totalQuestions}
                   </span>
-                  <span className="text-xs text-muted">
-                    {answeredCount}/{totalQuestions} Answered
+                  <span className="quiz-progress-answered-pill">
+                    {answeredCount} of {totalQuestions} Answered
                   </span>
                 </div>
 
@@ -274,47 +325,49 @@ export default function SessionQuizModal({
                   })}
                 </div>
               </div>
-
-              {/* Navigation Controls */}
-              <div className="quiz-nav-footer mt-5 flex justify-between items-center">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  icon={ChevronLeft}
-                  onClick={handlePrev}
-                  disabled={currentIndex === 0 || submitting}
-                >
-                  Previous
-                </Button>
-
-                <div className="flex gap-2">
-                  {!isLastQuestion ? (
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={handleNext}
-                      disabled={!isAnswered || submitting}
-                    >
-                      <span>Next Question</span>
-                      <ChevronRight size={16} className="ml-1" />
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="success"
-                      size="sm"
-                      icon={Sparkles}
-                      loading={submitting}
-                      disabled={answeredCount < totalQuestions || submitting}
-                      onClick={handleSubmitQuiz}
-                    >
-                      Submit & Analyze Diagnostic
-                    </Button>
-                  )}
-                </div>
-              </div>
             </div>
           )}
         </div>
+
+        {/* Dedicated Fixed Navigation Footer */}
+        {!loading && !error && currentQuestion && (
+          <div className="quiz-nav-footer">
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={ChevronLeft}
+              onClick={handlePrev}
+              disabled={currentIndex === 0 || submitting}
+            >
+              Previous
+            </Button>
+
+            <div className="quiz-nav-footer-actions">
+              {!isLastQuestion ? (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleNext}
+                  disabled={!isAnswered || submitting}
+                >
+                  <span>Next Question</span>
+                  <ChevronRight size={16} className="ml-1" />
+                </Button>
+              ) : (
+                <Button
+                  variant="success"
+                  size="sm"
+                  icon={Sparkles}
+                  loading={submitting}
+                  disabled={answeredCount < totalQuestions || submitting}
+                  onClick={handleSubmitQuiz}
+                >
+                  Submit Diagnostic
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
       </motion.div>
     </div>
   );

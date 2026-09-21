@@ -70,6 +70,20 @@ def toggle_post_reaction(*, user, post: Post) -> dict:
     else:
         Reaction.objects.create(post=post, user=user)
         liked = True
+        if post.author != user:
+            try:
+                from accounts.models import create_user_notification
+                create_user_notification(
+                    recipient=post.author,
+                    sender=user,
+                    category="reaction",
+                    title=f"❤️ {user.full_name or 'A classmate'} reacted to your post",
+                    message=f"{user.full_name or 'Someone'} liked your discussion: \"{post.title[:50]}\"",
+                    link="/community",
+                    metadata={"post_id": post.id, "dedup_key": f"react_{post.id}_{user.id}"},
+                )
+            except Exception:
+                pass
 
     likes_count = Reaction.objects.filter(post=post).count()
     return {"liked": liked, "likes_count": likes_count}
@@ -85,11 +99,27 @@ def list_comments_for_post(*, post_id: int) -> QuerySet[Comment]:
 
 def create_comment(*, user, post_id: int, validated_data: dict) -> Comment:
     post = Post.objects.get(id=post_id)
-    return Comment.objects.create(
+    comment = Comment.objects.create(
         post=post,
         author=user,
         **validated_data,
     )
+    if post.author != user:
+        try:
+            from accounts.models import create_user_notification
+            create_user_notification(
+                recipient=post.author,
+                sender=user,
+                category="comment",
+                title=f"💬 New comment from {user.full_name or 'a peer'}",
+                message=f"{user.full_name or 'A student'} commented: \"{comment.content[:60]}\"",
+                link="/community",
+                metadata={"post_id": post.id, "comment_id": comment.id},
+            )
+        except Exception:
+            pass
+    return comment
+
 
 
 def delete_comment(*, comment_id: int, user) -> None:
@@ -168,8 +198,22 @@ def toggle_event_rsvp(*, user, event_id: int, status: str = "going") -> dict:
         EventRSVP.objects.create(event=event, user=user, status=norm_status)
         user_rsvp_status = norm_status
 
+    if user_rsvp_status == "going" and event.creator != user:
+        try:
+            from accounts.models import create_user_notification
+            create_user_notification(
+                recipient=event.creator,
+                sender=user,
+                category="event",
+                title=f"📅 New RSVP for '{event.title[:35]}'",
+                message=f"{user.full_name or 'A student'} RSVP'd 'Going' to your study event scheduled for {event.event_date}.",
+                link="/community",
+                metadata={"event_id": event.id, "dedup_key": f"rsvp_{event.id}_{user.id}"},
+            )
+        except Exception:
+            pass
+
     going_count = EventRSVP.objects.filter(event=event, status="going").count()
-    interested_count = EventRSVP.objects.filter(event=event, status="interested").count()
     interested_count = EventRSVP.objects.filter(event=event, status__in=["interested", "going"]).count()
     return {
         "rsvped": user_rsvp_status is not None,

@@ -85,10 +85,10 @@ export default function QuizDiagnosticModal({
         exit={{ opacity: 0, scale: 0.95, y: 16 }}
         transition={{ duration: 0.2 }}
         onClick={(e) => e.stopPropagation()}
-        style={{ maxWidth: "680px" }}
+        style={{ maxWidth: "680px", width: "95vw" }}
       >
-        {/* Header */}
-        <div className="tracker-modal-header">
+        {/* Pinned Header */}
+        <div className="tracker-modal-header diagnostic-report-header">
           <div className="tracker-modal-title-box">
             <span className="tracker-modal-icon">📊</span>
             <div>
@@ -110,11 +110,8 @@ export default function QuizDiagnosticModal({
           </button>
         </div>
 
-        {/* Modal Body */}
-        <div
-          className="tracker-modal-body"
-          style={{ maxHeight: "78vh", overflowY: "auto" }}
-        >
+        {/* Scrollable Report Body */}
+        <div className="diagnostic-report-scroll-body">
           {/* Top Score Banner */}
           <div className={`diagnostic-score-hero ${tier.colorClass}`}>
             <div className="score-dial-box">
@@ -127,38 +124,34 @@ export default function QuizDiagnosticModal({
 
             <div className="score-hero-details">
               <div className="tier-tag-pill">
-                <span>{tier.icon}</span>
-                <span>{tier.label}</span>
+                <span className="tier-icon">{tier.icon}</span>
+                <span className="tier-label">{tier.label}</span>
               </div>
               <p className="tier-summary-text">{tier.summary}</p>
             </div>
           </div>
 
-          {/* Weak Topics & Mastered Topics 2-Col Grid */}
-          <div
-            className="grid grid-cols-2 gap-3 my-4"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "14px",
-            }}
-          >
+          {/* Weak Topics & Mastered Topics Responsive Grid */}
+          <div className="diagnostic-topics-grid">
             {/* Weak Topics */}
             <div className="diagnostic-topics-card card-weak">
-              <div className="flex items-center gap-2 mb-2 text-danger font-semibold text-xs">
-                <AlertTriangle size={15} />
-                <span>Weak Sub-Topics (Review Needed)</span>
+              <div className="topic-card-header topic-header-danger">
+                <span className="topic-card-icon-badge badge-danger">
+                  <AlertTriangle size={14} />
+                </span>
+                <span className="topic-card-title">Weak Sub-Topics (Review Needed)</span>
               </div>
               {weakTopics.length > 0 ? (
                 <ul className="topics-bullet-list">
                   {weakTopics.map((topic, i) => (
                     <li key={i} className="weak-topic-pill">
-                      {topic}
+                      <span className="topic-bullet-dot">⚠</span>
+                      <span>{topic}</span>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-xs text-muted">
+                <p className="topic-empty-text text-success">
                   🎉 No weak spots identified! Flawless performance.
                 </p>
               )}
@@ -166,20 +159,23 @@ export default function QuizDiagnosticModal({
 
             {/* Mastered Topics */}
             <div className="diagnostic-topics-card card-mastered">
-              <div className="flex items-center gap-2 mb-2 text-success font-semibold text-xs">
-                <CheckCircle2 size={15} />
-                <span>Mastered Concepts (Strengths)</span>
+              <div className="topic-card-header topic-header-success">
+                <span className="topic-card-icon-badge badge-success">
+                  <CheckCircle2 size={14} />
+                </span>
+                <span className="topic-card-title">Mastered Concepts (Strengths)</span>
               </div>
               {masteredTopics.length > 0 ? (
                 <ul className="topics-bullet-list">
                   {masteredTopics.map((topic, i) => (
                     <li key={i} className="mastered-topic-pill">
-                      {topic}
+                      <span className="topic-bullet-dot">✓</span>
+                      <span>{topic}</span>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-xs text-muted">
+                <p className="topic-empty-text">
                   Continue practicing to solidify concepts.
                 </p>
               )}
@@ -188,16 +184,18 @@ export default function QuizDiagnosticModal({
 
           {/* AI Recommendations */}
           {recommendations.length > 0 && (
-            <div className="diagnostic-recommendations-box mb-4">
-              <div className="flex items-center gap-2 mb-2 text-primary font-semibold text-xs">
-                <Lightbulb size={16} className="text-amber" />
-                <span>Gemini AI Actionable Study Recommendations:</span>
+            <div className="diagnostic-recommendations-box">
+              <div className="recommendations-header">
+                <span className="rec-icon-badge">
+                  <Lightbulb size={16} />
+                </span>
+                <span className="rec-header-title">Gemini AI Actionable Study Recommendations:</span>
               </div>
               <ul className="recommendations-list">
                 {recommendations.map((rec, i) => (
                   <li key={i} className="rec-item">
                     <span className="rec-bullet">👉</span>
-                    <span>{rec}</span>
+                    <span className="rec-text">{rec}</span>
                   </li>
                 ))}
               </ul>
@@ -207,14 +205,12 @@ export default function QuizDiagnosticModal({
           {/* Detailed Question Breakdown Accordion */}
           {questions.length > 0 && (
             <div className="diagnostic-questions-section">
-              <h4 className="section-title text-xs font-bold text-muted uppercase tracking-wider mb-2">
-                Detailed Question Breakdown
-              </h4>
+              <div className="section-title-row">
+                <FileText size={15} className="text-primary" />
+                <h4 className="section-title">Detailed Question Breakdown</h4>
+              </div>
 
-              <div
-                className="space-y-2"
-                style={{ display: "flex", flexDirection: "column", gap: "8px" }}
-              >
+              <div className="breakdown-list">
                 {questions.map((q, idx) => {
                   const isCorrect = q.is_correct;
                   const isExpanded = expandedQuestionIdx === idx;
@@ -229,60 +225,56 @@ export default function QuizDiagnosticModal({
                         className="breakdown-item-header"
                         onClick={() => toggleExpand(idx)}
                       >
-                        <div className="flex items-center gap-2 flex-1 text-left">
-                          {isCorrect ? (
-                            <CheckCircle2
-                              size={16}
-                              className="text-success flex-shrink-0"
-                            />
-                          ) : (
-                            <XCircle
-                              size={16}
-                              className="text-danger flex-shrink-0"
-                            />
-                          )}
-                          <span className="text-xs font-semibold">
-                            Q{idx + 1}:
+                        <div className="breakdown-item-header-left">
+                          <span
+                            className={`breakdown-status-badge ${
+                              isCorrect ? "status-correct" : "status-incorrect"
+                            }`}
+                          >
+                            {isCorrect ? (
+                              <CheckCircle2 size={15} />
+                            ) : (
+                              <XCircle size={15} />
+                            )}
                           </span>
-                          <span className="text-xs truncate font-medium">
+                          <span className="breakdown-q-badge">
+                            Q{idx + 1}
+                          </span>
+                          <span className="breakdown-q-title">
                             {q.question}
                           </span>
                         </div>
-                        {isExpanded ? (
-                          <ChevronUp size={16} />
-                        ) : (
-                          <ChevronDown size={16} />
-                        )}
+                        <span className="breakdown-chevron-box">
+                          {isExpanded ? (
+                            <ChevronUp size={16} />
+                          ) : (
+                            <ChevronDown size={16} />
+                          )}
+                        </span>
                       </button>
 
                       {isExpanded && (
-                        <div className="breakdown-item-details p-3">
-                          <p className="text-xs font-medium text-foreground mb-2">
+                        <div className="breakdown-item-details">
+                          <p className="breakdown-full-question">
                             {q.question}
                           </p>
 
-                          <div className="text-xs space-y-1 mb-2">
-                            <div className="flex items-center gap-1">
-                              <span className="text-muted font-medium">
-                                Your Answer:
-                              </span>
+                          <div className="breakdown-answers-card">
+                            <div className="answer-row">
+                              <span className="answer-label">Your Answer:</span>
                               <span
-                                className={
-                                  isCorrect
-                                    ? "text-success font-semibold"
-                                    : "text-danger font-semibold"
-                                }
+                                className={`answer-value ${
+                                  isCorrect ? "val-correct" : "val-incorrect"
+                                }`}
                               >
-                                {q.selected_option || "(None)"}
+                                {q.selected_option || "(Not Answered)"}
                               </span>
                             </div>
 
                             {!isCorrect && (
-                              <div className="flex items-center gap-1">
-                                <span className="text-muted font-medium">
-                                  Correct Answer:
-                                </span>
-                                <span className="text-success font-semibold">
+                              <div className="answer-row">
+                                <span className="answer-label">Correct Answer:</span>
+                                <span className="answer-value val-correct">
                                   {q.correct_option}
                                 </span>
                               </div>
@@ -291,10 +283,11 @@ export default function QuizDiagnosticModal({
 
                           {q.explanation && (
                             <div className="explanation-bubble">
-                              <span className="font-semibold block mb-1">
-                                💡 Explanation:
+                              <span className="explanation-header">
+                                <Lightbulb size={13} className="text-amber" />
+                                <span>Insight & Explanation:</span>
                               </span>
-                              <span>{q.explanation}</span>
+                              <p className="explanation-text">{q.explanation}</p>
                             </div>
                           )}
                         </div>
@@ -305,32 +298,32 @@ export default function QuizDiagnosticModal({
               </div>
             </div>
           )}
+        </div>
 
-          {/* Footer */}
-          <div className="flex justify-between items-center mt-5 pt-3 border-t">
-            {onRetakeQuiz && (
-              <Button
-                variant="outline"
-                size="sm"
-                icon={RotateCcw}
-                onClick={() => {
-                  onClose();
-                  onRetakeQuiz(session);
-                }}
-              >
-                Retake Assessment
-              </Button>
-            )}
-
+        {/* Dedicated Fixed Footer */}
+        <div className="diagnostic-modal-footer">
+          {onRetakeQuiz && (
             <Button
-              variant="primary"
+              variant="outline"
               size="sm"
-              onClick={onClose}
-              className="ml-auto"
+              icon={RotateCcw}
+              onClick={() => {
+                onClose();
+                onRetakeQuiz(session);
+              }}
             >
-              Done / Close
+              Retake Assessment
             </Button>
-          </div>
+          )}
+
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={onClose}
+            className="footer-close-btn"
+          >
+            Done / Close
+          </Button>
         </div>
       </motion.div>
     </div>

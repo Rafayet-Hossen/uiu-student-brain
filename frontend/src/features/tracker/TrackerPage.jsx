@@ -168,7 +168,8 @@ export default function TrackerPage() {
   };
 
   const handleReschedule = (session) => {
-    setIsBookModalOpen(true);
+    setEditingSession(session);
+    setShowEditForm(true);
   };
 
   const handleEdit = (session) => {
@@ -193,7 +194,11 @@ export default function TrackerPage() {
   const handleUpdate = async (id, payload) => {
     setSubmitting(true);
     try {
-      const session = await updateStudySession(id, payload);
+      const updateData = { ...payload };
+      if (editingSession?.status === "missed") {
+        updateData.status = "scheduled";
+      }
+      const session = await updateStudySession(id, updateData);
       await loadTrackerData();
       setShowEditForm(false);
       setEditingSession(null);
@@ -312,18 +317,10 @@ export default function TrackerPage() {
       </div>
 
       {/* Navigation Tabs Bar */}
-      <div
-        className="community-tabs-bar"
-        style={{
-          marginBottom: "20px",
-          display: "flex",
-          gap: "8px",
-          overflowX: "auto",
-        }}
-      >
+      <div className="tracker-sub-tabs-bar">
         <button
           type="button"
-          className={`community-tab-btn ${
+          className={`tracker-sub-tab-btn ${
             activeTab === "scheduled" ? "tab-active" : ""
           }`}
           onClick={() => {
@@ -331,13 +328,13 @@ export default function TrackerPage() {
             setSearchParams({ tab: "tracker", subtab: "scheduled" });
           }}
         >
-          <Calendar size={16} />
-          <span>📅 Today's Schedule ({todaysSessions.length})</span>
+          <Calendar size={15} />
+          <span>Today's Schedule ({todaysSessions.length})</span>
         </button>
 
         <button
           type="button"
-          className={`community-tab-btn ${
+          className={`tracker-sub-tab-btn ${
             activeTab === "timer" ? "tab-active" : ""
           }`}
           onClick={() => {
@@ -345,13 +342,13 @@ export default function TrackerPage() {
             setSearchParams({ tab: "tracker", subtab: "timer" });
           }}
         >
-          <Timer size={16} />
-          <span>⏱️ Focus Timer (Pomodoro)</span>
+          <Timer size={15} />
+          <span>Focus Timer</span>
         </button>
 
         <button
           type="button"
-          className={`community-tab-btn ${
+          className={`tracker-sub-tab-btn ${
             activeTab === "history" ? "tab-active" : ""
           }`}
           onClick={() => {
@@ -359,13 +356,13 @@ export default function TrackerPage() {
             setSearchParams({ tab: "tracker", subtab: "history" });
           }}
         >
-          <Clock size={16} />
-          <span>📜 Session History ({safeSessions.length})</span>
+          <Clock size={15} />
+          <span>Session History ({safeSessions.length})</span>
         </button>
 
         <button
           type="button"
-          className={`community-tab-btn ${
+          className={`tracker-sub-tab-btn ${
             activeTab === "rewards" ? "tab-active" : ""
           }`}
           onClick={() => {
@@ -373,8 +370,8 @@ export default function TrackerPage() {
             setSearchParams({ tab: "tracker", subtab: "rewards" });
           }}
         >
-          <Award size={16} />
-          <span>🏆 Milestone Badges ({rewards.length})</span>
+          <Award size={15} />
+          <span>Milestone Badges ({rewards.length})</span>
         </button>
       </div>
 
@@ -402,13 +399,18 @@ export default function TrackerPage() {
       {!loading && !error && activeTab === "scheduled" && (
         <div className="tracker-tab-content">
           {/* Strict Attendance Notice */}
-          <div className="alert-banner alert-banner-info mb-4">
-            <span>
-              ℹ️ <strong>Strict Time-Gate Rule:</strong> Sessions must be
-              started during their scheduled time window. Only completed
-              sessions contribute to your daily goal, active streak, and
-              leaderboard rank.
-            </span>
+          <div className="tracker-timegate-callout mb-5">
+            <div className="callout-icon-box">
+              <Clock size={16} className="text-primary" />
+            </div>
+            <div className="callout-text-content">
+              <strong className="callout-title">Strict Time-Gate Rule:</strong>{" "}
+              <span>
+                Study sessions must be started during their scheduled time
+                window. Only completed sessions contribute to your daily goals,
+                active habit streaks, and academic achievements.
+              </span>
+            </div>
           </div>
 
           {todaysSessions.length === 0 ? (

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -15,6 +15,7 @@ import {
   Flame,
   GraduationCap,
   Layers,
+  Play,
   Quote,
   RotateCw,
   Sparkles,
@@ -95,6 +96,19 @@ const MOTIVATION_QUOTES = [
   },
 ];
 
+function formatTimeOnly(timeStr) {
+  if (!timeStr) return "";
+  try {
+    const [h, m] = timeStr.split(":");
+    const hour = parseInt(h, 10);
+    const ampm = hour >= 12 ? "PM" : "AM";
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${m} ${ampm}`;
+  } catch {
+    return timeStr;
+  }
+}
+
 export default function DashboardPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -107,6 +121,13 @@ export default function DashboardPage() {
   const [quoteIndex, setQuoteIndex] = useState(0);
   const [flowDayOffset, setFlowDayOffset] = useState(0); // 0 = Today, 1 = Yesterday, 2 = 2 days ago, 3 = 3 days ago
   const [selectedScheduleModal, setSelectedScheduleModal] = useState(null);
+  const [currentTick, setCurrentTick] = useState(() => new Date());
+
+  // Second-by-second ticker for live alert countdowns
+  useEffect(() => {
+    const interval = setInterval(() => setCurrentTick(new Date()), 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Auto-refresh motivation quote every 60 seconds (1 minute)
   useEffect(() => {
@@ -115,6 +136,142 @@ export default function DashboardPage() {
     }, 60000);
     return () => clearInterval(timer);
   }, []);
+
+  // Compute active or upcoming study session alert for top banner
+  const activeSessionAlert = useMemo(() => {
+    if (!sessions || sessions.length === 0) return null;
+    const now = currentTick;
+    const todayStr = now.toISOString().split("T")[0];
+
+    // Priority 1: In-progress session
+    const inProg = sessions.find((s) => s.status === "in_progress");
+    if (inProg) {
+      let timeRemainingStr = "";
+      if (inProg.end_time && inProg.session_date === todayStr) {
+        const [eh, em] = inProg.end_time.split(":").map(Number);
+        const endDt = new Date(inProg.session_date);
+        endDt.setHours(eh, em, 0, 0);
+        const remSec = Math.max(
+          0,
+          Math.floor((endDt.getTime() - now.getTime()) / 1000),
+        );
+        const remMins = Math.floor(remSec / 60);
+        const remSecs = remSec % 60;
+        timeRemainingStr =
+          remMins >= 60
+            ? `${Math.floor(remMins / 60)}h ${remMins % 60}m ${remSecs < 10 ? "0" : ""}${remSecs}s`
+            : `${remMins}m ${remSecs < 10 ? "0" : ""}${remSecs}s`;
+      } else if (inProg.actual_started_at) {
+        const started = new Date(inProg.actual_started_at);
+        const totalSec =
+          (inProg.duration_minutes + (inProg.extended_minutes || 0)) * 60;
+        const elapsedSec = Math.max(
+          0,
+          Math.floor((now.getTime() - started.getTime()) / 1000),
+        );
+        const remSec = Math.max(0, totalSec - elapsedSec);
+        const remMins = Math.floor(remSec / 60);
+        const remSecs = remSec % 60;
+        timeRemainingStr = `${remMins}m ${remSecs < 10 ? "0" : ""}${remSecs}s`;
+      }
+
+      return {
+        session: inProg,
+        type: "in_progress",
+        badgeText: "STUDY SESSION IN PROGRESS",
+        ctaText: "Resume Focus Session",
+        timeTitle: "Time Remaining",
+        countdown: timeRemainingStr,
+      };
+    }
+
+    // Priority 2: Scheduled session with active window right now
+    for (const s of sessions) {
+      if (
+        s.status === "scheduled" &&
+        s.session_date === todayStr &&
+        s.start_time
+      ) {
+        const [sh, sm] = s.start_time.split(":").map(Number);
+        const startDt = new Date(s.session_date);
+        startDt.setHours(sh, sm, 0, 0);
+
+        const [eh, em] = (s.end_time || `${sh + 1}:${sm}`)
+          .split(":")
+          .map(Number);
+        const endDt = new Date(s.session_date);
+        endDt.setHours(eh, em, 0, 0);
+
+        if (now >= startDt && now <= endDt) {
+          const remainingSec = Math.max(
+            0,
+            Math.floor((endDt.getTime() - now.getTime()) / 1000),
+          );
+          const remMins = Math.floor(remainingSec / 60);
+          const remSecs = remainingSec % 60;
+          const timeStr =
+            remMins >= 60
+              ? `${Math.floor(remMins / 60)}h ${remMins % 60}m ${remSecs < 10 ? "0" : ""}${remSecs}s`
+              : `${remMins}m ${remSecs < 10 ? "0" : ""}${remSecs}s`;
+
+          return {
+            session: s,
+            type: "active_window",
+            badgeText: "SCHEDULED FOCUS WINDOW",
+            ctaText: "Start Focus Session",
+            countdown: timeStr,
+            timeTitle: "Time Remaining",
+          };
+        }
+
+        // Priority 3: Upcoming within 25 minutes
+        const diffSec = Math.floor((startDt.getTime() - now.getTime()) / 1000);
+        if (diffSec > 0 && diffSec <= 25 * 60) {
+          const remMins = Math.floor(diffSec / 60);
+          const remSecs = diffSec % 60;
+          const timeStr = `${remMins}m ${remSecs < 10 ? "0" : ""}${remSecs}s`;
+          return {
+            session: s,
+            type: "starting_soon",
+            badgeText: "UPCOMING STUDY SESSION",
+            ctaText: "Prepare for Session",
+            countdown: timeStr,
+            timeTitle: "Starts In",
+          };
+        }
+      }
+    }
+    return null;
+  }, [sessions, currentTick]);
+
+  // Robust material details resolution (from details, object, or materials store)
+  const alertMaterial = useMemo(() => {
+    if (!activeSessionAlert?.session) return null;
+    const s = activeSessionAlert.session;
+    if (s.material_details && s.material_details.title) {
+      return s.material_details;
+    }
+    if (s.material && typeof s.material === "object" && s.material.title) {
+      return s.material;
+    }
+    if (s.material && materials && materials.length > 0) {
+      const found = materials.find((m) => String(m.id) === String(s.material));
+      if (found) return found;
+    }
+    return null;
+  }, [activeSessionAlert, materials]);
+
+  const alertCourse = useMemo(() => {
+    if (!activeSessionAlert?.session) return null;
+    const s = activeSessionAlert.session;
+    if (s.course_details && (s.course_details.code || s.course_details.title)) {
+      return s.course_details;
+    }
+    if (s.course && typeof s.course === "object") {
+      return s.course;
+    }
+    return null;
+  }, [activeSessionAlert]);
 
   useEffect(() => {
     async function loadDashboardData() {
@@ -231,6 +388,122 @@ export default function DashboardPage() {
       <Navbar />
 
       <main className="main-content">
+        {/* =================================================================
+            ACTIVE STUDY SESSION HERO ALERT BANNER (Live Countdown & Action)
+            ================================================================= */}
+        {activeSessionAlert && (
+          <motion.div
+            initial={{ opacity: 0, y: -12, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.3 }}
+            className={`dashboard-session-alert-banner alert-theme-${activeSessionAlert.type}`}
+          >
+            {/* Visual Icon Halo */}
+            <div className="alert-leading-icon-wrap">
+              <div className="alert-leading-icon-halo">
+                {activeSessionAlert.type === "in_progress" ? (
+                  <Flame size={24} className="text-white animate-pulse" />
+                ) : (
+                  <Zap size={24} className="text-white" />
+                )}
+              </div>
+            </div>
+
+            <div className="alert-content-left">
+              <div className="alert-badge-line">
+                <span className="alert-beacon-dot" />
+                <span className="alert-badge-tag">
+                  {activeSessionAlert.badgeText}
+                </span>
+
+                {alertCourse && (
+                  <span
+                    className="alert-course-chip"
+                    style={{
+                      backgroundColor: alertCourse.color
+                        ? `${alertCourse.color}18`
+                        : "rgba(99, 102, 241, 0.12)",
+                      borderColor: alertCourse.color
+                        ? `${alertCourse.color}40`
+                        : "rgba(99, 102, 241, 0.25)",
+                      color: alertCourse.color || "var(--color-primary)",
+                    }}
+                  >
+                    <span
+                      className="w-2 h-2 rounded-full inline-block mr-1.5"
+                      style={{
+                        background: alertCourse.color || "var(--color-primary)",
+                      }}
+                    />
+                    {alertCourse.code || alertCourse.title}
+                  </span>
+                )}
+
+                {activeSessionAlert.countdown && (
+                  <span className="alert-countdown-chip">
+                    <Clock size={12} className="inline mr-1" />
+                    {activeSessionAlert.timeTitle}:{" "}
+                    <strong>{activeSessionAlert.countdown}</strong>
+                  </span>
+                )}
+              </div>
+
+              <h2 className="alert-headline-title">
+                {activeSessionAlert.session.subject}
+              </h2>
+
+              <div className="alert-meta-row">
+                <span className="alert-meta-pill">
+                  <Calendar size={13} className="text-muted" />
+                  {formatTimeOnly(activeSessionAlert.session.start_time)} –{" "}
+                  {formatTimeOnly(activeSessionAlert.session.end_time)}
+                </span>
+                <span className="alert-meta-pill">
+                  <Target size={13} className="text-muted" />
+                  {activeSessionAlert.session.duration_minutes}m Target Duration
+                </span>
+
+                {alertMaterial && (
+                  <div className="alert-attached-material-card">
+                    <BookOpen
+                      size={13}
+                      className="flex-shrink-0 text-primary"
+                    />
+                    <span className="material-label-prefix">
+                      Attached Material:
+                    </span>
+                    <strong
+                      className="material-title-text"
+                      title={alertMaterial.title}
+                    >
+                      {alertMaterial.title}
+                    </strong>
+                    {alertMaterial.key_topics &&
+                      alertMaterial.key_topics.length > 0 && (
+                        <span className="material-topic-subtag">
+                          🎯 {alertMaterial.key_topics[0]}
+                        </span>
+                      )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="alert-content-right">
+              <Link to="/study-center?tab=tracker">
+                <Button
+                  variant="primary"
+                  size="md"
+                  icon={Play}
+                  className="btn-launch-alert-session"
+                >
+                  {activeSessionAlert.ctaText}
+                </Button>
+              </Link>
+            </div>
+          </motion.div>
+        )}
+
         {/* =================================================================
             1. HERO SECTION (Notion × Linear × Apple Education)
             ================================================================= */}

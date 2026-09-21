@@ -61,8 +61,10 @@ export default function StudyCenterPage() {
                 </p>
               </div>
             </div>
+          </div>
 
-            {/* Sub-Nav Tab Switcher Bar */}
+          {/* Sticky Sub-Nav Tab Switcher Bar */}
+          <div className="study-center-main-tabs-wrapper">
             <nav
               className="study-center-nav-tabs"
               aria-label="Study Center Modules"
