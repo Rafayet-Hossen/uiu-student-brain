@@ -1,0 +1,85 @@
+services:
+  db:
+    image: postgres:16
+    container_name: student_brain_prod_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-student_brain}
+      POSTGRES_USER: ${POSTGRES_USER:-student_brain}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rafayet150903}
+    volumes:
+      - pgdata_prod:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-student_brain} -d ${POSTGRES_DB:-student_brain}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - student_brain_network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: student_brain_prod_backend
+    restart: unless-stopped
+    command: ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120"]
+    environment:
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-django-insecure-jgjok3^26293l*4gus^)&eas*=7ar-djvdktlc^ge%_a=7t=w8}
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-False}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-*}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-student_brain}
+      POSTGRES_USER: ${POSTGRES_USER:-student_brain}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rafayet150903}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      AUTO_SEED: ${AUTO_SEED:-false}
+    volumes:
+      - ./backend/media:/app/media
+      - static_volume:/app/staticfiles
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - student_brain_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: student_brain_prod_frontend
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-/api}
+    networks:
+      - student_brain_network
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: student_brain_prod_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./backend/media:/app/media:ro
+      - static_volume:/app/staticfiles:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - student_brain_network
+
+volumes:
+  pgdata_prod:
+  static_volume:
+
+networks:
+  student_brain_network:
+    driver: bridge
