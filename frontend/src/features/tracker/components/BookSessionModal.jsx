@@ -64,7 +64,9 @@ export default function BookSessionModal({
       try {
         const semsData = await getSemesters();
         if (!isMounted) return;
-        const sems = Array.isArray(semsData) ? semsData : semsData?.results || [];
+        const sems = Array.isArray(semsData)
+          ? semsData
+          : semsData?.results || [];
         setSemesters(sems);
 
         let allCourses = [];
@@ -85,7 +87,9 @@ export default function BookSessionModal({
             sems.map(async (sem) => {
               try {
                 const cList = await getCourses(sem.id);
-                const items = Array.isArray(cList) ? cList : cList?.results || [];
+                const items = Array.isArray(cList)
+                  ? cList
+                  : cList?.results || [];
                 return items.map((c) => ({
                   ...c,
                   semesterName: sem.name,
@@ -94,7 +98,7 @@ export default function BookSessionModal({
               } catch {
                 return [];
               }
-            })
+            }),
           );
           allCourses = nested.flat();
         }
@@ -103,11 +107,15 @@ export default function BookSessionModal({
         if (allCourses.length === 0) {
           try {
             const globalCourses = await getCourses();
-            const items = Array.isArray(globalCourses) ? globalCourses : globalCourses?.results || [];
+            const items = Array.isArray(globalCourses)
+              ? globalCourses
+              : globalCourses?.results || [];
             allCourses = items.map((c) => ({
               ...c,
-              semesterName: c.semester_name || c.semester?.name || "Enrolled Course",
-              semester_name: c.semester_name || c.semester?.name || "Enrolled Course",
+              semesterName:
+                c.semester_name || c.semester?.name || "Enrolled Course",
+              semester_name:
+                c.semester_name || c.semester?.name || "Enrolled Course",
             }));
           } catch {
             // ignore
@@ -334,7 +342,9 @@ export default function BookSessionModal({
               )}
             </div>
             {loadingInitial ? (
-              <div className="text-xs text-muted py-1">Loading enrolled courses...</div>
+              <div className="text-xs text-muted py-1">
+                Loading enrolled courses...
+              </div>
             ) : (
               <select
                 value={selectedCourseId}
@@ -349,7 +359,11 @@ export default function BookSessionModal({
                 {courses.map((course) => (
                   <option key={course.id} value={course.id}>
                     {course.code ? `[${course.code}] ` : ""}
-                    {course.title} ({course.semesterName || course.semester_name || "Enrolled Course"})
+                    {course.title} (
+                    {course.semesterName ||
+                      course.semester_name ||
+                      "Enrolled Course"}
+                    )
                   </option>
                 ))}
               </select>
