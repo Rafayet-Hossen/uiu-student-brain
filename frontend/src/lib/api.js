@@ -11,7 +11,10 @@ const getApiBaseUrl = () => {
     ) {
       try {
         const parsed = new URL(envUrl);
-        if (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1") {
+        if (
+          parsed.hostname === "localhost" ||
+          parsed.hostname === "127.0.0.1"
+        ) {
           return `${window.location.protocol}//${window.location.hostname}:${parsed.port || "8000"}/api`;
         }
       } catch {

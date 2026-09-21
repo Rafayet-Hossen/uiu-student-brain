@@ -36,3 +36,4 @@ echo -e "${GREEN}Starting secure public tunnel to http://localhost:${TARGET_PORT
 echo -e "${CYAN}Share the generated 'trycloudflare.com' HTTPS link with anyone!${NC}\n"
 
 $CLOUDFLARED_CMD tunnel --url "http://localhost:${TARGET_PORT}"
+

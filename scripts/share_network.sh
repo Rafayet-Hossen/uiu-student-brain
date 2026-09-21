@@ -32,3 +32,4 @@ fi
 echo -e "\n${YELLOW}💡 Note: Make sure the other device is on the same Wi-Fi / LAN.${NC}"
 echo -e "If you have UFW firewall enabled, run:"
 echo -e "  ${GREEN}sudo ufw allow 80/tcp && sudo ufw allow 5173/tcp && sudo ufw allow 8000/tcp${NC}\n"
+
