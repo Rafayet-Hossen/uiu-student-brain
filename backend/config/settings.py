@@ -36,7 +36,7 @@ DEBUG = env.bool("DJANGO_DEBUG", default=True)
 
 ALLOWED_HOSTS = env.list(
     "ALLOWED_HOSTS",
-    default=["*"] if DEBUG else ["localhost", "127.0.0.1", "backend"],
+    default=["*"],
 )
 
 
@@ -96,7 +96,8 @@ CORS_ALLOWED_ORIGINS = env.list(
         "http://localhost:3000",
     ],
 )
-CORS_ALLOW_ALL_ORIGINS = DEBUG
+CORS_ALLOW_ALL_ORIGINS = env.bool("CORS_ALLOW_ALL_ORIGINS", default=True)
+CORS_ALLOW_CREDENTIALS = True
 
 
 # ============================================================

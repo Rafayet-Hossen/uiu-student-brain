@@ -57,3 +57,4 @@ echo -e "  • Backend API:      ${GREEN}http://localhost/api/${NC}"
 echo -e "  • Django Admin:     ${GREEN}http://localhost/admin/${NC}"
 echo -e "\nTo create an admin superuser, run:"
 echo -e "  ${YELLOW}docker compose -f docker-compose.prod.yml exec backend python manage.py createsuperuser${NC}\n"
+

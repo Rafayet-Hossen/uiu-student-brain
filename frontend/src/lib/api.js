@@ -1,7 +1,35 @@
 import axios from "axios";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+const getApiBaseUrl = () => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl && envUrl.trim() !== "") {
+    if (envUrl.startsWith("/")) return envUrl;
+    if (
+      typeof window !== "undefined" &&
+      window.location.hostname !== "localhost" &&
+      window.location.hostname !== "127.0.0.1"
+    ) {
+      try {
+        const parsed = new URL(envUrl);
+        if (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1") {
+          return `${window.location.protocol}//${window.location.hostname}:${parsed.port || "8000"}/api`;
+        }
+      } catch {
+        // ignore
+      }
+    }
+    return envUrl;
+  }
+  if (typeof window !== "undefined") {
+    if (window.location.port === "5173") {
+      return `${window.location.protocol}//${window.location.hostname}:8000/api`;
+    }
+    return "/api";
+  }
+  return "http://localhost:8000/api";
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 const api = axios.create({
   baseURL: API_BASE_URL,
