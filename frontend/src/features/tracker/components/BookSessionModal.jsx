@@ -15,7 +15,7 @@ import { motion } from "framer-motion";
 import Button from "../../../components/Button";
 import FormError from "../../../components/FormError";
 import Input from "../../../components/Input";
-import { getMaterials, getSemesters } from "../../materials/api";
+import { getCourses, getMaterials, getSemesters } from "../../materials/api";
 import { createStudySession } from "../api";
 
 export default function BookSessionModal({
@@ -60,30 +60,78 @@ export default function BookSessionModal({
     setLoadingInitial(true);
     setError("");
 
-    getSemesters()
-      .then((data) => {
+    const loadAllCourses = async () => {
+      try {
+        const semsData = await getSemesters();
         if (!isMounted) return;
-        setSemesters(data || []);
-        const allCourses = [];
-        (data || []).forEach((sem) => {
+        const sems = Array.isArray(semsData) ? semsData : semsData?.results || [];
+        setSemesters(sems);
+
+        let allCourses = [];
+        // 1. Check if courses are attached to semesters
+        (sems || []).forEach((sem) => {
           (sem.courses || []).forEach((c) => {
-            allCourses.push({ ...c, semesterName: sem.name });
+            allCourses.push({
+              ...c,
+              semesterName: sem.name,
+              semester_name: sem.name,
+            });
           });
         });
+
+        // 2. If no courses found nested, query each semester in parallel
+        if (allCourses.length === 0 && sems.length > 0) {
+          const nested = await Promise.all(
+            sems.map(async (sem) => {
+              try {
+                const cList = await getCourses(sem.id);
+                const items = Array.isArray(cList) ? cList : cList?.results || [];
+                return items.map((c) => ({
+                  ...c,
+                  semesterName: sem.name,
+                  semester_name: sem.name,
+                }));
+              } catch {
+                return [];
+              }
+            })
+          );
+          allCourses = nested.flat();
+        }
+
+        // 3. Fallback to global getCourses()
+        if (allCourses.length === 0) {
+          try {
+            const globalCourses = await getCourses();
+            const items = Array.isArray(globalCourses) ? globalCourses : globalCourses?.results || [];
+            allCourses = items.map((c) => ({
+              ...c,
+              semesterName: c.semester_name || c.semester?.name || "Enrolled Course",
+              semester_name: c.semester_name || c.semester?.name || "Enrolled Course",
+            }));
+          } catch {
+            // ignore
+          }
+        }
+
+        if (!isMounted) return;
         setCourses(allCourses);
         if (allCourses.length > 0) {
           setSelectedCourseId(String(allCourses[0].id));
+        } else {
+          setSelectedCourseId("");
         }
-      })
-      .catch((err) => {
+      } catch (err) {
         if (isMounted) {
-          console.error("Failed to load semesters for booking", err);
+          console.error("Failed to load semesters/courses for booking", err);
           setError("Failed to load your enrolled courses.");
         }
-      })
-      .finally(() => {
+      } finally {
         if (isMounted) setLoadingInitial(false);
-      });
+      }
+    };
+
+    loadAllCourses();
 
     return () => {
       isMounted = false;
@@ -267,27 +315,62 @@ export default function BookSessionModal({
 
           {/* 1. Course Selection */}
           <div className="form-group mb-3">
-            <label className="form-label text-xs">
-              <Layers size={14} className="inline mr-1 text-primary" />
-              Select Course
-            </label>
-            <select
-              value={selectedCourseId}
-              onChange={(e) => setSelectedCourseId(e.target.value)}
-              className="form-input form-input-sm"
-              disabled={submitting || loadingInitial}
-              required
-            >
-              {courses.length === 0 && (
-                <option value="">No courses available</option>
+            <div className="flex justify-between items-center mb-1">
+              <label className="form-label text-xs mb-0">
+                <Layers size={14} className="inline mr-1 text-primary" />
+                Select Course
+              </label>
+              {courses.length === 0 && !loadingInitial && (
+                <button
+                  type="button"
+                  className="text-xs text-primary underline"
+                  onClick={() => {
+                    onClose();
+                    if (onNavigateToMaterials) onNavigateToMaterials();
+                  }}
+                >
+                  Create Course in Hub ↗
+                </button>
               )}
-              {courses.map((course) => (
-                <option key={course.id} value={course.id}>
-                  {course.code ? `[${course.code}] ` : ""}
-                  {course.title} ({course.semesterName || "Current"})
-                </option>
-              ))}
-            </select>
+            </div>
+            {loadingInitial ? (
+              <div className="text-xs text-muted py-1">Loading enrolled courses...</div>
+            ) : (
+              <select
+                value={selectedCourseId}
+                onChange={(e) => setSelectedCourseId(e.target.value)}
+                className="form-input form-input-sm"
+                disabled={submitting || loadingInitial || courses.length === 0}
+                required
+              >
+                {courses.length === 0 && (
+                  <option value="">No enrolled courses available</option>
+                )}
+                {courses.map((course) => (
+                  <option key={course.id} value={course.id}>
+                    {course.code ? `[${course.code}] ` : ""}
+                    {course.title} ({course.semesterName || course.semester_name || "Enrolled Course"})
+                  </option>
+                ))}
+              </select>
+            )}
+            {courses.length === 0 && !loadingInitial && (
+              <div className="alert-banner alert-banner-warning p-2 text-xs mt-2">
+                <AlertCircle size={14} className="inline mr-1 text-amber" />
+                You have not added any courses yet. Please{" "}
+                <button
+                  type="button"
+                  className="underline font-medium text-primary"
+                  onClick={() => {
+                    onClose();
+                    if (onNavigateToMaterials) onNavigateToMaterials();
+                  }}
+                >
+                  add a course in Study Center
+                </button>{" "}
+                before scheduling a session.
+              </div>
+            )}
           </div>
 
           {/* 2. Uploaded Material Selection */}

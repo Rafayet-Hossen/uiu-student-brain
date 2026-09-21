@@ -3,26 +3,6 @@ from rest_framework import serializers
 from .models import Course, CourseChatMessage, Semester, StudyMaterial
 
 
-class SemesterSerializer(serializers.ModelSerializer):
-    courses_count = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Semester
-        fields = [
-            "id",
-            "user",
-            "name",
-            "is_current",
-            "courses_count",
-            "created_at",
-            "updated_at",
-        ]
-        read_only_fields = ["id", "user", "courses_count", "created_at", "updated_at"]
-
-    def get_courses_count(self, obj) -> int:
-        return obj.courses.count()
-
-
 class CourseSerializer(serializers.ModelSerializer):
     semester_name = serializers.CharField(source="semester.name", read_only=True)
     materials_count = serializers.SerializerMethodField()
@@ -85,6 +65,28 @@ class CourseSerializer(serializers.ModelSerializer):
                         if 2 < len(cand) < 45 and not cand.lower().startswith("table of"):
                             topics.add(cand)
         return sorted(list(topics))
+
+
+class SemesterSerializer(serializers.ModelSerializer):
+    courses = CourseSerializer(many=True, read_only=True)
+    courses_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Semester
+        fields = [
+            "id",
+            "user",
+            "name",
+            "is_current",
+            "courses",
+            "courses_count",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "user", "courses", "courses_count", "created_at", "updated_at"]
+
+    def get_courses_count(self, obj) -> int:
+        return obj.courses.count()
 
 
 class StudyMaterialSerializer(serializers.ModelSerializer):

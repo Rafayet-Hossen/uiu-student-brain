@@ -61,6 +61,15 @@ class SemesterDetailView(APIView):
 # COURSE VIEWS
 # ============================================================
 
+class GlobalCourseListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        courses = services.list_user_courses(user=request.user)
+        serializer = CourseSerializer(courses, many=True, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class CourseListCreateView(APIView):
     permission_classes = [IsAuthenticated]
 

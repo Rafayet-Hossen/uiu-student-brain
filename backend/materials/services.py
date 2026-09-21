@@ -134,6 +134,10 @@ def delete_user_semester(*, user, semester_id: int) -> None:
 # COURSE SERVICES
 # ============================================================
 
+def list_user_courses(*, user) -> QuerySet[Course]:
+    return Course.objects.filter(user=user).select_related("semester").prefetch_related("materials").order_by("-semester__is_current", "title")
+
+
 def list_semester_courses(*, user, semester_id: int) -> QuerySet[Course]:
     sem = get_user_semester(user=user, semester_id=semester_id)
     return Course.objects.filter(semester=sem, user=user).prefetch_related("materials")
