@@ -19546,3 +19546,74 @@ html[data-theme="dark"] .native-reader-main-viewport {
     justify-content: center;
   }
 }
+
+/* Dark Theme Adjustments for Tracker & Diagnostics */
+[data-theme="dark"] .badge-scheduled {
+  background: rgba(59, 130, 246, 0.18);
+  color: #60a5fa;
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+[data-theme="dark"] .badge-in_progress {
+  background: rgba(16, 185, 129, 0.18);
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+[data-theme="dark"] .badge-completed {
+  background: rgba(16, 185, 129, 0.18);
+  color: #34d399;
+}
+
+[data-theme="dark"] .badge-missed {
+  background: rgba(239, 68, 68, 0.18);
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+[data-theme="dark"] .quiz-result-summary-strip {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.3);
+  color: #fbbf24;
+}
+
+[data-theme="dark"] .weak-topic-pill {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.16);
+}
+
+[data-theme="dark"] .mastered-topic-pill {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.16);
+}
+
+[data-theme="dark"] .tier-mastery {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+[data-theme="dark"] .tier-proficient {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+[data-theme="dark"] .tier-needs-work {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+@media (max-width: 640px) {
+  .scheduled-sessions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .quiz-steps-strip {
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .diagnostic-score-hero {
+    flex-direction: column;
+    text-align: center;
+  }
+}

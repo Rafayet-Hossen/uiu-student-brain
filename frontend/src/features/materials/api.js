@@ -46,10 +46,14 @@ export const deleteSemester = async (id) => {
 // COURSES API
 // ============================================================
 
-export const getCourses = async (semesterId) => {
-  const res = await apiClient.get(
-    `/materials/semesters/${semesterId}/courses/`,
-  );
+export const getCourses = async (semesterId = null) => {
+  if (semesterId) {
+    const res = await apiClient.get(
+      `/materials/semesters/${semesterId}/courses/`,
+    );
+    return res.data;
+  }
+  const res = await apiClient.get("/materials/courses/");
   return res.data;
 };
 

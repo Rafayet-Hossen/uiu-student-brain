@@ -68,8 +68,8 @@ class CourseSerializer(serializers.ModelSerializer):
 
 
 class SemesterSerializer(serializers.ModelSerializer):
-    courses_count = serializers.SerializerMethodField()
     courses = CourseSerializer(many=True, read_only=True)
+    courses_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Semester
@@ -78,12 +78,12 @@ class SemesterSerializer(serializers.ModelSerializer):
             "user",
             "name",
             "is_current",
-            "courses_count",
             "courses",
+            "courses_count",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "user", "courses_count", "courses", "created_at", "updated_at"]
+        read_only_fields = ["id", "user", "courses", "courses_count", "created_at", "updated_at"]
 
     def get_courses_count(self, obj) -> int:
         return obj.courses.count()

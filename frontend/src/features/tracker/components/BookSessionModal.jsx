@@ -21,6 +21,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import Button from "../../../components/Button";
 import FormError from "../../../components/FormError";
+import Input from "../../../components/Input";
 import {
   getMaterials,
   getSemesters,
@@ -93,37 +94,65 @@ export default function BookSessionModal({
     setLoadingInitial(true);
     setError("");
 
-    async function loadSemestersAndCourses() {
+    const loadAllCourses = async () => {
       try {
-        const data = await getSemesters();
+        const semsData = await getSemesters();
         if (!isMounted) return;
-        setSemesters(data || []);
+        const sems = Array.isArray(semsData)
+          ? semsData
+          : semsData?.results || [];
+        setSemesters(sems);
+
         let allCourses = [];
-        (data || []).forEach((sem) => {
+        // 1. Check if courses are attached to semesters
+        (sems || []).forEach((sem) => {
           (sem.courses || []).forEach((c) => {
-            allCourses.push({ ...c, semesterName: sem.name });
+            allCourses.push({
+              ...c,
+              semesterName: sem.name,
+              semester_name: sem.name,
+            });
           });
         });
 
-        // Fallback: If courses weren't serialized inside semester, fetch them individually
-        if (allCourses.length === 0 && Array.isArray(data) && data.length > 0) {
+        // 2. If no courses found nested, query each semester in parallel
+        if (allCourses.length === 0 && sems.length > 0) {
+          const nested = await Promise.all(
+            sems.map(async (sem) => {
+              try {
+                const cList = await getCourses(sem.id);
+                const items = Array.isArray(cList)
+                  ? cList
+                  : cList?.results || [];
+                return items.map((c) => ({
+                  ...c,
+                  semesterName: sem.name,
+                  semester_name: sem.name,
+                }));
+              } catch {
+                return [];
+              }
+            }),
+          );
+          allCourses = nested.flat();
+        }
+
+        // 3. Fallback to global getCourses()
+        if (allCourses.length === 0) {
           try {
-            const nested = await Promise.all(
-              data.map(async (sem) => {
-                try {
-                  const cList = await getCourses(sem.id);
-                  return (Array.isArray(cList) ? cList : []).map((c) => ({
-                    ...c,
-                    semesterName: sem.name,
-                  }));
-                } catch {
-                  return [];
-                }
-              }),
-            );
-            allCourses = nested.flat();
-          } catch (fetchErr) {
-            console.warn("Fallback course fetch failed", fetchErr);
+            const globalCourses = await getCourses();
+            const items = Array.isArray(globalCourses)
+              ? globalCourses
+              : globalCourses?.results || [];
+            allCourses = items.map((c) => ({
+              ...c,
+              semesterName:
+                c.semester_name || c.semester?.name || "Enrolled Course",
+              semester_name:
+                c.semester_name || c.semester?.name || "Enrolled Course",
+            }));
+          } catch {
+            // ignore
           }
         }
 
@@ -131,18 +160,20 @@ export default function BookSessionModal({
         setCourses(allCourses);
         if (allCourses.length > 0) {
           setSelectedCourseId(String(allCourses[0].id));
+        } else {
+          setSelectedCourseId("");
         }
       } catch (err) {
         if (isMounted) {
-          console.error("Failed to load semesters for booking", err);
+          console.error("Failed to load semesters/courses for booking", err);
           setError("Failed to load your enrolled courses.");
         }
       } finally {
         if (isMounted) setLoadingInitial(false);
       }
-    }
+    };
 
-    loadSemestersAndCourses();
+    loadAllCourses();
 
     return () => {
       isMounted = false;

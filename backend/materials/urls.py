@@ -8,6 +8,7 @@ urlpatterns = [
     path("semesters/<int:semester_id>/courses/", views.CourseListCreateView.as_view(), name="materials-semester-course-list-create"),
 
     # Courses
+    path("courses/", views.GlobalCourseListView.as_view(), name="materials-global-course-list"),
     path("courses/<int:pk>/", views.CourseDetailView.as_view(), name="materials-course-detail"),
     path("courses/<int:course_id>/materials/", views.StudyMaterialListCreateView.as_view(), name="materials-course-material-list-create"),
     path("courses/<int:course_id>/chat/", views.CourseChatView.as_view(), name="materials-course-chat"),
