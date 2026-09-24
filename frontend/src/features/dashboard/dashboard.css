@@ -1555,21 +1555,9 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  width: 100%;
-  max-width: 100%;
   overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
   padding-bottom: 6px;
   scrollbar-width: thin;
-  box-sizing: border-box;
-}
-
-.dash-github-heatmap-inner {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  width: 100%;
-  min-width: 520px;
 }
 
 .dash-github-months-row {
@@ -2404,10 +2392,6 @@
   grid-template-columns: 1.1fr 1fr;
   gap: clamp(24px, 4vw, 48px);
   align-items: center;
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
 }
 
 /* Hero Left Column */
@@ -2415,10 +2399,6 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
 }
 
 .dash-hero-chips-row {
@@ -2426,10 +2406,6 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
 }
 
 .dash-chip-date {
@@ -2444,8 +2420,6 @@
   font-size: 0.8rem;
   font-weight: 600;
   color: var(--dash-text-main);
-  max-width: 100%;
-  box-sizing: border-box;
 }
 
 .dash-chip-sep {
@@ -2461,8 +2435,6 @@
   border-radius: 9999px;
   background: rgba(241, 245, 249, 0.8);
   border: 1px solid rgba(203, 213, 225, 0.6);
-  max-width: 100%;
-  box-sizing: border-box;
 }
 
 [data-theme="dark"] .dash-workflow-pills {
@@ -4375,7 +4347,7 @@
   }
 }
 
-/* Tablets (<= 840px) */
+/* Medium Tablets & Mobile (<= 840px) */
 @media (max-width: 840px) {
   .dash-today-asymmetric-grid {
     grid-template-columns: 1fr;
@@ -4408,7 +4380,7 @@
 @media (max-width: 768px) {
   .dashboard-storytelling-container {
     padding: 0 !important;
-    gap: 24px !important;
+    gap: 22px !important;
     width: 100% !important;
     max-width: 100% !important;
     overflow-x: hidden !important;
@@ -4416,7 +4388,7 @@
   }
 
   .dash-hero-viewport {
-    padding: 20px 14px 28px !important;
+    padding: 18px 14px 24px !important;
     border-radius: 20px !important;
     width: 100% !important;
     max-width: 100% !important;
@@ -4426,7 +4398,7 @@
 
   .dash-hero-content-wrap {
     grid-template-columns: 1fr !important;
-    gap: 20px !important;
+    gap: 16px !important;
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
@@ -4437,7 +4409,7 @@
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
-    gap: 14px !important;
+    gap: 12px !important;
     box-sizing: border-box !important;
   }
 
@@ -4453,7 +4425,7 @@
 
   .dash-chip-date {
     font-size: 0.72rem !important;
-    padding: 5px 12px !important;
+    padding: 4px 10px !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
   }
@@ -4470,7 +4442,7 @@
     -webkit-overflow-scrolling: touch !important;
     scrollbar-width: none !important;
     white-space: nowrap !important;
-    padding: 6px 10px !important;
+    padding: 5px 10px !important;
     border-radius: 9999px !important;
   }
 
@@ -4480,30 +4452,30 @@
 
   .dash-wf-step {
     flex-shrink: 0 !important;
-    font-size: 0.72rem !important;
+    font-size: 0.7rem !important;
     white-space: nowrap !important;
   }
 
   .dash-wf-arrow {
     flex-shrink: 0 !important;
-    font-size: 0.68rem !important;
+    font-size: 0.65rem !important;
     opacity: 0.5 !important;
   }
 
   .dash-hero-eyebrow {
-    font-size: 0.85rem !important;
+    font-size: 0.82rem !important;
   }
 
   .dash-hero-main-heading {
-    font-size: clamp(1.65rem, 6.5vw, 2.1rem) !important;
-    line-height: 1.18 !important;
+    font-size: clamp(1.6rem, 6.5vw, 2rem) !important;
+    line-height: 1.16 !important;
     word-break: break-word !important;
     overflow-wrap: break-word !important;
   }
 
   .dash-hero-support-copy {
-    font-size: 0.85rem !important;
-    line-height: 1.5 !important;
+    font-size: 0.82rem !important;
+    line-height: 1.45 !important;
     word-break: break-word !important;
   }
 
@@ -4511,7 +4483,7 @@
     display: flex !important;
     flex-direction: column !important;
     width: 100% !important;
-    gap: 10px !important;
+    gap: 8px !important;
   }
 
   .dash-hero-actions-row a {
@@ -4522,6 +4494,8 @@
   .dash-hero-actions-row button {
     width: 100% !important;
     justify-content: center !important;
+    padding: 10px 14px !important;
+    font-size: 0.88rem !important;
   }
 
   /* Compact 3-Column Stats Ribbon on Mobile */
@@ -4531,11 +4505,11 @@
     gap: 6px !important;
     width: 100% !important;
     max-width: 100% !important;
-    padding: 10px 8px !important;
+    padding: 8px 6px !important;
     box-sizing: border-box !important;
     background: rgba(0, 0, 0, 0.03) !important;
     border: 1px solid rgba(0, 0, 0, 0.06) !important;
-    border-radius: 14px !important;
+    border-radius: 12px !important;
     text-align: center !important;
   }
 
@@ -4548,19 +4522,19 @@
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
-    gap: 2px !important;
+    gap: 1px !important;
     min-width: 0 !important;
   }
 
   .dash-trust-num {
-    font-size: 0.95rem !important;
+    font-size: 0.92rem !important;
     font-weight: 800 !important;
-    line-height: 1.2 !important;
+    line-height: 1.15 !important;
   }
 
   .dash-trust-lbl {
-    font-size: 0.62rem !important;
-    line-height: 1.15 !important;
+    font-size: 0.6rem !important;
+    line-height: 1.1 !important;
     white-space: nowrap !important;
   }
 
@@ -4568,15 +4542,15 @@
     display: none !important;
   }
 
-  /* Seamless Mobile Quick-Widget Matrix (Hide heavy desk SVG and display 2-col app widgets) */
+  /* Mobile Quick-Widget Matrix */
   .dash-hero-illustration-stage {
     min-height: auto !important;
     width: 100% !important;
     max-width: 100% !important;
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px !important;
-    margin-top: 8px !important;
+    gap: 8px !important;
+    margin-top: 6px !important;
     padding: 0 !important;
     box-sizing: border-box !important;
   }
@@ -4592,8 +4566,8 @@
     box-sizing: border-box !important;
     min-width: 0 !important;
     margin: 0 !important;
-    padding: 12px 10px !important;
-    border-radius: 16px !important;
+    padding: 10px 8px !important;
+    border-radius: 14px !important;
     box-shadow: var(--dash-shadow-card) !important;
     transform: none !important;
     animation: none !important;
@@ -4612,35 +4586,373 @@
 
   .dash-float-header-row {
     flex-wrap: wrap !important;
-    gap: 4px !important;
+    gap: 3px !important;
   }
 
   .dash-float-value {
-    font-size: 0.95rem !important;
+    font-size: 0.9rem !important;
   }
 
+  /* ==========================================================================
+     YOUR ACADEMIC JOURNEY: 2 BOXES PER ROW (2x2 Grid) on Mobile
+     ========================================================================== */
   .dash-journey-track {
-    grid-template-columns: 1fr !important;
-    gap: 12px !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+    width: 100% !important;
   }
 
   .dash-journey-step-wrapper {
     width: 100% !important;
+    display: flex !important;
+  }
+
+  .dash-journey-connector {
+    display: none !important;
   }
 
   .dash-journey-card {
     min-height: auto !important;
-    padding: 16px !important;
+    padding: 12px 10px !important;
+    border-radius: 16px !important;
+    gap: 8px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
 
-  .dash-today-dual-rings {
-    grid-template-columns: 1fr !important;
+  .dash-journey-icon-wrap {
+    width: 30px !important;
+    height: 30px !important;
+    border-radius: 8px !important;
+  }
+
+  .dash-journey-icon-wrap svg {
+    width: 15px !important;
+    height: 15px !important;
+  }
+
+  .dash-journey-badge {
+    font-size: 0.6rem !important;
+    padding: 2px 6px !important;
+  }
+
+  .dash-journey-card-step-num {
+    font-size: 0.58rem !important;
+    letter-spacing: 0.04em !important;
+  }
+
+  .dash-journey-card-stat {
+    font-size: 1.25rem !important;
+    margin: 1px 0 !important;
+    line-height: 1.15 !important;
+  }
+
+  .dash-journey-card-title {
+    font-size: 0.76rem !important;
+    line-height: 1.2 !important;
+  }
+
+  .dash-journey-card-sub {
+    display: none !important; /* Hide verbose subtitle for compact eye-catching cards */
+  }
+
+  .dash-journey-card-link {
+    font-size: 0.68rem !important;
+    padding-top: 2px !important;
+    gap: 3px !important;
+  }
+
+  .dash-journey-card-link svg {
+    width: 11px !important;
+    height: 11px !important;
+  }
+
+  /* ==========================================================================
+     TODAY MATTERS: Compact, Eye-Catching Mobile Cards
+     ========================================================================== */
+  .dash-today-asymmetric-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    width: 100% !important;
+  }
+
+  .dash-today-left-col,
+  .dash-today-right-col {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
     gap: 12px !important;
   }
 
+  /* Focus Flow Timeline */
+  .dash-timeline-card {
+    padding: 14px 12px !important;
+    border-radius: 18px !important;
+    gap: 10px !important;
+  }
+
+  .dash-timeline-list {
+    gap: 8px !important;
+  }
+
+  .dash-timeline-item {
+    padding: 10px 10px !important;
+    border-radius: 12px !important;
+  }
+
+  .dash-timeline-node {
+    width: 26px !important;
+    height: 26px !important;
+    border-radius: 8px !important;
+  }
+
+  .dash-timeline-node svg {
+    width: 13px !important;
+    height: 13px !important;
+  }
+
+  .dash-timeline-subject {
+    font-size: 0.82rem !important;
+  }
+
+  .dash-timeline-meta {
+    font-size: 0.68rem !important;
+  }
+
+  .dash-timeline-notes {
+    font-size: 0.7rem !important;
+    line-height: 1.3 !important;
+    max-height: 36px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+  }
+
+  .dash-timeline-quick-launchpad {
+    padding: 10px 10px !important;
+    border-radius: 14px !important;
+    margin-top: 6px !important;
+    gap: 8px !important;
+  }
+
+  .dash-launchpad-title {
+    font-size: 0.76rem !important;
+  }
+
+  .dash-launchpad-subtitle {
+    display: none !important;
+  }
+
+  /* 3-in-a-row preset chips for mobile launchpad */
   .dash-launchpad-presets {
-    grid-template-columns: 1fr !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
     gap: 6px !important;
+  }
+
+  .dash-preset-chip {
+    padding: 6px 4px !important;
+    border-radius: 10px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 2px !important;
+  }
+
+  .dash-preset-badge {
+    font-size: 0.62rem !important;
+    padding: 2px 4px !important;
+    line-height: 1 !important;
+  }
+
+  .dash-preset-title {
+    font-size: 0.68rem !important;
+    font-weight: 700 !important;
+    line-height: 1.1 !important;
+  }
+
+  .dash-preset-sub {
+    display: none !important;
+  }
+
+  /* Dual Rings (Daily Challenge + Weekly Focus) in 1 ROW OF 2 BOXES */
+  .dash-today-dual-rings {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+
+  .dash-challenge-card,
+  .dash-weekly-ring-card {
+    padding: 12px 8px !important;
+    border-radius: 16px !important;
+    min-height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 6px !important;
+    box-sizing: border-box !important;
+  }
+
+  .dash-challenge-header {
+    margin-bottom: 0 !important;
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  .dash-challenge-header strong {
+    font-size: 0.74rem !important;
+  }
+
+  .dash-challenge-header svg {
+    width: 15px !important;
+    height: 15px !important;
+  }
+
+  .dash-challenge-xp-badge {
+    display: none !important;
+  }
+
+  .dash-challenge-body-split {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 6px !important;
+    width: 100% !important;
+  }
+
+  .dash-challenge-ring-box {
+    width: 58px !important;
+    height: 58px !important;
+  }
+
+  .dash-challenge-pct-val {
+    font-size: 0.92rem !important;
+  }
+
+  .dash-challenge-details {
+    align-items: center !important;
+    text-align: center !important;
+    gap: 2px !important;
+  }
+
+  .dash-challenge-target-headline {
+    font-size: 0.74rem !important;
+    line-height: 1.2 !important;
+  }
+
+  .dash-challenge-subcopy {
+    display: none !important;
+  }
+
+  .dash-challenge-progress-track {
+    display: none !important;
+  }
+
+  .dash-challenge-btn-row {
+    display: none !important;
+  }
+
+  /* Weekly Ring Mobile */
+  .dash-weekly-ring-card {
+    justify-content: flex-start !important;
+  }
+
+  .dash-ring-wrapper {
+    width: 58px !important;
+    height: 58px !important;
+    margin: 0 auto !important;
+  }
+
+  .dash-ring-pct {
+    font-size: 0.92rem !important;
+  }
+
+  .dash-ring-meta {
+    text-align: center !important;
+    width: 100% !important;
+  }
+
+  .dash-ring-meta strong {
+    font-size: 0.8rem !important;
+    display: block !important;
+  }
+
+  .dash-ring-meta p {
+    display: none !important;
+  }
+
+  .dash-ring-meta a {
+    font-size: 0.65rem !important;
+    margin-top: 3px !important;
+    justify-content: center !important;
+  }
+
+  /* Upcoming Classes & Quote Card */
+  .dash-upcoming-card {
+    padding: 12px 10px !important;
+    border-radius: 16px !important;
+  }
+
+  .dash-upcoming-list {
+    gap: 6px !important;
+  }
+
+  .dash-upcoming-card-item {
+    padding: 8px 10px !important;
+    border-radius: 10px !important;
+  }
+
+  .dash-upcoming-subject-title {
+    font-size: 0.78rem !important;
+  }
+
+  .dash-upcoming-time-wrap {
+    font-size: 0.68rem !important;
+  }
+
+  .dash-quote-card {
+    padding: 10px 12px !important;
+    border-radius: 14px !important;
+  }
+
+  .dash-quote-text {
+    font-size: 0.78rem !important;
+    line-height: 1.35 !important;
+  }
+
+  .dash-quote-author {
+    font-size: 0.68rem !important;
+  }
+
+  /* ==========================================================================
+     SMART LEARNING TOOLS: Compact Mobile Cards
+     ========================================================================== */
+  .dash-masonry-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .dash-masonry-card {
+    padding: 14px 12px !important;
+    border-radius: 18px !important;
+    gap: 8px !important;
+  }
+
+  .dash-card-headline {
+    font-size: 1rem !important;
+  }
+
+  .dash-card-copy {
+    font-size: 0.76rem !important;
+    line-height: 1.35 !important;
   }
 
   .dash-module-stats-row {
@@ -4648,9 +4960,32 @@
     gap: 8px !important;
   }
 
+  .dash-module-stat-pill {
+    padding: 8px 10px !important;
+    border-radius: 12px !important;
+  }
+
+  .dash-module-stat-num {
+    font-size: 1.15rem !important;
+  }
+
   .dash-module-tags-row {
     grid-template-columns: repeat(3, 1fr) !important;
-    gap: 6px !important;
+    gap: 4px !important;
+  }
+
+  .dash-module-tag-badge {
+    padding: 6px 4px !important;
+    font-size: 0.68rem !important;
+  }
+
+  .dash-bento-routine-wrap {
+    padding: 8px 10px !important;
+    border-radius: 12px !important;
+  }
+
+  .dash-bento-routine-subject {
+    font-size: 0.78rem !important;
   }
 
   /* Heatmap Horizontal Scroll Container */
@@ -4660,7 +4995,7 @@
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch !important;
     box-sizing: border-box !important;
-    padding-bottom: 8px !important;
+    padding-bottom: 6px !important;
   }
 
   .dash-github-grid-body,
@@ -4671,7 +5006,7 @@
   .dash-community-synergy-strip {
     flex-direction: column !important;
     align-items: flex-start !important;
-    gap: 12px !important;
+    gap: 10px !important;
   }
 
   .dash-btn-community-cta {
