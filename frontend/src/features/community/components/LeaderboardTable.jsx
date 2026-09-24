@@ -24,8 +24,8 @@ export default function LeaderboardTable({
           {timeframe === "streak"
             ? "Current Streak"
             : timeframe === "all_time"
-            ? "Total Focus"
-            : "Weekly Focus"}
+              ? "Total Focus"
+              : "Weekly Focus"}
         </span>
         <span className="col-achievements">Badges</span>
         <span className="col-action">Connect</span>
@@ -52,10 +52,10 @@ export default function LeaderboardTable({
                     entry.rank === 1
                       ? "rank-gold"
                       : entry.rank === 2
-                      ? "rank-silver"
-                      : entry.rank === 3
-                      ? "rank-bronze"
-                      : ""
+                        ? "rank-silver"
+                        : entry.rank === 3
+                          ? "rank-bronze"
+                          : ""
                   }`}
                 >
                   #{entry.rank}
@@ -105,9 +105,7 @@ export default function LeaderboardTable({
 
               {/* Achievements / Trophies */}
               <div className="col-achievements">
-                <Badge variant="accent">
-                  🏆 {entry.trophies_count} Badges
-                </Badge>
+                <Badge variant="accent">🏆 {entry.trophies_count} Badges</Badge>
               </div>
 
               {/* Connect / Follow */}
@@ -121,7 +119,12 @@ export default function LeaderboardTable({
                     {entry.is_following ? "✓ Following" : "+ Follow"}
                   </Button>
                 ) : (
-                  <span style={{ fontSize: "0.8125rem", color: "var(--color-text-muted)" }}>
+                  <span
+                    style={{
+                      fontSize: "0.8125rem",
+                      color: "var(--color-text-muted)",
+                    }}
+                  >
                     -
                   </span>
                 )}
@@ -133,4 +136,3 @@ export default function LeaderboardTable({
     </div>
   );
 }
-

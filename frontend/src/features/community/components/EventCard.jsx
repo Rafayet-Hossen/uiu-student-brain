@@ -8,6 +8,7 @@ import {
   ExternalLink,
   GraduationCap,
   MapPin,
+  Pencil,
   Sparkles,
   Trash2,
   UserCheck,
@@ -22,7 +23,12 @@ import ScholarAvatar from "../../auth/components/ScholarAvatar";
 import { useAuth } from "../../auth/useAuth";
 import { deleteEvent, toggleEventRSVP } from "../api";
 
-export default function EventCard({ event, onToggleRSVP, onDeleted }) {
+export default function EventCard({
+  event,
+  onToggleRSVP,
+  onEdit,
+  onDeleted,
+}) {
   if (!event) return null;
   const { user } = useAuth();
   const [userStatus, setUserStatus] = useState(
@@ -133,8 +139,10 @@ export default function EventCard({ event, onToggleRSVP, onDeleted }) {
   function getGoogleCalendarUrl() {
     if (!event?.event_date) return "#";
     const dateStr = (event.event_date || "").replace(/-/g, "");
-    const startTime = (event.start_time || "10:00").replace(/:/g, "").slice(0, 4) + "00";
-    const endTime = (event.end_time || "12:00").replace(/:/g, "").slice(0, 4) + "00";
+    const startTime =
+      (event.start_time || "10:00").replace(/:/g, "").slice(0, 4) + "00";
+    const endTime =
+      (event.end_time || "12:00").replace(/:/g, "").slice(0, 4) + "00";
     const dates = `${dateStr}T${startTime}/${dateStr}T${endTime}`;
     const details = `${event.description || ""}\n\nCourse: ${event.subject || ""}\nOrganized by: ${event.creator?.full_name || "Scholar"}`;
     return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title || "Study Session")}&dates=${dates}&details=${encodeURIComponent(details)}&location=${encodeURIComponent(event.location || "")}`;
@@ -142,8 +150,10 @@ export default function EventCard({ event, onToggleRSVP, onDeleted }) {
 
   function handleDownloadIcs() {
     const dateStr = (event.event_date || "").replace(/-/g, "");
-    const startTime = (event.start_time || "10:00").replace(/:/g, "").slice(0, 4) + "00";
-    const endTime = (event.end_time || "12:00").replace(/:/g, "").slice(0, 4) + "00";
+    const startTime =
+      (event.start_time || "10:00").replace(/:/g, "").slice(0, 4) + "00";
+    const endTime =
+      (event.end_time || "12:00").replace(/:/g, "").slice(0, 4) + "00";
     const icsLines = [
       "BEGIN:VCALENDAR",
       "VERSION:2.0",
@@ -160,7 +170,9 @@ export default function EventCard({ event, onToggleRSVP, onDeleted }) {
       "END:VEVENT",
       "END:VCALENDAR",
     ];
-    const blob = new Blob([icsLines.join("\r\n")], { type: "text/calendar;charset=utf-8" });
+    const blob = new Blob([icsLines.join("\r\n")], {
+      type: "text/calendar;charset=utf-8",
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -211,14 +223,51 @@ export default function EventCard({ event, onToggleRSVP, onDeleted }) {
               </div>
 
               {isCreator && (
-                <button
-                  type="button"
-                  className="event-delete-ghost-btn"
-                  onClick={handleDelete}
-                  title="Cancel Event"
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                  }}
                 >
-                  <Trash2 size={15} />
-                </button>
+                  <button
+                    type="button"
+                    className="event-edit-ghost-btn"
+                    onClick={() => onEdit && onEdit(event)}
+                    title="Edit Study Event"
+                    style={{
+                      border: "none",
+                      background: "transparent",
+                      color: "var(--text-muted, #94a3b8)",
+                      cursor: "pointer",
+                      padding: "5px",
+                      borderRadius: "6px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      transition: "all 0.15s ease",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = "var(--primary, #6366f1)";
+                      e.currentTarget.style.background =
+                        "rgba(99, 102, 241, 0.12)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = "var(--text-muted, #94a3b8)";
+                      e.currentTarget.style.background = "transparent";
+                    }}
+                  >
+                    <Pencil size={15} />
+                  </button>
+                  <button
+                    type="button"
+                    className="event-delete-ghost-btn"
+                    onClick={handleDelete}
+                    title="Cancel Event"
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </div>
               )}
             </div>
 
@@ -335,9 +384,15 @@ export default function EventCard({ event, onToggleRSVP, onDeleted }) {
                   <div className="event-planner-sync-banner">
                     <div className="sync-banner-text">
                       <CheckCircle2 size={13} className="text-emerald" />
-                      <span>Added to your <strong>Study Planner Calendar</strong></span>
+                      <span>
+                        Added to your <strong>Study Planner Calendar</strong>
+                      </span>
                     </div>
-                    <Link to="/planner" className="sync-banner-link" title="Open Study Planner">
+                    <Link
+                      to="/planner"
+                      className="sync-banner-link"
+                      title="Open Study Planner"
+                    >
                       Planner →
                     </Link>
                   </div>

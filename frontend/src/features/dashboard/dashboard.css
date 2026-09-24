@@ -1614,10 +1614,13 @@
 .dash-github-cell {
   width: 100%;
   max-width: 16px;
+  min-width: 10px;
+  min-height: 10px;
   aspect-ratio: 1 / 1;
   border-radius: 3px;
   position: relative;
   cursor: pointer;
+  box-sizing: border-box;
   transition:
     transform 0.15s ease,
     outline 0.15s ease;
@@ -1631,35 +1634,53 @@
 
 /* GitHub Intensity Colors */
 .gh-lvl-0 {
-  background: var(--dash-surface-elevated);
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
 }
 .gh-lvl-1 {
   background: #ffedd5;
+  border: 1px solid #fed7aa;
 }
 .gh-lvl-2 {
   background: #fdba74;
+  border: 1px solid #fb923c;
 }
 .gh-lvl-3 {
   background: #fb923c;
+  border: 1px solid #f97316;
 }
 .gh-lvl-4 {
   background: #f26522;
+  border: 1px solid #ea580c;
+  box-shadow: 0 0 6px rgba(242, 101, 34, 0.35);
 }
 
-[data-theme="dark"] .gh-lvl-0 {
-  background: #1e293b;
+[data-theme="dark"] .gh-lvl-0,
+.dark .gh-lvl-0 {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
 }
-[data-theme="dark"] .gh-lvl-1 {
-  background: rgba(242, 101, 34, 0.25);
+[data-theme="dark"] .gh-lvl-1,
+.dark .gh-lvl-1 {
+  background: #7c2d12 !important;
+  border: 1px solid rgba(251, 146, 60, 0.3) !important;
 }
-[data-theme="dark"] .gh-lvl-2 {
-  background: rgba(242, 101, 34, 0.5);
+[data-theme="dark"] .gh-lvl-2,
+.dark .gh-lvl-2 {
+  background: #c2410c !important;
+  border: 1px solid rgba(251, 146, 60, 0.45) !important;
 }
-[data-theme="dark"] .gh-lvl-3 {
-  background: rgba(242, 101, 34, 0.75);
+[data-theme="dark"] .gh-lvl-3,
+.dark .gh-lvl-3 {
+  background: #ea580c !important;
+  border: 1px solid rgba(251, 146, 60, 0.6) !important;
+  box-shadow: 0 0 6px rgba(234, 88, 12, 0.35) !important;
 }
-[data-theme="dark"] .gh-lvl-4 {
-  background: #f26522;
+[data-theme="dark"] .gh-lvl-4,
+.dark .gh-lvl-4 {
+  background: #f97316 !important;
+  border: 1px solid #fdba74 !important;
+  box-shadow: 0 0 10px rgba(249, 115, 22, 0.6) !important;
 }
 
 .dash-heatmap-legend {
@@ -1674,13 +1695,15 @@
 .dash-heatmap-scale {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
 }
 
 .dash-heatmap-scale-dot {
-  width: 11px;
-  height: 11px;
+  width: 12px;
+  height: 12px;
   border-radius: 2.5px;
+  display: inline-block;
+  box-sizing: border-box;
 }
 
 /* ==========================================================================

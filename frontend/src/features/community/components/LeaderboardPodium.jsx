@@ -2,7 +2,11 @@ import Badge from "../../../components/Badge";
 import Button from "../../../components/Button";
 import ScholarAvatar from "../../auth/components/ScholarAvatar";
 
-export default function LeaderboardPodium({ topThree, timeframe, onToggleFollow }) {
+export default function LeaderboardPodium({
+  topThree,
+  timeframe,
+  onToggleFollow,
+}) {
   if (!topThree || topThree.length === 0) return null;
 
   const first = topThree[0];
@@ -44,7 +48,9 @@ export default function LeaderboardPodium({ topThree, timeframe, onToggleFollow 
 
         <div className="podium-metrics-row">
           <Badge
-            variant={place === 1 ? "warning" : place === 2 ? "default" : "accent"}
+            variant={
+              place === 1 ? "warning" : place === 2 ? "default" : "accent"
+            }
             style={{ fontWeight: 700 }}
           >
             {timeframe === "streak" ? "🔥 " : "⏱️ "}
@@ -52,11 +58,15 @@ export default function LeaderboardPodium({ topThree, timeframe, onToggleFollow 
           </Badge>
 
           {entry.current_streak > 0 && timeframe !== "streak" && (
-            <span className="podium-streak-tag">🔥 {entry.current_streak}d</span>
+            <span className="podium-streak-tag">
+              🔥 {entry.current_streak}d
+            </span>
           )}
 
           {entry.trophies_count > 0 && (
-            <span className="podium-trophies-tag">🏆 {entry.trophies_count}</span>
+            <span className="podium-trophies-tag">
+              🏆 {entry.trophies_count}
+            </span>
           )}
         </div>
 
@@ -71,9 +81,7 @@ export default function LeaderboardPodium({ topThree, timeframe, onToggleFollow 
           </Button>
         )}
 
-        {entry.is_current_user && (
-          <span className="podium-you-badge">You</span>
-        )}
+        {entry.is_current_user && <span className="podium-you-badge">You</span>}
       </div>
     );
   };
@@ -97,4 +105,3 @@ export default function LeaderboardPodium({ topThree, timeframe, onToggleFollow 
     </div>
   );
 }
-

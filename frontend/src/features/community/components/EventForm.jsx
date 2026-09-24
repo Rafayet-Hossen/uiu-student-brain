@@ -4,15 +4,38 @@ import Input from "../../../components/Input";
 import FormError from "../../../components/FormError";
 import { createEvent, extractCommunityErrorMessage } from "../api";
 
-export default function EventForm({ onSubmit, onCreated, onCancel }) {
-  const [title, setTitle] = useState("");
-  const [subject, setSubject] = useState("");
-  const [description, setDescription] = useState("");
-  const [eventDate, setEventDate] = useState("");
-  const [startTime, setStartTime] = useState("14:00");
-  const [endTime, setEndTime] = useState("16:00");
-  const [eventType, setEventType] = useState("offline"); // "offline" | "online"
-  const [location, setLocation] = useState("");
+export default function EventForm({
+  initialData = null,
+  onSubmit,
+  onCreated,
+  onCancel,
+}) {
+  const isEditing = Boolean(initialData);
+  const [title, setTitle] = useState(initialData?.title || "");
+  const [subject, setSubject] = useState(initialData?.subject || "");
+  const [description, setDescription] = useState(initialData?.description || "");
+  const [eventDate, setEventDate] = useState(initialData?.event_date || "");
+  const [startTime, setStartTime] = useState(
+    initialData?.start_time ? initialData.start_time.slice(0, 5) : "14:00"
+  );
+  const [endTime, setEndTime] = useState(
+    initialData?.end_time ? initialData.end_time.slice(0, 5) : "16:00"
+  );
+
+  const initialIsOnline =
+    Boolean(initialData?.location?.toLowerCase().includes("online")) ||
+    Boolean(initialData?.location?.toLowerCase().includes("meet")) ||
+    Boolean(initialData?.location?.toLowerCase().includes("zoom")) ||
+    Boolean(initialData?.location?.toLowerCase().includes("http"));
+
+  const [eventType, setEventType] = useState(
+    initialData ? (initialIsOnline ? "online" : "offline") : "offline"
+  );
+
+  const cleanInitialLoc = initialData?.location
+    ? initialData.location.replace(/^(Offline:\s*|Online:\s*)/i, "")
+    : "";
+  const [location, setLocation] = useState(cleanInitialLoc);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -40,9 +63,16 @@ export default function EventForm({ onSubmit, onCreated, onCancel }) {
 
     try {
       let finalLocation = location.trim();
-      if (eventType === "online" && !finalLocation.toLowerCase().startsWith("http") && !finalLocation.toLowerCase().startsWith("online")) {
+      if (
+        eventType === "online" &&
+        !finalLocation.toLowerCase().startsWith("http") &&
+        !finalLocation.toLowerCase().startsWith("online")
+      ) {
         finalLocation = `Online: ${finalLocation}`;
-      } else if (eventType === "offline" && !finalLocation.toLowerCase().startsWith("offline")) {
+      } else if (
+        eventType === "offline" &&
+        !finalLocation.toLowerCase().startsWith("offline")
+      ) {
         finalLocation = `Offline: ${finalLocation}`;
       }
 
@@ -77,23 +107,45 @@ export default function EventForm({ onSubmit, onCreated, onCancel }) {
 
       {/* Event Format Selection (Offline vs Online) */}
       <div className="form-group" style={{ marginBottom: "16px" }}>
-        <label className="form-label" style={{ fontWeight: 600, display: "block", marginBottom: "8px" }}>
+        <label
+          className="form-label"
+          style={{ fontWeight: 600, display: "block", marginBottom: "8px" }}
+        >
           Event Format / Venue Type *
         </label>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "12px",
+          }}
+        >
           <button
             type="button"
             className={`event-type-toggle-btn ${eventType === "offline" ? "active" : ""}`}
             onClick={() => {
               setEventType("offline");
-              if (location.startsWith("Online: ") || location.startsWith("http")) setLocation("");
+              if (
+                location.startsWith("Online: ") ||
+                location.startsWith("http")
+              )
+                setLocation("");
             }}
             style={{
               padding: "12px 14px",
               borderRadius: "10px",
-              border: eventType === "offline" ? "2px solid var(--primary, #6366f1)" : "1px solid var(--border-color, #e2e8f0)",
-              background: eventType === "offline" ? "rgba(99, 102, 241, 0.08)" : "var(--bg-surface, #ffffff)",
-              color: eventType === "offline" ? "var(--primary, #6366f1)" : "var(--text-secondary, #64748b)",
+              border:
+                eventType === "offline"
+                  ? "2px solid var(--primary, #6366f1)"
+                  : "1px solid var(--border-color, #e2e8f0)",
+              background:
+                eventType === "offline"
+                  ? "rgba(99, 102, 241, 0.08)"
+                  : "var(--bg-surface, #ffffff)",
+              color:
+                eventType === "offline"
+                  ? "var(--primary, #6366f1)"
+                  : "var(--text-secondary, #64748b)",
               fontWeight: eventType === "offline" ? 600 : 500,
               display: "flex",
               alignItems: "center",
@@ -117,9 +169,18 @@ export default function EventForm({ onSubmit, onCreated, onCancel }) {
             style={{
               padding: "12px 14px",
               borderRadius: "10px",
-              border: eventType === "online" ? "2px solid #10b981" : "1px solid var(--border-color, #e2e8f0)",
-              background: eventType === "online" ? "rgba(16, 185, 129, 0.08)" : "var(--bg-surface, #ffffff)",
-              color: eventType === "online" ? "#10b981" : "var(--text-secondary, #64748b)",
+              border:
+                eventType === "online"
+                  ? "2px solid #10b981"
+                  : "1px solid var(--border-color, #e2e8f0)",
+              background:
+                eventType === "online"
+                  ? "rgba(16, 185, 129, 0.08)"
+                  : "var(--bg-surface, #ffffff)",
+              color:
+                eventType === "online"
+                  ? "#10b981"
+                  : "var(--text-secondary, #64748b)",
               fontWeight: eventType === "online" ? 600 : 500,
               display: "flex",
               alignItems: "center",
@@ -185,7 +246,11 @@ export default function EventForm({ onSubmit, onCreated, onCancel }) {
       </div>
 
       <Input
-        label={eventType === "offline" ? "🏛️ Campus Location / Room" : "🌐 Meeting Link (Google Meet / Zoom / Discord)"}
+        label={
+          eventType === "offline"
+            ? "🏛️ Campus Location / Room"
+            : "🌐 Meeting Link (Google Meet / Zoom / Discord)"
+        }
         value={location}
         onChange={(e) => setLocation(e.target.value)}
         placeholder={
@@ -224,7 +289,13 @@ export default function EventForm({ onSubmit, onCreated, onCancel }) {
           Cancel
         </Button>
         <Button type="submit" disabled={loading}>
-          {loading ? "Scheduling..." : "📅 Schedule Study Meetup"}
+          {loading
+            ? isEditing
+              ? "Saving Changes..."
+              : "Scheduling..."
+            : isEditing
+              ? "💾 Save Changes"
+              : "📅 Schedule Study Meetup"}
         </Button>
       </div>
     </form>
