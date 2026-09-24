@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   Calendar,
   CheckCircle2,
   Clock,
+  Download,
+  ExternalLink,
   GraduationCap,
   MapPin,
   Sparkles,
@@ -126,6 +129,47 @@ export default function EventCard({ event, onToggleRSVP, onDeleted }) {
     event.location?.toLowerCase().includes("meet") ||
     event.location?.toLowerCase().includes("zoom") ||
     event.location?.toLowerCase().includes("http");
+
+  function getGoogleCalendarUrl() {
+    if (!event?.event_date) return "#";
+    const dateStr = (event.event_date || "").replace(/-/g, "");
+    const startTime = (event.start_time || "10:00").replace(/:/g, "").slice(0, 4) + "00";
+    const endTime = (event.end_time || "12:00").replace(/:/g, "").slice(0, 4) + "00";
+    const dates = `${dateStr}T${startTime}/${dateStr}T${endTime}`;
+    const details = `${event.description || ""}\n\nCourse: ${event.subject || ""}\nOrganized by: ${event.creator?.full_name || "Scholar"}`;
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title || "Study Session")}&dates=${dates}&details=${encodeURIComponent(details)}&location=${encodeURIComponent(event.location || "")}`;
+  }
+
+  function handleDownloadIcs() {
+    const dateStr = (event.event_date || "").replace(/-/g, "");
+    const startTime = (event.start_time || "10:00").replace(/:/g, "").slice(0, 4) + "00";
+    const endTime = (event.end_time || "12:00").replace(/:/g, "").slice(0, 4) + "00";
+    const icsLines = [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//Student Brain//Study Planner Calendar//EN",
+      "CALSCALE:GREGORIAN",
+      "METHOD:PUBLISH",
+      "BEGIN:VEVENT",
+      `SUMMARY:${(event.title || "Study Session").replace(/\n/g, " ")}`,
+      `DESCRIPTION:${(event.description || event.subject || "").replace(/\n/g, "\\n")}`,
+      `LOCATION:${(event.location || "").replace(/\n/g, " ")}`,
+      `DTSTART:${dateStr}T${startTime}`,
+      `DTEND:${dateStr}T${endTime}`,
+      "STATUS:CONFIRMED",
+      "END:VEVENT",
+      "END:VCALENDAR",
+    ];
+    const blob = new Blob([icsLines.join("\r\n")], { type: "text/calendar;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${(event.title || "study-event").toLowerCase().replace(/[^a-z0-9]/g, "-")}.ics`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
 
   return (
     <motion.div
@@ -284,6 +328,45 @@ export default function EventCard({ event, onToggleRSVP, onDeleted }) {
                   </span>
                 </motion.button>
               </div>
+
+              {/* Added to Calendar & Planner Actions */}
+              {(userStatus === "going" || userStatus === "interested") && (
+                <div style={{ marginTop: "10px" }}>
+                  <div className="event-planner-sync-banner">
+                    <div className="sync-banner-text">
+                      <CheckCircle2 size={13} className="text-emerald" />
+                      <span>Added to your <strong>Study Planner Calendar</strong></span>
+                    </div>
+                    <Link to="/planner" className="sync-banner-link" title="Open Study Planner">
+                      Planner →
+                    </Link>
+                  </div>
+
+                  <div className="event-cal-action-row">
+                    <a
+                      href={getGoogleCalendarUrl()}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="event-cal-btn-outline"
+                      title="Add this event to Google Calendar"
+                    >
+                      <Calendar size={12} className="text-primary" />
+                      <span>Google Calendar</span>
+                      <ExternalLink size={10} style={{ opacity: 0.7 }} />
+                    </a>
+
+                    <button
+                      type="button"
+                      onClick={handleDownloadIcs}
+                      className="event-cal-btn-outline"
+                      title="Download iCal file for Apple Calendar or Microsoft Outlook"
+                    >
+                      <Download size={12} className="text-amber" />
+                      <span>Apple / Outlook (.ics)</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

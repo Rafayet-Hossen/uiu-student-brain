@@ -16,6 +16,8 @@ export default function Button({
     switch (variant) {
       case "secondary":
         return "btn-secondary";
+      case "accent":
+        return "btn-accent";
       case "ghost":
         return "btn-ghost";
       case "outline":
@@ -46,7 +48,9 @@ export default function Button({
     <motion.button
       type={type}
       disabled={disabled || loading}
-      whileHover={disabled || loading ? {} : { y: -2, transition: { duration: 0.15 } }}
+      whileHover={
+        disabled || loading ? {} : { y: -2, transition: { duration: 0.15 } }
+      }
       whileTap={disabled || loading ? {} : { scale: 0.98 }}
       className={`btn ${getVariantClass()} ${getSizeClass()} ${className}`}
       {...props}

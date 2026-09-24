@@ -24,7 +24,7 @@ const getApiBaseUrl = () => {
     return envUrl;
   }
   if (typeof window !== "undefined") {
-    if (window.location.port === "5173") {
+    if (window.location.port !== "8000" && window.location.port !== "") {
       return `${window.location.protocol}//${window.location.hostname}:8000/api`;
     }
     return "/api";

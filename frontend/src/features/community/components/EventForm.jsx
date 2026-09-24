@@ -11,6 +11,7 @@ export default function EventForm({ onSubmit, onCreated, onCancel }) {
   const [eventDate, setEventDate] = useState("");
   const [startTime, setStartTime] = useState("14:00");
   const [endTime, setEndTime] = useState("16:00");
+  const [eventType, setEventType] = useState("offline"); // "offline" | "online"
   const [location, setLocation] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -38,6 +39,13 @@ export default function EventForm({ onSubmit, onCreated, onCancel }) {
     setError("");
 
     try {
+      let finalLocation = location.trim();
+      if (eventType === "online" && !finalLocation.toLowerCase().startsWith("http") && !finalLocation.toLowerCase().startsWith("online")) {
+        finalLocation = `Online: ${finalLocation}`;
+      } else if (eventType === "offline" && !finalLocation.toLowerCase().startsWith("offline")) {
+        finalLocation = `Offline: ${finalLocation}`;
+      }
+
       const payload = {
         title: title.trim(),
         subject: subject.trim(),
@@ -45,7 +53,7 @@ export default function EventForm({ onSubmit, onCreated, onCancel }) {
         event_date: eventDate,
         start_time: startTime,
         end_time: endTime,
-        location: location.trim(),
+        location: finalLocation,
       };
 
       if (onSubmit) {
@@ -66,6 +74,66 @@ export default function EventForm({ onSubmit, onCreated, onCancel }) {
   return (
     <form onSubmit={handleSubmit} className="academic-form">
       {error && <FormError message={error} />}
+
+      {/* Event Format Selection (Offline vs Online) */}
+      <div className="form-group" style={{ marginBottom: "16px" }}>
+        <label className="form-label" style={{ fontWeight: 600, display: "block", marginBottom: "8px" }}>
+          Event Format / Venue Type *
+        </label>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+          <button
+            type="button"
+            className={`event-type-toggle-btn ${eventType === "offline" ? "active" : ""}`}
+            onClick={() => {
+              setEventType("offline");
+              if (location.startsWith("Online: ") || location.startsWith("http")) setLocation("");
+            }}
+            style={{
+              padding: "12px 14px",
+              borderRadius: "10px",
+              border: eventType === "offline" ? "2px solid var(--primary, #6366f1)" : "1px solid var(--border-color, #e2e8f0)",
+              background: eventType === "offline" ? "rgba(99, 102, 241, 0.08)" : "var(--bg-surface, #ffffff)",
+              color: eventType === "offline" ? "var(--primary, #6366f1)" : "var(--text-secondary, #64748b)",
+              fontWeight: eventType === "offline" ? 600 : 500,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+            }}
+          >
+            <span style={{ fontSize: "18px" }}>🏛️</span>
+            <span>Offline (In-Person Campus)</span>
+          </button>
+
+          <button
+            type="button"
+            className={`event-type-toggle-btn ${eventType === "online" ? "active" : ""}`}
+            onClick={() => {
+              setEventType("online");
+              if (location.startsWith("Offline: ")) setLocation("");
+            }}
+            style={{
+              padding: "12px 14px",
+              borderRadius: "10px",
+              border: eventType === "online" ? "2px solid #10b981" : "1px solid var(--border-color, #e2e8f0)",
+              background: eventType === "online" ? "rgba(16, 185, 129, 0.08)" : "var(--bg-surface, #ffffff)",
+              color: eventType === "online" ? "#10b981" : "var(--text-secondary, #64748b)",
+              fontWeight: eventType === "online" ? 600 : 500,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+            }}
+          >
+            <span style={{ fontSize: "18px" }}>🌐</span>
+            <span>Online (Virtual / Remote)</span>
+          </button>
+        </div>
+      </div>
 
       <div className="modal-grid-2col">
         <Input
@@ -117,10 +185,14 @@ export default function EventForm({ onSubmit, onCreated, onCancel }) {
       </div>
 
       <Input
-        label="Location / Meeting Link"
+        label={eventType === "offline" ? "🏛️ Campus Location / Room" : "🌐 Meeting Link (Google Meet / Zoom / Discord)"}
         value={location}
         onChange={(e) => setLocation(e.target.value)}
-        placeholder="e.g. Central Library Study Room 402 or Google Meet Link"
+        placeholder={
+          eventType === "offline"
+            ? "e.g. Central Library 4th Floor Study Room 402, Building A"
+            : "e.g. https://meet.google.com/xyz-abc-def or Zoom Link"
+        }
         disabled={loading}
         required
       />

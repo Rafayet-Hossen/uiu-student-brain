@@ -66,13 +66,10 @@ export default function CreateCourseModal({
       >
         <div className="modal-header-row">
           <div>
-            <h3 className="modal-title">Add Course</h3>
             <h3 className="modal-title">
               {course ? "Edit Course" : "Add Course"}
             </h3>
             <p className="modal-subtitle">
-              Adding to{" "}
-              <span className="text-accent font-semibold">{semesterName}</span>
               {course ? "Update details for " : "Adding to "}
               <span className="text-accent font-semibold">{semesterName}</span>
             </p>

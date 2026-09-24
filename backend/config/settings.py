@@ -151,16 +151,37 @@ WSGI_APPLICATION = "config.wsgi.application"
 # DATABASE
 # ============================================================
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": env("POSTGRES_DB"),
-        "USER": env("POSTGRES_USER"),
-        "PASSWORD": env("POSTGRES_PASSWORD"),
-        "HOST": env("POSTGRES_HOST", default="localhost"),
-        "PORT": env("POSTGRES_PORT", default="5432"),
+import socket
+
+def _can_connect_postgres(host, port):
+    try:
+        with socket.create_connection((host, int(port)), timeout=0.8):
+            return True
+    except (OSError, ValueError):
+        return False
+
+_pg_host = env("POSTGRES_HOST", default="localhost")
+_pg_port = env("POSTGRES_PORT", default="5432")
+_force_sqlite = env.bool("USE_SQLITE", default=False)
+
+if not _force_sqlite and _can_connect_postgres(_pg_host, _pg_port):
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": env("POSTGRES_DB", default="student_brain"),
+            "USER": env("POSTGRES_USER", default="student_brain"),
+            "PASSWORD": env("POSTGRES_PASSWORD", default="change-me"),
+            "HOST": _pg_host,
+            "PORT": _pg_port,
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 
 # ============================================================

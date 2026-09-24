@@ -71,9 +71,9 @@ const CATEGORIES = [
 ];
 
 const TIMEFRAMES = [
-  { key: "weekly", label: "⚡ Weekly Focus" },
-  { key: "streak", label: "🔥 Streak Masters" },
-  { key: "all_time", label: "👑 All-Time Focus" },
+  { key: "weekly", label: "Weekly Focus Hours" },
+  { key: "streak", label: "Study Streak Masters" },
+  { key: "all_time", label: "All-Time Scholars" },
 ];
 
 export default function CommunityPage() {

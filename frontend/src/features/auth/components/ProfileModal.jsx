@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   Award,
+  Calendar,
   Camera,
   CheckCircle2,
   Image as ImageIcon,
@@ -240,7 +241,16 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
               >
                 <span>{user?.email}</span>
                 <span>•</span>
-                <span>🗓️ Joined {joinedFormatted}</span>
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "4px",
+                  }}
+                >
+                  <Calendar size={13} />
+                  Joined {joinedFormatted}
+                </span>
               </div>
             </div>
           </div>

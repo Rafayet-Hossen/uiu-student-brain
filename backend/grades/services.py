@@ -1,3 +1,5 @@
+import json
+import re
 from decimal import Decimal
 import logging
 from typing import Any, Dict, List, Optional
@@ -55,24 +57,330 @@ DEFAULT_COURSE_CATALOG = [
         "semester": "Fall 2025",
     },
 ]
+GRADE_POINTS_MAP = {
+    "A": Decimal("4.00"),
+    "A-": Decimal("3.67"),
+    "B+": Decimal("3.33"),
+    "B": Decimal("3.00"),
+    "B-": Decimal("2.67"),
+    "C+": Decimal("2.33"),
+    "C": Decimal("2.00"),
+    "C-": Decimal("1.67"),
+    "D+": Decimal("1.33"),
+    "D": Decimal("1.00"),
+    "F": Decimal("0.00"),
+}
 
 
 def seed_initial_courses_for_user(user):
     """Auto-seeds realistic university courses with varied grades if the user has no recorded courses."""
     if CourseGrade.objects.filter(user=user).exists():
         return
+def letter_to_point(letter: str) -> Decimal:
+    clean = letter.strip().upper()
+    return GRADE_POINTS_MAP.get(clean, Decimal("2.00"))
+
+
+def point_to_letter(point: float) -> str:
+    if point >= 3.85:
+        return "A"
+    elif point >= 3.50:
+        return "A-"
+    elif point >= 3.15:
+        return "B+"
+    elif point >= 2.85:
+        return "B"
+    elif point >= 2.50:
+        return "B-"
+    elif point >= 2.15:
+        return "C+"
+    elif point >= 1.85:
+        return "C"
+    elif point >= 1.50:
+        return "C-"
+    elif point >= 1.15:
+        return "D+"
+    elif point >= 0.70:
+        return "D"
+    return "F"
+
+
+def parse_and_import_transcript(user, file_obj=None, raw_text: str = "") -> List[CourseGrade]:
+    """
+    Parses a student transcript (PDF, screenshot images: PNG, JPG, JPEG, WEBP, HEIC, HEIF, HEUC, CSV, TXT)
+    or raw pasted text, and creates/updates CourseGrade records for the user.
+    Courses with low or failing grades are automatically designated as is_retake=True.
+    """
+    extracted_text = ""
+    is_multimodal = False
+    file_bytes = None
+    mime_type = ""
+
+    if file_obj:
+        fname = getattr(file_obj, "name", "").lower()
+
+        # 1. HEIC / HEIF / HEUC screenshots from iPhone/mobile
+        if fname.endswith((".heic", ".heif", ".heuc")):
+            try:
+                import io
+                from PIL import Image
+                import pillow_heif
+                pillow_heif.register_heif_opener()
+                img = Image.open(file_obj)
+                buf = io.BytesIO()
+                img.convert("RGB").save(buf, format="JPEG")
+                file_bytes = buf.getvalue()
+                mime_type = "image/jpeg"
+                is_multimodal = True
+            except Exception as e:
+                logger.warning(f"HEIC/HEIF conversion fallback: {e}")
+                try:
+                    file_obj.seek(0)
+                    file_bytes = file_obj.read()
+                    mime_type = "image/heic"
+                    is_multimodal = True
+                except Exception:
+                    pass
+
+        # 2. Standard screenshot/image formats (PNG, JPG, JPEG, WEBP)
+        elif fname.endswith((".png", ".jpg", ".jpeg", ".webp")):
+            try:
+                file_bytes = file_obj.read()
+                ext = fname.split(".")[-1]
+                mime_type = f"image/{ext if ext != 'jpg' else 'jpeg'}"
+                is_multimodal = True
+            except Exception as e:
+                logger.warning(f"Image read error: {e}")
+
+        # 3. PDF document (UIU portal printout or scanned transcript)
+        elif fname.endswith(".pdf"):
+            try:
+                import pypdf
+                reader = pypdf.PdfReader(file_obj)
+                extracted_text = "\n".join(page.extract_text() or "" for page in reader.pages)
+            except Exception as e:
+                logger.warning(f"PDF extraction error in transcript: {e}")
+
+            # If PDF text extraction returned empty or very short text (scanned PDF / image-based PDF)
+            if len((extracted_text or "").strip()) < 50:
+                try:
+                    file_obj.seek(0)
+                    file_bytes = file_obj.read()
+                    mime_type = "application/pdf"
+                    is_multimodal = True
+                except Exception as e:
+                    logger.warning(f"PDF bytes fallback failed: {e}")
+
+        # 4. CSV spreadsheet
+        elif fname.endswith(".csv"):
+            try:
+                content = file_obj.read()
+                extracted_text = content.decode("utf-8", errors="ignore") if isinstance(content, bytes) else str(content)
+            except Exception as e:
+                logger.warning(f"CSV read error in transcript: {e}")
+
+        # 5. TXT or other MIME
+        else:
+            content_type = getattr(file_obj, "content_type", "").lower()
+            if content_type.startswith("image/"):
+                try:
+                    file_bytes = file_obj.read()
+                    mime_type = content_type
+                    is_multimodal = True
+                except Exception:
+                    pass
+            else:
+                try:
+                    content = file_obj.read()
+                    extracted_text = content.decode("utf-8", errors="ignore") if isinstance(content, bytes) else str(content)
+                except Exception:
+                    extracted_text = ""
+
+    elif raw_text:
+        extracted_text = raw_text.strip()
+
+    if not is_multimodal and not extracted_text:
+        return []
+
     plan = GradePlan.objects.filter(user=user).first()
-    for item in DEFAULT_COURSE_CATALOG:
-        CourseGrade.objects.create(
-            user=user,
-            plan=plan,
-            course_code=item["course_code"],
-            course_name=item["course_name"],
-            credits=item["credits"],
-            grade_point=item["grade_point"],
-            grade_letter=item["grade_letter"],
-            semester=item["semester"],
+    lines = [l.strip() for l in extracted_text.splitlines() if l.strip()]
+    parsed_items = []
+
+    # 1. Check if Gemini AI can structure the transcript (multimodal image/PDF or text)
+    try:
+        from ai.client import FALLBACK_MODEL, PRIMARY_MODEL, get_gemini_client
+        from google.genai import types
+
+        client = get_gemini_client()
+        if client:
+            ai_prompt = (
+                "You are an expert university transcript and grade report analyzer. "
+                "Carefully inspect this academic transcript, grade sheet, or student portal screenshot.\n"
+                "Extract ALL university courses listed (completed, failed, or retaken).\n"
+                "For each course, extract:\n"
+                "- course_code: Course code string (e.g. 'CSE 220', 'MATH 187', 'PHY 101')\n"
+                "- course_name: Course title string (e.g. 'Data Structures', 'Linear Algebra')\n"
+                "- credits: float credit hours (e.g. 3.0, 1.5, 1.0, 4.0; default 3.0)\n"
+                "- grade_point: float GPA point from 0.00 to 4.00 (e.g. 2.00, 2.33, 3.67, 0.00)\n"
+                "- grade_letter: letter grade string (e.g. 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D+', 'D', 'F')\n"
+                "- semester: semester string if visible (e.g. 'Fall 2025', 'Spring 2025') or empty string\n"
+                "- is_retake: boolean, set to true if grade_point < 3.00, grade is F/D/C, or explicitly marked as retake/repeated/failed\n\n"
+                "Return ONLY a strict JSON array of objects with keys: "
+                "[\"course_code\", \"course_name\", \"credits\", \"grade_point\", \"grade_letter\", \"semester\", \"is_retake\"]."
+            )
+
+            contents = []
+            if is_multimodal and file_bytes:
+                contents.append(types.Part.from_bytes(data=file_bytes, mime_type=mime_type))
+            if extracted_text:
+                contents.append(f"Transcript Content:\n{extracted_text[:15000]}")
+            contents.append(ai_prompt)
+
+            models_to_try = [PRIMARY_MODEL, FALLBACK_MODEL]
+            for m in models_to_try:
+                try:
+                    response = client.models.generate_content(
+                        model=m,
+                        contents=contents,
+                    )
+                    raw_resp = (response.text or "").strip()
+                    if "```json" in raw_resp:
+                        raw_resp = raw_resp.split("```json")[1].split("```")[0].strip()
+                    elif "```" in raw_resp:
+                        raw_resp = raw_resp.split("```")[1].split("```")[0].strip()
+                    data = json.loads(raw_resp)
+                    if isinstance(data, list) and len(data) > 0:
+                        parsed_items = data
+                        break
+                except Exception as gen_err:
+                    logger.warning(f"AI transcript extraction model {m} failed: {gen_err}")
+    except Exception as e:
+        logger.warning(f"AI transcript extraction fallback: {e}")
+
+    # 2. Regex and delimiter fallback parsing for text/CSV
+    if not parsed_items and extracted_text:
+        course_pattern = re.compile(
+            r'([A-Za-z]{2,5}\s*\d{2,4}[A-Za-z]?)[,\t\s]+'
+            r'([A-Za-z0-9\s&/\-:\.\(\)]+?)[,\t\s]+'
+            r'(\d(?:\.\d+)?)[,\t\s]+'
+            r'([A-D][\+\-]?|F|\d\.\d{1,2})'
+            r'(?:[,\t\s]+([A-D][\+\-]?|F|\d\.\d{1,2}))?'
+            r'(?:[,\t\s]+([A-Za-z0-9\s]+))?$',
+            re.MULTILINE,
         )
+
+        for line in lines:
+            parts = [p.strip() for p in re.split(r'[,;\t|]', line) if p.strip()]
+            if len(parts) >= 3:
+                code = parts[0].upper()
+                if re.match(r'^[A-Z]{2,5}\s*\d{2,4}', code):
+                    name = parts[1]
+                    try:
+                        cr = float(parts[2])
+                    except ValueError:
+                        cr = 3.0
+                    gp = 2.50
+                    gl = "B-"
+                    sem = ""
+                    if len(parts) >= 4:
+                        val = parts[3]
+                        try:
+                            gp = float(val)
+                            gl = point_to_letter(gp)
+                        except ValueError:
+                            gl = val.upper()
+                            gp = float(letter_to_point(gl))
+                    if len(parts) >= 5:
+                        sem = parts[4]
+                    parsed_items.append({
+                        "course_code": code,
+                        "course_name": name,
+                        "credits": cr,
+                        "grade_point": gp,
+                        "grade_letter": gl,
+                        "semester": sem,
+                        "is_retake": gp < 3.0 or gl in ["F", "D", "D+", "C-", "C", "C+", "B-"],
+                    })
+                    continue
+
+            m = course_pattern.search(line)
+            if m:
+                code = m.group(1).upper()
+                name = m.group(2).strip()
+                try:
+                    cr = float(m.group(3))
+                except ValueError:
+                    cr = 3.0
+                g_raw = m.group(4)
+                try:
+                    gp = float(g_raw)
+                    gl = point_to_letter(gp)
+                except ValueError:
+                    gl = g_raw.upper()
+                    gp = float(letter_to_point(gl))
+                sem = (m.group(6) or "").strip()
+                parsed_items.append({
+                    "course_code": code,
+                    "course_name": name,
+                    "credits": cr,
+                    "grade_point": gp,
+                    "grade_letter": gl,
+                    "semester": sem,
+                    "is_retake": gp < 3.0 or gl in ["F", "D", "D+", "C-", "C", "C+", "B-"],
+                })
+
+    if not parsed_items:
+        return []
+
+    # If user previously had only the default 6 mock catalog courses, clean them up
+    # so their actual transcript completely takes over their profile
+    default_mock_codes = {c["course_code"] for c in DEFAULT_COURSE_CATALOG}
+    existing_user_courses = list(CourseGrade.objects.filter(user=user))
+    if (
+        len(existing_user_courses) == 6
+        and all(c.course_code in default_mock_codes for c in existing_user_courses)
+        and len(parsed_items) > 0
+    ):
+        CourseGrade.objects.filter(user=user).delete()
+
+    imported_courses = []
+    for item in parsed_items:
+        code = str(item.get("course_code", "")).strip().upper()
+        name = str(item.get("course_name", code)).strip()
+        if not code or len(code) < 3:
+            continue
+        try:
+            cr = Decimal(str(item.get("credits", 3.0)))
+        except Exception:
+            cr = Decimal("3.0")
+        try:
+            gp = Decimal(str(item.get("grade_point", 2.33)))
+        except Exception:
+            gp = Decimal("2.33")
+        gl = str(item.get("grade_letter") or point_to_letter(float(gp))).strip().upper()
+        sem = str(item.get("semester", "")).strip()
+
+        # Mark course for retake if grade is low (< 3.00, or F/D/C) or flagged by AI
+        retake_flag = bool(item.get("is_retake", False))
+        if float(gp) < 3.00 or gl in ["F", "D", "D+", "C-", "C", "C+", "B-"]:
+            retake_flag = True
+
+        obj, _ = CourseGrade.objects.update_or_create(
+            user=user,
+            course_code=code,
+            defaults={
+                "plan": plan,
+                "course_name": name,
+                "credits": cr,
+                "grade_point": gp,
+                "grade_letter": gl,
+                "semester": sem,
+                "is_retake": retake_flag,
+            },
+        )
+        imported_courses.append(obj)
+
+    return imported_courses
 
 
 def calculate_projected_gpa(
@@ -126,6 +434,7 @@ def get_course_retake_analysis(user) -> Dict[str, Any]:
     plan_total_credits = float(plan.total_credits) if plan else 140.0
 
     # 2. Gather student study logs per subject
+    # 1. Gather student study logs per subject
     study_mins_by_subj = {}
     total_tracked_mins = 0
     streak_days = 0
@@ -142,6 +451,24 @@ def get_course_retake_analysis(user) -> Dict[str, Any]:
         streak_days = streaks.get("current_streak", 0)
     except Exception as e:
         logger.warning(f"Tracker habits query in retake advisor: {e}")
+
+    # If user has not uploaded or recorded any courses yet
+    if not courses_qs.exists():
+        return {
+            "has_courses": False,
+            "baseline_cgpa": 0.0,
+            "target_gpa": target_gpa,
+            "effective_credits": 0.0,
+            "all_courses": [],
+            "retake_candidates": [],
+            "top_single": None,
+            "recommended_duo": None,
+            "advisor_narrative": None,
+            "study_habits": {
+                "streak_days": streak_days,
+                "total_tracked_hours": round(total_tracked_mins / 60.0, 1),
+            },
+        }
 
     # 3. Calculate baseline completed credits & CGPA
     all_courses_list = list(courses_qs)
@@ -231,7 +558,8 @@ def get_course_retake_analysis(user) -> Dict[str, Any]:
             "current_grade_point": gp,
             "current_grade_letter": c.grade_letter or ("C" if gp <= 2.0 else "C+" if gp <= 2.33 else "B-" if gp <= 2.67 else "B"),
             "semester": c.semester,
-            "is_retake_eligible": is_retake_eligible,
+            "is_retake": bool(c.is_retake),
+            "is_retake_eligible": is_retake_eligible or bool(c.is_retake),
             "tracked_hours": tracked_hours,
             "familiarity": familiarity,
             "familiarity_label": familiarity_label,
@@ -247,7 +575,7 @@ def get_course_retake_analysis(user) -> Dict[str, Any]:
         }
 
         all_courses_data.append(item_data)
-        if is_retake_eligible:
+        if is_retake_eligible or c.is_retake:
             retake_candidates.append(item_data)
 
     # Sort retake candidates by priority score descending
@@ -287,6 +615,7 @@ def get_course_retake_analysis(user) -> Dict[str, Any]:
     )
 
     return {
+        "has_courses": True,
         "baseline_cgpa": baseline_cgpa,
         "target_gpa": target_gpa,
         "effective_credits": effective_credits,

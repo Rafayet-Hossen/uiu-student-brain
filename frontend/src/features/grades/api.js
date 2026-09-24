@@ -39,6 +39,15 @@ export function deleteCourseGrade(id) {
   return api.delete(`/grades/courses/${id}/`).then((res) => res.data);
 }
 
+export function uploadTranscript(formDataOrPayload) {
+  const isFormData = formDataOrPayload instanceof FormData;
+  return api
+    .post("/grades/transcript/upload/", formDataOrPayload, {
+      headers: isFormData ? { "Content-Type": "multipart/form-data" } : {},
+    })
+    .then((res) => res.data);
+}
+
 export function extractGradeErrorMessage(error) {
   const data = error?.response?.data;
 

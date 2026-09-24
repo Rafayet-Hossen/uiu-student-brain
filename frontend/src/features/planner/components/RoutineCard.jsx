@@ -35,14 +35,15 @@ const DAY_ABBRS = [
 ];
 
 function getSubjectTheme(subject = "") {
-  const s = subject.toLowerCase();
+  const s = (subject || "").toLowerCase();
   if (s.includes("data") || s.includes("dbms") || s.includes("sql")) {
     return {
       icon: Database,
-      colorClass: "theme-indigo",
-      pillBg: "rgba(99, 102, 241, 0.12)",
-      pillColor: "#6366f1",
-      borderGlow: "rgba(99, 102, 241, 0.25)",
+      colorClass: "theme-orange",
+      pillBg: "rgba(242, 101, 34, 0.12)",
+      pillColor: "#f26522",
+      borderGlow: "rgba(242, 101, 34, 0.28)",
+      gradient: "linear-gradient(135deg, #f26522, #ea580c)",
     };
   }
   if (
@@ -50,7 +51,8 @@ function getSubjectTheme(subject = "") {
     s.includes("code") ||
     s.includes("program") ||
     s.includes("soft") ||
-    s.includes("web")
+    s.includes("web") ||
+    s.includes("dev")
   ) {
     return {
       icon: Code,
@@ -58,28 +60,48 @@ function getSubjectTheme(subject = "") {
       pillBg: "rgba(16, 185, 129, 0.12)",
       pillColor: "#10b981",
       borderGlow: "rgba(16, 185, 129, 0.25)",
+      gradient: "linear-gradient(135deg, #10b981, #059669)",
     };
   }
   if (
     s.includes("math") ||
     s.includes("stat") ||
     s.includes("calc") ||
-    s.includes("linear")
+    s.includes("linear") ||
+    s.includes("discrete")
   ) {
     return {
       icon: Cpu,
-      colorClass: "theme-amber",
-      pillBg: "rgba(245, 158, 11, 0.12)",
-      pillColor: "#f59e0b",
-      borderGlow: "rgba(245, 158, 11, 0.25)",
+      colorClass: "theme-sapphire",
+      pillBg: "rgba(37, 99, 235, 0.12)",
+      pillColor: "#2563eb",
+      borderGlow: "rgba(37, 99, 235, 0.25)",
+      gradient: "linear-gradient(135deg, #3b82f6, #2563eb)",
+    };
+  }
+  if (
+    s.includes("ai") ||
+    s.includes("learn") ||
+    s.includes("network") ||
+    s.includes("os") ||
+    s.includes("system")
+  ) {
+    return {
+      icon: Zap,
+      colorClass: "theme-purple",
+      pillBg: "rgba(147, 51, 234, 0.12)",
+      pillColor: "#9333ea",
+      borderGlow: "rgba(147, 51, 234, 0.25)",
+      gradient: "linear-gradient(135deg, #a855f7, #7c3aed)",
     };
   }
   return {
     icon: BookOpen,
-    colorClass: "theme-purple",
-    pillBg: "rgba(147, 51, 234, 0.12)",
-    pillColor: "#9333ea",
-    borderGlow: "rgba(147, 51, 234, 0.25)",
+    colorClass: "theme-amber",
+    pillBg: "rgba(245, 158, 11, 0.12)",
+    pillColor: "#f59e0b",
+    borderGlow: "rgba(245, 158, 11, 0.25)",
+    gradient: "linear-gradient(135deg, #f59e0b, #d97706)",
   };
 }
 
@@ -217,6 +239,15 @@ export default function RoutineCard({
               className={`day-capsule-item ${
                 isMatched ? "day-capsule-active" : "day-capsule-inactive"
               } ${isCurrentDay ? "day-capsule-current" : ""}`}
+              style={
+                isMatched
+                  ? {
+                      background: theme.gradient || theme.pillColor,
+                      color: "#ffffff",
+                      boxShadow: `0 3px 10px -2px ${theme.borderGlow || "rgba(242, 101, 34, 0.3)"}`,
+                    }
+                  : undefined
+              }
               title={`${dayItem.full}: ${isMatched ? "Scheduled" : "Off"}`}
             >
               <span className="day-abbr-text">{dayItem.key.slice(0, 1)}</span>
@@ -273,8 +304,11 @@ export default function RoutineCard({
         <Link
           to={`/tracker?subject=${encodeURIComponent(schedule.subject)}`}
           className="routine-start-focus-btn"
+          style={{
+            background: theme.gradient || undefined,
+          }}
         >
-          <Zap size={14} />
+          <Zap size={14} className="focus-btn-icon" />
           <span>Start Focus Session</span>
         </Link>
       </div>

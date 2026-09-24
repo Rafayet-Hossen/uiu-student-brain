@@ -1,5 +1,6 @@
 import Badge from "../../../components/Badge";
 import Button from "../../../components/Button";
+import ScholarAvatar from "../../auth/components/ScholarAvatar";
 
 export default function LeaderboardPodium({ topThree, timeframe, onToggleFollow }) {
   if (!topThree || topThree.length === 0) return null;
@@ -7,16 +8,6 @@ export default function LeaderboardPodium({ topThree, timeframe, onToggleFollow 
   const first = topThree[0];
   const second = topThree[1];
   const third = topThree[2];
-
-  const getInitials = (name) => {
-    if (!name) return "S";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
 
   const renderPodiumCard = (entry, place, medal, className) => {
     if (!entry) return null;
@@ -31,7 +22,15 @@ export default function LeaderboardPodium({ topThree, timeframe, onToggleFollow 
         <div className="podium-medal-badge">{medal}</div>
 
         <div className="podium-avatar-wrap">
-          <div className="podium-avatar">{getInitials(entry.display_name)}</div>
+          <ScholarAvatar
+            user={{
+              id: entry.user_id,
+              full_name: entry.display_name,
+              email: entry.email,
+              profile_image: entry.profile_image || entry.avatar,
+            }}
+            size={56}
+          />
           <span className="podium-rank-pill">#{place}</span>
         </div>
 

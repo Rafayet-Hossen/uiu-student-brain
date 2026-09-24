@@ -13,6 +13,7 @@ import {
   Target,
   Trash2,
   TrendingUp,
+  UploadCloud,
   X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -32,12 +33,106 @@ import {
 import GradePlanForm from "./components/GradePlanForm";
 import CourseRetakeAdvisor from "./components/CourseRetakeAdvisor";
 
+function CircularGpaMeter({ currentGpa, targetGpa, size = 100 }) {
+  const radius = 38;
+  const circumference = 2 * Math.PI * radius;
+  const currentRatio = Math.min(1, Math.max(0, Number(currentGpa) / 4.0));
+  const strokeDashoffset = circumference - currentRatio * circumference;
+  const targetRatio = Math.min(1, Math.max(0, Number(targetGpa) / 4.0));
+
+  return (
+    <div
+      className="gpa-gauge-widget"
+      style={{
+        width: size,
+        height: size,
+        position: "relative",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+      }}
+    >
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 100 100"
+        style={{ transform: "rotate(-90deg)" }}
+      >
+        <circle
+          cx="50"
+          cy="50"
+          r={radius}
+          fill="none"
+          stroke="var(--color-border)"
+          strokeWidth="7"
+          opacity="0.5"
+        />
+        <circle
+          cx="50"
+          cy="50"
+          r={radius}
+          fill="none"
+          stroke="rgba(79, 70, 229, 0.22)"
+          strokeWidth="7"
+          strokeDasharray={`${targetRatio * circumference} ${circumference}`}
+        />
+        <circle
+          cx="50"
+          cy="50"
+          r={radius}
+          fill="none"
+          stroke="var(--module-gpa, #4f46e5)"
+          strokeWidth="7"
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+          style={{ transition: "stroke-dashoffset 0.8s ease" }}
+        />
+      </svg>
+      <div
+        style={{
+          position: "absolute",
+          textAlign: "center",
+          pointerEvents: "none",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        <span
+          style={{
+            fontSize: "1.15rem",
+            fontWeight: 800,
+            color: "var(--color-text)",
+            lineHeight: 1,
+            letterSpacing: "-0.02em",
+          }}
+        >
+          {Number(currentGpa).toFixed(2)}
+        </span>
+        <span
+          style={{
+            fontSize: "0.62rem",
+            fontWeight: 600,
+            color: "var(--color-text-muted)",
+            marginTop: "2px",
+          }}
+        >
+          / 4.00
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export default function GradePlannerPage() {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
 
   async function loadPlans() {
     setLoading(true);
@@ -155,13 +250,30 @@ export default function GradePlannerPage() {
               </p>
             </div>
 
-            <Button
-              variant={showForm ? "secondary" : "primary"}
-              onClick={handleAddPlan}
-              icon={showForm ? X : Plus}
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                alignItems: "center",
+                flexWrap: "wrap",
+              }}
             >
-              {showForm ? "Close Form" : "New Degree Goal"}
-            </Button>
+              <Button
+                variant="primary"
+                onClick={() => setShowUploadModal(true)}
+                icon={UploadCloud}
+                title="Upload PDF, screenshot image, or CSV transcript"
+              >
+                Upload Transcript
+              </Button>
+              <Button
+                variant={showForm ? "secondary" : "outline"}
+                onClick={handleAddPlan}
+                icon={showForm ? X : Plus}
+              >
+                {showForm ? "Close Form" : "New Degree Goal"}
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -184,7 +296,10 @@ export default function GradePlannerPage() {
         </AnimatePresence>
 
         {/* AI Course Retake Optimizer & Advisor */}
-        <CourseRetakeAdvisor />
+        <CourseRetakeAdvisor
+          showUploadModal={showUploadModal}
+          setShowUploadModal={setShowUploadModal}
+        />
 
         {/* Loading Skeletons */}
         {loading && (
@@ -227,36 +342,40 @@ export default function GradePlannerPage() {
                 >
                   <Card variant="feature" className="grade-plan-card">
                     <div>
-                      {/* Top Header Row */}
-                      <div className="grade-card-header">
+                      {/* Financial-Dashboard Top Split */}
+                      <div className="grade-plan-top-split">
                         <div
                           style={{
                             display: "flex",
                             alignItems: "center",
-                            gap: "10px",
+                            gap: "16px",
                           }}
                         >
-                          <div
-                            style={{
-                              width: "38px",
-                              height: "38px",
-                              borderRadius: "var(--radius-md)",
-                              background: "var(--color-primary-subtle)",
-                              color: "var(--color-primary)",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            <GraduationCap size={20} />
-                          </div>
+                          <CircularGpaMeter
+                            currentGpa={plan.current_gpa}
+                            targetGpa={plan.target_gpa}
+                          />
                           <div>
-                            <h3 className="grade-plan-name">
-                              {plan.degree_name || "Bachelor's Degree Plan"}
-                            </h3>
-                            <span className="grade-plan-sub">
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "8px",
+                              }}
+                            >
+                              <h3
+                                className="grade-plan-name"
+                                style={{ margin: 0 }}
+                              >
+                                {plan.degree_name || "Bachelor's Degree Plan"}
+                              </h3>
+                            </div>
+                            <span
+                              className="grade-plan-sub"
+                              style={{ display: "block", marginTop: "4px" }}
+                            >
                               Target Cumulative CGPA:{" "}
-                              <strong>
+                              <strong style={{ color: "var(--color-primary)" }}>
                                 {Number(plan.target_gpa).toFixed(2)}
                               </strong>
                             </span>
@@ -314,7 +433,7 @@ export default function GradePlannerPage() {
                         </div>
                       </div>
 
-                      {/* Visual Progress Bar */}
+                      {/* Visual Progress Bar & Milestone Timeline */}
                       <div className="degree-progress-bar-container">
                         <div className="degree-progress-bar-bg">
                           <div
@@ -328,6 +447,63 @@ export default function GradePlannerPage() {
                           </span>
                           <span>{proj.remainingCredits} credits remaining</span>
                           <span>{plan.total_credits} total</span>
+                        </div>
+                      </div>
+
+                      {/* Financial-Dashboard Credit Milestone Roadmap */}
+                      <div className="credit-milestone-timeline">
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            fontSize: "0.75rem",
+                            fontWeight: 700,
+                            color: "var(--color-text)",
+                            marginBottom: "4px",
+                          }}
+                        >
+                          <span>Academic Degree Timeline</span>
+                          <span style={{ color: "var(--color-primary)" }}>
+                            {proj.percentComplete}% Complete
+                          </span>
+                        </div>
+                        <div className="milestones-labels-row">
+                          <span
+                            className={
+                              proj.percentComplete >= 25
+                                ? "milestone-active"
+                                : ""
+                            }
+                          >
+                            ● Freshman (30 cr)
+                          </span>
+                          <span
+                            className={
+                              proj.percentComplete >= 50
+                                ? "milestone-active"
+                                : ""
+                            }
+                          >
+                            ● Sophomore (60 cr)
+                          </span>
+                          <span
+                            className={
+                              proj.percentComplete >= 75
+                                ? "milestone-active"
+                                : ""
+                            }
+                          >
+                            ● Junior (90 cr)
+                          </span>
+                          <span
+                            className={
+                              proj.percentComplete >= 100
+                                ? "milestone-active"
+                                : ""
+                            }
+                          >
+                            ● Senior (Graduation)
+                          </span>
                         </div>
                       </div>
 

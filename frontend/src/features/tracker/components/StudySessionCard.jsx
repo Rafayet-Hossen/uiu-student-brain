@@ -45,7 +45,7 @@ function getSubjectTheme(subject = "") {
   ) {
     return {
       icon: Database,
-      themeClass: "session-theme-indigo",
+      themeClass: "session-theme-orange",
       label: "Database Systems",
     };
   }

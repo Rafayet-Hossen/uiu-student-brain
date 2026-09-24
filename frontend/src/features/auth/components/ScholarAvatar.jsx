@@ -95,7 +95,7 @@ export default function ScholarAvatar({
   const seed =
     user?.email ||
     user?.full_name ||
-    (user?.id ? `scholar_${user.id}` : "scholar_uiu");
+    (user?.id ? `scholar_${user.id}` : "scholar_student");
   const cartoonUrl = `https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(seed)}&backgroundColor=e0e7ff,fde68a,bbf7d0,bfdbfe,fbcfe8,fed7aa`;
 
   if (!cartoonImgFailed) {
@@ -118,41 +118,118 @@ export default function ScholarAvatar({
     );
   }
 
-  // Fallback: Inline SVG Human Scholar Cartoon
-  const colors = [
-    "#4f46e5",
-    "#2563eb",
-    "#059669",
-    "#7c3aed",
-    "#d97706",
-    "#db2777",
+  // Fallback: Inline SVG Human Scholar Cartoon Characters
+  const cartoonPalettes = [
+    {
+      bg: "#4f46e5",
+      cap: "#1e1b4b",
+      skin: "#fed7aa",
+      hair: "#9a3412",
+      acc: "#fbbf24",
+    },
+    {
+      bg: "#059669",
+      cap: "#064e3b",
+      skin: "#fde047",
+      hair: "#374151",
+      acc: "#34d399",
+    },
+    {
+      bg: "#2563eb",
+      cap: "#1e3a8a",
+      skin: "#fbcfe8",
+      hair: "#1f2937",
+      acc: "#60a5fa",
+    },
+    {
+      bg: "#7c3aed",
+      cap: "#4c1d95",
+      skin: "#fed7aa",
+      hair: "#78350f",
+      acc: "#f472b6",
+    },
+    {
+      bg: "#d97706",
+      cap: "#78350f",
+      skin: "#fde68a",
+      hair: "#18181b",
+      acc: "#fde047",
+    },
+    {
+      bg: "#db2777",
+      cap: "#831843",
+      skin: "#fed7aa",
+      hair: "#451a03",
+      acc: "#f9a8d4",
+    },
   ];
-  const colorIdx =
-    (seed.charCodeAt(0) + (seed.charCodeAt(1) || 0)) % colors.length;
-  const bg = colors[colorIdx];
+  const charCode = (seed.charCodeAt(0) || 65) + (seed.charCodeAt(1) || 66);
+  const theme = cartoonPalettes[charCode % cartoonPalettes.length];
 
   return (
     <div
       className={`scholar-avatar-box ${className}`}
       style={{
         ...containerStyle,
-        background: "linear-gradient(135deg, #4f46e5 0%, #2563eb 100%)",
-        background: `linear-gradient(135deg, ${bg} 0%, #1e1b4b 100%)`,
+        background: `linear-gradient(135deg, ${theme.bg} 0%, #0f172a 100%)`,
       }}
+      title={user?.full_name || "Scholar"}
     >
-      <span>{getInitials(user?.full_name)}</span>
       <svg
-        viewBox="0 0 36 36"
+        viewBox="0 0 40 40"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        style={{ width: "80%", height: "80%" }}
+        style={{ width: "85%", height: "85%" }}
       >
-        <circle cx="18" cy="14" r="6" fill="#fde047" />
-        <path d="M12 11h12v2H12z" fill="#1e293b" />
-        <path d="M18 6l8 4-8 4-8-4 8-4z" fill="#1e293b" />
-        <path d="M24 10v4" stroke="#eab308" strokeWidth="1.5" />
+        {/* Head / Face */}
+        <circle cx="20" cy="18" r="8" fill={theme.skin} />
+        {/* Hair */}
         <path
-          d="M8 32c0-5.5 4.5-10 10-10s10 4.5 10 10"
+          d="M13 17c0-4.5 3-8 7-8s7 3.5 7 8c-2-1.5-5-2-7-2s-5 .5-7 2z"
+          fill={theme.hair}
+        />
+        {/* Glasses */}
+        <rect
+          x="15"
+          y="16"
+          width="4"
+          height="3"
+          rx="1"
+          stroke="#1e293b"
+          strokeWidth="1.2"
+          fill="none"
+        />
+        <rect
+          x="21"
+          y="16"
+          width="4"
+          height="3"
+          rx="1"
+          stroke="#1e293b"
+          strokeWidth="1.2"
+          fill="none"
+        />
+        <path d="M19 17.5h2" stroke="#1e293b" strokeWidth="1.2" />
+        {/* Smile */}
+        <path
+          d="M18 22c.8.8 2.2.8 3 0"
+          stroke="#b45309"
+          strokeWidth="1.2"
+          strokeLinecap="round"
+        />
+        {/* Graduation Cap or Headband */}
+        <path d="M20 7l10 5-10 5-10-5 10-5z" fill={theme.cap} />
+        <rect x="14" y="11" width="12" height="2" fill={theme.cap} />
+        <path
+          d="M26 12v4"
+          stroke={theme.acc}
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+        <circle cx="26" cy="16.5" r="1" fill={theme.acc} />
+        {/* Body / Shoulders */}
+        <path
+          d="M8 38c0-6.5 5.5-12 12-12s12 5.5 12 12"
           fill="#ffffff"
           fillOpacity="0.9"
         />

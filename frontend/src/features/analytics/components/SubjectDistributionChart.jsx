@@ -2,12 +2,15 @@ import Badge from "../../../components/Badge";
 
 const COLOR_PALETTE = [
   "#4f46e5", // indigo
+  "#f26522", // UIU orange
   "#10b981", // emerald
   "#f59e0b", // amber
   "#8b5cf6", // purple
+  "#ea580c", // terracotta
   "#ec4899", // pink
   "#06b6d4", // cyan
   "#64748b", // slate
+  "#c2410c", // deep rust
 ];
 
 export default function SubjectDistributionChart({ distribution = [] }) {

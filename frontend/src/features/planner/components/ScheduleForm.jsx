@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { AlertTriangle } from "lucide-react";
 import Badge from "../../../components/Badge";
 import Button from "../../../components/Button";
 import Card from "../../../components/Card";
@@ -41,6 +42,67 @@ function normalizeTime(value) {
   return value ? value.slice(0, 5) : "";
 }
 
+function timeToMinutes(timeStr) {
+  if (!timeStr) return 0;
+  const parts = timeStr.slice(0, 5).split(":");
+  const h = parseInt(parts[0], 10) || 0;
+  const m = parseInt(parts[1], 10) || 0;
+  return h * 60 + m;
+}
+
+function findScheduleConflict(
+  form,
+  existingSchedules = [],
+  currentScheduleId = null,
+) {
+  if (
+    !form.start_time ||
+    !form.end_time ||
+    !form.days ||
+    form.days.length === 0
+  ) {
+    return null;
+  }
+  const formStart = timeToMinutes(form.start_time);
+  const formEnd = timeToMinutes(form.end_time);
+  if (formEnd <= formStart) return null;
+
+  for (const existing of existingSchedules) {
+    if (
+      currentScheduleId &&
+      (existing.id === currentScheduleId ||
+        String(existing.id) === String(currentScheduleId))
+    ) {
+      continue;
+    }
+
+    const existStart = timeToMinutes(existing.start_time);
+    const existEnd = timeToMinutes(existing.end_time);
+
+    // Overlapping interval: startA < endB && startB < endA
+    const timesOverlap = formStart < existEnd && existStart < formEnd;
+    if (!timesOverlap) continue;
+
+    // Check shared days (e.g. "Monday" or "Mon")
+    const conflictingDays = (form.days || []).filter((formDay) =>
+      (existing.days || []).some(
+        (exDay) =>
+          exDay.slice(0, 3).toLowerCase() === formDay.slice(0, 3).toLowerCase(),
+      ),
+    );
+
+    if (conflictingDays.length > 0) {
+      return {
+        conflictSchedule: existing,
+        conflictingDays,
+        existingTime: `${existing.start_time?.slice(0, 5)} – ${existing.end_time?.slice(0, 5)}`,
+      };
+    }
+  }
+
+  return null;
+}
+
 function scheduleToForm(schedule) {
   return {
     subject: schedule?.subject || "",
@@ -56,6 +118,7 @@ function scheduleToForm(schedule) {
 export default function ScheduleForm({
   schedule = null,
   initialValues = null,
+  existingSchedules = [],
   onCreated,
   onUpdated,
   onCancel,
@@ -76,6 +139,12 @@ export default function ScheduleForm({
   const [form, setForm] = useState(getInitialForm);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  const liveConflict = findScheduleConflict(
+    form,
+    existingSchedules,
+    schedule?.id,
+  );
 
   // Resource input state
   const [resourceTitle, setResourceTitle] = useState("");
@@ -213,6 +282,19 @@ export default function ScheduleForm({
       return;
     }
 
+    // Explicit schedule conflict verification
+    const conflict = findScheduleConflict(
+      form,
+      existingSchedules,
+      schedule?.id,
+    );
+    if (conflict) {
+      setError(
+        `Schedule Conflict: Time slot (${form.start_time} – ${form.end_time}) on ${conflict.conflictingDays.join(", ")} overlaps with existing course "${conflict.conflictSchedule.subject}" (${conflict.existingTime}). You cannot add duplicate or overlapping routines at the same time.`,
+      );
+      return;
+    }
+
     setSubmitting(true);
 
     try {
@@ -319,6 +401,42 @@ export default function ScheduleForm({
             })}
           </div>
         </div>
+
+        {/* Live Conflict Warning Banner */}
+        {liveConflict && (
+          <div
+            className="alert-banner alert-banner-error"
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              gap: "10px",
+              marginTop: "14px",
+              padding: "12px 16px",
+              borderRadius: "12px",
+              background: "rgba(239, 68, 68, 0.08)",
+              border: "1px solid rgba(239, 68, 68, 0.3)",
+              color: "#dc2626",
+            }}
+          >
+            <AlertTriangle
+              size={18}
+              style={{ marginTop: "2px", flexShrink: 0 }}
+            />
+            <div style={{ fontSize: "0.85rem", lineHeight: 1.45 }}>
+              <strong>Time Slot Conflict Detected:</strong> Overlaps with
+              existing course{" "}
+              <strong style={{ textDecoration: "underline" }}>
+                {liveConflict.conflictSchedule.subject}
+              </strong>{" "}
+              on <strong>{liveConflict.conflictingDays.join(", ")}</strong> (
+              {liveConflict.existingTime}).
+              <div style={{ marginTop: "4px", opacity: 0.9 }}>
+                Please choose a different time or change days to prevent
+                overlapping schedules.
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Notes & Agenda */}
         <div className="form-group" style={{ marginTop: "16px" }}>
@@ -500,7 +618,11 @@ export default function ScheduleForm({
             Cancel
           </Button>
 
-          <Button type="submit" loading={submitting} disabled={submitting}>
+          <Button
+            type="submit"
+            loading={submitting}
+            disabled={submitting || Boolean(liveConflict)}
+          >
             {isEditing ? "Save Changes" : "Save Routine"}
           </Button>
         </div>

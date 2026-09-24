@@ -219,12 +219,12 @@ export default function ScheduledSessionCard({
     status === "completed"
       ? "linear-gradient(90deg, #10b981 0%, #059669 100%)"
       : status === "in_progress"
-        ? "linear-gradient(90deg, #6366f1 0%, #ec4899 100%)"
+        ? "linear-gradient(90deg, #f26522 0%, #ea580c 100%)"
         : status === "missed"
           ? "linear-gradient(90deg, #ef4444 0%, #f43f5e 100%)"
           : course?.color
-            ? `linear-gradient(90deg, ${course.color} 0%, #6366f1 100%)`
-            : "linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%)";
+            ? `linear-gradient(90deg, ${course.color} 0%, #ea580c 100%)`
+            : "linear-gradient(90deg, #f26522 0%, #ea580c 100%)";
 
   return (
     <motion.div

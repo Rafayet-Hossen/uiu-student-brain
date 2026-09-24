@@ -446,8 +446,8 @@ export default function BookSessionModal({
               className="tracker-modal-icon"
               style={{
                 background:
-                  "var(--color-primary-light, rgba(99, 102, 241, 0.15))",
-                color: "var(--color-primary, #6366f1)",
+                  "var(--color-primary-subtle, rgba(242, 101, 34, 0.15))",
+                color: "var(--color-primary, #f26522)",
                 padding: "8px",
                 borderRadius: "12px",
               }}

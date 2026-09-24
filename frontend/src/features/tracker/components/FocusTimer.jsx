@@ -19,11 +19,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import Button from "../../../components/Button";
 
 const TIMER_MODES = [
-  { id: "standardFocus", label: "🎯 Standard Focus (25m)", minutes: 25 },
-  { id: "deep", label: "⚡ Deep Work Sprint (50m)", minutes: 50 },
-  { id: "shortBreak", label: "☕ Short Break (5m)", minutes: 5 },
-  { id: "longBreak", label: "🌴 Extended Break (15m)", minutes: 15 },
-  { id: "stopwatch", label: "⏱️ Open Stopwatch", minutes: 0 },
+  { id: "standardFocus", label: "Standard Focus (25m)", minutes: 25 },
+  { id: "deep", label: "Deep Work Sprint (50m)", minutes: 50 },
+  { id: "shortBreak", label: "Short Break (5m)", minutes: 5 },
+  { id: "longBreak", label: "Extended Break (15m)", minutes: 15 },
+  { id: "stopwatch", label: "Open Stopwatch", minutes: 0 },
 ];
 
 export default function FocusTimer({
@@ -255,10 +255,10 @@ export default function FocusTimer({
             <span className="focus-timer-digits">{displayTime}</span>
             <span className="focus-timer-state-label">
               {isActive
-                ? "🔥 Focusing..."
+                ? "Focus Block In Progress"
                 : secondsRemaining === 0
-                  ? "🎉 Goal Reached!"
-                  : "Ready to Focus"}
+                  ? "Session Target Completed"
+                  : "Ready to Begin"}
             </span>
           </div>
         </div>

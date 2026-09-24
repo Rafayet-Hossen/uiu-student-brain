@@ -1,74 +1,125 @@
 :root {
-  /* Student Brain Design System Palette */
-  --color-primary: #4f46e5;
-  --color-primary-hover: #4338ca;
-  --color-primary-subtle: rgba(79, 70, 229, 0.08);
-  --color-primary-border: rgba(79, 70, 229, 0.2);
-  --color-primary-text: #4f46e5;
+  /* ==========================================================================
+     STUDENTBRAIN ACADEMIC DESIGN SYSTEM — TOKENS (LIGHT MODE)
+     ========================================================================== */
 
-  --color-secondary: #10b981;
-  --color-secondary-hover: #059669;
-  --color-secondary-subtle: rgba(16, 185, 129, 0.08);
-  --color-secondary-border: rgba(16, 185, 129, 0.2);
-  --color-secondary-text: #059669;
+  /* 1. Core Academic Palette — UIU Orange & Warm Gold (University Heritage) */
+  /* Primary: UIU Signature Orange */
+  --color-primary: #f26522;
+  --color-primary-hover: #d9531e;
+  --color-primary-subtle: rgba(242, 101, 34, 0.08);
+  --color-primary-border: rgba(242, 101, 34, 0.24);
+  --color-primary-text: #c2410c;
 
+  /* Accent: UIU Golden Amber */
   --color-accent: #f59e0b;
   --color-accent-hover: #d97706;
   --color-accent-subtle: rgba(245, 158, 11, 0.08);
-  --color-accent-border: rgba(245, 158, 11, 0.2);
-  --color-accent-text: #d97706;
+  --color-accent-border: rgba(245, 158, 11, 0.24);
+  --color-accent-text: #b45309;
 
-  --color-danger: #f43f5e;
-  --color-danger-hover: #e11d48;
-  --color-danger-subtle: rgba(244, 63, 94, 0.08);
-  --color-danger-border: rgba(244, 63, 94, 0.2);
-  --color-danger-text: #e11d48;
+  /* Success / Secondary: Emerald (Achievement, Positive Growth) */
+  --color-secondary: #10b981;
+  --color-secondary-hover: #059669;
+  --color-secondary-subtle: rgba(16, 185, 129, 0.08);
+  --color-secondary-border: rgba(16, 185, 129, 0.22);
+  --color-secondary-text: #047857;
 
-  /* Surfaces & Backgrounds */
-  --color-bg: #f8fafc;
+  /* Warning: Warm Amber (Attention, Upcoming Deadlines) */
+  --color-warning: #f59e0b;
+  --color-warning-hover: #d97706;
+  --color-warning-subtle: rgba(245, 158, 11, 0.08);
+  --color-warning-border: rgba(245, 158, 11, 0.22);
+  --color-warning-text: #b45309;
+
+  /* Error / Danger: Rose / Crimson */
+  --color-danger: #ef4444;
+  --color-danger-hover: #dc2626;
+  --color-danger-subtle: rgba(239, 68, 68, 0.08);
+  --color-danger-border: rgba(239, 68, 68, 0.22);
+  
+  /* Module Specific UIU Accent Colors */
+  --module-gpa: #ea580c;
+  --module-planner: #f26522;
+  --module-tracker: #f97316;
+  --module-materials: #d97706;
+  --module-community: #c2410c;
+  --module-analytics: #f26522;
+
+  /* 2. Layered Connected Cool Slate Surfaces (Zero Muddy Biscuit Tones) */
+  --color-bg: #f8fafc; /* Crisp cool-slate canvas */
+  --bg-hero: #f8fafc; /* Modern slate canvas */
+  --bg-dashboard: #f8fafc; /* Clean modern slate */
+  --bg-analytics: #f8fafc; /* Clean modern slate */
+  --bg-community: #f8fafc; /* Clean modern slate */
   --color-surface: #ffffff;
-  --color-surface-subtle: #f1f5f9;
+  --color-surface-subtle: #f1f5f9; /* Slate 100 */
   --color-surface-elevated: #ffffff;
   --color-surface-card: #ffffff;
-  --color-surface-glass: rgba(255, 255, 255, 0.82);
+  --color-surface-glass: rgba(255, 255, 255, 0.92);
 
+  /* 3. Typography Colors (High Contrast WCAG AAA Slate Hierarchy) */
   --color-text: #0f172a;
+  --color-text-secondary: #334155;
   --color-text-muted: #64748b;
   --color-text-subtle: #94a3b8;
   --color-border: #e2e8f0;
   --color-border-subtle: #f1f5f9;
 
-  /* Elevation Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  /* 4. Realistic Layered Human Shadows (No AI Neon Streaks) */
+  --shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.03);
+  --shadow-sm:
+    0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.03);
   --shadow-md:
-    0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+    0 4px 10px -2px rgba(15, 23, 42, 0.05),
+    0 2px 4px -2px rgba(15, 23, 42, 0.03);
   --shadow-lg:
-    0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+    0 10px 20px -3px rgba(15, 23, 42, 0.06),
+    0 4px 6px -4px rgba(15, 23, 42, 0.03);
   --shadow-xl:
-    0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+    0 20px 30px -6px rgba(15, 23, 42, 0.07),
+    0 8px 12px -6px rgba(15, 23, 42, 0.04);
+  --shadow-card-hover:
+    0 14px 28px -4px rgba(15, 23, 42, 0.09),
+    0 4px 10px -2px rgba(15, 23, 42, 0.04);
 
+  /* 5. Geometry & Radii (18-20px for cards) */
   --radius-xs: 4px;
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
+  --radius-card: 18px;
   --radius-xl: 20px;
+  --radius-2xl: 24px;
   --radius-full: 9999px;
+
+  /* 6. Strict 8-Point Spacing Scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
 
   color-scheme: light;
 }
 
 :root[data-theme="dark"] {
-  --color-primary: #818cf8;
-  --color-primary-hover: #a5b4fc;
-  --color-primary-subtle: rgba(99, 102, 241, 0.18);
-  --color-primary-border: rgba(129, 140, 248, 0.38);
-  --color-primary-text: #c7d2fe;
+  /* ==========================================================================
+     STUDENTBRAIN ACADEMIC DESIGN SYSTEM — TOKENS (DARK MODE)
+     ========================================================================== */
 
-  --color-secondary: #34d399;
-  --color-secondary-hover: #6ee7b7;
-  --color-secondary-subtle: rgba(52, 211, 153, 0.16);
-  --color-secondary-border: rgba(52, 211, 153, 0.35);
-  --color-secondary-text: #a7f3d0;
+  /* 1. Core Academic Palette (UIU Glowing Orange & Warm Gold) */
+  --color-primary: #fb923c;
+  --color-primary-hover: #fdba74;
+  --color-primary-subtle: rgba(251, 146, 60, 0.18);
+  --color-primary-border: rgba(251, 146, 60, 0.35);
+  --color-primary-text: #ffedd5;
 
   --color-accent: #fbbf24;
   --color-accent-hover: #fde047;
@@ -76,36 +127,56 @@
   --color-accent-border: rgba(251, 191, 36, 0.35);
   --color-accent-text: #fef08a;
 
+  --color-secondary: #34d399;
+  --color-secondary-hover: #6ee7b7;
+  --color-secondary-subtle: rgba(52, 211, 153, 0.14);
+  --color-secondary-border: rgba(52, 211, 153, 0.32);
+  --color-secondary-text: #a7f3d0;
+
+  --color-warning: #fbbf24;
+  --color-warning-hover: #fde047;
+  --color-warning-subtle: rgba(251, 191, 36, 0.14);
+  --color-warning-border: rgba(251, 191, 36, 0.32);
+  --color-warning-text: #fef08a;
+
   --color-danger: #fb7185;
   --color-danger-hover: #fda4af;
-  --color-danger-subtle: rgba(251, 113, 133, 0.16);
-  --color-danger-border: rgba(251, 113, 133, 0.35);
+  --color-danger-subtle: rgba(251, 113, 133, 0.14);
+  --color-danger-border: rgba(251, 113, 133, 0.32);
   --color-danger-text: #fecdd3;
 
-  --color-bg: #0b0f19;
-  --color-surface: #111827;
-  --color-surface-subtle: #192339;
-  --color-surface-elevated: #1f2a44;
-  --color-surface-card: #131d31;
-  --color-surface-glass: rgba(17, 24, 39, 0.88);
+  /* 2. Dark Neutral Surfaces (Warm Obsidian & Slate, Zero Pitch-Black Flash) */
+  --color-bg: #0c1017;
+  --bg-hero: #0f141d;
+  --bg-dashboard: #0e121a;
+  --bg-analytics: #0d1118;
+  --bg-community: #10151f;
+  --color-surface: #131a26;
+  --color-surface-subtle: #1a2232;
+  --color-surface-elevated: #1f283a;
+  --color-surface-card: #151d2a;
+  --color-surface-glass: rgba(19, 26, 38, 0.92);
 
   --color-text: #f8fafc;
-  --color-text-muted: #a5b4cb;
-  --color-text-subtle: #7585a0;
-  --color-border: #253350;
-  --color-border-subtle: #1c273e;
+  --color-text-secondary: #cbd5e1;
+  --color-text-muted: #94a3b8;
+  --color-text-subtle: #64748b;
+  --color-border: #232d3f;
+  --color-border-subtle: #18202d;
 
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
   --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
-  --shadow-md:
-    0 4px 12px -2px rgba(0, 0, 0, 0.5), 0 2px 6px -2px rgba(0, 0, 0, 0.35);
-  --shadow-lg:
-    0 12px 24px -4px rgba(0, 0, 0, 0.6), 0 4px 8px -2px rgba(0, 0, 0, 0.4);
-  --shadow-xl:
-    0 24px 36px -6px rgba(0, 0, 0, 0.7), 0 10px 14px -6px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 10px 22px -4px rgba(0, 0, 0, 0.55);
+  --shadow-xl: 0 20px 32px -6px rgba(0, 0, 0, 0.65);
+  --shadow-card-hover: 0 16px 32px -4px rgba(0, 0, 0, 0.65);
 
   color-scheme: dark;
 }
 
+/* ==========================================================================
+   GLOBAL RESETS, BOX-SIZING & BASE TYPOGRAPHY
+   ========================================================================== */
 *,
 *::before,
 *::after {
@@ -128,7 +199,7 @@ body {
   width: 100%;
   max-width: 100%;
   min-height: 100svh;
-  background: var(--color-bg);
+  background-color: var(--color-bg);
   color: var(--color-text);
   font-family:
     "Inter",
@@ -157,6 +228,101 @@ body {
   overflow-x: clip;
 }
 
+/* ==========================================================================
+   ALIVE ACADEMIC BACKGROUND PATTERNS & DECORATIONS
+   ========================================================================== */
+.academic-ambient-dots {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    rgba(15, 23, 42, 0.05) 1px,
+    transparent 1px
+  );
+  background-size: 24px 24px;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+[data-theme="dark"] .academic-ambient-dots {
+  background-image: radial-gradient(
+    rgba(248, 250, 252, 0.05) 1px,
+    transparent 1px
+  );
+}
+
+.academic-mesh-backdrop {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.ambient-blur-circle {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(54px);
+  pointer-events: none;
+  opacity: 0.65;
+}
+
+.ambient-circle-primary {
+  width: 480px;
+  height: 480px;
+  background: radial-gradient(
+    circle,
+    rgba(79, 70, 229, 0.08) 0%,
+    transparent 70%
+  );
+}
+
+.ambient-circle-teal {
+  width: 420px;
+  height: 420px;
+  background: radial-gradient(
+    circle,
+    rgba(2, 132, 199, 0.06) 0%,
+    transparent 70%
+  );
+}
+
+.ambient-circle-amber {
+  width: 380px;
+  height: 380px;
+  background: radial-gradient(
+    circle,
+    rgba(16, 185, 129, 0.05) 0%,
+    transparent 70%
+  );
+}
+
+[data-theme="dark"] .ambient-circle-primary {
+  background: radial-gradient(
+    circle,
+    rgba(129, 140, 248, 0.1) 0%,
+    transparent 70%
+  );
+}
+
+[data-theme="dark"] .ambient-circle-teal {
+  background: radial-gradient(
+    circle,
+    rgba(45, 212, 191, 0.08) 0%,
+    transparent 70%
+  );
+}
+
+[data-theme="dark"] .ambient-circle-amber {
+  background: radial-gradient(
+    circle,
+    rgba(251, 191, 36, 0.07) 0%,
+    transparent 70%
+  );
+}
+
+/* ==========================================================================
+   ACADEMIC TYPOGRAPHY HIERARCHY (Readability-First)
+   ========================================================================== */
 h1,
 h2,
 h3,
@@ -172,7 +338,7 @@ h6 {
   font-weight: 700;
   margin: 0 0 8px;
   color: var(--color-text);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.022em;
 }
 
 h1 {
@@ -190,9 +356,16 @@ h3 {
   line-height: 1.4;
 }
 
+h4 {
+  font-size: 1rem;
+  line-height: 1.45;
+  font-weight: 600;
+}
+
 p {
   margin: 0;
   color: var(--color-text);
+  line-height: 1.6;
 }
 
 a {
@@ -210,11 +383,40 @@ button {
   font-family: inherit;
 }
 
+/* Accessible Focus Ring Defaults */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Accessibility: Respect Reduced Motion Preferences */
 @media (prefers-reduced-motion: reduce) {
-  * {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* UIU Orange Theme & Compatibility Utility Classes */
+.bg-orange-subtle,
+.bg-indigo-subtle {
+  background: var(--color-primary-subtle) !important;
+}
+
+.text-orange,
+.text-indigo {
+  color: var(--color-primary) !important;
+}
+
+.border-orange,
+.border-indigo {
+  border-color: var(--color-primary-border) !important;
+}
+
+.bg-orange {
+  background: var(--color-primary) !important;
 }

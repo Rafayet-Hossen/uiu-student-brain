@@ -174,12 +174,12 @@ export default function PlannerPage() {
         <div className="page-header-row">
           <div>
             <h1 className="page-title">
-              <CalendarIcon size={28} className="text-indigo" />
+              <CalendarIcon size={26} className="text-orange" />
               <span>Study Planner & Timetable</span>
             </h1>
             <p className="page-description">
-              Organize coursework into focused weekly blocks, attach Drive
-              notes and video links, and maintain academic momentum.
+              Organize coursework into focused weekly blocks, attach Drive notes
+              and video links, and maintain academic momentum.
             </p>
           </div>
 
@@ -238,6 +238,7 @@ export default function PlannerPage() {
             <ScheduleForm
               schedule={editingSchedule}
               initialValues={formInitialValues}
+              existingSchedules={schedules}
               onCreated={handleCreated}
               onUpdated={handleUpdated}
               onCancel={handleCancelForm}

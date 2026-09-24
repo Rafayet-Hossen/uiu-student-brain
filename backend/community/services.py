@@ -177,6 +177,12 @@ def delete_study_event(*, event_id: int, user) -> None:
     if event.creator != user:
         raise PermissionDenied("You do not have permission to delete this event.")
 
+    try:
+        from planner.models import Schedule
+        Schedule.objects.filter(subject=f"[Event] {event.title}").delete()
+    except Exception:
+        pass
+
     event.delete()
 
 
@@ -197,6 +203,36 @@ def toggle_event_rsvp(*, user, event_id: int, status: str = "going") -> dict:
     else:
         EventRSVP.objects.create(event=event, user=user, status=norm_status)
         user_rsvp_status = norm_status
+
+    # Auto-sync to Study Planner Calendar (schedules)
+    try:
+        from planner.models import Schedule
+        event_schedule_subject = f"[Event] {event.title}"
+        if user_rsvp_status in ["going", "interested"]:
+            day_name = event.event_date.strftime("%A") if event.event_date else "Monday"
+            Schedule.objects.update_or_create(
+                user=user,
+                subject=event_schedule_subject,
+                defaults={
+                    "start_time": event.start_time,
+                    "end_time": event.end_time,
+                    "deadline": event.event_date,
+                    "days": [day_name],
+                    "notes": (
+                        f"Campus Study Event ({user_rsvp_status.capitalize()})\n"
+                        f"Subject / Topic: {event.subject}\n"
+                        f"Location: {event.location}\n"
+                        f"Host: {event.creator.full_name or event.creator.email}\n"
+                        f"Details: {event.description or 'No extra details provided.'}"
+                    ),
+                    "resources": [{"title": "Event Location/Link", "url": event.location}] if event.location else [],
+                },
+            )
+        else:
+            Schedule.objects.filter(user=user, subject=event_schedule_subject).delete()
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning("Failed to sync event to planner schedule: %s", e)
 
     if user_rsvp_status == "going" and event.creator != user:
         try:
@@ -222,8 +258,6 @@ def toggle_event_rsvp(*, user, event_id: int, status: str = "going") -> dict:
         "interested_count": interested_count,
         "rsvp_count": going_count + interested_count,
         "rsvps_count": going_count + interested_count,
-        "rsvp_count": going_count,
-        "rsvps_count": going_count,
     }
 
 

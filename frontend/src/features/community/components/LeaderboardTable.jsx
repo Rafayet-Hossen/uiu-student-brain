@@ -1,5 +1,6 @@
 import Badge from "../../../components/Badge";
 import Button from "../../../components/Button";
+import ScholarAvatar from "../../auth/components/ScholarAvatar";
 
 export default function LeaderboardTable({
   rankings,
@@ -13,16 +14,6 @@ export default function LeaderboardTable({
       </div>
     );
   }
-
-  const getInitials = (name) => {
-    if (!name) return "S";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
 
   return (
     <div className="leaderboard-table-container">
@@ -73,9 +64,15 @@ export default function LeaderboardTable({
 
               {/* Student Info */}
               <div className="col-student student-info-cell">
-                <div className="table-avatar">
-                  {getInitials(entry.display_name)}
-                </div>
+                <ScholarAvatar
+                  user={{
+                    id: entry.user_id,
+                    full_name: entry.display_name,
+                    email: entry.email,
+                    profile_image: entry.profile_image || entry.avatar,
+                  }}
+                  size={36}
+                />
                 <div className="student-text-wrap">
                   <div className="student-name-row">
                     <span className="student-name">{entry.display_name}</span>

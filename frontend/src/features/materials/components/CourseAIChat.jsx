@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { BookOpen } from "lucide-react";
+import { BookOpen, GraduationCap, Send, User } from "lucide-react";
 import Button from "../../../components/Button";
 import Spinner from "../../../components/Spinner";
 import {
@@ -141,7 +141,9 @@ export default function CourseAIChat({
           </div>
         ) : messages.length === 0 ? (
           <div className="chat-empty-state">
-            <div className="chat-empty-icon">🎓</div>
+            <div className="chat-empty-icon">
+              <GraduationCap size={28} className="text-primary" />
+            </div>
             <h4 className="chat-empty-title">
               Ask your Course Study Assistant
             </h4>
@@ -171,7 +173,11 @@ export default function CourseAIChat({
                   key={m.id || Math.random()}
                   className={`chat-message-row ${isUser ? "chat-row-user" : "chat-row-assistant"}`}
                 >
-                  {!isUser && <div className="chat-avatar-assistant">🎓</div>}
+                  {!isUser && (
+                    <div className="chat-avatar-assistant">
+                      <GraduationCap size={16} />
+                    </div>
+                  )}
                   <div
                     className={`chat-bubble ${isUser ? "bubble-user" : "bubble-assistant"}`}
                   >
@@ -185,14 +191,20 @@ export default function CourseAIChat({
                       })}
                     </span>
                   </div>
-                  {isUser && <div className="chat-avatar-user">👤</div>}
+                  {isUser && (
+                    <div className="chat-avatar-user">
+                      <User size={16} />
+                    </div>
+                  )}
                 </div>
               );
             })}
 
             {sending && (
               <div className="chat-message-row chat-row-assistant">
-                <div className="chat-avatar-assistant">🎓</div>
+                <div className="chat-avatar-assistant">
+                  <GraduationCap size={16} />
+                </div>
                 <div className="chat-bubble bubble-assistant bubble-typing">
                   <span className="typing-dot"></span>
                   <span className="typing-dot"></span>

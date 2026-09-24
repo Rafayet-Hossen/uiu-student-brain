@@ -78,6 +78,7 @@ export default function AnalyticsPage() {
           <div>
             <h1 className="page-title">
               <BarChart3 size={28} className="text-indigo" />
+              <BarChart3 size={28} className="text-orange" />
               <span>Academic & Focus Analytics</span>
             </h1>
             <p className="page-description">
@@ -122,11 +123,11 @@ export default function AnalyticsPage() {
           {/* KPI Summary Grid with 4 dynamic, responsive cards */}
           <div className="stats-cards-row">
             {/* Card 1: Focus Investment */}
-            <Card variant="stat" className="stat-indigo">
+            <Card variant="stat" className="stat-orange">
               <div className="stat-top-row">
                 <span className="stat-header-label">Focus Investment</span>
-                <div className="stat-icon-pill bg-indigo-subtle">
-                  <Clock size={16} className="text-indigo" />
+                <div className="stat-icon-pill bg-orange-subtle">
+                  <Clock size={16} className="text-orange" />
                 </div>
               </div>
               <div className="stat-number-row">
@@ -137,14 +138,14 @@ export default function AnalyticsPage() {
               {/* Progress bar towards 15h weekly goal */}
               <div className="stat-progress-track">
                 <div
-                  className="stat-progress-bar bg-indigo"
+                  className="stat-progress-bar bg-orange"
                   style={{
                     width: `${Math.min(100, Math.round((totalStudyMinutes / (15 * 60)) * 100))}%`,
                   }}
                 />
               </div>
               <div className="stat-metric-footer">
-                <span className="stat-micro-badge badge-indigo-subtle">
+                <span className="stat-micro-badge badge-orange-subtle">
                   {Math.min(
                     100,
                     Math.round((totalStudyMinutes / (15 * 60)) * 100),
