@@ -111,20 +111,12 @@ class StudyEventListCreateView(generics.ListCreateAPIView):
         serializer.instance = event
 
 
-class StudyEventDetailView(generics.RetrieveUpdateDestroyAPIView):
+class StudyEventDetailView(generics.RetrieveDestroyAPIView):
     serializer_class = StudyEventSerializer
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
         return StudyEventSerializer.Meta.model.objects.get(id=self.kwargs["pk"])
-
-    def perform_update(self, serializer):
-        event = services.update_study_event(
-            event_id=self.get_object().id,
-            user=self.request.user,
-            validated_data=serializer.validated_data,
-        )
-        serializer.instance = event
 
     def perform_destroy(self, instance):
         services.delete_study_event(event_id=instance.id, user=self.request.user)

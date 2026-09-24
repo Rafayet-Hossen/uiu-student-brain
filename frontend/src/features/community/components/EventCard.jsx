@@ -8,7 +8,6 @@ import {
   ExternalLink,
   GraduationCap,
   MapPin,
-  Pencil,
   Sparkles,
   Trash2,
   UserCheck,
@@ -23,12 +22,7 @@ import ScholarAvatar from "../../auth/components/ScholarAvatar";
 import { useAuth } from "../../auth/useAuth";
 import { deleteEvent, toggleEventRSVP } from "../api";
 
-export default function EventCard({
-  event,
-  onToggleRSVP,
-  onEdit,
-  onDeleted,
-}) {
+export default function EventCard({ event, onToggleRSVP, onDeleted }) {
   if (!event) return null;
   const { user } = useAuth();
   const [userStatus, setUserStatus] = useState(
@@ -223,51 +217,14 @@ export default function EventCard({
               </div>
 
               {isCreator && (
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
-                  }}
+                <button
+                  type="button"
+                  className="event-delete-ghost-btn"
+                  onClick={handleDelete}
+                  title="Cancel Event"
                 >
-                  <button
-                    type="button"
-                    className="event-edit-ghost-btn"
-                    onClick={() => onEdit && onEdit(event)}
-                    title="Edit Study Event"
-                    style={{
-                      border: "none",
-                      background: "transparent",
-                      color: "var(--text-muted, #94a3b8)",
-                      cursor: "pointer",
-                      padding: "5px",
-                      borderRadius: "6px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      transition: "all 0.15s ease",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.color = "var(--primary, #6366f1)";
-                      e.currentTarget.style.background =
-                        "rgba(99, 102, 241, 0.12)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.color = "var(--text-muted, #94a3b8)";
-                      e.currentTarget.style.background = "transparent";
-                    }}
-                  >
-                    <Pencil size={15} />
-                  </button>
-                  <button
-                    type="button"
-                    className="event-delete-ghost-btn"
-                    onClick={handleDelete}
-                    title="Cancel Event"
-                  >
-                    <Trash2 size={15} />
-                  </button>
-                </div>
+                  <Trash2 size={15} />
+                </button>
               )}
             </div>
 

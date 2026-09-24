@@ -4,38 +4,15 @@ import Input from "../../../components/Input";
 import FormError from "../../../components/FormError";
 import { createEvent, extractCommunityErrorMessage } from "../api";
 
-export default function EventForm({
-  initialData = null,
-  onSubmit,
-  onCreated,
-  onCancel,
-}) {
-  const isEditing = Boolean(initialData);
-  const [title, setTitle] = useState(initialData?.title || "");
-  const [subject, setSubject] = useState(initialData?.subject || "");
-  const [description, setDescription] = useState(initialData?.description || "");
-  const [eventDate, setEventDate] = useState(initialData?.event_date || "");
-  const [startTime, setStartTime] = useState(
-    initialData?.start_time ? initialData.start_time.slice(0, 5) : "14:00"
-  );
-  const [endTime, setEndTime] = useState(
-    initialData?.end_time ? initialData.end_time.slice(0, 5) : "16:00"
-  );
-
-  const initialIsOnline =
-    Boolean(initialData?.location?.toLowerCase().includes("online")) ||
-    Boolean(initialData?.location?.toLowerCase().includes("meet")) ||
-    Boolean(initialData?.location?.toLowerCase().includes("zoom")) ||
-    Boolean(initialData?.location?.toLowerCase().includes("http"));
-
-  const [eventType, setEventType] = useState(
-    initialData ? (initialIsOnline ? "online" : "offline") : "offline"
-  );
-
-  const cleanInitialLoc = initialData?.location
-    ? initialData.location.replace(/^(Offline:\s*|Online:\s*)/i, "")
-    : "";
-  const [location, setLocation] = useState(cleanInitialLoc);
+export default function EventForm({ onSubmit, onCreated, onCancel }) {
+  const [title, setTitle] = useState("");
+  const [subject, setSubject] = useState("");
+  const [description, setDescription] = useState("");
+  const [eventDate, setEventDate] = useState("");
+  const [startTime, setStartTime] = useState("14:00");
+  const [endTime, setEndTime] = useState("16:00");
+  const [eventType, setEventType] = useState("offline"); // "offline" | "online"
+  const [location, setLocation] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -289,13 +266,7 @@ export default function EventForm({
           Cancel
         </Button>
         <Button type="submit" disabled={loading}>
-          {loading
-            ? isEditing
-              ? "Saving Changes..."
-              : "Scheduling..."
-            : isEditing
-              ? "💾 Save Changes"
-              : "📅 Schedule Study Meetup"}
+          {loading ? "Scheduling..." : "📅 Schedule Study Meetup"}
         </Button>
       </div>
     </form>

@@ -111,43 +111,45 @@ export default function StudyHeatmap({ sessions = [] }) {
         role="region"
         aria-label="Study Consistency Contribution Heatmap"
       >
-        {/* Month labels spanning the full width */}
-        <div className="dash-github-months-row">
-          {monthLabels.map((m, idx) => (
-            <span key={idx}>{m.text}</span>
-          ))}
-        </div>
-
-        <div className="dash-github-grid-body">
-          <div className="dash-github-day-labels">
-            <span>Mon</span>
-            <span>Wed</span>
-            <span>Fri</span>
-          </div>
-          <div className="dash-github-matrix">
-            {weeks.map((week, wIdx) => (
-              <div key={wIdx} className="dash-github-week-col">
-                {week.map((item) => (
-                  <div
-                    key={item.date}
-                    className={`dash-github-cell gh-lvl-${item.level}`}
-                    style={
-                      item.isFuture ? { opacity: 0.2, cursor: "default" } : {}
-                    }
-                    title={
-                      item.isFuture
-                        ? `${item.dateLabel} (Future)`
-                        : `${item.dateLabel}: ${
-                            item.minutes > 0
-                              ? `${item.minutes} mins studied`
-                              : "No study recorded"
-                          }`
-                    }
-                    aria-label={`${item.dateLabel}: ${item.minutes} minutes`}
-                  />
-                ))}
-              </div>
+        <div className="dash-github-heatmap-inner">
+          {/* Month labels spanning the full width */}
+          <div className="dash-github-months-row">
+            {monthLabels.map((m, idx) => (
+              <span key={idx}>{m.text}</span>
             ))}
+          </div>
+
+          <div className="dash-github-grid-body">
+            <div className="dash-github-day-labels">
+              <span>Mon</span>
+              <span>Wed</span>
+              <span>Fri</span>
+            </div>
+            <div className="dash-github-matrix">
+              {weeks.map((week, wIdx) => (
+                <div key={wIdx} className="dash-github-week-col">
+                  {week.map((item) => (
+                    <div
+                      key={item.date}
+                      className={`dash-github-cell gh-lvl-${item.level}`}
+                      style={
+                        item.isFuture ? { opacity: 0.2, cursor: "default" } : {}
+                      }
+                      title={
+                        item.isFuture
+                          ? `${item.dateLabel} (Future)`
+                          : `${item.dateLabel}: ${
+                              item.minutes > 0
+                                ? `${item.minutes} mins studied`
+                                : "No study recorded"
+                            }`
+                      }
+                      aria-label={`${item.dateLabel}: ${item.minutes} minutes`}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

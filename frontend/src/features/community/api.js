@@ -58,10 +58,6 @@ export function createEvent(payload) {
   return api.post("/community/events/", payload).then((res) => res.data);
 }
 
-export function updateEvent(id, payload) {
-  return api.patch(`/community/events/${id}/`, payload).then((res) => res.data);
-}
-
 export function deleteEvent(id) {
   return api.delete(`/community/events/${id}/`).then((res) => res.data);
 }

@@ -50,7 +50,6 @@ import {
   toggleEventRSVP,
   toggleFollowStudent,
   togglePostReaction,
-  updateEvent,
 } from "./api";
 import EventCard from "./components/EventCard";
 import EventForm from "./components/EventForm";
@@ -97,7 +96,6 @@ export default function CommunityPage() {
   const [eventsError, setEventsError] = useState("");
   const [eventSearch, setEventSearch] = useState("");
   const [showEventForm, setShowEventForm] = useState(false);
-  const [editingEvent, setEditingEvent] = useState(null);
   const [rsvpLoadingId, setRsvpLoadingId] = useState(null);
 
   // Students state
@@ -233,14 +231,6 @@ export default function CommunityPage() {
   // Handle event deletion
   function handleDeleteEvent(eventId) {
     setEvents((prev) => prev.filter((e) => e.id !== eventId));
-  }
-
-  // Handle event update
-  function handleUpdateEvent(updatedEvent) {
-    setEvents((prev) =>
-      prev.map((e) => (e.id === updatedEvent.id ? { ...e, ...updatedEvent } : e)),
-    );
-    setEditingEvent(null);
   }
 
   // Handle RSVP toggle
@@ -993,7 +983,6 @@ export default function CommunityPage() {
                     key={event.id}
                     event={event}
                     onToggleRSVP={handleToggleRSVP}
-                    onEdit={(e) => setEditingEvent(e)}
                     onDeleted={handleDeleteEvent}
                   />
                 ))}
@@ -1222,72 +1211,6 @@ export default function CommunityPage() {
                 initialCategory={modalCategory}
                 onSubmit={handleCreatePost}
                 onCancel={() => setShowPostModal(false)}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Study Event Editor Modal */}
-        {editingEvent && (
-          <div
-            className="modal-backdrop"
-            onClick={() => setEditingEvent(null)}
-          >
-            <div
-              className="modal-content-card"
-              onClick={(e) => e.stopPropagation()}
-              style={{ maxWidth: "620px" }}
-            >
-              <div className="modal-header-row">
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "10px" }}
-                >
-                  <div
-                    style={{
-                      width: "36px",
-                      height: "36px",
-                      borderRadius: "var(--radius-md)",
-                      background: "rgba(99, 102, 241, 0.12)",
-                      color: "var(--primary, #6366f1)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Calendar size={20} />
-                  </div>
-                  <div>
-                    <h3 className="modal-title">Edit Study Event</h3>
-                    <span
-                      style={{
-                        fontSize: "0.8125rem",
-                        color: "var(--color-text-muted)",
-                      }}
-                    >
-                      Update schedule, venue, or event details
-                    </span>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  className="modal-close-btn"
-                  onClick={() => setEditingEvent(null)}
-                >
-                  ✕
-                </button>
-              </div>
-
-              <EventForm
-                initialData={editingEvent}
-                onSubmit={async (payload) => {
-                  try {
-                    const updated = await updateEvent(editingEvent.id, payload);
-                    handleUpdateEvent(updated);
-                  } catch (err) {
-                    alert(extractCommunityErrorMessage(err));
-                  }
-                }}
-                onCancel={() => setEditingEvent(null)}
               />
             </div>
           </div>

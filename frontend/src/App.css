@@ -4925,13 +4925,14 @@
 }
 
 /* Responsive adjust — Complete Zero-Horizontal-Spillage Suite */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .main-content {
-    padding: 14px 10px 40px;
-    width: 100%;
-    max-width: 100vw;
-    box-sizing: border-box;
-    overflow-x: hidden;
+    padding: 12px 10px 60px !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+    overflow-x: clip !important;
   }
 
   .modal-content-card {

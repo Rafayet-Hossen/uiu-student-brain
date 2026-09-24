@@ -188,16 +188,17 @@ body {
   margin: 0;
   padding: 0;
   width: 100%;
-  max-width: 100%;
+  max-width: 100vw;
   min-height: 100svh;
   overflow-x: hidden;
   overflow-x: clip;
+  box-sizing: border-box;
   scroll-behavior: smooth;
 }
 
 body {
   width: 100%;
-  max-width: 100%;
+  max-width: 100vw;
   min-height: 100svh;
   background-color: var(--color-bg);
   color: var(--color-text);
@@ -213,6 +214,7 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  box-sizing: border-box;
   transition:
     background-color 0.2s ease,
     color 0.2s ease;
@@ -220,12 +222,26 @@ body {
 
 #root {
   width: 100%;
-  max-width: 100%;
+  max-width: 100vw;
   min-height: 100svh;
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
   overflow-x: clip;
+  box-sizing: border-box;
+}
+
+/* Universal Mobile Overflow Protection */
+@media (max-width: 768px) {
+  html, body, #root {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+  }
+
+  img, svg, video, canvas {
+    max-width: 100%;
+    height: auto;
+  }
 }
 
 /* ==========================================================================

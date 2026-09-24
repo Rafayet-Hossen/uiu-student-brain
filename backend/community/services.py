@@ -172,45 +172,6 @@ def create_study_event(*, user, validated_data: dict) -> StudyEvent:
     return StudyEvent.objects.create(creator=user, **validated_data)
 
 
-def update_study_event(*, event_id: int, user, validated_data: dict) -> StudyEvent:
-    event = StudyEvent.objects.get(id=event_id)
-    if event.creator != user:
-        raise PermissionDenied("You do not have permission to edit this event.")
-
-    old_title = event.title
-    for key, value in validated_data.items():
-        setattr(event, key, value)
-    event.save()
-
-    # Sync any updated schedules in Study Planner Calendar
-    try:
-        from planner.models import Schedule
-        old_subject = f"[Event] {old_title}"
-        new_subject = f"[Event] {event.title}"
-        day_name = event.event_date.strftime("%A") if event.event_date else "Monday"
-
-        Schedule.objects.filter(subject=old_subject).update(
-            subject=new_subject,
-            start_time=event.start_time,
-            end_time=event.end_time,
-            deadline=event.event_date,
-            days=[day_name],
-            notes=(
-                f"Campus Study Event\n"
-                f"Subject / Topic: {event.subject}\n"
-                f"Location: {event.location}\n"
-                f"Host: {event.creator.full_name or event.creator.email}\n"
-                f"Details: {event.description or 'No extra details provided.'}"
-            ),
-            resources=[{"title": "Event Location/Link", "url": event.location}] if event.location else [],
-        )
-    except Exception as e:
-        import logging
-        logging.getLogger(__name__).warning("Failed to sync updated event to planner schedule: %s", e)
-
-    return event
-
-
 def delete_study_event(*, event_id: int, user) -> None:
     event = StudyEvent.objects.get(id=event_id)
     if event.creator != user:
