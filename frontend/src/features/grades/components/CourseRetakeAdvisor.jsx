@@ -493,18 +493,6 @@ export default function CourseRetakeAdvisor({
                   <Sparkles size={14} />
                   <span>AI Retake & CGPA Recovery Advisor</span>
                 </span>
-                <span
-                  style={{
-                    background: "var(--color-secondary-subtle)",
-                    color: "var(--color-secondary)",
-                    padding: "4px 10px",
-                    borderRadius: "999px",
-                    fontSize: "0.75rem",
-                    fontWeight: 600,
-                  }}
-                >
-                  Math-Verified Projections
-                </span>
               </div>
               <h2
                 style={{
