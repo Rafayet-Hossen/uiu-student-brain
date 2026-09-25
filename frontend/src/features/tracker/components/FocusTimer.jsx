@@ -19,11 +19,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import Button from "../../../components/Button";
 
 const TIMER_MODES = [
-  { id: "standardFocus", label: "Standard Focus (25m)", minutes: 25 },
-  { id: "deep", label: "Deep Work Sprint (50m)", minutes: 50 },
-  { id: "shortBreak", label: "Short Break (5m)", minutes: 5 },
-  { id: "longBreak", label: "Extended Break (15m)", minutes: 15 },
-  { id: "stopwatch", label: "Open Stopwatch", minutes: 0 },
+  { id: "standardFocus", label: "Standard (25m)", minutes: 25 },
+  { id: "deep", label: "Deep Sprint (50m)", minutes: 50 },
+  { id: "marathon", label: "Marathon (90m)", minutes: 90 },
+  { id: "powerSession", label: "Extended (2h)", minutes: 120 },
+  { id: "custom", label: "Custom Time", minutes: 60 },
+  { id: "shortBreak", label: "Break (5m)", minutes: 5 },
+  { id: "longBreak", label: "Break (15m)", minutes: 15 },
+  { id: "stopwatch", label: "Stopwatch", minutes: 0 },
 ];
 
 export default function FocusTimer({
@@ -34,6 +37,7 @@ export default function FocusTimer({
   availableSubjects = [],
 }) {
   const [activeMode, setActiveMode] = useState("standardFocus");
+  const [customMinutes, setCustomMinutes] = useState(60);
   const [totalSeconds, setTotalSeconds] = useState(25 * 60);
   const [secondsRemaining, setSecondsRemaining] = useState(25 * 60);
   const [stopwatchSeconds, setStopwatchSeconds] = useState(0);
@@ -47,11 +51,142 @@ export default function FocusTimer({
   const [showCompletionOptions, setShowCompletionOptions] = useState(false);
   const [completedSessionData, setCompletedSessionData] = useState(null);
   const [sessionSuccess, setSessionSuccess] = useState("");
+  const [voiceAnnouncement, setVoiceAnnouncement] = useState("");
   const [soundEnabled, setSoundEnabled] = useState(() => {
     return localStorage.getItem("student_brain_notif_sound") !== "false";
   });
 
   const timerRef = useRef(null);
+  const spokenMilestonesRef = useRef(new Set());
+  const announcementTimeoutRef = useRef(null);
+
+  // Text-To-Speech Voice Coach
+  const speakText = (text) => {
+    if (!soundEnabled) return;
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    try {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+
+      const voices = window.speechSynthesis.getVoices();
+      const preferredVoice =
+        voices.find(
+          (v) =>
+            (v.name.includes("Natural") ||
+              v.name.includes("Google") ||
+              v.name.includes("Samantha") ||
+              v.name.includes("Zira") ||
+              v.name.includes("Jenny")) &&
+            v.lang.startsWith("en"),
+        ) || voices.find((v) => v.lang.startsWith("en"));
+
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+      }
+
+      setVoiceAnnouncement(text);
+      if (announcementTimeoutRef.current) {
+        clearTimeout(announcementTimeoutRef.current);
+      }
+      announcementTimeoutRef.current = setTimeout(() => {
+        setVoiceAnnouncement("");
+      }, 6000);
+
+      window.speechSynthesis.speak(utterance);
+    } catch (err) {
+      console.warn("Speech synthesis error:", err);
+    }
+  };
+
+  // Smart percentage-based milestone checker
+  const checkMilestoneSpeech = (remaining, total) => {
+    if (total <= 0 || !soundEnabled) return;
+    const elapsed = total - remaining;
+    const pct = Math.floor((elapsed / total) * 100);
+
+    // 1. Completion
+    if (remaining === 0) {
+      if (!spokenMilestonesRef.current.has("done")) {
+        spokenMilestonesRef.current.add("done");
+        speakText(
+          activeMode.includes("Break")
+            ? "Break finished! Ready for your next focus block."
+            : "Session complete! Outstanding job on your focus sprint.",
+        );
+      }
+      return;
+    }
+
+    // 2. Final countdowns
+    if (remaining === 60 && total >= 180) {
+      if (!spokenMilestonesRef.current.has("rem_60")) {
+        spokenMilestonesRef.current.add("rem_60");
+        speakText("One minute remaining. Finish up your current task.");
+      }
+    }
+
+    if (remaining === 300 && total >= 600) {
+      if (!spokenMilestonesRef.current.has("rem_300")) {
+        spokenMilestonesRef.current.add("rem_300");
+        speakText("Five minutes left. Prepare to wrap up this focus block.");
+      }
+    }
+
+    if (remaining === 900 && total >= 2700) {
+      if (!spokenMilestonesRef.current.has("rem_900")) {
+        spokenMilestonesRef.current.add("rem_900");
+        speakText("15 minutes remaining in your session.");
+      }
+    }
+
+    // 3. Percentage milestones
+    // Long sessions (>= 60 minutes, e.g. 1 hour, 2 hours, 5 hours):
+    if (total >= 3600) {
+      if (
+        pct >= 25 &&
+        pct < 30 &&
+        !spokenMilestonesRef.current.has("pct_25")
+      ) {
+        spokenMilestonesRef.current.add("pct_25");
+        speakText(
+          "Quarter mark reached. 25 percent completed. Maintain your steady rhythm.",
+        );
+      } else if (
+        pct >= 50 &&
+        pct < 55 &&
+        !spokenMilestonesRef.current.has("pct_50")
+      ) {
+        spokenMilestonesRef.current.add("pct_50");
+        speakText(
+          "Halfway point! 50 percent of your focus session is completed. Great stamina.",
+        );
+      } else if (
+        pct >= 75 &&
+        pct < 80 &&
+        !spokenMilestonesRef.current.has("pct_75")
+      ) {
+        spokenMilestonesRef.current.add("pct_75");
+        speakText(
+          "Three quarters completed. 75 percent done. You are in the final stretch, keep pushing.",
+        );
+      }
+    } else if (total >= 1200) {
+      // Medium sessions (20m to 59m):
+      if (
+        pct >= 50 &&
+        pct < 55 &&
+        !spokenMilestonesRef.current.has("pct_50")
+      ) {
+        spokenMilestonesRef.current.add("pct_50");
+        speakText(
+          "Halfway mark! 50 percent of your study block is complete. Stay in the zone.",
+        );
+      }
+    }
+  };
 
   // Sync activeSession changes if passed in
   useEffect(() => {
@@ -61,6 +196,7 @@ export default function FocusTimer({
         const secs = activeSession.duration_minutes * 60;
         setTotalSeconds(secs);
         setSecondsRemaining(secs);
+        spokenMilestonesRef.current.clear();
       }
     }
   }, [activeSession]);
@@ -70,10 +206,12 @@ export default function FocusTimer({
     setIsActive(false);
     setActiveMode(mode.id);
     setShowCompletionOptions(false);
+    spokenMilestonesRef.current.clear();
     if (mode.id === "stopwatch") {
       setStopwatchSeconds(0);
     } else {
-      const secs = mode.minutes * 60;
+      const mins = mode.id === "custom" ? customMinutes : mode.minutes;
+      const secs = mins * 60;
       setTotalSeconds(secs);
       setSecondsRemaining(secs);
     }
@@ -84,7 +222,15 @@ export default function FocusTimer({
     if (isActive) {
       timerRef.current = setInterval(() => {
         if (activeMode === "stopwatch") {
-          setStopwatchSeconds((prev) => prev + 1);
+          setStopwatchSeconds((prev) => {
+            const next = prev + 1;
+            // Spoken milestones for stopwatch: every 15 minutes
+            if (next > 0 && next % 900 === 0) {
+              const mins = Math.floor(next / 60);
+              speakText(`You have been studying for ${mins} minutes. Great focus.`);
+            }
+            return next;
+          });
         } else {
           setSecondsRemaining((prev) => {
             if (prev <= 1) {
@@ -92,9 +238,12 @@ export default function FocusTimer({
               setIsActive(false);
               playCompletionSound();
               setShowCompletionOptions(true);
+              checkMilestoneSpeech(0, totalSeconds);
               return 0;
             }
-            return prev - 1;
+            const next = prev - 1;
+            checkMilestoneSpeech(next, totalSeconds);
+            return next;
           });
         }
       }, 1000);
@@ -103,7 +252,7 @@ export default function FocusTimer({
     }
 
     return () => clearInterval(timerRef.current);
-  }, [isActive, activeMode]);
+  }, [isActive, activeMode, totalSeconds, soundEnabled]);
 
   const playCompletionSound = () => {
     if (!soundEnabled) return;
@@ -126,18 +275,36 @@ export default function FocusTimer({
   };
 
   const handleTogglePlay = () => {
-    setIsActive(!isActive);
+    const nextActive = !isActive;
+    setIsActive(nextActive);
+    if (nextActive) {
+      if (
+        activeMode !== "stopwatch" &&
+        totalSeconds - secondsRemaining === 0
+      ) {
+        speakText(
+          `Focus session started for ${subject || "study"}. Eliminate distractions and stay in flow.`,
+        );
+      } else {
+        speakText("Focus session resumed.");
+      }
+    } else {
+      speakText("Focus session paused.");
+    }
   };
 
   const handleReset = () => {
     setIsActive(false);
     setShowCompletionOptions(false);
+    spokenMilestonesRef.current.clear();
+    speakText("Timer reset.");
     if (activeMode === "stopwatch") {
       setStopwatchSeconds(0);
     } else {
       const mode =
         TIMER_MODES.find((m) => m.id === activeMode) || TIMER_MODES[0];
-      const secs = mode.minutes * 60;
+      const mins = mode.id === "custom" ? customMinutes : mode.minutes;
+      const secs = mins * 60;
       setTotalSeconds(secs);
       setSecondsRemaining(secs);
     }
@@ -224,6 +391,53 @@ export default function FocusTimer({
         ))}
       </div>
 
+      {/* Custom Duration Selector */}
+      {activeMode === "custom" && (
+        <div className="focus-custom-duration-row">
+          <label className="text-xs text-muted font-medium">Custom Duration:</label>
+          <div className="custom-duration-inputs">
+            <input
+              type="number"
+              min="1"
+              max="720"
+              value={customMinutes}
+              onChange={(e) => {
+                const val = Math.max(1, Math.min(720, parseInt(e.target.value) || 1));
+                setCustomMinutes(val);
+                if (!isActive) {
+                  setTotalSeconds(val * 60);
+                  setSecondsRemaining(val * 60);
+                  spokenMilestonesRef.current.clear();
+                }
+              }}
+              className="form-input form-input-sm custom-mins-input"
+            />
+            <span className="text-xs text-muted font-semibold">
+              mins ({Math.floor(customMinutes / 60)}h {customMinutes % 60}m)
+            </span>
+          </div>
+          <div className="custom-duration-presets">
+            {[30, 45, 60, 90, 120, 180, 300].map((presetMins) => (
+              <button
+                key={presetMins}
+                type="button"
+                className={`btn-chip-preset ${customMinutes === presetMins ? "active" : ""}`}
+                onClick={() => {
+                  setCustomMinutes(presetMins);
+                  if (!isActive) {
+                    setTotalSeconds(presetMins * 60);
+                    setSecondsRemaining(presetMins * 60);
+                    spokenMilestonesRef.current.clear();
+                  }
+                }}
+              >
+                {presetMins >= 60 ? `${presetMins / 60}h` : `${presetMins}m`}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {sessionSuccess && (
         <motion.div
           initial={{ opacity: 0, y: -6 }}
@@ -287,17 +501,40 @@ export default function FocusTimer({
 
           <button
             type="button"
-            className="btn-timer-sound"
+            className={`btn-timer-sound ${soundEnabled ? "sound-active" : ""}`}
             onClick={() => {
               const next = !soundEnabled;
               setSoundEnabled(next);
               localStorage.setItem("student_brain_notif_sound", String(next));
+              if (next) {
+                speakText("Voice coach enabled. Sound guidance active.");
+              } else {
+                if (typeof window !== "undefined" && "speechSynthesis" in window) {
+                  window.speechSynthesis.cancel();
+                }
+              }
             }}
-            title={soundEnabled ? "Mute audio chime" : "Enable audio chime"}
+            title={soundEnabled ? "Voice coach enabled (click to mute)" : "Enable voice coach & audio"}
           >
             {soundEnabled ? <Volume2 size={18} /> : <VolumeX size={18} />}
           </button>
         </div>
+
+        {/* Live Voice Coach Announcement Banner */}
+        <AnimatePresence>
+          {voiceAnnouncement && (
+            <motion.div
+              initial={{ opacity: 0, y: -6, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -6, scale: 0.95 }}
+              className="focus-voice-coach-banner"
+            >
+              <div className="voice-coach-pulse-dot" />
+              <Volume2 size={14} className="text-primary animate-pulse" />
+              <span className="voice-coach-text">{voiceAnnouncement}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Post-Session Action Prompt Card */}
