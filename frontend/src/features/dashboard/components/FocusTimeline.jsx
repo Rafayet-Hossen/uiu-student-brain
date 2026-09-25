@@ -95,80 +95,92 @@ export default function FocusTimeline({
             transition={{ duration: 0.2 }}
             className="dash-timeline-motion-wrap"
           >
-            {/* 1. Completed Sessions on this day (rendered at the very TOP) */}
-            {hasSessions && (
-              <div className="dash-timeline-sessions-group">
-                {daySessions.map((session, sIdx) => (
-                  <div key={session.id || sIdx} className="dash-timeline-item">
-                    <div className="dash-timeline-left-wrap">
-                      <div className="dash-timeline-node bg-emerald-subtle text-emerald">
-                        <CheckCircle2 size={18} />
-                      </div>
-                      <div className="dash-timeline-body">
-                        <strong className="dash-timeline-subject">
-                          {session.subject}
-                        </strong>
-                        <div className="dash-timeline-meta">
-                          <span className="flex items-center gap-1">
-                            <Clock size={12} /> {session.duration_minutes}m duration
-                          </span>
-                          <span>•</span>
-                          <span>Session #{sIdx + 1}</span>
+            {/* Scrollable Container for Sessions & Routines */}
+            {(hasSessions || hasRoutines) && (
+              <div
+                className={`dash-timeline-scroll-area ${
+                  flowDayOffset > 0 ? "is-past" : ""
+                }`}
+              >
+                {/* 1. Completed Sessions on this day (rendered at the very TOP) */}
+                {hasSessions && (
+                  <div className="dash-timeline-sessions-group">
+                    {daySessions.map((session, sIdx) => (
+                      <div
+                        key={session.id || sIdx}
+                        className="dash-timeline-item"
+                      >
+                        <div className="dash-timeline-left-wrap">
+                          <div className="dash-timeline-node bg-emerald-subtle text-emerald">
+                            <CheckCircle2 size={18} />
+                          </div>
+                          <div className="dash-timeline-body">
+                            <strong className="dash-timeline-subject">
+                              {session.subject}
+                            </strong>
+                            <div className="dash-timeline-meta">
+                              <span className="flex items-center gap-1">
+                                <Clock size={12} /> {session.duration_minutes}m duration
+                              </span>
+                              <span>•</span>
+                              <span>Session #{sIdx + 1}</span>
+                            </div>
+                            {session.notes && (
+                              <p className="text-xs text-muted mt-0.5 line-clamp-1">
+                                {session.notes}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                        {session.notes && (
-                          <p className="text-xs text-muted mt-0.5 line-clamp-1">
-                            {session.notes}
-                          </p>
-                        )}
+                        <div className="dash-timeline-right-wrap">
+                          <span className="dash-timeline-status-badge dash-badge-completed">
+                            ✓ Completed
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                    <div className="dash-timeline-right-wrap">
-                      <span className="dash-timeline-status-badge dash-badge-completed">
-                        ✓ Completed
-                      </span>
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            )}
+                )}
 
-            {/* 2. Scheduled Routines for Today */}
-            {flowDayOffset === 0 && hasRoutines && (
-              <div className="dash-timeline-routines-group">
-                {dayRoutines.map((routine, rIdx) => (
-                  <div
-                    key={routine.id || rIdx}
-                    className="dash-timeline-item cursor-pointer hover:border-primary"
-                    onClick={() =>
-                      onOpenScheduleModal && onOpenScheduleModal(routine)
-                    }
-                    title="Click to view routine details"
-                  >
-                    <div className="dash-timeline-left-wrap">
-                      <div className="dash-timeline-node bg-indigo-subtle text-indigo">
-                        <Zap size={16} className="animate-pulse" />
-                      </div>
-                      <div className="dash-timeline-body">
-                        <strong className="dash-timeline-subject">
-                          {routine.subject}
-                        </strong>
-                        <div className="dash-timeline-meta">
-                          <span className="flex items-center gap-1">
-                            <Clock size={12} /> {routine.start_time?.slice(0, 5)} -{" "}
-                            {routine.end_time?.slice(0, 5)}
+                {/* 2. Scheduled Routines for Today */}
+                {flowDayOffset === 0 && hasRoutines && (
+                  <div className="dash-timeline-routines-group">
+                    {dayRoutines.map((routine, rIdx) => (
+                      <div
+                        key={routine.id || rIdx}
+                        className="dash-timeline-item cursor-pointer hover:border-primary"
+                        onClick={() =>
+                          onOpenScheduleModal && onOpenScheduleModal(routine)
+                        }
+                        title="Click to view routine details"
+                      >
+                        <div className="dash-timeline-left-wrap">
+                          <div className="dash-timeline-node bg-indigo-subtle text-indigo">
+                            <Zap size={16} className="animate-pulse" />
+                          </div>
+                          <div className="dash-timeline-body">
+                            <strong className="dash-timeline-subject">
+                              {routine.subject}
+                            </strong>
+                            <div className="dash-timeline-meta">
+                              <span className="flex items-center gap-1">
+                                <Clock size={12} /> {routine.start_time?.slice(0, 5)} -{" "}
+                                {routine.end_time?.slice(0, 5)}
+                              </span>
+                              <span>•</span>
+                              <span>Timetable Routine</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="dash-timeline-right-wrap">
+                          <span className="dash-timeline-status-badge dash-badge-scheduled">
+                            Scheduled
                           </span>
-                          <span>•</span>
-                          <span>Timetable Routine</span>
                         </div>
                       </div>
-                    </div>
-                    <div className="dash-timeline-right-wrap">
-                      <span className="dash-timeline-status-badge dash-badge-scheduled">
-                        Scheduled
-                      </span>
-                    </div>
+                    ))}
                   </div>
-                ))}
+                )}
               </div>
             )}
 

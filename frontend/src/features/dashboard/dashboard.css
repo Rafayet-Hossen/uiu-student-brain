@@ -1465,6 +1465,53 @@
   flex-direction: column;
   gap: 12px;
   width: 100%;
+  flex: 1;
+  min-height: 0;
+  justify-content: space-between;
+}
+
+/* Smooth Scrollable Container for Sessions & Routines */
+.dash-timeline-scroll-area {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-height: 245px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 6px;
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.dash-timeline-scroll-area.is-past {
+  max-height: 440px;
+}
+
+/* Custom Smooth Themed Scrollbar */
+.dash-timeline-scroll-area::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dash-timeline-scroll-area::-webkit-scrollbar-track {
+  background: var(--dash-surface-elevated);
+  border-radius: 9999px;
+}
+
+.dash-timeline-scroll-area::-webkit-scrollbar-thumb {
+  background: rgba(242, 101, 34, 0.35);
+  border-radius: 9999px;
+  transition: background 0.2s ease;
+}
+
+.dash-timeline-scroll-area::-webkit-scrollbar-thumb:hover {
+  background: var(--dash-primary);
+}
+
+.dash-timeline-scroll-area {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(242, 101, 34, 0.4) var(--dash-surface-elevated);
 }
 
 .dash-timeline-sessions-group,
@@ -1856,7 +1903,13 @@
   padding: 20px 18px;
   position: relative;
   overflow: hidden;
-  background: radial-gradient(circle at top right, rgba(245, 158, 11, 0.07), transparent 70%), var(--dash-card-bg);
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(245, 158, 11, 0.07),
+      transparent 70%
+    ),
+    var(--dash-card-bg);
   border: 1px solid var(--dash-card-border);
   border-radius: 22px;
   box-shadow: var(--dash-shadow-card);
@@ -1869,7 +1922,13 @@
 }
 
 .dash-weekly-ring-card {
-  background: radial-gradient(circle at top right, rgba(242, 101, 34, 0.07), transparent 70%), var(--dash-card-bg);
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(242, 101, 34, 0.07),
+      transparent 70%
+    ),
+    var(--dash-card-bg);
 }
 
 .dash-weekly-ring-card:hover {
@@ -1896,7 +1955,7 @@
 }
 
 .dash-challenge-title {
-  font-size: 0.90rem;
+  font-size: 0.9rem;
   font-weight: 800;
   color: var(--dash-text-main);
   white-space: normal;
@@ -3152,19 +3211,43 @@
 }
 
 .dash-journey-orange {
-  background: radial-gradient(circle at top right, rgba(242, 101, 34, 0.05), transparent 70%), var(--dash-card-bg);
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(242, 101, 34, 0.05),
+      transparent 70%
+    ),
+    var(--dash-card-bg);
 }
 
 .dash-journey-amber {
-  background: radial-gradient(circle at top right, rgba(245, 158, 11, 0.05), transparent 70%), var(--dash-card-bg);
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(245, 158, 11, 0.05),
+      transparent 70%
+    ),
+    var(--dash-card-bg);
 }
 
 .dash-journey-emerald {
-  background: radial-gradient(circle at top right, rgba(16, 185, 129, 0.05), transparent 70%), var(--dash-card-bg);
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(16, 185, 129, 0.05),
+      transparent 70%
+    ),
+    var(--dash-card-bg);
 }
 
 .dash-journey-rose {
-  background: radial-gradient(circle at top right, rgba(244, 63, 94, 0.05), transparent 70%), var(--dash-card-bg);
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(244, 63, 94, 0.05),
+      transparent 70%
+    ),
+    var(--dash-card-bg);
 }
 
 .dash-journey-orange:hover {
@@ -3475,11 +3558,13 @@
 
 .dash-today-left-col .dash-timeline-card {
   height: 100%;
+  max-height: 590px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  gap: 16px;
+  justify-content: space-between;
+  gap: 14px;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .dash-today-right-col {
@@ -3660,7 +3745,9 @@
   border-radius: 24px;
   background: var(--dash-card-bg);
   border: 1px solid var(--dash-card-border);
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+  box-shadow:
+    0 4px 20px -2px rgba(0, 0, 0, 0.04),
+    0 1px 3px rgba(0, 0, 0, 0.02);
   padding: 26px;
   display: flex;
   flex-direction: column;
@@ -3673,7 +3760,9 @@
 }
 
 .dash-masonry-card:hover {
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(242, 101, 34, 0.25);
+  box-shadow:
+    0 20px 40px -10px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(242, 101, 34, 0.25);
   border-color: rgba(242, 101, 34, 0.4);
 }
 
@@ -3688,7 +3777,9 @@
   pointer-events: none;
   filter: blur(34px);
   opacity: 0.45;
-  transition: opacity 0.4s ease, transform 0.4s ease;
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease;
   z-index: 0;
 }
 
@@ -3699,23 +3790,43 @@
 }
 
 .dash-card-glow.glow-orange {
-  background: radial-gradient(circle, rgba(242, 101, 34, 0.4) 0%, rgba(242, 101, 34, 0) 70%);
+  background: radial-gradient(
+    circle,
+    rgba(242, 101, 34, 0.4) 0%,
+    rgba(242, 101, 34, 0) 70%
+  );
 }
 
 .dash-card-glow.glow-rose {
-  background: radial-gradient(circle, rgba(244, 63, 94, 0.4) 0%, rgba(244, 63, 94, 0) 70%);
+  background: radial-gradient(
+    circle,
+    rgba(244, 63, 94, 0.4) 0%,
+    rgba(244, 63, 94, 0) 70%
+  );
 }
 
 .dash-card-glow.glow-amber {
-  background: radial-gradient(circle, rgba(245, 158, 11, 0.4) 0%, rgba(245, 158, 11, 0) 70%);
+  background: radial-gradient(
+    circle,
+    rgba(245, 158, 11, 0.4) 0%,
+    rgba(245, 158, 11, 0) 70%
+  );
 }
 
 .dash-card-glow.glow-emerald {
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.4) 0%, rgba(16, 185, 129, 0) 70%);
+  background: radial-gradient(
+    circle,
+    rgba(16, 185, 129, 0.4) 0%,
+    rgba(16, 185, 129, 0) 70%
+  );
 }
 
 .dash-card-glow.glow-purple {
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, rgba(168, 85, 247, 0) 70%);
+  background: radial-gradient(
+    circle,
+    rgba(168, 85, 247, 0.4) 0%,
+    rgba(168, 85, 247, 0) 70%
+  );
 }
 
 /* Card 1: Planner is 1 column in balanced 2x2 grid */
@@ -3739,24 +3850,38 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+  transition:
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s ease;
 }
 
 .dash-module-icon-box.bg-indigo-subtle,
 .dash-module-icon-box.bg-orange-subtle {
-  background: linear-gradient(135deg, rgba(242, 101, 34, 0.16) 0%, rgba(242, 101, 34, 0.08) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(242, 101, 34, 0.16) 0%,
+    rgba(242, 101, 34, 0.08) 100%
+  );
   color: var(--dash-primary);
   border: 1px solid rgba(242, 101, 34, 0.22);
 }
 
 .dash-module-icon-box.bg-rose-subtle {
-  background: linear-gradient(135deg, rgba(244, 63, 94, 0.16) 0%, rgba(244, 63, 94, 0.08) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(244, 63, 94, 0.16) 0%,
+    rgba(244, 63, 94, 0.08) 100%
+  );
   color: #e11d48;
   border: 1px solid rgba(244, 63, 94, 0.22);
 }
 
 .dash-module-icon-box.bg-emerald-subtle {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.16) 0%, rgba(16, 185, 129, 0.08) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.16) 0%,
+    rgba(16, 185, 129, 0.08) 100%
+  );
   color: #059669;
   border: 1px solid rgba(16, 185, 129, 0.22);
 }
@@ -3985,7 +4110,11 @@
   position: relative;
   overflow: hidden;
   padding: 14px 16px;
-  background: linear-gradient(135deg, var(--dash-surface-subtle) 0%, var(--dash-card-bg) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--dash-surface-subtle) 0%,
+    var(--dash-card-bg) 100%
+  );
   border: 1px solid var(--dash-card-border);
   border-radius: 16px;
   display: flex;
@@ -4088,7 +4217,11 @@
 
 .dash-module-tag-badge {
   padding: 12px 10px;
-  background: linear-gradient(135deg, var(--dash-surface-subtle) 0%, var(--dash-card-bg) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--dash-surface-subtle) 0%,
+    var(--dash-card-bg) 100%
+  );
   border: 1px solid var(--dash-card-border);
   border-radius: 14px;
   display: flex;
@@ -4288,14 +4421,18 @@
   border-radius: 24px;
   background: var(--dash-card-bg);
   border: 1px solid var(--dash-card-border);
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+  box-shadow:
+    0 4px 20px -2px rgba(0, 0, 0, 0.04),
+    0 1px 3px rgba(0, 0, 0, 0.02);
   transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
 
 .dash-analytics-card:hover {
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(242, 101, 34, 0.25);
+  box-shadow:
+    0 20px 40px -10px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(242, 101, 34, 0.25);
   border-color: rgba(242, 101, 34, 0.35);
 }
 
@@ -4319,19 +4456,31 @@
 
 .dash-analytics-icon-badge.indigo,
 .dash-analytics-icon-badge.orange {
-  background: linear-gradient(135deg, rgba(242, 101, 34, 0.16) 0%, rgba(242, 101, 34, 0.06) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(242, 101, 34, 0.16) 0%,
+    rgba(242, 101, 34, 0.06) 100%
+  );
   color: var(--dash-primary);
   border: 1px solid rgba(242, 101, 34, 0.22);
 }
 
 .dash-analytics-icon-badge.emerald {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.16) 0%, rgba(16, 185, 129, 0.06) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.16) 0%,
+    rgba(16, 185, 129, 0.06) 100%
+  );
   color: #059669;
   border: 1px solid rgba(16, 185, 129, 0.22);
 }
 
 .dash-analytics-icon-badge.amber {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.16) 0%, rgba(245, 158, 11, 0.06) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(245, 158, 11, 0.16) 0%,
+    rgba(245, 158, 11, 0.06) 100%
+  );
   color: #d97706;
   border: 1px solid rgba(245, 158, 11, 0.22);
 }
@@ -4408,7 +4557,9 @@
   background: linear-gradient(180deg, #fb923c 0%, #ea580c 100%);
   border-radius: 10px;
   min-height: 6px;
-  transition: transform 0.2s ease, filter 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    filter 0.2s ease;
 }
 
 .dash-bar-col:hover .dash-bar-fill {
@@ -4418,12 +4569,15 @@
 
 .dash-bar-fill.active-today {
   background: linear-gradient(180deg, #34d399 0%, #10b981 50%, #059669 100%);
-  box-shadow: 0 0 16px rgba(16, 185, 129, 0.6), 0 2px 8px rgba(16, 185, 129, 0.3);
+  box-shadow:
+    0 0 16px rgba(16, 185, 129, 0.6),
+    0 2px 8px rgba(16, 185, 129, 0.3);
   animation: todayBarPulse 3s infinite ease-in-out;
 }
 
 @keyframes todayBarPulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
   }
   50% {
@@ -4611,7 +4765,11 @@
   position: absolute;
   inset: 12px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(16, 185, 129, 0.25) 0%,
+    transparent 70%
+  );
   animation: radarPing 3s infinite cubic-bezier(0, 0.2, 0.8, 1);
   pointer-events: none;
 }
@@ -5408,6 +5566,15 @@
     padding: 14px 12px !important;
     border-radius: 18px !important;
     gap: 10px !important;
+  }
+
+  .dash-today-left-col .dash-timeline-card {
+    max-height: none !important;
+    height: auto !important;
+  }
+
+  .dash-timeline-scroll-area {
+    max-height: 260px !important;
   }
 
   .dash-timeline-list {
