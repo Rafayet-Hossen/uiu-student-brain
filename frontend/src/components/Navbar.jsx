@@ -92,16 +92,12 @@ export default function Navbar() {
       >
         <div className="navbar-inner-wrapper">
           {/* Left: Brand Logo */}
-          <Link to="/dashboard" className="navbar-brand-logo group">
+          <Link to="/dashboard" className="navbar-brand-logo">
             <div className="navbar-brand-icon-box">
               <GraduationCap size={20} className="brand-logo-svg" />
             </div>
             <span className="navbar-brand-name">
-              <span className="brand-name-student">Student</span>
-              <span className="brand-name-brain">Brain</span>
-              <span className="brand-sparkle-wrap">
-                <Sparkles size={11} className="brand-sparkle-icon" />
-              </span>
+              Student<span className="brand-accent-text">Brain</span>
             </span>
           </Link>
 
@@ -272,11 +268,7 @@ export default function Navbar() {
                     <GraduationCap size={18} className="brand-logo-svg" />
                   </div>
                   <span className="drawer-brand-title">
-                    <span className="brand-name-student">Student</span>
-                    <span className="brand-name-brain">Brain</span>
-                    <span className="brand-sparkle-wrap">
-                      <Sparkles size={10} className="brand-sparkle-icon" />
-                    </span>
+                    Student<span className="brand-accent-text">Brain</span>
                   </span>
                 </div>
                 <button

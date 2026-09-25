@@ -8,7 +8,8 @@ import {
   Sparkles,
   Play,
   Target,
-  BookOpen,
+  PlusCircle,
+  Calendar,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -24,8 +25,12 @@ export default function FocusTimeline({
   dayRoutines = [],
   onOpenScheduleModal,
 }) {
+  const hasSessions = daySessions.length > 0;
+  const hasRoutines = dayRoutines.length > 0;
+
   return (
     <div className="dash-card-24 dash-timeline-card">
+      {/* Header */}
       <div className="dash-section-header">
         <div className="dash-section-title-wrap">
           <div className="flex items-center gap-2">
@@ -36,7 +41,8 @@ export default function FocusTimeline({
               <button
                 type="button"
                 onClick={() => setFlowDayOffset(0)}
-                className="text-[11px] font-bold text-primary px-2 py-0.5 rounded-full bg-indigo-subtle hover:bg-primary hover:text-white transition-colors cursor-pointer"
+                className="dash-jump-today-btn"
+                title="Return to Today"
               >
                 Jump to Today
               </button>
@@ -78,114 +84,172 @@ export default function FocusTimeline({
         </div>
       </div>
 
+      {/* Main Content Area — Always starts at the top */}
       <div className="dash-timeline-list">
         <AnimatePresence mode="wait">
           <motion.div
             key={flowDayOffset}
-            initial={{ opacity: 0, x: flowDayOffset > 0 ? 12 : -12 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: flowDayOffset > 0 ? -12 : 12 }}
-            transition={{ duration: 0.25 }}
-            className="flex flex-col gap-2.5"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.2 }}
+            className="dash-timeline-motion-wrap"
           >
-            {/* Completed Sessions on this day */}
-            {daySessions.length > 0 &&
-              daySessions.map((session, sIdx) => (
-                <div key={session.id || sIdx} className="dash-timeline-item">
-                  <div className="dash-timeline-left-wrap">
-                    <div className="dash-timeline-node bg-emerald-subtle text-emerald">
-                      <CheckCircle2 size={18} />
-                    </div>
-                    <div className="dash-timeline-body">
-                      <strong className="dash-timeline-subject">
-                        {session.subject}
-                      </strong>
-                      <div className="dash-timeline-meta">
-                        <span className="flex items-center gap-1">
-                          <Clock size={12} /> {session.duration_minutes}m duration
-                        </span>
-                        <span>•</span>
-                        <span>Session #{sIdx + 1}</span>
+            {/* 1. Completed Sessions on this day (rendered at the very TOP) */}
+            {hasSessions && (
+              <div className="dash-timeline-sessions-group">
+                {daySessions.map((session, sIdx) => (
+                  <div key={session.id || sIdx} className="dash-timeline-item">
+                    <div className="dash-timeline-left-wrap">
+                      <div className="dash-timeline-node bg-emerald-subtle text-emerald">
+                        <CheckCircle2 size={18} />
                       </div>
-                      {session.notes && (
-                        <p className="text-xs text-muted mt-0.5 line-clamp-1">
-                          {session.notes}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="dash-timeline-right-wrap">
-                    <span className="dash-timeline-status-badge dash-badge-completed">
-                      ✓ Completed
-                    </span>
-                  </div>
-                </div>
-              ))}
-
-            {/* Scheduled Routines on Today */}
-            {flowDayOffset === 0 &&
-              dayRoutines.length > 0 &&
-              dayRoutines.map((routine, rIdx) => (
-                <div
-                  key={routine.id || rIdx}
-                  className="dash-timeline-item cursor-pointer hover:border-primary"
-                  onClick={() =>
-                    onOpenScheduleModal && onOpenScheduleModal(routine)
-                  }
-                  title="Click to view routine details"
-                >
-                  <div className="dash-timeline-left-wrap">
-                    <div className="dash-timeline-node bg-indigo-subtle text-indigo">
-                      <Zap size={16} className="animate-pulse" />
-                    </div>
-                    <div className="dash-timeline-body">
-                      <strong className="dash-timeline-subject">
-                        {routine.subject}
-                      </strong>
-                      <div className="dash-timeline-meta">
-                        <span className="flex items-center gap-1">
-                          <Clock size={12} /> {routine.start_time?.slice(0, 5)} -{" "}
-                          {routine.end_time?.slice(0, 5)}
-                        </span>
-                        <span>•</span>
-                        <span>Timetable Routine</span>
+                      <div className="dash-timeline-body">
+                        <strong className="dash-timeline-subject">
+                          {session.subject}
+                        </strong>
+                        <div className="dash-timeline-meta">
+                          <span className="flex items-center gap-1">
+                            <Clock size={12} /> {session.duration_minutes}m duration
+                          </span>
+                          <span>•</span>
+                          <span>Session #{sIdx + 1}</span>
+                        </div>
+                        {session.notes && (
+                          <p className="text-xs text-muted mt-0.5 line-clamp-1">
+                            {session.notes}
+                          </p>
+                        )}
                       </div>
                     </div>
+                    <div className="dash-timeline-right-wrap">
+                      <span className="dash-timeline-status-badge dash-badge-completed">
+                        ✓ Completed
+                      </span>
+                    </div>
                   </div>
-                  <div className="dash-timeline-right-wrap">
-                    <span className="dash-timeline-status-badge dash-badge-scheduled">
-                      Scheduled
-                    </span>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
+            )}
 
-            {/* Empty State for Previous Days */}
-            {daySessions.length === 0 && flowDayOffset > 0 && (
-              <div className="dash-timeline-empty">
-                <div className="dash-timeline-empty-icon">
-                  <Clock size={24} />
+            {/* 2. Scheduled Routines for Today */}
+            {flowDayOffset === 0 && hasRoutines && (
+              <div className="dash-timeline-routines-group">
+                {dayRoutines.map((routine, rIdx) => (
+                  <div
+                    key={routine.id || rIdx}
+                    className="dash-timeline-item cursor-pointer hover:border-primary"
+                    onClick={() =>
+                      onOpenScheduleModal && onOpenScheduleModal(routine)
+                    }
+                    title="Click to view routine details"
+                  >
+                    <div className="dash-timeline-left-wrap">
+                      <div className="dash-timeline-node bg-indigo-subtle text-indigo">
+                        <Zap size={16} className="animate-pulse" />
+                      </div>
+                      <div className="dash-timeline-body">
+                        <strong className="dash-timeline-subject">
+                          {routine.subject}
+                        </strong>
+                        <div className="dash-timeline-meta">
+                          <span className="flex items-center gap-1">
+                            <Clock size={12} /> {routine.start_time?.slice(0, 5)} -{" "}
+                            {routine.end_time?.slice(0, 5)}
+                          </span>
+                          <span>•</span>
+                          <span>Timetable Routine</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="dash-timeline-right-wrap">
+                      <span className="dash-timeline-status-badge dash-badge-scheduled">
+                        Scheduled
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* 3. Empty State when NO sessions exist for Today */}
+            {flowDayOffset === 0 && !hasSessions && !hasRoutines && (
+              <div className="dash-timeline-empty-card today">
+                <div className="dash-timeline-empty-icon-wrap">
+                  <Sparkles size={22} className="text-primary animate-pulse" />
                 </div>
-                <div>
-                  <strong className="block text-sm font-bold text-slate-800 dark:text-slate-100">
-                    No study sessions recorded for {targetDayLabel}
+                <div className="dash-timeline-empty-content">
+                  <strong className="dash-timeline-empty-title">
+                    Nothing to show yet today
                   </strong>
-                  <p className="text-xs text-muted mt-1 max-w-sm">
-                    You did not record focus minutes on {targetFormattedDate}.
+                  <p className="dash-timeline-empty-sub">
+                    No focus sessions logged yet today. Choose a quick sprint below to kickstart your study streak!
                   </p>
                 </div>
               </div>
             )}
 
-            {/* Instant Focus Studio & Daily Booster: Always rendered on Today to fill space with interactive tools */}
+            {/* 4. Empty State for Past Days (when NO sessions exist) */}
+            {flowDayOffset > 0 && !hasSessions && (
+              <div className="dash-timeline-empty-card past">
+                <div className="dash-timeline-empty-icon-wrap past">
+                  <Clock size={28} className="text-muted" />
+                </div>
+                <div className="dash-timeline-empty-content">
+                  <strong className="dash-timeline-empty-title">
+                    Nothing to show for {targetDayLabel}
+                  </strong>
+                  <p className="dash-timeline-empty-sub">
+                    No focus sessions or timetable activity recorded on {targetFormattedDate}.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setFlowDayOffset(0)}
+                    className="dash-btn-return-today"
+                  >
+                    Jump to Today's Flow →
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* 5. Past Day Summary Banner (when sessions DO exist in past day) */}
+            {flowDayOffset > 0 && hasSessions && (
+              <div className="dash-timeline-past-summary">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 size={16} className="text-emerald" />
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                      {targetDayLabel} Summary: {daySessions.length} session{daySessions.length > 1 ? "s" : ""} completed ({dayHours > 0 ? `${dayHours}h ` : ""}{dayMins}m logged)
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setFlowDayOffset(0)}
+                    className="dash-timeline-inline-link"
+                  >
+                    Jump to Today's Flow →
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* 6. "Add More" / Instant Focus Studio on Today */}
             {flowDayOffset === 0 && (
               <div className="dash-timeline-quick-launchpad">
                 <div className="dash-launchpad-header">
                   <div className="flex items-center gap-1.5">
-                    <Sparkles size={14} className="text-primary" />
-                    <span className="dash-launchpad-title">Instant Focus Studio</span>
+                    <PlusCircle size={14} className="text-primary" />
+                    <span className="dash-launchpad-title">
+                      {hasSessions ? "Add More Focus Time" : "Instant Focus Studio"}
+                    </span>
                   </div>
-                  <span className="dash-launchpad-subtitle">Launch a timer with 1 tap</span>
+                  <Link
+                    to="/study-center?tab=tracker"
+                    className="dash-launchpad-subtitle hover:text-primary transition-colors"
+                  >
+                    Custom Timer →
+                  </Link>
                 </div>
 
                 <div className="dash-launchpad-presets">
@@ -228,7 +292,11 @@ export default function FocusTimeline({
 
                 <div className="dash-daily-targets-checklist">
                   <div className="dash-target-item">
-                    <span className={`dash-target-dot ${dayTotalMinutes >= 45 ? "done" : "pending"}`} />
+                    <span
+                      className={`dash-target-dot ${
+                        dayTotalMinutes >= 45 ? "done" : "pending"
+                      }`}
+                    />
                     <span className="dash-target-text">
                       {dayTotalMinutes >= 45
                         ? "✓ 45m Daily study challenge accomplished"
@@ -239,7 +307,9 @@ export default function FocusTimeline({
                     <span className="dash-target-dot done" />
                     <span className="dash-target-text">
                       {dayRoutines.length > 0
-                        ? `${dayRoutines.length} Timetable routine${dayRoutines.length > 1 ? "s" : ""} synchronized`
+                        ? `${dayRoutines.length} Timetable routine${
+                            dayRoutines.length > 1 ? "s" : ""
+                          } synchronized`
                         : "Timetable routines synchronized"}
                     </span>
                   </div>

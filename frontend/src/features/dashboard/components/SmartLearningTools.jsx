@@ -164,9 +164,7 @@ export default function SmartLearningTools({
             <div className="dash-module-stats-row">
               <div className="dash-module-stat-pill">
                 <div className="dash-module-stat-header">
-                  <div className="dash-stat-bubble">
-                    <FileText size={13} />
-                  </div>
+                  <FileText size={15} className="text-primary" />
                   <span className="dash-module-stat-label">Documents</span>
                 </div>
                 <div className="dash-module-stat-val-row">
@@ -176,9 +174,7 @@ export default function SmartLearningTools({
               </div>
               <div className="dash-module-stat-pill rose">
                 <div className="dash-module-stat-header">
-                  <div className="dash-stat-bubble rose">
-                    <Sparkles size={13} />
-                  </div>
+                  <Sparkles size={15} className="text-rose" />
                   <span className="dash-module-stat-label">AI Concepts</span>
                 </div>
                 <div className="dash-module-stat-val-row">

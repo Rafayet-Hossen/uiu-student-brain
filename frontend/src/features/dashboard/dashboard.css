@@ -1853,29 +1853,32 @@
    7. DAILY STUDY CHALLENGE (Photo 3 Fix: Modern Compact Gamification)
    ========================================================================== */
 .dash-challenge-card {
-  padding: 22px;
+  padding: 18px 16px;
   position: relative;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .dash-challenge-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   margin-bottom: 12px;
   width: 100%;
-  gap: 8px;
+  gap: 6px 8px;
 }
 
 .dash-challenge-title-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
+  flex: 1 1 auto;
 }
 
 .dash-challenge-title {
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   font-weight: 800;
   color: var(--dash-text-main);
   white-space: nowrap;
@@ -1886,8 +1889,8 @@
 .dash-challenge-xp-badge {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 5px 12px;
+  gap: 4px;
+  padding: 3px 9px;
   border-radius: 9999px;
   background: linear-gradient(
     135deg,
@@ -1895,7 +1898,7 @@
     rgba(242, 101, 34, 0.12)
   );
   color: #b45309;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.01em;
   border: 1px solid rgba(245, 158, 11, 0.35);
@@ -3307,8 +3310,9 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 20px;
+  padding: 16px 14px;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 /* Instant Focus Studio & Launchpad in FocusTimeline */
@@ -3718,136 +3722,56 @@
 }
 
 .dash-module-stat-pill {
-  padding: 14px 16px;
-  background: linear-gradient(145deg, rgba(242, 101, 34, 0.05) 0%, rgba(245, 158, 11, 0.02) 100%);
-  border: 1px solid rgba(242, 101, 34, 0.18);
-  border-radius: 16px;
+  padding: 12px 14px;
+  background: var(--dash-surface-subtle);
+  border: 1px solid var(--dash-card-border);
+  border-radius: 14px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.dash-module-stat-pill:hover {
-  transform: translateY(-2px);
-  border-color: rgba(242, 101, 34, 0.35);
-  box-shadow: 0 6px 18px rgba(242, 101, 34, 0.12);
-}
-
-.dash-module-stat-pill.rose {
-  background: linear-gradient(145deg, rgba(244, 63, 94, 0.06) 0%, rgba(168, 85, 247, 0.03) 100%);
-  border: 1px solid rgba(244, 63, 94, 0.2);
-}
-
-.dash-module-stat-pill.rose:hover {
-  border-color: rgba(244, 63, 94, 0.4);
-  box-shadow: 0 6px 18px rgba(244, 63, 94, 0.14);
-}
-
-[data-theme="dark"] .dash-module-stat-pill {
-  background: linear-gradient(145deg, rgba(242, 101, 34, 0.1) 0%, rgba(245, 158, 11, 0.04) 100%);
-  border-color: rgba(242, 101, 34, 0.25);
-}
-
-[data-theme="dark"] .dash-module-stat-pill.rose {
-  background: linear-gradient(145deg, rgba(244, 63, 94, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%);
-  border-color: rgba(244, 63, 94, 0.3);
+  gap: 6px;
 }
 
 .dash-module-stat-header {
   display: flex;
   align-items: center;
-  gap: 7px;
-}
-
-.dash-stat-bubble {
-  width: 24px;
-  height: 24px;
-  border-radius: 7px;
-  background: rgba(242, 101, 34, 0.12);
-  color: var(--dash-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.dash-stat-bubble.rose {
-  background: rgba(244, 63, 94, 0.12);
-  color: #e11d48;
+  gap: 6px;
 }
 
 .dash-module-stat-label {
-  font-size: 0.72rem;
-  font-weight: 750;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: 0.74rem;
+  font-weight: 600;
   color: var(--dash-text-muted);
 }
 
 .dash-module-stat-val-row {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
-  gap: 8px;
 }
 
 .dash-module-stat-num {
-  font-size: 1.65rem;
-  font-weight: 900;
-  letter-spacing: -0.03em;
-  line-height: 1;
+  font-size: 1.45rem;
+  font-weight: 850;
+  letter-spacing: -0.02em;
   color: var(--dash-text-main);
 }
 
 .dash-module-stat-num.rose {
-  background: linear-gradient(135deg, #e11d48 0%, #c026d3 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #e11d48;
 }
 
 .dash-module-stat-badge {
-  font-size: 0.72rem;
-  font-weight: 750;
-  padding: 3px 9px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 7px;
   border-radius: 9999px;
-  background: rgba(242, 101, 34, 0.12);
+  background: var(--dash-primary-subtle);
   color: var(--dash-primary);
-  border: 1px solid rgba(242, 101, 34, 0.2);
-  letter-spacing: 0.01em;
 }
 
 .dash-module-stat-badge.rose {
-  background: rgba(244, 63, 94, 0.12);
+  background: rgba(244, 63, 94, 0.1);
   color: #e11d48;
-  border-color: rgba(244, 63, 94, 0.25);
-}
-
-.dash-module-features-strip {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 10px;
-}
-
-.dash-feature-pill {
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 9999px;
-  background: var(--dash-surface-elevated);
-  color: var(--dash-text-muted);
-  border: 1px solid var(--dash-card-border);
-  transition: all 0.15s ease;
-}
-
-.dash-feature-pill:hover {
-  color: var(--dash-text-main);
-  border-color: var(--dash-primary);
 }
 
 /* Community Tags Row */
@@ -4418,16 +4342,6 @@
 .dash-podium-card.podium-gold .dash-podium-avatar-wrap {
   width: 70px;
   height: 70px;
-}
-
-.dash-podium-avatar-img {
-  z-index: 2;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
-  border: 2px solid #ffffff;
-}
-
-[data-theme="dark"] .dash-podium-avatar-img {
-  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .dash-podium-avatar-letter {

@@ -1,53 +1,48 @@
 import { motion } from "framer-motion";
 import { Users, Trophy, Flame, Clock, Award, ArrowRight, MessageSquare, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
-import ScholarAvatar from "../../auth/components/ScholarAvatar";
 
 export default function CommunityMomentum({ leaderboard = [] }) {
   // Use API leaderboard data if available, or rich top scholar champions
   const topScholars = leaderboard.length >= 3
     ? leaderboard.slice(0, 3).map((item, idx) => ({
         rank: idx + 1,
-        user: item.user || { full_name: item.username, id: item.id },
         name: item.user?.full_name || item.username || `Scholar #${idx + 1}`,
         department: item.user?.department || (idx === 0 ? "Computer Science" : idx === 1 ? "Software Eng" : "Data Science"),
         weeklyHours: `${(item.weekly_minutes ? item.weekly_minutes / 60 : 24 - idx * 4).toFixed(1)}h`,
         streak: item.current_streak ? `${item.current_streak} Days` : `${14 - idx * 3} Days`,
         badge: idx === 0 ? "Master Scholar" : idx === 1 ? "Deep Diver" : "Consistent Learner",
-        avatar: item.user?.avatar || null,
+        avatar: item.user?.full_name ? item.user.full_name.charAt(0).toUpperCase() : ["A", "T", "F"][idx],
       }))
     : [
         {
           rank: 2,
-          user: { full_name: "Tanvir Ahmed", id: 2, email: "tanvir@student.edu" },
           name: "Tanvir Ahmed",
           department: "Software Engineering",
           weeklyHours: "22.5h",
           streak: "11 Days",
           badge: "Deep Diver",
-          avatar: null,
+          avatar: "T",
           color: "silver",
         },
         {
           rank: 1,
-          user: { full_name: "Ayesha Rahman", id: 1, email: "ayesha@student.edu" },
           name: "Ayesha Rahman",
           department: "Computer Science & Eng",
           weeklyHours: "28.5h",
           streak: "16 Days",
           badge: "Master Scholar",
-          avatar: null,
+          avatar: "A",
           color: "gold",
         },
         {
           rank: 3,
-          user: { full_name: "Farhana Karim", id: 3, email: "farhana@student.edu" },
           name: "Farhana Karim",
           department: "Data Science & AI",
           weeklyHours: "18.0h",
           streak: "8 Days",
           badge: "Consistent Learner",
-          avatar: null,
+          avatar: "F",
           color: "bronze",
         },
       ];
@@ -98,12 +93,7 @@ export default function CommunityMomentum({ leaderboard = [] }) {
 
               {/* Scholar Avatar with Glowing Aura */}
               <div className={`dash-podium-avatar-wrap rank-${student.rank}`}>
-                <ScholarAvatar
-                  user={student.user}
-                  avatarOverride={student.avatar}
-                  size={isGold ? 66 : 56}
-                  className="dash-podium-avatar-img"
-                />
+                <div className="dash-podium-avatar-letter">{student.avatar}</div>
                 <div className="dash-podium-avatar-ring" />
               </div>
 
