@@ -358,6 +358,22 @@ export default function MaterialsPage() {
     }
   };
 
+  const handleDownloadNote = (mat) => {
+    try {
+      const element = document.createElement("a");
+      const content = mat.content_text || mat.raw_text || mat.title || "";
+      const file = new Blob([content], { type: "text/plain;charset=utf-8" });
+      element.href = URL.createObjectURL(file);
+      element.download = `${(mat.title || "study_note").replace(/[^a-zA-Z0-9_\u0980-\u09FF-]/g, "_")}.txt`;
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+      setSuccessMsg(`Downloaded "${mat.title}" as note file!`);
+    } catch {
+      setErrorMsg("Failed to download note file.");
+    }
+  };
+
   // Filtered courses
   const filteredCourses = useMemo(() => {
     if (!courseSearch.trim()) return courses;
@@ -1093,19 +1109,78 @@ export default function MaterialsPage() {
                             }
                           >
                             <div className="mat-card-header">
-                              <div className="mat-type-icon-box">
-                                {getMaterialTypeIcon(mat.material_type)}
+                              <div className="mat-header-lead">
+                                <div className="mat-type-icon-box">
+                                  {getMaterialTypeIcon(mat.material_type)}
+                                </div>
+                                <div className="mat-header-text">
+                                  <span className="mat-type-badge">
+                                    {mat.material_type.toUpperCase()}
+                                  </span>
+                                  <h4
+                                    className="mat-title-text"
+                                    title={mat.title}
+                                  >
+                                    {mat.title}
+                                  </h4>
+                                </div>
                               </div>
-                              <div className="mat-header-text">
-                                <span className="mat-type-badge">
-                                  {mat.material_type.toUpperCase()}
-                                </span>
-                                <h4
-                                  className="mat-title-text"
-                                  title={mat.title}
+
+                              {/* Top-Right Action Cluster (Download, PDF Report, Delete) */}
+                              <div
+                                className="mat-header-actions"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {(mat.file_url ||
+                                  mat.material_type === "document" ||
+                                  mat.material_type === "note") && (
+                                  <button
+                                    type="button"
+                                    className="mat-btn-top-action mat-btn-download"
+                                    onClick={() => {
+                                      if (mat.material_type === "note") {
+                                        handleDownloadNote(mat);
+                                      } else {
+                                        handleDownloadFile(mat);
+                                      }
+                                    }}
+                                    title={
+                                      downloadingFileId === mat.id
+                                        ? "Downloading..."
+                                        : mat.material_type === "note"
+                                          ? "Download Note (.txt)"
+                                          : "Download Document"
+                                    }
+                                    disabled={downloadingFileId === mat.id}
+                                  >
+                                    <Download size={14} />
+                                  </button>
+                                )}
+
+                                {isAnalyzed && (
+                                  <button
+                                    type="button"
+                                    className="mat-btn-top-action mat-btn-pdf"
+                                    onClick={() => handleDownloadPdfReport(mat)}
+                                    title={
+                                      exportingPdfId === mat.id
+                                        ? "Generating PDF..."
+                                        : "Download Academic PDF Report"
+                                    }
+                                    disabled={exportingPdfId === mat.id}
+                                  >
+                                    <FileDown size={14} />
+                                  </button>
+                                )}
+
+                                <button
+                                  type="button"
+                                  className="mat-btn-top-action mat-btn-delete"
+                                  onClick={() => handleDeleteMaterial(mat)}
+                                  title="Delete Material"
                                 >
-                                  {mat.title}
-                                </h4>
+                                  <Trash2 size={14} />
+                                </button>
                               </div>
                             </div>
 
@@ -1201,13 +1276,6 @@ export default function MaterialsPage() {
                                       </span>
                                     )}
                                   </div>
-                                  <p className="mat-note-desc">
-                                    {mat.content_text
-                                      ? mat.content_text.length > 120
-                                        ? `${mat.content_text.slice(0, 120)}...`
-                                        : mat.content_text
-                                      : "Personal study note. Click to open in Notepad editor to review or edit your notes."}
-                                  </p>
                                   {mat.content_text ? (
                                     <div
                                       className="mat-note-formatted-preview"
@@ -1291,51 +1359,17 @@ export default function MaterialsPage() {
                                   </button>
                                 )}
 
-                                {(mat.file_url ||
-                                  mat.material_type === "document") && (
+                                {isAnalyzed ? (
                                   <button
                                     type="button"
-                                    className="btn-icon-link"
-                                    onClick={() => handleDownloadFile(mat)}
-                                    title={
-                                      downloadingFileId === mat.id
-                                        ? "Downloading file..."
-                                        : "Download File"
+                                    className="btn-action-ai-report"
+                                    onClick={() =>
+                                      setSelectedAnalysisMaterial(mat)
                                     }
-                                    disabled={downloadingFileId === mat.id}
                                   >
-                                    <Download size={14} />
+                                    <Sparkles size={13} />
+                                    <span>Study Analysis</span>
                                   </button>
-                                )}
-
-                                {isAnalyzed ? (
-                                  <>
-                                    <button
-                                      type="button"
-                                      className="btn-icon-link btn-icon-pdf"
-                                      onClick={() =>
-                                        handleDownloadPdfReport(mat)
-                                      }
-                                      title={
-                                        exportingPdfId === mat.id
-                                          ? "Generating PDF..."
-                                          : "Download Academic PDF Report"
-                                      }
-                                      disabled={exportingPdfId === mat.id}
-                                    >
-                                      <FileDown size={14} />
-                                    </button>
-                                    <button
-                                      type="button"
-                                      className="btn-action-ai-report"
-                                      onClick={() =>
-                                        setSelectedAnalysisMaterial(mat)
-                                      }
-                                    >
-                                      <Sparkles size={13} />
-                                      <span>Study Analysis</span>
-                                    </button>
-                                  </>
                                 ) : (
                                   <button
                                     type="button"
@@ -1353,15 +1387,6 @@ export default function MaterialsPage() {
                                     </span>
                                   </button>
                                 )}
-
-                                <button
-                                  type="button"
-                                  className="btn-icon-danger"
-                                  onClick={() => handleDeleteMaterial(mat)}
-                                  title="Delete Material"
-                                >
-                                  <Trash2 size={14} />
-                                </button>
                               </div>
                             </div>
                           </div>

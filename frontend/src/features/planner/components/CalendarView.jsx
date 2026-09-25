@@ -182,19 +182,6 @@ export default function CalendarView({
     dailyHoursMap[d] = (dayMins / 60).toFixed(1);
   });
 
-  // Current time position (for red indicator line)
-  const now = new Date();
-  const currentMinutesFromStart =
-    now.getHours() * 60 + now.getMinutes() - START_HOUR * 60;
-  const showCurrentTimeLine =
-    currentWeekOffset === 0 &&
-    now.getHours() >= START_HOUR &&
-    now.getHours() <= END_HOUR;
-  const currentTimeTop = Math.max(
-    0,
-    currentMinutesFromStart * PIXELS_PER_MINUTE,
-  );
-
   return (
     <div className="planner-calendar-container">
       {/* Calendar Header / Navigation Bar */}
@@ -338,16 +325,6 @@ export default function CalendarView({
                         <div className="lane-half-hour-line" />
                       </div>
                     ))}
-
-                    {/* Live Current Time Line */}
-                    {day.isToday && showCurrentTimeLine && (
-                      <div
-                        className="current-time-indicator-line"
-                        style={{ top: `${currentTimeTop}px` }}
-                      >
-                        <span className="current-time-dot" />
-                      </div>
-                    )}
 
                     {/* Blocked Schedule Cards for this day */}
                     {daySchedules.map((schedule) => {
