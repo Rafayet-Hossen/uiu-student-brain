@@ -4,16 +4,13 @@ import {
   Pause,
   RotateCcw,
   CheckCircle2,
-  Coffee,
-  Flame,
-  Zap,
   BookOpen,
   Sparkles,
   Volume2,
   VolumeX,
   Plus,
-  ArrowRight,
-  Layers,
+  Clock,
+  SlidersHorizontal,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Button from "../../../components/Button";
@@ -23,7 +20,7 @@ const TIMER_MODES = [
   { id: "deep", label: "Deep Sprint (50m)", minutes: 50 },
   { id: "marathon", label: "Marathon (90m)", minutes: 90 },
   { id: "powerSession", label: "Extended (2h)", minutes: 120 },
-  { id: "custom", label: "Custom Time", minutes: 60 },
+  { id: "manual", label: "⏱️ Manual / Custom Time", minutes: 60 },
   { id: "shortBreak", label: "Break (5m)", minutes: 5 },
   { id: "longBreak", label: "Break (15m)", minutes: 15 },
   { id: "stopwatch", label: "Stopwatch", minutes: 0 },
@@ -37,7 +34,8 @@ export default function FocusTimer({
   availableSubjects = [],
 }) {
   const [activeMode, setActiveMode] = useState("standardFocus");
-  const [customMinutes, setCustomMinutes] = useState(60);
+  const [manualHours, setManualHours] = useState(0);
+  const [manualMinutes, setManualMinutes] = useState(25);
   const [totalSeconds, setTotalSeconds] = useState(25 * 60);
   const [secondsRemaining, setSecondsRemaining] = useState(25 * 60);
   const [stopwatchSeconds, setStopwatchSeconds] = useState(0);
@@ -60,44 +58,145 @@ export default function FocusTimer({
   const spokenMilestonesRef = useRef(new Set());
   const announcementTimeoutRef = useRef(null);
 
+  // Pre-load voices on component mount for Chromium / Safari
+  useEffect(() => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      const loadVoices = () => {
+        try {
+          window.speechSynthesis.getVoices();
+        } catch (e) {
+          // ignore
+        }
+      };
+      loadVoices();
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+  }, []);
+
+  // Web Audio chime / acoustic tone fallback
+  const playAudibleTone = (freq = 587.33, duration = 0.25) => {
+    if (!soundEnabled) return;
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      if (ctx.state === "suspended") {
+        ctx.resume();
+      }
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(
+        freq * 1.25,
+        ctx.currentTime + duration * 0.5,
+      );
+      gain.gain.setValueAtTime(0.35, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + duration);
+    } catch (e) {
+      console.warn("Web Audio tone not available", e);
+    }
+  };
+
+  const playCompletionSound = () => {
+    if (!soundEnabled) return;
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      if (ctx.state === "suspended") {
+        ctx.resume();
+      }
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+      osc.frequency.setValueAtTime(880, ctx.currentTime + 0.18); // A5
+      gain.gain.setValueAtTime(0.4, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.8);
+    } catch (e) {
+      console.warn("Web Audio completion chime error", e);
+    }
+  };
+
   // Text-To-Speech Voice Coach
   const speakText = (text) => {
     if (!soundEnabled) return;
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+
+    // Show visual announcement pill immediately
+    setVoiceAnnouncement(text);
+    if (announcementTimeoutRef.current) {
+      clearTimeout(announcementTimeoutRef.current);
+    }
+    announcementTimeoutRef.current = setTimeout(() => {
+      setVoiceAnnouncement("");
+    }, 7000);
+
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+      return;
+    }
+
     try {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 1.0;
-      utterance.pitch = 1.0;
-      utterance.volume = 1.0;
-
-      const voices = window.speechSynthesis.getVoices();
-      const preferredVoice =
-        voices.find(
-          (v) =>
-            (v.name.includes("Natural") ||
-              v.name.includes("Google") ||
-              v.name.includes("Samantha") ||
-              v.name.includes("Zira") ||
-              v.name.includes("Jenny")) &&
-            v.lang.startsWith("en"),
-        ) || voices.find((v) => v.lang.startsWith("en"));
-
-      if (preferredVoice) {
-        utterance.voice = preferredVoice;
+      // Unfreeze any paused speech queue in Chrome
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      }
+      if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel();
       }
 
-      setVoiceAnnouncement(text);
-      if (announcementTimeoutRef.current) {
-        clearTimeout(announcementTimeoutRef.current);
-      }
-      announcementTimeoutRef.current = setTimeout(() => {
-        setVoiceAnnouncement("");
-      }, 6000);
+      setTimeout(() => {
+        try {
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.rate = 1.0;
+          utterance.pitch = 1.0;
+          utterance.volume = 1.0;
+          utterance.lang = "en-US";
 
-      window.speechSynthesis.speak(utterance);
+          const voices = window.speechSynthesis.getVoices() || [];
+          const preferredVoice =
+            voices.find(
+              (v) =>
+                (v.name.includes("Natural") ||
+                  v.name.includes("Google") ||
+                  v.name.includes("Samantha") ||
+                  v.name.includes("Zira") ||
+                  v.name.includes("Jenny") ||
+                  v.name.includes("David")) &&
+                v.lang.startsWith("en"),
+            ) || voices.find((v) => v.lang.startsWith("en"));
+
+          if (preferredVoice) {
+            utterance.voice = preferredVoice;
+          }
+
+          utterance.onend = () => {
+            window._activeSpeechUtterance = null;
+          };
+          utterance.onerror = (e) => {
+            console.warn("SpeechSynthesis error:", e);
+            window._activeSpeechUtterance = null;
+          };
+
+          // Retain reference on window to prevent Chromium garbage collection bug
+          window._activeSpeechUtterance = utterance;
+
+          window.speechSynthesis.resume();
+          window.speechSynthesis.speak(utterance);
+        } catch (innerErr) {
+          console.warn("Speech synthesis speak error:", innerErr);
+        }
+      }, 50);
     } catch (err) {
-      console.warn("Speech synthesis error:", err);
+      console.warn("Speech synthesis outer error:", err);
     }
   };
 
@@ -111,6 +210,7 @@ export default function FocusTimer({
     if (remaining === 0) {
       if (!spokenMilestonesRef.current.has("done")) {
         spokenMilestonesRef.current.add("done");
+        playAudibleTone(880, 0.4);
         speakText(
           activeMode.includes("Break")
             ? "Break finished! Ready for your next focus block."
@@ -124,6 +224,7 @@ export default function FocusTimer({
     if (remaining === 60 && total >= 180) {
       if (!spokenMilestonesRef.current.has("rem_60")) {
         spokenMilestonesRef.current.add("rem_60");
+        playAudibleTone(660, 0.2);
         speakText("One minute remaining. Finish up your current task.");
       }
     }
@@ -131,6 +232,7 @@ export default function FocusTimer({
     if (remaining === 300 && total >= 600) {
       if (!spokenMilestonesRef.current.has("rem_300")) {
         spokenMilestonesRef.current.add("rem_300");
+        playAudibleTone(550, 0.2);
         speakText("Five minutes left. Prepare to wrap up this focus block.");
       }
     }
@@ -138,6 +240,7 @@ export default function FocusTimer({
     if (remaining === 900 && total >= 2700) {
       if (!spokenMilestonesRef.current.has("rem_900")) {
         spokenMilestonesRef.current.add("rem_900");
+        playAudibleTone(520, 0.2);
         speakText("15 minutes remaining in your session.");
       }
     }
@@ -151,6 +254,7 @@ export default function FocusTimer({
         !spokenMilestonesRef.current.has("pct_25")
       ) {
         spokenMilestonesRef.current.add("pct_25");
+        playAudibleTone(440, 0.15);
         speakText(
           "Quarter mark reached. 25 percent completed. Maintain your steady rhythm.",
         );
@@ -160,6 +264,7 @@ export default function FocusTimer({
         !spokenMilestonesRef.current.has("pct_50")
       ) {
         spokenMilestonesRef.current.add("pct_50");
+        playAudibleTone(440, 0.15);
         speakText(
           "Halfway point! 50 percent of your focus session is completed. Great stamina.",
         );
@@ -169,6 +274,7 @@ export default function FocusTimer({
         !spokenMilestonesRef.current.has("pct_75")
       ) {
         spokenMilestonesRef.current.add("pct_75");
+        playAudibleTone(440, 0.15);
         speakText(
           "Three quarters completed. 75 percent done. You are in the final stretch, keep pushing.",
         );
@@ -181,6 +287,7 @@ export default function FocusTimer({
         !spokenMilestonesRef.current.has("pct_50")
       ) {
         spokenMilestonesRef.current.add("pct_50");
+        playAudibleTone(440, 0.15);
         speakText(
           "Halfway mark! 50 percent of your study block is complete. Stay in the zone.",
         );
@@ -196,6 +303,8 @@ export default function FocusTimer({
         const secs = activeSession.duration_minutes * 60;
         setTotalSeconds(secs);
         setSecondsRemaining(secs);
+        setManualHours(Math.floor(activeSession.duration_minutes / 60));
+        setManualMinutes(activeSession.duration_minutes % 60);
         spokenMilestonesRef.current.clear();
       }
     }
@@ -209,12 +318,48 @@ export default function FocusTimer({
     spokenMilestonesRef.current.clear();
     if (mode.id === "stopwatch") {
       setStopwatchSeconds(0);
+    } else if (mode.id === "manual") {
+      const totalMins = manualHours * 60 + manualMinutes;
+      const validMins = totalMins > 0 ? totalMins : 60;
+      setTotalSeconds(validMins * 60);
+      setSecondsRemaining(validMins * 60);
     } else {
-      const mins = mode.id === "custom" ? customMinutes : mode.minutes;
-      const secs = mins * 60;
+      const secs = mode.minutes * 60;
       setTotalSeconds(secs);
       setSecondsRemaining(secs);
+      setManualHours(Math.floor(mode.minutes / 60));
+      setManualMinutes(mode.minutes % 60);
     }
+  };
+
+  // Manual time update handler
+  const updateManualDuration = (hrs, mins) => {
+    const h = Math.max(0, Math.min(12, parseInt(hrs, 10) || 0));
+    const m = Math.max(0, Math.min(59, parseInt(mins, 10) || 0));
+    setManualHours(h);
+    setManualMinutes(m);
+    const totalMins = h * 60 + m;
+    const finalMins = totalMins > 0 ? totalMins : 1;
+    if (!isActive) {
+      setTotalSeconds(finalMins * 60);
+      setSecondsRemaining(finalMins * 60);
+      spokenMilestonesRef.current.clear();
+    }
+  };
+
+  // Quick adjust +/- minutes
+  const handleQuickAdjust = (deltaMinutes) => {
+    if (isActive) return;
+    const currentMins = Math.max(1, Math.round(totalSeconds / 60));
+    const nextMins = Math.max(1, currentMins + deltaMinutes);
+    const h = Math.floor(nextMins / 60);
+    const m = nextMins % 60;
+    setManualHours(h);
+    setManualMinutes(m);
+    setTotalSeconds(nextMins * 60);
+    setSecondsRemaining(nextMins * 60);
+    spokenMilestonesRef.current.clear();
+    playAudibleTone(520, 0.1);
   };
 
   // Timer Tick Effect
@@ -227,6 +372,7 @@ export default function FocusTimer({
             // Spoken milestones for stopwatch: every 15 minutes
             if (next > 0 && next % 900 === 0) {
               const mins = Math.floor(next / 60);
+              playAudibleTone(520, 0.2);
               speakText(`You have been studying for ${mins} minutes. Great focus.`);
             }
             return next;
@@ -254,29 +400,10 @@ export default function FocusTimer({
     return () => clearInterval(timerRef.current);
   }, [isActive, activeMode, totalSeconds, soundEnabled]);
 
-  const playCompletionSound = () => {
-    if (!soundEnabled) return;
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
-      osc.frequency.setValueAtTime(880, ctx.currentTime + 0.15); // A5
-      gain.gain.setValueAtTime(0.3, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.7);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.7);
-    } catch (e) {
-      console.warn("Web Audio chime not supported or allowed", e);
-    }
-  };
-
   const handleTogglePlay = () => {
     const nextActive = !isActive;
     setIsActive(nextActive);
+    playAudibleTone(nextActive ? 620 : 420, 0.15);
     if (nextActive) {
       if (
         activeMode !== "stopwatch" &&
@@ -297,22 +424,31 @@ export default function FocusTimer({
     setIsActive(false);
     setShowCompletionOptions(false);
     spokenMilestonesRef.current.clear();
+    playAudibleTone(440, 0.15);
     speakText("Timer reset.");
     if (activeMode === "stopwatch") {
       setStopwatchSeconds(0);
+    } else if (activeMode === "manual") {
+      const totalMins = manualHours * 60 + manualMinutes;
+      const validMins = totalMins > 0 ? totalMins : 60;
+      setTotalSeconds(validMins * 60);
+      setSecondsRemaining(validMins * 60);
     } else {
       const mode =
         TIMER_MODES.find((m) => m.id === activeMode) || TIMER_MODES[0];
-      const mins = mode.id === "custom" ? customMinutes : mode.minutes;
-      const secs = mins * 60;
+      const secs = mode.minutes * 60;
       setTotalSeconds(secs);
       setSecondsRemaining(secs);
     }
   };
 
   const formatTime = (secs) => {
-    const mins = Math.floor(secs / 60);
+    const hrs = Math.floor(secs / 3600);
+    const mins = Math.floor((secs % 3600) / 60);
     const remainderSecs = secs % 60;
+    if (hrs > 0) {
+      return `${String(hrs).padStart(2, "0")}:${String(mins).padStart(2, "0")}:${String(remainderSecs).padStart(2, "0")}`;
+    }
     return `${String(mins).padStart(2, "0")}:${String(remainderSecs).padStart(2, "0")}`;
   };
 
@@ -391,49 +527,72 @@ export default function FocusTimer({
         ))}
       </div>
 
-      {/* Custom Duration Selector */}
-      {activeMode === "custom" && (
+      {/* Manual / Custom Duration Input Box */}
+      {activeMode === "manual" && (
         <div className="focus-custom-duration-row">
-          <label className="text-xs text-muted font-medium">Custom Duration:</label>
-          <div className="custom-duration-inputs">
-            <input
-              type="number"
-              min="1"
-              max="720"
-              value={customMinutes}
-              onChange={(e) => {
-                const val = Math.max(1, Math.min(720, parseInt(e.target.value) || 1));
-                setCustomMinutes(val);
-                if (!isActive) {
-                  setTotalSeconds(val * 60);
-                  setSecondsRemaining(val * 60);
-                  spokenMilestonesRef.current.clear();
-                }
-              }}
-              className="form-input form-input-sm custom-mins-input"
-            />
-            <span className="text-xs text-muted font-semibold">
-              mins ({Math.floor(customMinutes / 60)}h {customMinutes % 60}m)
+          <div className="manual-time-inputs-cluster">
+            <span className="manual-time-title">
+              <Clock size={15} /> Set Duration:
+            </span>
+
+            <div className="manual-time-field">
+              <input
+                type="number"
+                min="0"
+                max="12"
+                value={manualHours}
+                onChange={(e) => updateManualDuration(e.target.value, manualMinutes)}
+                className="form-input form-input-sm manual-num-input"
+                disabled={isActive}
+              />
+              <span className="manual-time-unit">hr</span>
+            </div>
+
+            <span className="manual-time-colon">:</span>
+
+            <div className="manual-time-field">
+              <input
+                type="number"
+                min="0"
+                max="59"
+                value={manualMinutes}
+                onChange={(e) => updateManualDuration(manualHours, e.target.value)}
+                className="form-input form-input-sm manual-num-input"
+                disabled={isActive}
+              />
+              <span className="manual-time-unit">min</span>
+            </div>
+
+            <span className="manual-time-total-tag">
+              Total: <strong>{manualHours * 60 + manualMinutes} mins</strong>
             </span>
           </div>
+
           <div className="custom-duration-presets">
-            {[30, 45, 60, 90, 120, 180, 300].map((presetMins) => (
-              <button
-                key={presetMins}
-                type="button"
-                className={`btn-chip-preset ${customMinutes === presetMins ? "active" : ""}`}
-                onClick={() => {
-                  setCustomMinutes(presetMins);
-                  if (!isActive) {
-                    setTotalSeconds(presetMins * 60);
-                    setSecondsRemaining(presetMins * 60);
-                    spokenMilestonesRef.current.clear();
-                  }
-                }}
-              >
-                {presetMins >= 60 ? `${presetMins / 60}h` : `${presetMins}m`}
-              </button>
-            ))}
+            <span className="text-xs text-muted font-medium mr-1">Presets:</span>
+            {[
+              { label: "15m", h: 0, m: 15 },
+              { label: "30m", h: 0, m: 30 },
+              { label: "45m", h: 0, m: 45 },
+              { label: "1 hr", h: 1, m: 0 },
+              { label: "1.5 hr", h: 1, m: 30 },
+              { label: "2 hr", h: 2, m: 0 },
+              { label: "3 hr", h: 3, m: 0 },
+              { label: "5 hr (300m)", h: 5, m: 0 },
+            ].map((p) => {
+              const isMatch = manualHours === p.h && manualMinutes === p.m;
+              return (
+                <button
+                  key={p.label}
+                  type="button"
+                  className={`btn-chip-preset ${isMatch ? "active" : ""}`}
+                  onClick={() => updateManualDuration(p.h, p.m)}
+                  disabled={isActive}
+                >
+                  {p.label}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
@@ -472,10 +631,69 @@ export default function FocusTimer({
                 ? "Focus Block In Progress"
                 : secondsRemaining === 0
                   ? "Session Target Completed"
-                  : "Ready to Begin"}
+                  : activeMode === "manual"
+                    ? "Manual Time Ready to Start"
+                    : "Ready to Begin"}
             </span>
           </div>
         </div>
+
+        {/* Quick Adjust Buttons (available when paused or idle) */}
+        {!isActive && activeMode !== "stopwatch" && (
+          <div className="focus-quick-adjust-bar">
+            <span className="quick-adjust-label">Quick Adjust:</span>
+            <button
+              type="button"
+              className="btn-quick-adjust"
+              onClick={() => handleQuickAdjust(-15)}
+              disabled={totalSeconds <= 15 * 60}
+              title="Subtract 15 minutes"
+            >
+              -15m
+            </button>
+            <button
+              type="button"
+              className="btn-quick-adjust"
+              onClick={() => handleQuickAdjust(-5)}
+              disabled={totalSeconds <= 5 * 60}
+              title="Subtract 5 minutes"
+            >
+              -5m
+            </button>
+            <button
+              type="button"
+              className="btn-quick-adjust"
+              onClick={() => handleQuickAdjust(5)}
+              title="Add 5 minutes"
+            >
+              +5m
+            </button>
+            <button
+              type="button"
+              className="btn-quick-adjust"
+              onClick={() => handleQuickAdjust(15)}
+              title="Add 15 minutes"
+            >
+              +15m
+            </button>
+            <button
+              type="button"
+              className="btn-quick-adjust"
+              onClick={() => handleQuickAdjust(30)}
+              title="Add 30 minutes"
+            >
+              +30m
+            </button>
+            <button
+              type="button"
+              className="btn-quick-adjust"
+              onClick={() => handleQuickAdjust(60)}
+              title="Add 1 hour"
+            >
+              +1h
+            </button>
+          </div>
+        )}
 
         {/* Action Controls */}
         <div className="focus-timer-controls-row">
@@ -507,6 +725,7 @@ export default function FocusTimer({
               setSoundEnabled(next);
               localStorage.setItem("student_brain_notif_sound", String(next));
               if (next) {
+                playAudibleTone(660, 0.2);
                 speakText("Voice coach enabled. Sound guidance active.");
               } else {
                 if (typeof window !== "undefined" && "speechSynthesis" in window) {
@@ -514,9 +733,26 @@ export default function FocusTimer({
                 }
               }
             }}
-            title={soundEnabled ? "Voice coach enabled (click to mute)" : "Enable voice coach & audio"}
+            title={soundEnabled ? "Voice coach active (click to mute)" : "Enable voice coach & audio"}
           >
             {soundEnabled ? <Volume2 size={18} /> : <VolumeX size={18} />}
+          </button>
+
+          <button
+            type="button"
+            className="btn-timer-test-voice"
+            onClick={() => {
+              if (!soundEnabled) {
+                setSoundEnabled(true);
+                localStorage.setItem("student_brain_notif_sound", "true");
+              }
+              playAudibleTone(660, 0.2);
+              speakText("Voice coach is active and ready to guide your focus session.");
+            }}
+            title="Test Voice Coach Audio"
+          >
+            <Sparkles size={14} />
+            <span>Test Voice</span>
           </button>
         </div>
 
