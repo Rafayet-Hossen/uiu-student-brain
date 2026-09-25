@@ -100,7 +100,7 @@ export default function ActiveSessionBanner({
       </div>
 
       <div className="alert-content-right">
-        <Link to="/study-center?tab=tracker">
+        <Link to="/focustimer">
           <Button
             variant="primary"
             size="md"

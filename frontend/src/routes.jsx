@@ -113,6 +113,24 @@ export default function AppRoutes() {
           }
         />
         <Route
+          path="/focustimer"
+          element={
+            <Navigate to="/study-center?tab=tracker&subtab=timer" replace />
+          }
+        />
+        <Route
+          path="/focus-timer"
+          element={
+            <Navigate to="/study-center?tab=tracker&subtab=timer" replace />
+          }
+        />
+        <Route
+          path="/focus"
+          element={
+            <Navigate to="/study-center?tab=tracker&subtab=timer" replace />
+          }
+        />
+        <Route
           path="/analytics"
           element={<Navigate to="/study-center?tab=analytics" replace />}
         />

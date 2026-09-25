@@ -5,12 +5,10 @@ import {
   RotateCcw,
   CheckCircle2,
   BookOpen,
-  Sparkles,
   Volume2,
   VolumeX,
   Plus,
   Clock,
-  SlidersHorizontal,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Button from "../../../components/Button";
@@ -73,7 +71,7 @@ export default function FocusTimer({
     }
   }, []);
 
-  // Web Audio chime / acoustic tone fallback
+  // Web Audio chime / tone fallback
   const playAudibleTone = (freq = 587.33, duration = 0.25) => {
     if (!soundEnabled) return;
     try {
@@ -114,8 +112,8 @@ export default function FocusTimer({
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = "sine";
-      osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
-      osc.frequency.setValueAtTime(880, ctx.currentTime + 0.18); // A5
+      osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+      osc.frequency.setValueAtTime(880, ctx.currentTime + 0.18);
       gain.gain.setValueAtTime(0.4, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
       osc.connect(gain);
@@ -125,6 +123,27 @@ export default function FocusTimer({
     } catch (e) {
       console.warn("Web Audio completion chime error", e);
     }
+  };
+
+  // Convert seconds into natural spoken English (e.g. "30 seconds", "2 minutes and 30 seconds", "1 hour")
+  const getSpokenTimeText = (secs) => {
+    const hrs = Math.floor(secs / 3600);
+    const mins = Math.floor((secs % 3600) / 60);
+    const remainderSecs = secs % 60;
+
+    if (hrs > 0 && mins > 0) {
+      return `${hrs} hour${hrs > 1 ? "s" : ""} and ${mins} minute${mins > 1 ? "s" : ""}`;
+    }
+    if (hrs > 0 && mins === 0) {
+      return `${hrs} hour${hrs > 1 ? "s" : ""}`;
+    }
+    if (mins > 0 && remainderSecs > 0) {
+      return `${mins} minute${mins > 1 ? "s" : ""} and ${remainderSecs} second${remainderSecs > 1 ? "s" : ""}`;
+    }
+    if (mins > 0 && remainderSecs === 0) {
+      return `${mins} minute${mins > 1 ? "s" : ""}`;
+    }
+    return `${remainderSecs} second${remainderSecs > 1 ? "s" : ""}`;
   };
 
   // Text-To-Speech Voice Coach
@@ -145,7 +164,6 @@ export default function FocusTimer({
     }
 
     try {
-      // Unfreeze any paused speech queue in Chrome
       if (window.speechSynthesis.paused) {
         window.speechSynthesis.resume();
       }
@@ -186,7 +204,7 @@ export default function FocusTimer({
             window._activeSpeechUtterance = null;
           };
 
-          // Retain reference on window to prevent Chromium garbage collection bug
+          // Retain reference to prevent Chromium garbage collection
           window._activeSpeechUtterance = utterance;
 
           window.speechSynthesis.resume();
@@ -200,17 +218,17 @@ export default function FocusTimer({
     }
   };
 
-  // Smart percentage-based milestone checker
+  // Smart percentage-based & clock-accurate milestone checker
   const checkMilestoneSpeech = (remaining, total) => {
     if (total <= 0 || !soundEnabled) return;
     const elapsed = total - remaining;
     const pct = Math.floor((elapsed / total) * 100);
 
-    // 1. Completion
+    // 1. Completion milestone (0 seconds remaining)
     if (remaining === 0) {
       if (!spokenMilestonesRef.current.has("done")) {
         spokenMilestonesRef.current.add("done");
-        playAudibleTone(880, 0.4);
+        playCompletionSound();
         speakText(
           activeMode.includes("Break")
             ? "Break finished! Ready for your next focus block."
@@ -220,77 +238,67 @@ export default function FocusTimer({
       return;
     }
 
-    // 2. Final countdowns
-    if (remaining === 60 && total >= 180) {
-      if (!spokenMilestonesRef.current.has("rem_60")) {
-        spokenMilestonesRef.current.add("rem_60");
-        playAudibleTone(660, 0.2);
-        speakText("One minute remaining. Finish up your current task.");
-      }
+    // 2. 50% Halfway Milestone (Triggers for ANY duration, e.g. 1m, 5m, 25m, 1h, 5h)
+    if (pct >= 50 && !spokenMilestonesRef.current.has("pct_50")) {
+      spokenMilestonesRef.current.add("pct_50");
+      playAudibleTone(587, 0.25);
+      const timeLeft = getSpokenTimeText(remaining);
+      speakText(`50 percent completed. ${timeLeft} remaining.`);
+      return;
     }
 
+    // 3. 75% Milestone (Triggers for ANY duration)
+    if (pct >= 75 && !spokenMilestonesRef.current.has("pct_75")) {
+      spokenMilestonesRef.current.add("pct_75");
+      playAudibleTone(660, 0.25);
+      const timeLeft = getSpokenTimeText(remaining);
+      speakText(`75 percent completed. ${timeLeft} left.`);
+      return;
+    }
+
+    // 4. 25% Milestone (for sessions of 2 minutes or longer)
+    if (total >= 120 && pct >= 25 && !spokenMilestonesRef.current.has("pct_25")) {
+      spokenMilestonesRef.current.add("pct_25");
+      playAudibleTone(520, 0.2);
+      const timeLeft = getSpokenTimeText(remaining);
+      speakText(`25 percent completed. ${timeLeft} left.`);
+      return;
+    }
+
+    // 5. Fixed Clock Reminders (when not immediately overlapping with percentage alerts)
+    // 5 minutes remaining (if total >= 10 mins)
     if (remaining === 300 && total >= 600) {
       if (!spokenMilestonesRef.current.has("rem_300")) {
         spokenMilestonesRef.current.add("rem_300");
         playAudibleTone(550, 0.2);
-        speakText("Five minutes left. Prepare to wrap up this focus block.");
+        speakText("5 minutes left. Prepare to wrap up.");
       }
     }
 
-    if (remaining === 900 && total >= 2700) {
-      if (!spokenMilestonesRef.current.has("rem_900")) {
-        spokenMilestonesRef.current.add("rem_900");
-        playAudibleTone(520, 0.2);
-        speakText("15 minutes remaining in your session.");
+    // 1 minute remaining (if total >= 180s)
+    if (remaining === 60 && total >= 180) {
+      if (!spokenMilestonesRef.current.has("rem_60")) {
+        spokenMilestonesRef.current.add("rem_60");
+        playAudibleTone(660, 0.2);
+        speakText("1 minute left. Begin wrapping up your thoughts.");
       }
     }
 
-    // 3. Percentage milestones
-    // Long sessions (>= 60 minutes, e.g. 1 hour, 2 hours, 5 hours):
-    if (total >= 3600) {
-      if (
-        pct >= 25 &&
-        pct < 30 &&
-        !spokenMilestonesRef.current.has("pct_25")
-      ) {
-        spokenMilestonesRef.current.add("pct_25");
-        playAudibleTone(440, 0.15);
-        speakText(
-          "Quarter mark reached. 25 percent completed. Maintain your steady rhythm.",
-        );
-      } else if (
-        pct >= 50 &&
-        pct < 55 &&
-        !spokenMilestonesRef.current.has("pct_50")
-      ) {
-        spokenMilestonesRef.current.add("pct_50");
-        playAudibleTone(440, 0.15);
-        speakText(
-          "Halfway point! 50 percent of your focus session is completed. Great stamina.",
-        );
-      } else if (
-        pct >= 75 &&
-        pct < 80 &&
-        !spokenMilestonesRef.current.has("pct_75")
-      ) {
-        spokenMilestonesRef.current.add("pct_75");
-        playAudibleTone(440, 0.15);
-        speakText(
-          "Three quarters completed. 75 percent done. You are in the final stretch, keep pushing.",
-        );
+    // 30 seconds remaining (if total >= 90s, so not overlapping with 50% of a 60s session)
+    if (remaining === 30 && total >= 90) {
+      if (!spokenMilestonesRef.current.has("rem_30")) {
+        spokenMilestonesRef.current.add("rem_30");
+        playAudibleTone(660, 0.2);
+        speakText("30 seconds left.");
       }
-    } else if (total >= 1200) {
-      // Medium sessions (20m to 59m):
-      if (
-        pct >= 50 &&
-        pct < 55 &&
-        !spokenMilestonesRef.current.has("pct_50")
-      ) {
-        spokenMilestonesRef.current.add("pct_50");
-        playAudibleTone(440, 0.15);
-        speakText(
-          "Halfway mark! 50 percent of your study block is complete. Stay in the zone.",
-        );
+    }
+
+    // 10 seconds remaining (for sessions >= 30s)
+    if (remaining === 10 && total >= 30) {
+      if (!spokenMilestonesRef.current.has("rem_10")) {
+        spokenMilestonesRef.current.add("rem_10");
+        playAudibleTone(700, 0.15);
+        speakText("10 seconds remaining.");
       }
     }
   };
@@ -369,7 +377,6 @@ export default function FocusTimer({
         if (activeMode === "stopwatch") {
           setStopwatchSeconds((prev) => {
             const next = prev + 1;
-            // Spoken milestones for stopwatch: every 15 minutes
             if (next > 0 && next % 900 === 0) {
               const mins = Math.floor(next / 60);
               playAudibleTone(520, 0.2);
@@ -409,8 +416,9 @@ export default function FocusTimer({
         activeMode !== "stopwatch" &&
         totalSeconds - secondsRemaining === 0
       ) {
+        const timeText = getSpokenTimeText(totalSeconds);
         speakText(
-          `Focus session started for ${subject || "study"}. Eliminate distractions and stay in flow.`,
+          `Focus session started for ${timeText}. Stay in flow.`,
         );
       } else {
         speakText("Focus session resumed.");
@@ -736,23 +744,6 @@ export default function FocusTimer({
             title={soundEnabled ? "Voice coach active (click to mute)" : "Enable voice coach & audio"}
           >
             {soundEnabled ? <Volume2 size={18} /> : <VolumeX size={18} />}
-          </button>
-
-          <button
-            type="button"
-            className="btn-timer-test-voice"
-            onClick={() => {
-              if (!soundEnabled) {
-                setSoundEnabled(true);
-                localStorage.setItem("student_brain_notif_sound", "true");
-              }
-              playAudibleTone(660, 0.2);
-              speakText("Voice coach is active and ready to guide your focus session.");
-            }}
-            title="Test Voice Coach Audio"
-          >
-            <Sparkles size={14} />
-            <span>Test Voice</span>
           </button>
         </div>
 

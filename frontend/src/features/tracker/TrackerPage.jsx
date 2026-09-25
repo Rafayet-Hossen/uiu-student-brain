@@ -83,6 +83,15 @@ export default function TrackerPage() {
     return "scheduled";
   });
 
+  useEffect(() => {
+    if (
+      subtabParam &&
+      ["timer", "scheduled", "rewards", "history"].includes(subtabParam)
+    ) {
+      setActiveTab(subtabParam);
+    }
+  }, [subtabParam]);
+
   async function loadTrackerData() {
     setLoading(true);
     setError("");

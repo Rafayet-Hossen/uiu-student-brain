@@ -39,6 +39,7 @@ export default function Navbar() {
   const navLinks = [
     { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { to: "/study-center", label: "Study Center", icon: BookOpen },
+    { to: "/focustimer", label: "Focus Timer", icon: Timer },
     { to: "/grades", label: "Grade Planner", icon: GraduationCap },
     { to: "/community", label: "Community", icon: Users },
   ];
@@ -70,9 +71,19 @@ export default function Navbar() {
   }, [location.pathname]);
 
   const isLinkActive = (to) => {
+    if (to === "/focustimer") {
+      return (
+        location.pathname === "/focustimer" ||
+        location.pathname === "/focus-timer" ||
+        location.pathname === "/focus" ||
+        (location.pathname.startsWith("/study-center") &&
+          location.search.includes("subtab=timer"))
+      );
+    }
     if (to === "/study-center") {
       return (
-        location.pathname.startsWith("/study-center") ||
+        (location.pathname.startsWith("/study-center") &&
+          !location.search.includes("subtab=timer")) ||
         location.pathname === "/materials" ||
         location.pathname === "/planner" ||
         location.pathname === "/tracker" ||
