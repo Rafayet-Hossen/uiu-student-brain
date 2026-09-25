@@ -55,12 +55,27 @@ class MobileAppHandler(SimpleHTTPRequestHandler):
         # Check if requested static file exists in dist
         clean_path = self.path.split("?")[0]
         file_path = os.path.join(DIST_DIR, clean_path.lstrip("/"))
-        if os.path.isfile(file_path):
+        if os.path.isfile(file_path) and not clean_path.endswith(".html"):
             return super().do_GET()
 
-        # SPA Fallback: serve index.html for client-side routes
-        self.path = "/index.html"
-        return super().do_GET()
+        # SPA Fallback: serve index.html directly with strict NO-CACHE headers
+        index_path = os.path.join(DIST_DIR, "index.html")
+        try:
+            with open(index_path, "rb") as f:
+                content = f.read()
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(content)))
+            self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+            self.send_header("Pragma", "no-cache")
+            self.send_header("Expires", "0")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            super().end_headers()
+            self.wfile.write(content)
+        except Exception as e:
+            self.send_response(500)
+            super().end_headers()
+            self.wfile.write(f"Error reading index.html: {e}".encode())
 
     def do_POST(self):
         self.proxy_write("POST")
