@@ -1,6 +1,6 @@
-import { useMemo } from "react";
-import { motion } from "framer-motion";
-import { BarChart3, TrendingUp, PieChart, Sparkles, Award, CheckCircle2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { BarChart3, TrendingUp, PieChart, Sparkles, Award, CheckCircle2, Flame } from "lucide-react";
 import StudyHeatmap from "./StudyHeatmap";
 
 export default function StudyInsights({
@@ -9,6 +9,8 @@ export default function StudyInsights({
   currentStreak = 0,
   totalHours = "0.0",
 }) {
+  const [hoveredBar, setHoveredBar] = useState(null);
+
   // 1. Calculate 7-day Weekly Trend (Mon through Sun)
   const weeklyTrendData = useMemo(() => {
     const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -64,13 +66,6 @@ export default function StudyInsights({
       });
     }
 
-    const colors = [
-      { bg: "linear-gradient(90deg, #f26522, #ea580c)", text: "#f26522" },
-      { bg: "linear-gradient(90deg, #10b981, #059669)", text: "#059669" },
-      { bg: "linear-gradient(90deg, #f59e0b, #d97706)", text: "#d97706" },
-      { bg: "linear-gradient(90deg, #ec4899, #db2777)", text: "#db2777" },
-    ];
-
     const sorted = Object.entries(subjectMins)
       .map(([name, mins]) => ({
         name,
@@ -124,14 +119,20 @@ export default function StudyInsights({
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
+          whileHover={{ y: -6, scale: 1.015 }}
+          transition={{ duration: 0.3 }}
           className="dash-card-24 dash-analytics-card"
         >
+          <div className="dash-card-glow glow-orange" />
+
           <div className="dash-analytics-card-header">
             <div className="flex items-center gap-2">
-              <div className="dash-analytics-icon-badge orange">
+              <motion.div
+                whileHover={{ rotate: 12, scale: 1.15 }}
+                className="dash-analytics-icon-badge orange"
+              >
                 <TrendingUp size={16} />
-              </div>
+              </motion.div>
               <strong className="dash-analytics-card-title">Weekly Focus Trend</strong>
             </div>
             <span className="dash-analytics-tag">Last 7 Days</span>
@@ -140,15 +141,34 @@ export default function StudyInsights({
           <div className="dash-bar-chart-container">
             {weeklyTrendData.days.map((item, idx) => {
               const heightPct = Math.max(8, Math.round((item.minutes / weeklyTrendData.maxMins) * 100));
+              const isHovered = hoveredBar === idx;
+
               return (
-                <div key={idx} className="dash-bar-col">
+                <div
+                  key={idx}
+                  className="dash-bar-col"
+                  onMouseEnter={() => setHoveredBar(idx)}
+                  onMouseLeave={() => setHoveredBar(null)}
+                >
+                  <AnimatePresence>
+                    {isHovered && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 4, scale: 0.85 }}
+                        animate={{ opacity: 1, y: -2, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.85 }}
+                        className="dash-bar-floating-tooltip"
+                      >
+                        <span>{item.minutes}m</span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                   <div className="dash-bar-track">
                     <motion.div
                       initial={{ height: 0 }}
                       animate={{ height: `${heightPct}%` }}
-                      transition={{ duration: 0.6, delay: idx * 0.08 }}
+                      transition={{ duration: 0.7, delay: idx * 0.07, type: "spring", stiffness: 100, damping: 15 }}
                       className={`dash-bar-fill ${item.isToday ? "active-today" : ""}`}
-                      title={`${item.day} (${item.date}): ${item.minutes} mins`}
                     />
                   </div>
                   <span className={`dash-bar-day-lbl ${item.isToday ? "is-today" : ""}`}>
@@ -168,14 +188,20 @@ export default function StudyInsights({
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
+          whileHover={{ y: -6, scale: 1.015 }}
+          transition={{ duration: 0.3, delay: 0.08 }}
           className="dash-card-24 dash-analytics-card"
         >
+          <div className="dash-card-glow glow-purple" />
+
           <div className="dash-analytics-card-header">
             <div className="flex items-center gap-2">
-              <div className="dash-analytics-icon-badge emerald">
+              <motion.div
+                whileHover={{ rotate: 12, scale: 1.15 }}
+                className="dash-analytics-icon-badge emerald"
+              >
                 <PieChart size={16} />
-              </div>
+              </motion.div>
               <strong className="dash-analytics-card-title">Subject Distribution</strong>
             </div>
             <span className="dash-analytics-tag">Curriculum Focus</span>
@@ -186,14 +212,17 @@ export default function StudyInsights({
               subjectDistribution.subjects.map((sub, sIdx) => (
                 <div key={sIdx} className="dash-dist-item">
                   <div className="dash-dist-header">
-                    <span className="dash-dist-name">{sub.name}</span>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className={`dash-dist-dot color-${sIdx}`} />
+                      <span className="dash-dist-name" title={sub.name}>{sub.name}</span>
+                    </div>
                     <strong className="dash-dist-val">{sub.hours}h ({sub.percent}%)</strong>
                   </div>
                   <div className="dash-dist-track">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${sub.percent}%` }}
-                      transition={{ duration: 0.6, delay: sIdx * 0.1 }}
+                      transition={{ duration: 0.8, delay: sIdx * 0.1, ease: "easeOut" }}
                       className={`dash-dist-fill color-${sIdx}`}
                     />
                   </div>
@@ -215,14 +244,20 @@ export default function StudyInsights({
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
+          whileHover={{ y: -6, scale: 1.015 }}
+          transition={{ duration: 0.3, delay: 0.16 }}
           className="dash-card-24 dash-analytics-card"
         >
+          <div className="dash-card-glow glow-emerald" />
+
           <div className="dash-analytics-card-header">
             <div className="flex items-center gap-2">
-              <div className="dash-analytics-icon-badge amber">
+              <motion.div
+                whileHover={{ rotate: 12, scale: 1.15 }}
+                className="dash-analytics-icon-badge amber"
+              >
                 <Award size={16} />
-              </div>
+              </motion.div>
               <strong className="dash-analytics-card-title">Productivity Score</strong>
             </div>
             <span className="dash-analytics-tag">Scholar Index</span>
@@ -230,6 +265,7 @@ export default function StudyInsights({
 
           <div className="dash-productivity-body">
             <div className="dash-prod-gauge-box">
+              <div className="dash-prod-glow-pulse" />
               <svg className="dash-prod-svg" viewBox="0 0 100 100">
                 <circle
                   cx="50"
@@ -250,12 +286,17 @@ export default function StudyInsights({
                   strokeDasharray={2 * Math.PI * 40}
                   strokeDashoffset={2 * Math.PI * 40 * (1 - productivityScore / 100)}
                   transform="rotate(-90 50 50)"
-                  style={{ transition: "stroke-dashoffset 0.8s ease" }}
+                  style={{
+                    transition: "stroke-dashoffset 1.2s cubic-bezier(0.16, 1, 0.3, 1)",
+                    filter: "drop-shadow(0 0 8px rgba(16, 185, 129, 0.45))",
+                  }}
                 />
                 <defs>
                   <linearGradient id="prodGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#f26522" />
-                    <stop offset="100%" stopColor="#10b981" />
+                    <stop offset="0%" stopColor="#f97316" />
+                    <stop offset="40%" stopColor="#eab308" />
+                    <stop offset="80%" stopColor="#10b981" />
+                    <stop offset="100%" stopColor="#06b6d4" />
                   </linearGradient>
                 </defs>
               </svg>
@@ -267,7 +308,7 @@ export default function StudyInsights({
 
             <div className="dash-prod-verdict">
               <span className="dash-prod-badge">
-                <CheckCircle2 size={13} />
+                <Sparkles size={13} className="text-emerald" />
                 <span>Exceptional Velocity</span>
               </span>
               <p className="dash-prod-sub">

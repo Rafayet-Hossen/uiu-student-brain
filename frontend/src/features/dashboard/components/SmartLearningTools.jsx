@@ -46,14 +46,19 @@ export default function SmartLearningTools({
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          whileHover={{ y: -5, scale: 1.012 }}
+          whileHover={{ y: -6, scale: 1.015 }}
+          transition={{ duration: 0.3 }}
           className="dash-masonry-card dash-card-planner"
         >
+          <div className="dash-card-glow glow-orange" />
+
           <div className="dash-card-badge-row">
-            <div className="dash-module-icon-box bg-orange-subtle text-orange">
+            <motion.div
+              whileHover={{ scale: 1.15, rotate: 6 }}
+              className="dash-module-icon-box bg-orange-subtle text-orange"
+            >
               <Calendar size={22} />
-            </div>
+            </motion.div>
             <Badge variant="primary">📅 Smart Timetable</Badge>
           </div>
 
@@ -81,7 +86,11 @@ export default function SmartLearningTools({
               {todayClasses.length > 0 ? (
                 <div className="dash-bento-routine-list">
                   {todayClasses.slice(0, 3).map((item) => (
-                    <div key={item.id} className="dash-bento-routine-item">
+                    <motion.div
+                      key={item.id}
+                      whileHover={{ x: 4 }}
+                      className="dash-bento-routine-item"
+                    >
                       <div
                         className="dash-bento-routine-left"
                         onClick={() => onOpenScheduleModal && onOpenScheduleModal(item)}
@@ -112,7 +121,7 @@ export default function SmartLearningTools({
                           Open ↗
                         </button>
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
                   {todayClasses.length > 3 && (
                     <span className="dash-bento-routine-count" style={{ textAlign: "center", display: "block" }}>
@@ -143,14 +152,19 @@ export default function SmartLearningTools({
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.08 }}
-          whileHover={{ y: -5, scale: 1.012 }}
+          whileHover={{ y: -6, scale: 1.015 }}
+          transition={{ duration: 0.3, delay: 0.08 }}
           className="dash-masonry-card dash-card-materials"
         >
+          <div className="dash-card-glow glow-rose" />
+
           <div className="dash-card-badge-row">
-            <div className="dash-module-icon-box bg-rose-subtle text-rose">
+            <motion.div
+              whileHover={{ scale: 1.15, rotate: -6 }}
+              className="dash-module-icon-box bg-rose-subtle text-rose"
+            >
               <FileText size={22} />
-            </div>
+            </motion.div>
             <Badge variant="danger">✨ Smart Notes</Badge>
           </div>
 
@@ -162,7 +176,10 @@ export default function SmartLearningTools({
             </p>
 
             <div className="dash-module-stats-row">
-              <div className="dash-module-stat-pill">
+              <motion.div
+                whileHover={{ y: -3 }}
+                className="dash-module-stat-pill"
+              >
                 <div className="dash-module-stat-header">
                   <FileText size={15} className="text-primary" />
                   <span className="dash-module-stat-label">Documents</span>
@@ -171,8 +188,11 @@ export default function SmartLearningTools({
                   <strong className="dash-module-stat-num">{materials.length}</strong>
                   <span className="dash-module-stat-badge">Indexed</span>
                 </div>
-              </div>
-              <div className="dash-module-stat-pill rose">
+              </motion.div>
+              <motion.div
+                whileHover={{ y: -3 }}
+                className="dash-module-stat-pill rose"
+              >
                 <div className="dash-module-stat-header">
                   <Sparkles size={15} className="text-rose" />
                   <span className="dash-module-stat-label">AI Concepts</span>
@@ -181,13 +201,19 @@ export default function SmartLearningTools({
                   <strong className="dash-module-stat-num rose">{totalExtractedTopics}</strong>
                   <span className="dash-module-stat-badge rose">Extracted</span>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
             <div className="dash-module-features-strip">
-              <span className="dash-feature-pill">📄 PDF OCR</span>
-              <span className="dash-feature-pill">⚡ AI Summaries</span>
-              <span className="dash-feature-pill">💡 Flashcards</span>
+              <motion.span whileHover={{ y: -2, scale: 1.05 }} className="dash-feature-pill">
+                📄 PDF OCR
+              </motion.span>
+              <motion.span whileHover={{ y: -2, scale: 1.05 }} className="dash-feature-pill">
+                ⚡ AI Summaries
+              </motion.span>
+              <motion.span whileHover={{ y: -2, scale: 1.05 }} className="dash-feature-pill">
+                💡 Flashcards
+              </motion.span>
             </div>
           </div>
 
@@ -203,14 +229,19 @@ export default function SmartLearningTools({
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.12 }}
-          whileHover={{ y: -5, scale: 1.012 }}
+          whileHover={{ y: -6, scale: 1.015 }}
+          transition={{ duration: 0.3, delay: 0.12 }}
           className="dash-masonry-card dash-card-community"
         >
+          <div className="dash-card-glow glow-amber" />
+
           <div className="dash-card-badge-row">
-            <div className="dash-module-icon-box bg-orange-subtle text-orange">
+            <motion.div
+              whileHover={{ scale: 1.15, rotate: 6 }}
+              className="dash-module-icon-box bg-orange-subtle text-orange"
+            >
               <Users size={22} />
-            </div>
+            </motion.div>
             <Badge variant="primary">Campus Network</Badge>
           </div>
 
@@ -222,21 +253,21 @@ export default function SmartLearningTools({
             </p>
 
             <div className="dash-module-tags-row">
-              <div className="dash-module-tag-badge">
+              <motion.div whileHover={{ y: -3, scale: 1.04 }} className="dash-module-tag-badge">
                 <span className="dash-tag-icon">💬</span>
                 <span className="dash-tag-title">Q&A Forum</span>
                 <span className="dash-tag-sub">Discuss</span>
-              </div>
-              <div className="dash-module-tag-badge leaderboard">
+              </motion.div>
+              <motion.div whileHover={{ y: -3, scale: 1.04 }} className="dash-module-tag-badge leaderboard">
                 <span className="dash-tag-icon">🏆</span>
                 <span className="dash-tag-title">Leaderboard</span>
                 <span className="dash-tag-sub">Top 10%</span>
-              </div>
-              <div className="dash-module-tag-badge events">
+              </motion.div>
+              <motion.div whileHover={{ y: -3, scale: 1.04 }} className="dash-module-tag-badge events">
                 <span className="dash-tag-icon">🗓️</span>
                 <span className="dash-tag-title">Study Groups</span>
                 <span className="dash-tag-sub">Live</span>
-              </div>
+              </motion.div>
             </div>
 
             <div className="dash-community-network-metric">
@@ -257,14 +288,19 @@ export default function SmartLearningTools({
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.16 }}
-          whileHover={{ y: -5, scale: 1.012 }}
+          whileHover={{ y: -6, scale: 1.015 }}
+          transition={{ duration: 0.3, delay: 0.16 }}
           className="dash-masonry-card dash-card-gpa"
         >
+          <div className="dash-card-glow glow-emerald" />
+
           <div className="dash-card-badge-row">
-            <div className="dash-module-icon-box bg-emerald-subtle text-emerald">
+            <motion.div
+              whileHover={{ scale: 1.15, rotate: -6 }}
+              className="dash-module-icon-box bg-emerald-subtle text-emerald"
+            >
               <GraduationCap size={22} />
-            </div>
+            </motion.div>
             <Badge variant="secondary">GPA Calculator</Badge>
           </div>
 
@@ -291,13 +327,15 @@ export default function SmartLearningTools({
                 </div>
               </div>
               <div className="dash-module-gpa-track">
-                <div
-                  className="dash-module-gpa-fill"
-                  style={{
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{
                     width: topGradePlan
                       ? `${Math.min((topGradePlan.current_gpa / topGradePlan.target_gpa) * 100, 100)}%`
                       : "91%",
                   }}
+                  transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
+                  className="dash-module-gpa-fill"
                 />
               </div>
               <div className="dash-module-gpa-footer-meta">
