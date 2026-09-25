@@ -49,6 +49,7 @@ export default function FocusTimer({
   const [completedSessionData, setCompletedSessionData] = useState(null);
   const [sessionSuccess, setSessionSuccess] = useState("");
   const [voiceAnnouncement, setVoiceAnnouncement] = useState("");
+  const [isLoadingQuiz, setIsLoadingQuiz] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(() => {
     return localStorage.getItem("student_brain_notif_sound") !== "false";
   });
@@ -393,6 +394,7 @@ export default function FocusTimer({
               playCompletionSound();
               setShowCompletionOptions(true);
               checkMilestoneSpeech(0, totalSeconds);
+              handleCompleteAndLog();
               return 0;
             }
             const next = prev - 1;
@@ -489,22 +491,58 @@ export default function FocusTimer({
           notes: notes.trim() || `Completed ${activeMode} focus timer session.`,
           status: "completed",
         });
-        setCompletedSessionData(
+        const finalData =
           res ||
-            activeSession || {
-              subject: finalSubject,
-              duration_minutes: elapsedMins,
-            },
-        );
+          activeSession || {
+            id: res?.id || activeSession?.id,
+            subject: finalSubject,
+            duration_minutes: elapsedMins,
+          };
+        setCompletedSessionData(finalData);
         setShowCompletionOptions(true);
         setSessionSuccess(
           `Completed ${elapsedMins}m focus session! Streak updated 🔥`,
         );
+        return finalData;
       } catch (err) {
         console.error("Failed to save focus timer session", err);
       } finally {
         setIsSaving(false);
       }
+    }
+    return null;
+  };
+
+  const handleTakeDiagnosticQuiz = async () => {
+    try {
+      setIsLoadingQuiz(true);
+      let sessionData = completedSessionData;
+      if (!sessionData || !sessionData.id) {
+        sessionData = await handleCompleteAndLog();
+      }
+      if (sessionData && onTakeQuiz) {
+        onTakeQuiz(sessionData);
+      }
+    } catch (err) {
+      console.error("Failed to launch diagnostic quiz:", err);
+    } finally {
+      setIsLoadingQuiz(false);
+    }
+  };
+
+  const handleExtendCurrentSession = () => {
+    try {
+      if (onExtendSession && (completedSessionData || activeSession)) {
+        onExtendSession(completedSessionData || activeSession, 15);
+      }
+      setSecondsRemaining((prev) => prev + 15 * 60);
+      setTotalSeconds((prev) => prev + 15 * 60);
+      setShowCompletionOptions(false);
+      spokenMilestonesRef.current.clear();
+      setSessionSuccess("Session extended by +15 mins! Keep the flow going 🚀");
+      playAudibleTone(660, 0.2);
+    } catch (err) {
+      console.error("Failed to extend session:", err);
     }
   };
 
@@ -769,61 +807,71 @@ export default function FocusTimer({
       <AnimatePresence>
         {showCompletionOptions && (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, scale: 0.97, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.97, y: 10 }}
+            transition={{ duration: 0.24, ease: "easeOut" }}
             className="post-session-celebration-card my-4"
           >
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xl">🎉</span>
-              <h4 className="font-bold text-success text-sm m-0">
-                Session Finished! What's Next?
-              </h4>
+            <div className="celebration-card-glow-bg" />
+
+            <div className="celebration-card-header">
+              <div className="celebration-icon-box">
+                <span className="celebration-emoji">🎉</span>
+              </div>
+              <div className="celebration-text-content">
+                <div className="celebration-badge-pill">
+                  <Sparkles size={13} />
+                  <span>Session Target Completed</span>
+                </div>
+                <h4 className="celebration-card-title">
+                  Outstanding Focus Sprint! What's Next?
+                </h4>
+                <p className="celebration-card-subtitle">
+                  Solidify your retention with a 5-question AI diagnostic test or
+                  extend your focus block to boost your daily goal & streak.
+                </p>
+              </div>
             </div>
-            <p className="text-xs text-muted mb-3">
-              Solidify your retention with a 5-question AI diagnostic test or
-              extend your focus block to boost your daily goal & streak.
-            </p>
 
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="primary"
-                size="sm"
-                icon={Sparkles}
-                onClick={() => {
-                  if (onTakeQuiz && completedSessionData) {
-                    onTakeQuiz(completedSessionData);
-                  }
-                }}
+            <div className="celebration-btn-group">
+              <button
+                type="button"
+                className="btn-celebration-quiz"
+                onClick={handleTakeDiagnosticQuiz}
+                disabled={isLoadingQuiz}
               >
-                Take AI Diagnostic Quiz
-              </Button>
+                <Sparkles
+                  size={16}
+                  className={isLoadingQuiz ? "animate-spin" : "sparkle-icon"}
+                />
+                <span>
+                  {isLoadingQuiz
+                    ? "Generating AI Quiz..."
+                    : "Take AI Diagnostic Quiz"}
+                </span>
+              </button>
 
-              <Button
-                variant="outline"
-                size="sm"
-                icon={Plus}
-                onClick={() => {
-                  if (onExtendSession && completedSessionData) {
-                    onExtendSession(completedSessionData, 15);
-                    setShowCompletionOptions(false);
-                    setSessionSuccess("Session extended by +15 mins! 🚀");
-                  }
-                }}
+              <button
+                type="button"
+                className="btn-celebration-extend"
+                onClick={handleExtendCurrentSession}
               >
-                Extend +15 Minutes
-              </Button>
+                <Plus size={16} />
+                <span>Extend +15 Minutes</span>
+              </button>
 
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
+                type="button"
+                className="btn-celebration-dismiss"
                 onClick={() => {
                   setShowCompletionOptions(false);
                   handleReset();
                 }}
               >
-                Done for now
-              </Button>
+                <CheckCircle2 size={16} />
+                <span>Done for now</span>
+              </button>
             </div>
           </motion.div>
         )}
