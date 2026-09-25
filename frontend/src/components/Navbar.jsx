@@ -4,16 +4,19 @@ import {
   BarChart3,
   BookOpen,
   Calendar,
+  ChevronDown,
   FileText,
   GraduationCap,
   LayoutDashboard,
   LogOut,
   Menu,
+  MessageSquare,
   Moon,
   Settings,
   Sparkles,
   Sun,
   Timer,
+  Trophy,
   User,
   Users,
   X,
@@ -33,14 +36,81 @@ export default function Navbar() {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [profileModalTab, setProfileModalTab] = useState(null);
   const [scrolled, setScrolled] = useState(false);
+  const [expandedMenus, setExpandedMenus] = useState(() => ({
+    "/study-center": true,
+    "/community": true,
+  }));
+
+  const toggleExpand = (to, e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setExpandedMenus((prev) => ({
+      ...prev,
+      [to]: !prev[to],
+    }));
+  };
 
   const dropdownRef = useRef(null);
 
   const navLinks = [
     { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { to: "/study-center", label: "Study Center", icon: BookOpen },
+    {
+      to: "/study-center",
+      label: "Study Center",
+      icon: BookOpen,
+      subLinks: [
+        {
+          to: "/study-center?tab=materials",
+          label: "Materials & Notes",
+          icon: BookOpen,
+        },
+        {
+          to: "/study-center?tab=planner",
+          label: "Study Planner",
+          icon: Calendar,
+        },
+        {
+          to: "/study-center?tab=tracker",
+          label: "Study Tracker & Rewards",
+          icon: Timer,
+        },
+        {
+          to: "/study-center?tab=analytics",
+          label: "Study Analytics",
+          icon: BarChart3,
+        },
+      ],
+    },
     { to: "/grades", label: "Grade Planner", icon: GraduationCap },
-    { to: "/community", label: "Community", icon: Users },
+    {
+      to: "/community",
+      label: "Community",
+      icon: Users,
+      subLinks: [
+        {
+          to: "/community?tab=posts",
+          label: "Discussions & Feed",
+          icon: MessageSquare,
+        },
+        {
+          to: "/community?tab=network",
+          label: "Student Directory",
+          icon: Users,
+        },
+        {
+          to: "/community?tab=events",
+          label: "Events & Meetups",
+          icon: Calendar,
+        },
+        {
+          to: "/community?tab=leaderboard",
+          label: "Scholar Leaderboard",
+          icon: Trophy,
+        },
+      ],
+    },
   ];
 
   // Detect scroll for floating glass shrink effect
@@ -301,17 +371,104 @@ export default function Navbar() {
                 {navLinks.map((link) => {
                   const isActive = isLinkActive(link.to);
                   const Icon = link.icon;
+                  const hasSub = Boolean(link.subLinks && link.subLinks.length > 0);
+                  const isExpanded = Boolean(expandedMenus[link.to]);
+
+                  if (!hasSub) {
+                    return (
+                      <Link
+                        key={link.to}
+                        to={link.to}
+                        className={`drawer-nav-item ${
+                          isActive ? "drawer-nav-active" : ""
+                        }`}
+                        onClick={() => setMobileDrawerOpen(false)}
+                      >
+                        <Icon size={18} />
+                        <span>{link.label}</span>
+                      </Link>
+                    );
+                  }
+
                   return (
-                    <Link
-                      key={link.to}
-                      to={link.to}
-                      className={`drawer-nav-item ${
-                        isActive ? "drawer-nav-active" : ""
-                      }`}
-                    >
-                      <Icon size={18} />
-                      <span>{link.label}</span>
-                    </Link>
+                    <div key={link.to} className="drawer-accordion-group">
+                      <div
+                        className={`drawer-nav-item-wrapper ${
+                          isActive ? "drawer-nav-active-parent" : ""
+                        }`}
+                      >
+                        <Link
+                          to={link.to}
+                          className={`drawer-nav-item drawer-nav-link-part ${
+                            isActive ? "drawer-nav-active" : ""
+                          }`}
+                          onClick={() => setMobileDrawerOpen(false)}
+                        >
+                          <Icon size={18} />
+                          <span>{link.label}</span>
+                        </Link>
+
+                        <button
+                          type="button"
+                          className={`drawer-expand-arrow-btn ${
+                            isExpanded ? "drawer-arrow-expanded" : ""
+                          }`}
+                          onClick={(e) => toggleExpand(link.to, e)}
+                          aria-expanded={isExpanded}
+                          aria-label={`Toggle ${link.label} submenu`}
+                        >
+                          <ChevronDown size={17} className="drawer-chevron-icon" />
+                        </button>
+                      </div>
+
+                      {/* Submenu Accordion Panel */}
+                      <AnimatePresence initial={false}>
+                        {isExpanded && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.2, ease: "easeInOut" }}
+                            className="drawer-sublinks-panel"
+                          >
+                            <div className="drawer-sublinks-list">
+                              {link.subLinks.map((sub) => {
+                                const isSubActive =
+                                  location.pathname + location.search === sub.to ||
+                                  (location.pathname === "/study-center" &&
+                                    !location.search &&
+                                    sub.to === "/study-center?tab=materials") ||
+                                  (location.pathname === "/community" &&
+                                    !location.search &&
+                                    sub.to === "/community?tab=posts");
+                                const SubIcon = sub.icon;
+                                return (
+                                  <Link
+                                    key={sub.to}
+                                    to={sub.to}
+                                    className={`drawer-sublink-item ${
+                                      isSubActive ? "drawer-sublink-active" : ""
+                                    }`}
+                                    onClick={() => setMobileDrawerOpen(false)}
+                                  >
+                                    <SubIcon
+                                      size={15}
+                                      className="drawer-sublink-icon"
+                                    />
+                                    <span className="drawer-sublink-text">
+                                      {sub.label}
+                                    </span>
+                                    {isSubActive && (
+                                      <span className="drawer-sublink-dot" />
+                                    )}
+                                  </Link>
+                                );
+                              })}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   );
                 })}
               </nav>

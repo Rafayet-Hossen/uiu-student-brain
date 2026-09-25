@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   Award,
   BookOpen,
@@ -78,7 +79,24 @@ const TIMEFRAMES = [
 
 export default function CommunityPage() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState("posts"); // "posts" | "events" | "network" | "leaderboard"
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlTab = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(
+    urlTab && ["posts", "events", "network", "leaderboard"].includes(urlTab)
+      ? urlTab
+      : "posts"
+  );
+
+  useEffect(() => {
+    if (urlTab && ["posts", "events", "network", "leaderboard"].includes(urlTab)) {
+      setActiveTab(urlTab);
+    }
+  }, [urlTab]);
+
+  const handleTabSwitch = (tabKey) => {
+    setActiveTab(tabKey);
+    setSearchParams({ tab: tabKey });
+  };
 
   // Posts state
   const [posts, setPosts] = useState([]);
@@ -489,7 +507,7 @@ export default function CommunityPage() {
               className={`community-tab-btn ${
                 activeTab === "posts" ? "tab-active" : ""
               }`}
-              onClick={() => setActiveTab("posts")}
+              onClick={() => handleTabSwitch("posts")}
             >
               <MessageSquare size={16} />
               <span>All Discussions</span>
@@ -499,7 +517,7 @@ export default function CommunityPage() {
               className={`community-tab-btn ${
                 activeTab === "events" ? "tab-active" : ""
               }`}
-              onClick={() => setActiveTab("events")}
+              onClick={() => handleTabSwitch("events")}
             >
               <Calendar size={16} />
               <span>Campus Events ({events.length})</span>
@@ -509,7 +527,7 @@ export default function CommunityPage() {
               className={`community-tab-btn ${
                 activeTab === "network" ? "tab-active" : ""
               }`}
-              onClick={() => setActiveTab("network")}
+              onClick={() => handleTabSwitch("network")}
             >
               <Users size={16} />
               <span>Student Directory</span>
@@ -519,7 +537,7 @@ export default function CommunityPage() {
               className={`community-tab-btn ${
                 activeTab === "leaderboard" ? "tab-active" : ""
               }`}
-              onClick={() => setActiveTab("leaderboard")}
+              onClick={() => handleTabSwitch("leaderboard")}
             >
               <Trophy size={16} />
               <span>Scholar Leaderboard</span>
