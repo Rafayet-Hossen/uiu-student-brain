@@ -120,7 +120,8 @@ export default function FocusTimeline({
                             </strong>
                             <div className="dash-timeline-meta">
                               <span className="flex items-center gap-1">
-                                <Clock size={12} /> {session.duration_minutes}m duration
+                                <Clock size={12} /> {session.duration_minutes}m
+                                duration
                               </span>
                               <span>•</span>
                               <span>Session #{sIdx + 1}</span>
@@ -164,7 +165,8 @@ export default function FocusTimeline({
                             </strong>
                             <div className="dash-timeline-meta">
                               <span className="flex items-center gap-1">
-                                <Clock size={12} /> {routine.start_time?.slice(0, 5)} -{" "}
+                                <Clock size={12} />{" "}
+                                {routine.start_time?.slice(0, 5)} -{" "}
                                 {routine.end_time?.slice(0, 5)}
                               </span>
                               <span>•</span>
@@ -195,7 +197,8 @@ export default function FocusTimeline({
                     Nothing to show yet today
                   </strong>
                   <p className="dash-timeline-empty-sub">
-                    No focus sessions logged yet today. Choose a quick sprint below to kickstart your study streak!
+                    No focus sessions logged yet today. Choose a quick sprint
+                    below to kickstart your study streak!
                   </p>
                 </div>
               </div>
@@ -212,7 +215,8 @@ export default function FocusTimeline({
                     Nothing to show for {targetDayLabel}
                   </strong>
                   <p className="dash-timeline-empty-sub">
-                    No focus sessions or timetable activity recorded on {targetFormattedDate}.
+                    No focus sessions or timetable activity recorded on{" "}
+                    {targetFormattedDate}.
                   </p>
                   <button
                     type="button"
@@ -232,7 +236,10 @@ export default function FocusTimeline({
                   <div className="flex items-center gap-2">
                     <CheckCircle2 size={16} className="text-emerald" />
                     <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
-                      {targetDayLabel} Summary: {daySessions.length} session{daySessions.length > 1 ? "s" : ""} completed ({dayHours > 0 ? `${dayHours}h ` : ""}{dayMins}m logged)
+                      {targetDayLabel} Summary: {daySessions.length} session
+                      {daySessions.length > 1 ? "s" : ""} completed (
+                      {dayHours > 0 ? `${dayHours}h ` : ""}
+                      {dayMins}m logged)
                     </span>
                   </div>
                   <button
@@ -253,7 +260,9 @@ export default function FocusTimeline({
                   <div className="flex items-center gap-1.5">
                     <PlusCircle size={14} className="text-primary" />
                     <span className="dash-launchpad-title">
-                      {hasSessions ? "Add More Focus Time" : "Instant Focus Studio"}
+                      {hasSessions
+                        ? "Add More Focus Time"
+                        : "Instant Focus Studio"}
                     </span>
                   </div>
                   <Link
