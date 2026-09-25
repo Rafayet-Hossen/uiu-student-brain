@@ -688,29 +688,133 @@
   gap: 16px;
 }
 
+@keyframes brainGradientShimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes capFloat {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-2px) rotate(-4deg);
+  }
+}
+
+@keyframes sparkleGlow {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(0.9) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15) rotate(180deg);
+  }
+}
+
 .navbar-brand-logo {
   display: flex;
   align-items: center;
   gap: 10px;
   text-decoration: none;
-  color: var(--color-text);
   font-family: "Plus Jakarta Sans", "Inter", sans-serif;
-  font-weight: 800;
-  font-size: 1.1875rem;
-  letter-spacing: -0.02em;
   flex-shrink: 0;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.navbar-brand-logo:hover {
+  transform: translateY(-1px);
 }
 
 .navbar-brand-icon-box {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: var(--color-primary);
+  width: 35px;
+  height: 35px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, #f26522 0%, #ea580c 55%, #f59e0b 100%);
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 14px rgba(242, 101, 34, 0.35);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.navbar-brand-logo:hover .navbar-brand-icon-box {
+  transform: scale(1.08) rotate(-4deg);
+  box-shadow: 0 6px 20px rgba(242, 101, 34, 0.5);
+}
+
+.brand-logo-svg {
+  animation: capFloat 3.5s ease-in-out infinite;
+  transition: transform 0.25s ease;
+}
+
+.navbar-brand-logo:hover .brand-logo-svg {
+  animation-duration: 1.5s;
+}
+
+.navbar-brand-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 1.25rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  position: relative;
+}
+
+.brand-name-student {
+  color: var(--color-text);
+  transition: color 0.2s ease;
+}
+
+.brand-name-brain {
+  background: linear-gradient(135deg, #f26522 0%, #f59e0b 35%, #ec4899 70%, #f26522 100%);
+  background-size: 300% 300%;
+  animation: brainGradientShimmer 5s ease infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  padding-left: 2px;
+  position: relative;
+  font-weight: 900;
+}
+
+.brand-sparkle-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 3px;
+  margin-top: -8px;
+}
+
+.brand-sparkle-icon {
+  color: #f59e0b;
+  animation: sparkleGlow 2.5s ease-in-out infinite;
+}
+
+[data-theme="dark"] .brand-sparkle-icon {
+  color: #fbbf24;
+}
+
+.drawer-brand-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 1.15rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1;
 }
 
 .brand-accent-text {

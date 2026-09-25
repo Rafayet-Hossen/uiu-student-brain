@@ -41,7 +41,19 @@ export default function ScheduleDetailModal({
 
   const deadlineInfo = getDeadlineInfo(schedule.deadline);
   const duration = calculateDuration(schedule.start_time, schedule.end_time);
-  const resources = Array.isArray(schedule.resources) ? schedule.resources : [];
+  const getResourcesSafe = (res) => {
+    if (Array.isArray(res)) return res;
+    if (typeof res === "string") {
+      try {
+        const parsed = JSON.parse(res);
+        if (Array.isArray(parsed)) return parsed;
+      } catch (e) {
+        return [];
+      }
+    }
+    return [];
+  };
+  const resources = getResourcesSafe(schedule.resources);
 
   return (
     <div className="modal-backdrop" onClick={onClose}>

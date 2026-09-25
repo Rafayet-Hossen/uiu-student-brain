@@ -171,7 +171,9 @@ export default function AcademicModules({
             <div className="dash-module-stats-row">
               <div className="dash-module-stat-pill">
                 <div className="dash-module-stat-header">
-                  <FileText size={15} className="text-primary" />
+                  <div className="dash-stat-bubble">
+                    <FileText size={13} />
+                  </div>
                   <span className="dash-module-stat-label">Documents</span>
                 </div>
                 <div className="dash-module-stat-val-row">
@@ -181,7 +183,9 @@ export default function AcademicModules({
               </div>
               <div className="dash-module-stat-pill rose">
                 <div className="dash-module-stat-header">
-                  <Sparkles size={15} className="text-rose" />
+                  <div className="dash-stat-bubble rose">
+                    <Sparkles size={13} />
+                  </div>
                   <span className="dash-module-stat-label">AI Concepts</span>
                 </div>
                 <div className="dash-module-stat-val-row">
