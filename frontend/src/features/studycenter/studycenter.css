@@ -1,0 +1,396 @@
+/* ==========================================================================
+   STUDY CENTER MASTER RESPONSIVE STYLES (Mobile, Tablet & Desktop)
+   Isolated dedicated stylesheet to ensure permanent persistence.
+   ========================================================================== */
+
+/* Base desktop wrapper for scroll container */
+.study-center-nav-scroll-wrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+/* Fix: Remove unwanted gap above Study Center on mobile */
+@media (max-width: 768px) {
+  .study-center-main-content {
+    padding-top: 6px !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  .study-center-wrapper {
+    gap: 8px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .study-center-unified-header {
+    position: sticky !important;
+    top: 56px !important;
+    z-index: 60 !important;
+    padding: 8px 12px !important;
+    border-radius: 16px !important;
+    margin-top: 0 !important;
+    margin-bottom: 4px !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid var(--color-border-subtle) !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04) !important;
+  }
+
+  [data-theme="dark"] .study-center-unified-header {
+    background: rgba(15, 23, 42, 0.95) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 4px 22px rgba(0, 0, 0, 0.35) !important;
+  }
+
+  .study-center-header-row {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+
+  .study-center-title-group {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    min-width: 0 !important;
+  }
+
+  .study-center-badge-icon {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 10px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .study-center-badge-icon svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  .study-center-main-title {
+    font-size: 1.05rem !important;
+    line-height: 1.2 !important;
+    font-weight: 800 !important;
+  }
+
+  .study-center-micro-pill {
+    font-size: 0.62rem !important;
+    padding: 1.5px 6px !important;
+  }
+
+  .study-center-tagline {
+    font-size: 0.68rem !important;
+    line-height: 1.25 !important;
+    margin-top: 1px !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 1 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+  }
+
+  /* Submenu Horizontal Smooth Touch Carousel */
+  .study-center-nav-scroll-wrapper {
+    position: relative !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    display: block !important;
+  }
+
+  .study-center-nav-tabs {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 6px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    scroll-behavior: smooth !important;
+    overscroll-behavior-x: contain !important;
+    touch-action: pan-x !important;
+    scrollbar-width: none !important;
+    box-sizing: border-box !important;
+    padding: 3px !important;
+    border-radius: 12px !important;
+  }
+
+  .study-center-nav-tabs::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  .study-center-nav-tab {
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    padding: 7px 13px !important;
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    border-radius: 9px !important;
+    cursor: pointer !important;
+    user-select: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+    transition: transform 0.15s ease, color 0.18s ease !important;
+  }
+
+  .study-center-nav-tab:active {
+    transform: scale(0.96) !important;
+  }
+
+  .study-center-nav-tab svg {
+    width: 14px !important;
+    height: 14px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Semester Bar */
+  .semester-selection-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    padding: 2px 0 6px !important;
+    margin-bottom: 2px !important;
+  }
+
+  .semester-bar-left {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    padding-bottom: 2px !important;
+  }
+
+  .semester-bar-left::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .semester-pills-list {
+    flex-wrap: nowrap !important;
+    width: max-content !important;
+    gap: 6px !important;
+  }
+
+  .semester-pill-btn {
+    padding: 5px 12px !important;
+    font-size: 0.78rem !important;
+    flex-shrink: 0 !important;
+  }
+
+  .semester-bar-right {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  .btn-add-semester-pill {
+    padding: 5px 12px !important;
+    font-size: 0.78rem !important;
+    flex-grow: 1 !important;
+    justify-content: center !important;
+  }
+
+  /* Single Column Workspace on Mobile */
+  .materials-workspace-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  .materials-sidebar-card {
+    padding: 12px !important;
+    border-radius: 16px !important;
+  }
+
+  .courses-sidebar-header {
+    margin-bottom: 10px !important;
+  }
+
+  .courses-list-stack {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .sidebar-course-card {
+    padding: 10px 12px !important;
+    border-radius: 12px !important;
+  }
+
+  .sidebar-course-card:active {
+    transform: scale(0.985) !important;
+  }
+
+  /* Active Course Banner */
+  .active-project-banner {
+    padding: 14px 12px !important;
+    border-radius: 16px !important;
+  }
+
+  .project-banner-header-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+
+  .project-banner-actions {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr auto !important;
+    gap: 6px !important;
+  }
+
+  .project-banner-actions button {
+    justify-content: center !important;
+    padding: 7px 10px !important;
+    font-size: 0.76rem !important;
+  }
+
+  .course-workspace-nav-tabs {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 6px !important;
+    padding: 3px !important;
+    margin: 10px 0 !important;
+  }
+
+  .course-workspace-tab-btn {
+    padding: 8px 6px !important;
+    font-size: 0.76rem !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+
+  .course-nav-tab-label-full {
+    display: none !important;
+  }
+
+  .course-nav-tab-label-short {
+    display: inline !important;
+  }
+
+  /* Syllabus Topics Carousel */
+  .syllabus-chips-wrap {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    gap: 6px !important;
+    padding: 4px 1px 6px !important;
+  }
+
+  .syllabus-chips-wrap::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .syllabus-chip-badge {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    font-size: 0.74rem !important;
+    padding: 3px 10px !important;
+  }
+
+  /* Materials List Toolbar */
+  .materials-toolbar-row {
+    flex-direction: column !important;
+    gap: 8px !important;
+    align-items: stretch !important;
+  }
+
+  .materials-search-input-wrap {
+    width: 100% !important;
+  }
+
+  .materials-filter-pills {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    padding-bottom: 2px !important;
+    width: 100% !important;
+    flex-wrap: nowrap !important;
+  }
+
+  .materials-filter-pills::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .filter-pill-btn {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    padding: 4px 10px !important;
+    font-size: 0.74rem !important;
+  }
+
+  /* Material Note Cards */
+  .materials-cards-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .material-card {
+    padding: 12px !important;
+    border-radius: 14px !important;
+  }
+
+  .material-card-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 6px !important;
+    margin-top: 10px !important;
+  }
+
+  .material-card-actions button {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 7px 6px !important;
+    font-size: 0.75rem !important;
+  }
+}
+
+/* Extra small mobile (<= 480px) */
+@media (max-width: 480px) {
+  .study-center-main-content {
+    padding-top: 4px !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .study-center-unified-header {
+    padding: 8px 10px !important;
+    border-radius: 14px !important;
+  }
+}
+
+/* Tablet adjustments (769px to 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .study-center-main-content {
+    padding-top: 12px !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .materials-workspace-grid {
+    grid-template-columns: 280px 1fr !important;
+    gap: 16px !important;
+  }
+
+  .study-center-unified-header {
+    padding: 10px 18px !important;
+  }
+}
