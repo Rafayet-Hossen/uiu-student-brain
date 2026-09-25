@@ -41,6 +41,19 @@
     box-sizing: border-box !important;
   }
 
+  /* Prevent any horizontal overflow on mobile containers */
+  .study-center-wrapper,
+  .materials-workspace-grid,
+  .materials-sidebar,
+  .active-project-banner,
+  .project-topics-syllabus-box,
+  .materials-toolbar-row,
+  .materials-cards-grid,
+  .material-card {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
   /* Header is relative (not sticky) on mobile so it doesn't overlap or eat screen */
   .study-center-unified-header {
     position: relative !important;
@@ -291,7 +304,7 @@
     transform: scale(0.985) !important;
   }
 
-  /* Active Course Banner with proper button wrapping */
+  /* Active Course Banner with fluid button layout */
   .active-project-banner {
     padding: 12px 10px !important;
     border-radius: 16px !important;
@@ -306,6 +319,7 @@
   .banner-details {
     width: 100% !important;
     min-width: 0 !important;
+    max-width: 100% !important;
   }
 
   .banner-tag-row {
@@ -330,36 +344,39 @@
 
   .banner-action-buttons {
     width: 100% !important;
-    display: grid !important;
-    grid-template-columns: 1fr 1fr auto !important;
+    max-width: 100% !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
     gap: 6px !important;
     box-sizing: border-box !important;
   }
 
   .banner-action-buttons button,
   .banner-action-buttons .btn {
-    width: 100% !important;
+    flex: 1 1 calc(50% - 6px) !important;
+    min-width: 120px !important;
     justify-content: center !important;
-    padding: 8px 6px !important;
+    padding: 8px 8px !important;
     font-size: 0.76rem !important;
     white-space: nowrap !important;
     box-sizing: border-box !important;
   }
 
-  .btn-delete-project {
-    width: 36px !important;
-    height: 36px !important;
+  .banner-action-buttons .btn-delete-project {
+    flex: 0 0 38px !important;
+    min-width: 38px !important;
+    max-width: 38px !important;
+    height: 38px !important;
     padding: 0 !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    flex-shrink: 0 !important;
   }
 
   /* Workspace Nav Tabs (Materials vs Assistant) */
   .course-workspace-nav-tabs {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
+    display: flex !important;
+    flex-direction: row !important;
     gap: 6px !important;
     padding: 4px !important;
     margin: 8px 0 !important;
@@ -368,12 +385,14 @@
   }
 
   .course-nav-tab {
+    flex: 1 1 50% !important;
+    min-width: 0 !important;
     padding: 8px 4px !important;
     font-size: 0.75rem !important;
     justify-content: center !important;
     text-align: center !important;
-    width: 100% !important;
     gap: 5px !important;
+    box-sizing: border-box !important;
   }
 
   .course-nav-tab-label-full {
@@ -382,6 +401,9 @@
 
   .course-nav-tab-label-short {
     display: inline !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
   }
 
   .badge-assistant-pill {
@@ -391,9 +413,11 @@
   /* Syllabus Topics Carousel */
   .project-topics-syllabus-box {
     width: 100% !important;
+    max-width: 100% !important;
     box-sizing: border-box !important;
     padding: 10px 12px !important;
     border-radius: 14px !important;
+    overflow: hidden !important;
   }
 
   .syllabus-chips-wrap {
@@ -413,10 +437,11 @@
   }
 
   .syllabus-chip-badge {
+    flex: 0 0 auto !important;
     flex-shrink: 0 !important;
     white-space: nowrap !important;
     font-size: 0.74rem !important;
-    padding: 3px 10px !important;
+    padding: 4px 10px !important;
   }
 
   /* Materials List Toolbar */
@@ -453,6 +478,7 @@
   }
 
   .filter-pill-btn {
+    flex: 0 0 auto !important;
     flex-shrink: 0 !important;
     white-space: nowrap !important;
     padding: 4px 10px !important;
@@ -461,29 +487,31 @@
 
   /* Material Note Cards */
   .materials-cards-grid {
-    display: grid !important;
-    grid-template-columns: 1fr !important;
+    display: flex !important;
+    flex-direction: column !important;
     gap: 10px !important;
     width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   .material-card {
     width: 100% !important;
+    max-width: 100% !important;
     box-sizing: border-box !important;
     padding: 12px !important;
     border-radius: 14px !important;
   }
 
   .material-card-actions {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
     gap: 6px !important;
     margin-top: 10px !important;
     width: 100% !important;
   }
 
   .material-card-actions button {
-    width: 100% !important;
+    flex: 1 1 45% !important;
     justify-content: center !important;
     padding: 7px 6px !important;
     font-size: 0.75rem !important;
