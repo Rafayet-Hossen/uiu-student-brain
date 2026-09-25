@@ -83,8 +83,8 @@ export default function TrackerPage() {
     return "scheduled";
   });
 
-  async function loadTrackerData() {
-    setLoading(true);
+  async function loadTrackerData(silent = false) {
+    if (!silent) setLoading(true);
     setError("");
 
     try {
@@ -108,7 +108,7 @@ export default function TrackerPage() {
     } catch (err) {
       setError(extractTrackerErrorMessage(err));
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }
 
@@ -215,7 +215,7 @@ export default function TrackerPage() {
     setSubmitting(true);
     try {
       const session = await createStudySession(payload);
-      await loadTrackerData();
+      await loadTrackerData(true);
       return session;
     } catch (err) {
       setError(extractTrackerErrorMessage(err));
@@ -470,12 +470,14 @@ export default function TrackerPage() {
       {/* ============================================================ */}
       {/* TAB 2: FOCUS TIMER */}
       {/* ============================================================ */}
-      {!loading && !error && activeTab === "timer" && (
+      {!error && activeTab === "timer" && (
         <FocusTimer
           activeSession={activeTimerSession}
           onSessionCompleted={async (payload) => {
             if (activeTimerSession) {
-              return await completeStudySession(activeTimerSession.id);
+              const res = await completeStudySession(activeTimerSession.id);
+              await loadTrackerData(true);
+              return res;
             } else {
               return await handleCreate(payload);
             }

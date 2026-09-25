@@ -394,7 +394,6 @@ export default function FocusTimer({
               playCompletionSound();
               setShowCompletionOptions(true);
               checkMilestoneSpeech(0, totalSeconds);
-              handleCompleteAndLog();
               return 0;
             }
             const next = prev - 1;
@@ -535,15 +534,25 @@ export default function FocusTimer({
       if (onExtendSession && (completedSessionData || activeSession)) {
         onExtendSession(completedSessionData || activeSession, 15);
       }
-      setSecondsRemaining((prev) => prev + 15 * 60);
-      setTotalSeconds((prev) => prev + 15 * 60);
+      setTotalSeconds(15 * 60);
+      setSecondsRemaining(15 * 60);
+      setIsActive(true);
       setShowCompletionOptions(false);
       spokenMilestonesRef.current.clear();
       setSessionSuccess("Session extended by +15 mins! Keep the flow going 🚀");
       playAudibleTone(660, 0.2);
+      speakText("Session extended by 15 minutes. Stay locked in.");
     } catch (err) {
       console.error("Failed to extend session:", err);
     }
+  };
+
+  const handleDoneForNow = async () => {
+    setShowCompletionOptions(false);
+    if (!completedSessionData && !activeSession) {
+      await handleCompleteAndLog();
+    }
+    handleReset();
   };
 
   const progressPercent =
@@ -864,10 +873,7 @@ export default function FocusTimer({
               <button
                 type="button"
                 className="btn-celebration-dismiss"
-                onClick={() => {
-                  setShowCompletionOptions(false);
-                  handleReset();
-                }}
+                onClick={handleDoneForNow}
               >
                 <CheckCircle2 size={16} />
                 <span>Done for now</span>
