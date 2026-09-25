@@ -84,6 +84,9 @@ export default function AcademicJourney({
                 whileHover={{ y: -5, scale: 1.02 }}
                 className={`dash-journey-card dash-journey-${item.color}`}
               >
+                {/* Glowing decorative top accent bar */}
+                <div className={`dash-journey-accent-bar ${item.color}`} />
+
                 <div className="dash-journey-card-top">
                   <div className={`dash-journey-icon-wrap ${item.color}`}>
                     <Icon size={20} />
@@ -92,7 +95,10 @@ export default function AcademicJourney({
                 </div>
 
                 <div className="dash-journey-card-content">
-                  <span className="dash-journey-card-step-num">Checkpoint 0{idx + 1}</span>
+                  <div className="dash-journey-step-row">
+                    <span className={`dash-journey-step-dot ${item.color}`} />
+                    <span className="dash-journey-card-step-num">Checkpoint 0{idx + 1}</span>
+                  </div>
                   <h3 className="dash-journey-card-stat">{item.stat}</h3>
                   <strong className="dash-journey-card-title">{item.title}</strong>
                   <p className="dash-journey-card-sub">{item.sub}</p>
@@ -100,7 +106,7 @@ export default function AcademicJourney({
 
                 <Link to={item.link} className="dash-journey-card-link">
                   <span>Explore module</span>
-                  <ArrowRight size={14} />
+                  <ArrowRight size={13} className="dash-journey-link-arrow" />
                 </Link>
               </motion.div>
 
@@ -108,8 +114,9 @@ export default function AcademicJourney({
               {idx < milestones.length - 1 && (
                 <div className="dash-journey-connector" aria-hidden="true">
                   <div className="dash-journey-connector-line" />
-                  <div className="dash-journey-connector-dot" />
-                  <div className="dash-journey-connector-arrow">→</div>
+                  <div className="dash-journey-connector-node">
+                    <ArrowRight size={10} className="dash-journey-connector-icon" />
+                  </div>
                 </div>
               )}
             </div>

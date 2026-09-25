@@ -1853,10 +1853,28 @@
    7. DAILY STUDY CHALLENGE (Photo 3 Fix: Modern Compact Gamification)
    ========================================================================== */
 .dash-challenge-card {
-  padding: 18px 16px;
+  padding: 20px 18px;
   position: relative;
   overflow: hidden;
-  box-sizing: border-box;
+  background: radial-gradient(circle at top right, rgba(245, 158, 11, 0.07), transparent 70%), var(--dash-card-bg);
+  border: 1px solid var(--dash-card-border);
+  border-radius: 22px;
+  box-shadow: var(--dash-shadow-card);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dash-challenge-card:hover {
+  border-color: rgba(245, 158, 11, 0.35);
+  box-shadow: 0 12px 28px -6px rgba(245, 158, 11, 0.14);
+}
+
+.dash-weekly-ring-card {
+  background: radial-gradient(circle at top right, rgba(242, 101, 34, 0.07), transparent 70%), var(--dash-card-bg);
+}
+
+.dash-weekly-ring-card:hover {
+  border-color: rgba(242, 101, 34, 0.35);
+  box-shadow: 0 12px 28px -6px rgba(242, 101, 34, 0.14);
 }
 
 .dash-challenge-header {
@@ -1864,33 +1882,35 @@
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  margin-bottom: 12px;
+  gap: 8px 10px;
+  margin-bottom: 14px;
   width: 100%;
-  gap: 6px 8px;
 }
 
 .dash-challenge-title-group {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  min-width: 0;
+  gap: 8px;
   flex: 1 1 auto;
+  min-width: 0;
 }
 
 .dash-challenge-title {
-  font-size: 0.88rem;
+  font-size: 0.90rem;
   font-weight: 800;
   color: var(--dash-text-main);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
 }
 
 .dash-challenge-xp-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 3px 9px;
+  gap: 5px;
+  padding: 4px 10px;
   border-radius: 9999px;
   background: linear-gradient(
     135deg,
@@ -1898,7 +1918,7 @@
     rgba(242, 101, 34, 0.12)
   );
   color: #b45309;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.01em;
   border: 1px solid rgba(245, 158, 11, 0.35);
@@ -1958,11 +1978,11 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 5px 12px;
+  padding: 4px 10px;
   border-radius: 9999px;
   background: var(--dash-primary-subtle);
   color: var(--dash-primary);
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   font-weight: 800;
   border: 1px solid rgba(242, 101, 34, 0.25);
   box-shadow: 0 2px 8px var(--dash-primary-glow);
@@ -1985,13 +2005,13 @@
 .dash-challenge-body-split {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 14px;
 }
 
 .dash-challenge-ring-box {
   position: relative;
-  width: 82px;
-  height: 82px;
+  width: 74px;
+  height: 74px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -2002,6 +2022,11 @@
   width: 100%;
   height: 100%;
   transform: rotate(-90deg);
+  filter: drop-shadow(0 2px 6px rgba(245, 158, 11, 0.22));
+}
+
+.dash-weekly-ring-card .dash-challenge-svg {
+  filter: drop-shadow(0 2px 6px var(--dash-primary-glow));
 }
 
 .dash-challenge-center-content {
@@ -3070,41 +3095,96 @@
 }
 
 .dash-journey-track {
-  display: flex;
-  align-items: stretch;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
   width: 100%;
   position: relative;
 }
 
 .dash-journey-step-wrapper {
-  flex: 1;
   display: flex;
-  align-items: center;
   position: relative;
+  width: 100%;
 }
 
 .dash-journey-card {
   flex: 1;
-  border-radius: 24px;
-  padding: 22px 20px;
+  width: 100%;
+  border-radius: 20px;
+  padding: 20px 18px 16px;
   background: var(--dash-card-bg);
   border: 1px solid var(--dash-card-border);
   box-shadow: var(--dash-shadow-card);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 14px;
-  min-height: 200px;
+  gap: 12px;
+  min-height: 205px;
   box-sizing: border-box;
-  transition:
-    box-shadow 0.25s ease,
-    border-color 0.25s ease;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.dash-journey-card:hover {
-  box-shadow: var(--dash-shadow-hover);
+.dash-journey-accent-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3.5px;
+}
+
+.dash-journey-accent-bar.orange {
+  background: linear-gradient(90deg, #f26522, #fb923c);
+}
+
+.dash-journey-accent-bar.amber {
+  background: linear-gradient(90deg, #f59e0b, #fde047);
+}
+
+.dash-journey-accent-bar.emerald {
+  background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+.dash-journey-accent-bar.rose {
+  background: linear-gradient(90deg, #f43f5e, #fb7185);
+}
+
+.dash-journey-orange {
+  background: radial-gradient(circle at top right, rgba(242, 101, 34, 0.05), transparent 70%), var(--dash-card-bg);
+}
+
+.dash-journey-amber {
+  background: radial-gradient(circle at top right, rgba(245, 158, 11, 0.05), transparent 70%), var(--dash-card-bg);
+}
+
+.dash-journey-emerald {
+  background: radial-gradient(circle at top right, rgba(16, 185, 129, 0.05), transparent 70%), var(--dash-card-bg);
+}
+
+.dash-journey-rose {
+  background: radial-gradient(circle at top right, rgba(244, 63, 94, 0.05), transparent 70%), var(--dash-card-bg);
+}
+
+.dash-journey-orange:hover {
+  border-color: rgba(242, 101, 34, 0.4);
+  box-shadow: 0 12px 30px -6px rgba(242, 101, 34, 0.18);
+}
+
+.dash-journey-amber:hover {
+  border-color: rgba(245, 158, 11, 0.4);
+  box-shadow: 0 12px 30px -6px rgba(245, 158, 11, 0.18);
+}
+
+.dash-journey-emerald:hover {
+  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 0 12px 30px -6px rgba(16, 185, 129, 0.18);
+}
+
+.dash-journey-rose:hover {
+  border-color: rgba(244, 63, 94, 0.4);
+  box-shadow: 0 12px 30px -6px rgba(244, 63, 94, 0.18);
 }
 
 .dash-journey-card-top {
@@ -3114,33 +3194,41 @@
 }
 
 .dash-journey-icon-wrap {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.2s ease;
 }
 
-.dash-journey-icon-wrap.indigo,
+.dash-journey-card:hover .dash-journey-icon-wrap {
+  transform: scale(1.08) rotate(3deg);
+}
+
 .dash-journey-icon-wrap.orange {
-  background: rgba(242, 101, 34, 0.1);
+  background: rgba(242, 101, 34, 0.12);
   color: var(--dash-primary);
+  border: 1px solid rgba(242, 101, 34, 0.25);
 }
 
 .dash-journey-icon-wrap.amber {
-  background: rgba(245, 158, 11, 0.1);
+  background: rgba(245, 158, 11, 0.12);
   color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.25);
 }
 
 .dash-journey-icon-wrap.emerald {
-  background: rgba(16, 185, 129, 0.1);
+  background: rgba(16, 185, 129, 0.12);
   color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.25);
 }
 
 .dash-journey-icon-wrap.rose {
-  background: rgba(244, 63, 94, 0.1);
+  background: rgba(244, 63, 94, 0.12);
   color: #e11d48;
+  border: 1px solid rgba(244, 63, 94, 0.25);
 }
 
 .dash-journey-badge {
@@ -3151,25 +3239,28 @@
   letter-spacing: 0.02em;
 }
 
-.dash-journey-badge.indigo,
 .dash-journey-badge.orange {
-  background: rgba(242, 101, 34, 0.1);
+  background: rgba(242, 101, 34, 0.12);
   color: var(--dash-primary);
+  border: 1px solid rgba(242, 101, 34, 0.25);
 }
 
 .dash-journey-badge.amber {
   background: rgba(245, 158, 11, 0.12);
   color: #b45309;
+  border: 1px solid rgba(245, 158, 11, 0.25);
 }
 
 .dash-journey-badge.emerald {
-  background: rgba(16, 185, 129, 0.1);
+  background: rgba(16, 185, 129, 0.12);
   color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.25);
 }
 
 .dash-journey-badge.rose {
-  background: rgba(244, 63, 94, 0.1);
+  background: rgba(244, 63, 94, 0.12);
   color: #e11d48;
+  border: 1px solid rgba(244, 63, 94, 0.25);
 }
 
 .dash-journey-card-content {
@@ -3178,67 +3269,162 @@
   gap: 3px;
 }
 
+.dash-journey-step-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.dash-journey-step-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dash-journey-step-dot.orange {
+  background: #f26522;
+  box-shadow: 0 0 6px rgba(242, 101, 34, 0.6);
+}
+
+.dash-journey-step-dot.amber {
+  background: #f59e0b;
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.6);
+}
+
+.dash-journey-step-dot.emerald {
+  background: #10b981;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+}
+
+.dash-journey-step-dot.rose {
+  background: #f43f5e;
+  box-shadow: 0 0 6px rgba(244, 63, 94, 0.6);
+}
+
 .dash-journey-card-step-num {
-  font-size: 0.72rem;
-  font-weight: 700;
+  font-size: 0.68rem;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   color: var(--dash-text-muted);
 }
 
 .dash-journey-card-stat {
-  font-size: 1.7rem;
+  font-size: 1.65rem;
   font-weight: 850;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
   color: var(--dash-text-main);
   margin: 2px 0 0 0;
   line-height: 1.15;
 }
 
+.dash-journey-orange .dash-journey-card-stat {
+  background: linear-gradient(135deg, #f26522, #ea580c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.dash-journey-amber .dash-journey-card-stat {
+  background: linear-gradient(135deg, #d97706, #b45309);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.dash-journey-emerald .dash-journey-card-stat {
+  background: linear-gradient(135deg, #059669, #047857);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.dash-journey-rose .dash-journey-card-stat {
+  background: linear-gradient(135deg, #e11d48, #be123c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+[data-theme="dark"] .dash-journey-orange .dash-journey-card-stat {
+  background: linear-gradient(135deg, #fb923c, #f97316);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+[data-theme="dark"] .dash-journey-amber .dash-journey-card-stat {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+[data-theme="dark"] .dash-journey-emerald .dash-journey-card-stat {
+  background: linear-gradient(135deg, #34d399, #10b981);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+[data-theme="dark"] .dash-journey-rose .dash-journey-card-stat {
+  background: linear-gradient(135deg, #fb7185, #f43f5e);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 .dash-journey-card-title {
-  font-size: 0.95rem;
-  font-weight: 700;
+  font-size: 0.92rem;
+  font-weight: 750;
   color: var(--dash-text-main);
+  letter-spacing: -0.01em;
 }
 
 .dash-journey-card-sub {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--dash-text-muted);
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.35;
 }
 
 .dash-journey-card-link {
   display: inline-flex;
   align-items: center;
+  justify-content: space-between;
   gap: 6px;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 700;
-  color: var(--dash-primary);
+  color: var(--dash-text-muted);
   text-decoration: none;
-  padding-top: 8px;
-  border-top: 1px solid var(--dash-surface-elevated);
-  transition:
-    transform 0.15s ease,
-    color 0.15s ease;
+  padding: 7px 11px;
+  border-radius: 10px;
+  background: var(--dash-surface-elevated);
+  border: 1px solid var(--dash-card-border);
+  margin-top: 6px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .dash-journey-card-link:hover {
+  color: var(--dash-primary);
+  background: var(--dash-primary-subtle);
+  border-color: rgba(242, 101, 34, 0.3);
+  transform: translateX(2px);
+}
+
+.dash-journey-card-link:hover .dash-journey-link-arrow {
   transform: translateX(3px);
-  color: var(--dash-primary-hover);
+}
+
+.dash-journey-link-arrow {
+  transition: transform 0.2s ease;
 }
 
 /* Connecting Laser Line Between Checkpoints */
 .dash-journey-connector {
   position: absolute;
-  right: -16px;
+  right: -13px;
   top: 50%;
   transform: translateY(-50%);
-  width: 16px;
+  width: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2;
+  z-index: 3;
   pointer-events: none;
 }
 
@@ -3250,12 +3436,18 @@
   opacity: 0.5;
 }
 
-.dash-journey-connector-arrow {
-  position: relative;
-  font-size: 0.75rem;
-  font-weight: 800;
+.dash-journey-connector-node {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--dash-card-bg);
+  border: 1.5px solid var(--dash-primary);
+  box-shadow: 0 0 8px var(--dash-primary-glow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--dash-primary);
-  opacity: 0.7;
+  z-index: 2;
 }
 
 /* ==========================================================================
@@ -3310,9 +3502,9 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 16px 14px;
+  padding: 18px 16px;
   box-sizing: border-box;
-  overflow: hidden;
+  border-radius: 20px;
 }
 
 /* Instant Focus Studio & Launchpad in FocusTimeline */
@@ -5063,8 +5255,13 @@
   }
 
   .dash-challenge-title {
-    font-size: 0.74rem !important;
+    font-size: 0.76rem !important;
     text-align: center !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    word-break: break-word !important;
+    line-height: 1.25 !important;
   }
 
   .dash-challenge-header svg {

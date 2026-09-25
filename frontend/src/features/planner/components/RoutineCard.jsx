@@ -134,36 +134,7 @@ export default function RoutineCard({
 
   const todayIndex = new Date().getDay();
   const todayDayName = DAY_ABBRS[todayIndex]?.full;
-
-  const getDaysArray = () => {
-    if (Array.isArray(schedule.days)) return schedule.days;
-    if (typeof schedule.days === "string") {
-      try {
-        const parsed = JSON.parse(schedule.days);
-        if (Array.isArray(parsed)) return parsed;
-      } catch (e) {
-        return schedule.days.split(",").map((s) => s.trim()).filter(Boolean);
-      }
-    }
-    return [];
-  };
-  const daysList = getDaysArray();
-
-  const getResourcesArray = () => {
-    if (Array.isArray(schedule.resources)) return schedule.resources;
-    if (typeof schedule.resources === "string") {
-      try {
-        const parsed = JSON.parse(schedule.resources);
-        if (Array.isArray(parsed)) return parsed;
-      } catch (e) {
-        return [];
-      }
-    }
-    return [];
-  };
-  const resourcesList = getResourcesArray();
-
-  const isScheduledToday = daysList.some(
+  const isScheduledToday = (schedule.days || []).some(
     (d) =>
       d.toLowerCase().startsWith(todayDayName.slice(0, 3).toLowerCase()) ||
       d.toLowerCase() === todayDayName.toLowerCase(),
@@ -255,7 +226,7 @@ export default function RoutineCard({
       {/* 7-Day Week Capsule Bar */}
       <div className="routine-week-capsules-bar">
         {DAY_ABBRS.map((dayItem, idx) => {
-          const isMatched = daysList.some(
+          const isMatched = (schedule.days || []).some(
             (d) =>
               d.toLowerCase().startsWith(dayItem.key.toLowerCase()) ||
               d.toLowerCase() === dayItem.full.toLowerCase(),
@@ -298,11 +269,11 @@ export default function RoutineCard({
       )}
 
       {/* Attached Resources */}
-      {resourcesList.length > 0 && (
+      {schedule.resources && schedule.resources.length > 0 && (
         <div className="routine-resources-wrap">
           <span className="routine-resources-label">Resources:</span>
           <div className="routine-resources-pills">
-            {resourcesList.map((res, index) => (
+            {schedule.resources.map((res, index) => (
               <a
                 key={index}
                 href={res.url}
