@@ -1,7 +1,7 @@
 import os
 import sys
 import mimetypes
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 import urllib.request
 import urllib.error
 
@@ -10,6 +10,12 @@ DIST_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "fronte
 class MobileAppHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=DIST_DIR, **kwargs)
+
+    def handle(self):
+        try:
+            super().handle()
+        except (ConnectionResetError, BrokenPipeError, ConnectionAbortedError):
+            pass
 
     def do_OPTIONS(self):
         self.send_response(200)
@@ -29,16 +35,19 @@ class MobileAppHandler(SimpleHTTPRequestHandler):
                     self.send_response(resp.status)
                     for k, v in resp.headers.items():
                         self.send_header(k, v)
+                    self.send_header("Access-Control-Allow-Origin", "*")
                     self.end_headers()
                     self.wfile.write(resp.read())
             except urllib.error.HTTPError as e:
                 self.send_response(e.code)
                 for k, v in e.headers.items():
                     self.send_header(k, v)
+                self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
                 self.wfile.write(e.read())
             except Exception as e:
                 self.send_response(502)
+                self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
                 self.wfile.write(f"Proxy error: {e}".encode())
             return
@@ -77,16 +86,19 @@ class MobileAppHandler(SimpleHTTPRequestHandler):
                     self.send_response(resp.status)
                     for k, v in resp.headers.items():
                         self.send_header(k, v)
+                    self.send_header("Access-Control-Allow-Origin", "*")
                     self.end_headers()
                     self.wfile.write(resp.read())
             except urllib.error.HTTPError as e:
                 self.send_response(e.code)
                 for k, v in e.headers.items():
                     self.send_header(k, v)
+                self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
                 self.wfile.write(e.read())
             except Exception as e:
                 self.send_response(502)
+                self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
                 self.wfile.write(f"Proxy error: {e}".encode())
         else:
@@ -95,6 +107,6 @@ class MobileAppHandler(SimpleHTTPRequestHandler):
 
 if __name__ == "__main__":
     port = 5174
-    server = HTTPServer(("0.0.0.0", port), MobileAppHandler)
+    server = ThreadingHTTPServer(("0.0.0.0", port), MobileAppHandler)
     print(f"Mobile & Desktop Server running at http://0.0.0.0:{port}")
     server.serve_forever()
