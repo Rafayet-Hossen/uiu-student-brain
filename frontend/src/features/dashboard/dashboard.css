@@ -5224,8 +5224,8 @@
   }
 
   .dash-insights-trio-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
   }
 
   .dash-journey-track {
@@ -5271,6 +5271,44 @@
 
   .dash-podium-pedestal {
     display: none;
+  }
+}
+
+/* Tablet Screens (769px to 1024px) — Clean 3-Card Trio Layout & Proportional Scaling */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .dash-insights-trio-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  .dash-analytics-card {
+    padding: 16px 14px 14px !important;
+    min-height: 220px !important;
+    gap: 10px !important;
+  }
+
+  .dash-bar-chart-container {
+    height: 85px !important;
+    padding: 8px 2px 2px !important;
+  }
+
+  .dash-prod-gauge-box {
+    width: 68px !important;
+    height: 68px !important;
+  }
+
+  .dash-prod-num {
+    font-size: 1.28rem !important;
+  }
+
+  .dash-dist-track {
+    height: 6px !important;
+  }
+
+  .dash-analytics-footer-summary {
+    font-size: 0.69rem !important;
+    padding-top: 6px !important;
   }
 }
 
@@ -5859,14 +5897,20 @@
     box-sizing: border-box !important;
     position: relative !important;
     overflow: hidden !important;
-    box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+    box-shadow:
+      0 4px 16px -2px rgba(0, 0, 0, 0.05),
+      0 1px 3px rgba(0, 0, 0, 0.02) !important;
     border: 1px solid var(--dash-card-border) !important;
-    transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s ease !important;
+    transition:
+      transform 0.15s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.15s ease !important;
     -webkit-tap-highlight-color: transparent !important;
   }
 
   [data-theme="dark"] .dash-masonry-card {
-    box-shadow: 0 6px 20px -2px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+    box-shadow:
+      0 6px 20px -2px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
     border-color: rgba(255, 255, 255, 0.09) !important;
   }
 
@@ -5910,8 +5954,21 @@
   }
 
   @keyframes mobileIconFloat {
-    0% { transform: translateY(0); }
-    100% { transform: translateY(-2px); }
+    0% {
+      transform: translateY(0);
+    }
+    100% {
+      transform: translateY(-2px);
+    }
+  }
+
+  @keyframes mobileBarGlowPulse {
+    0%, 100% {
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.45) !important;
+    }
+    50% {
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.9) !important;
+    }
   }
 
   .dash-card-main-content {
@@ -6129,19 +6186,310 @@
     height: 13px !important;
   }
 
-  /* Heatmap Horizontal Scroll Container */
+  /* ==========================================================================
+     SECTION 5: STUDY INSIGHTS (Mobile Ultra-Compact, Animated & Responsive)
+     ========================================================================== */
+  .dash-insights-section {
+    gap: 10px !important;
+    margin-top: 4px !important;
+  }
+
+  .dash-insights-header {
+    margin-bottom: 2px !important;
+  }
+
+  .dash-insights-h2 {
+    font-size: 1.12rem !important;
+    letter-spacing: -0.015em !important;
+  }
+
+  .dash-insights-desc {
+    font-size: 0.70rem !important;
+    line-height: 1.35 !important;
+  }
+
+  /* 1. Study Consistency Heatmap (Ultra-Compact on Mobile) */
+  .dash-heatmap-card {
+    padding: 13px 14px 11px !important;
+    border-radius: 18px !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.05) !important;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease !important;
+    overflow: hidden !important;
+  }
+
+  .dash-heatmap-card:active {
+    transform: scale(0.988) !important;
+  }
+
+  .dash-heatmap-card .dash-section-header {
+    margin-bottom: 6px !important;
+  }
+
+  .dash-heatmap-card .dash-section-h2 {
+    font-size: 0.92rem !important;
+    gap: 6px !important;
+  }
+
+  .dash-heatmap-card .dash-section-desc {
+    font-size: 0.69rem !important;
+    line-height: 1.3 !important;
+    margin-top: 1px !important;
+  }
+
   .dash-github-heatmap-container {
     width: 100% !important;
     max-width: 100% !important;
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch !important;
     box-sizing: border-box !important;
-    padding-bottom: 6px !important;
+    margin-top: 8px !important;
+    padding-bottom: 4px !important;
+    scrollbar-width: thin !important;
   }
 
-  .dash-github-grid-body,
   .dash-github-months-row {
-    min-width: 520px !important;
+    min-width: 480px !important;
+    font-size: 0.63rem !important;
+    padding-left: 22px !important;
+    margin-bottom: 3px !important;
+    opacity: 0.8 !important;
+  }
+
+  .dash-github-grid-body {
+    min-width: 480px !important;
+    gap: 6px !important;
+  }
+
+  .dash-github-day-labels {
+    height: 74px !important;
+    font-size: 0.62rem !important;
+    width: 18px !important;
+    padding-top: 1px !important;
+    opacity: 0.8 !important;
+  }
+
+  .dash-github-matrix {
+    gap: 2.5px !important;
+  }
+
+  .dash-github-week-col {
+    gap: 2.5px !important;
+  }
+
+  .dash-github-cell {
+    height: 9.5px !important;
+    border-radius: 2.5px !important;
+    transition: transform 0.15s ease, filter 0.15s ease !important;
+  }
+
+  .dash-github-cell:active {
+    transform: scale(1.3) !important;
+    filter: brightness(1.2) !important;
+    z-index: 5 !important;
+  }
+
+  .dash-heatmap-legend {
+    margin-top: 7px !important;
+    padding-top: 6px !important;
+    font-size: 0.65rem !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+  }
+
+  .dash-heatmap-scale {
+    gap: 3px !important;
+  }
+
+  .dash-heatmap-scale-dot {
+    width: 9px !important;
+    height: 9px !important;
+    border-radius: 2px !important;
+  }
+
+  /* 2. Trio Grid on Mobile: Vertical Stack with 10px Gap */
+  .dash-insights-trio-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+
+  /* Compact Animated Mobile Analytics Cards */
+  .dash-analytics-card {
+    padding: 13px 14px 12px !important;
+    min-height: auto !important;
+    border-radius: 18px !important;
+    gap: 8px !important;
+    background: var(--dash-card-bg) !important;
+    border: 1px solid var(--dash-card-border) !important;
+    box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.04) !important;
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease !important;
+    position: relative !important;
+    overflow: hidden !important;
+  }
+
+  .dash-analytics-card:active {
+    transform: scale(0.985) !important;
+    border-color: rgba(242, 101, 34, 0.4) !important;
+  }
+
+  .dash-analytics-card-header {
+    gap: 8px !important;
+  }
+
+  .dash-analytics-icon-badge {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 9px !important;
+    animation: mobileIconFloat 3.8s ease-in-out infinite alternate !important;
+  }
+
+  .dash-analytics-icon-badge svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+
+  .dash-analytics-card-title {
+    font-size: 0.88rem !important;
+    font-weight: 800 !important;
+  }
+
+  .dash-analytics-tag {
+    font-size: 0.65rem !important;
+    font-weight: 700 !important;
+    padding: 2px 7px !important;
+  }
+
+  /* Hide verbose marketing summaries on mobile to reduce height by ~50% */
+  .dash-analytics-footer-summary {
+    display: none !important;
+  }
+
+  /* Card A: Weekly Focus Trend Bar Chart (Super Compact & Glowing) */
+  .dash-bar-chart-container {
+    height: 66px !important;
+    padding: 6px 2px 2px !important;
+    gap: 5px !important;
+  }
+
+  .dash-bar-col {
+    gap: 5px !important;
+  }
+
+  .dash-bar-track {
+    max-width: 13px !important;
+    border-radius: 6px !important;
+  }
+
+  .dash-bar-fill {
+    border-radius: 6px !important;
+    min-height: 4px !important;
+  }
+
+  .dash-bar-fill.active-today {
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.75) !important;
+    animation: mobileBarGlowPulse 2.4s infinite ease-in-out !important;
+  }
+
+  .dash-bar-day-lbl {
+    font-size: 0.65rem !important;
+    font-weight: 700 !important;
+  }
+
+  .dash-bar-floating-tooltip {
+    display: none !important;
+  }
+
+  /* Card B: Subject Distribution (Tight & Elegant) */
+  .dash-distribution-list {
+    gap: 6px !important;
+    margin: 1px 0 !important;
+  }
+
+  .dash-dist-item {
+    padding: 2.5px 4px !important;
+    gap: 3px !important;
+    border-radius: 8px !important;
+  }
+
+  .dash-dist-item:active {
+    background: var(--dash-surface-subtle) !important;
+    transform: scale(0.99) !important;
+  }
+
+  .dash-dist-dot {
+    width: 6.5px !important;
+    height: 6.5px !important;
+  }
+
+  .dash-dist-name {
+    font-size: 0.76rem !important;
+    font-weight: 750 !important;
+    max-width: 170px !important;
+  }
+
+  .dash-dist-val {
+    font-size: 0.73rem !important;
+    font-weight: 750 !important;
+  }
+
+  .dash-dist-track {
+    height: 5px !important;
+    border-radius: 9999px !important;
+  }
+
+  .dash-dist-empty {
+    padding: 10px 0 !important;
+    font-size: 0.74rem !important;
+  }
+
+  /* Card C: Productivity Score (Horizontal Split, Compact & Punchy) */
+  .dash-productivity-body {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 2px 0 !important;
+  }
+
+  .dash-prod-gauge-box {
+    width: 56px !important;
+    height: 56px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .dash-prod-glow-pulse {
+    inset: 6px !important;
+  }
+
+  .dash-prod-num {
+    font-size: 1.15rem !important;
+    font-weight: 850 !important;
+  }
+
+  .dash-prod-denom {
+    font-size: 0.62rem !important;
+  }
+
+  .dash-prod-verdict {
+    gap: 3px !important;
+  }
+
+  .dash-prod-badge {
+    font-size: 0.70rem !important;
+    font-weight: 750 !important;
+    padding: 2px 8px !important;
+    border-radius: 9999px !important;
+  }
+
+  .dash-prod-sub {
+    font-size: 0.71rem !important;
+    line-height: 1.32 !important;
+    margin: 0 !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
   }
 
   .dash-community-synergy-strip {
@@ -6184,5 +6532,18 @@
 
   .dash-module-stats-row {
     grid-template-columns: 1fr !important;
+  }
+
+  .dash-dist-name {
+    max-width: 120px !important;
+  }
+
+  .dash-prod-gauge-box {
+    width: 50px !important;
+    height: 50px !important;
+  }
+
+  .dash-prod-num {
+    font-size: 1.05rem !important;
   }
 }
