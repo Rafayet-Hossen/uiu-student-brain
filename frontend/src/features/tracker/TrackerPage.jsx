@@ -215,7 +215,7 @@ export default function TrackerPage() {
     setSubmitting(true);
     try {
       const session = await createStudySession(payload);
-      await loadTrackerData(true);
+      await loadTrackerData();
       return session;
     } catch (err) {
       setError(extractTrackerErrorMessage(err));
@@ -225,8 +225,39 @@ export default function TrackerPage() {
     }
   };
 
-  const safeSessions = Array.isArray(sessions) ? sessions : [];
   const todayStr = new Date().toISOString().split("T")[0];
+
+  const handleGoalUpdated = async (newGoalMinutes) => {
+    // 1. Instant optimistic state update on current page
+    setStreakData((prev) => {
+      if (!prev) return prev;
+      const todayMins = prev.today_minutes || 0;
+      const achieved = todayMins >= newGoalMinutes && todayMins > 0;
+      const updatedWeekly = (prev.weekly_consistency || []).map((day) => {
+        const isToday = day.date === todayStr || day.is_today;
+        const mins = day.minutes || 0;
+        return {
+          ...day,
+          goal_met: mins >= newGoalMinutes && mins > 0,
+        };
+      });
+      return {
+        ...prev,
+        daily_goal_minutes: newGoalMinutes,
+        daily_goal_achieved: achieved,
+        weekly_consistency: updatedWeekly,
+      };
+    });
+
+    // 2. Silently sync fresh server stats, streak milestones, and rewards in background
+    try {
+      await loadTrackerData(true);
+    } catch (err) {
+      console.error("Silent reload after goal update failed:", err);
+    }
+  };
+
+  const safeSessions = Array.isArray(sessions) ? sessions : [];
 
   // Today's Scheduled Sessions
   const todaysSessions = useMemo(() => {
@@ -313,6 +344,7 @@ export default function TrackerPage() {
           totalHours={totalHours}
           remainingMins={remainingMins}
           sessionCount={completedSessions.length}
+          onGoalUpdated={handleGoalUpdated}
         />
       </div>
 
@@ -475,9 +507,7 @@ export default function TrackerPage() {
           activeSession={activeTimerSession}
           onSessionCompleted={async (payload) => {
             if (activeTimerSession) {
-              const res = await completeStudySession(activeTimerSession.id);
-              await loadTrackerData(true);
-              return res;
+              return await completeStudySession(activeTimerSession.id);
             } else {
               return await handleCreate(payload);
             }

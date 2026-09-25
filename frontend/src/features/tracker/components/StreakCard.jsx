@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Flame, Sparkles, Target, Zap } from "lucide-react";
 import Badge from "../../../components/Badge";
 import Button from "../../../components/Button";
@@ -10,9 +10,35 @@ export default function StreakCard({ streakData, onGoalUpdated }) {
   const [goalInput, setGoalInput] = useState(
     streakData?.daily_goal_minutes || 60,
   );
+  const [localGoal, setLocalGoal] = useState(null);
   const [saving, setSaving] = useState(false);
 
-  const weekly_consistency = streakData?.weekly_consistency || [];
+  // Sync goalInput whenever server streakData updates
+  useEffect(() => {
+    if (streakData?.daily_goal_minutes) {
+      setGoalInput(streakData.daily_goal_minutes);
+      setLocalGoal(null);
+    }
+  }, [streakData?.daily_goal_minutes]);
+
+  const effectiveDailyGoal =
+    localGoal !== null
+      ? localGoal
+      : (streakData?.daily_goal_minutes || 60);
+
+  const rawWeeklyConsistency = streakData?.weekly_consistency || [];
+
+  // Compute 7-day consistency dynamically reflecting effectiveDailyGoal
+  const weekly_consistency = useMemo(() => {
+    return rawWeeklyConsistency.map((item) => {
+      const mins = item.minutes || 0;
+      const met = mins >= effectiveDailyGoal && mins > 0;
+      return {
+        ...item,
+        goal_met: met,
+      };
+    });
+  }, [rawWeeklyConsistency, effectiveDailyGoal]);
 
   // Compute 7-day consistency stats
   const { totalWeekMinutes, activeDaysCount, goalsMetCount } = useMemo(() => {
@@ -35,10 +61,12 @@ export default function StreakCard({ streakData, onGoalUpdated }) {
     current_streak = 0,
     longest_streak = 0,
     today_minutes = 0,
-    daily_goal_minutes = 60,
-    daily_goal_achieved = false,
     studied_today = false,
   } = streakData;
+
+  const daily_goal_minutes = effectiveDailyGoal;
+  const daily_goal_achieved =
+    today_minutes >= daily_goal_minutes && today_minutes > 0;
 
   const goalPercent = Math.min(
     100,
@@ -51,16 +79,28 @@ export default function StreakCard({ streakData, onGoalUpdated }) {
     if (isNaN(newGoal) || newGoal <= 0 || newGoal > 1440) return;
 
     setSaving(true);
+    setLocalGoal(newGoal); // Instant optimistic update in the card
+    setEditingGoal(false);
+
     try {
-      await updateStudyGoal({ daily_goal_minutes: newGoal });
-      setEditingGoal(false);
-      if (onGoalUpdated) onGoalUpdated();
+      const res = await updateStudyGoal({ daily_goal_minutes: newGoal });
+      if (onGoalUpdated) {
+        onGoalUpdated(newGoal, res);
+      }
     } catch (err) {
       console.error("Failed to update goal:", err);
+      setLocalGoal(null); // revert on error
     } finally {
       setSaving(false);
     }
   }
+
+  const handleToggleEdit = () => {
+    if (!editingGoal) {
+      setGoalInput(effectiveDailyGoal);
+    }
+    setEditingGoal(!editingGoal);
+  };
 
   // Helper to format short date "9 Sep"
   const formatShortDate = (dateStr) => {
@@ -124,7 +164,7 @@ export default function StreakCard({ streakData, onGoalUpdated }) {
             <button
               type="button"
               className="goal-edit-toggle"
-              onClick={() => setEditingGoal(!editingGoal)}
+              onClick={handleToggleEdit}
             >
               {editingGoal ? "Cancel" : "⚙️ Edit Target"}
             </button>
