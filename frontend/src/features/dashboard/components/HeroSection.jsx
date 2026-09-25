@@ -98,7 +98,7 @@ export default function HeroSection({
 
           {/* Action CTAs */}
           <div className="dash-hero-actions-row">
-            <Link to="/focustimer">
+            <Link to="/study-center?tab=tracker">
               <Button
                 variant="primary"
                 size="lg"

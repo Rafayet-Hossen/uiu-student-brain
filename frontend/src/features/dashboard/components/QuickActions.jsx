@@ -12,7 +12,7 @@ export default function QuickActions() {
     {
       label: "Start Focus",
       icon: Flame,
-      to: "/focustimer",
+      to: "/study-center?tab=tracker",
       color: "text-amber",
       bg: "bg-amber-subtle",
     },

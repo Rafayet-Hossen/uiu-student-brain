@@ -9,6 +9,7 @@ import {
   VolumeX,
   Plus,
   Clock,
+  Sparkles,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Button from "../../../components/Button";
