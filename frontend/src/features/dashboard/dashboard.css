@@ -6561,13 +6561,13 @@
       "gold gold"
       "stem stem"
       "silver bronze" !important;
-    gap: 0 !important;
+    gap: 0 10px !important;
     width: 100% !important;
     margin-top: 6px !important;
     align-items: stretch !important;
   }
 
-  /* Glowing Vertical Connector Stem between #1 and [#2, #3] */
+  /* Glowing Vertical Connector Stem with Apex & Terminal Beads */
   .dash-podium-tree-stem {
     grid-area: stem !important;
     display: block !important;
@@ -6578,7 +6578,34 @@
     box-shadow: 0 0 10px rgba(234, 88, 12, 0.6) !important;
     border-radius: 9999px !important;
     margin: 0 auto !important;
+    position: relative !important;
     animation: stemGlowPulse 2.8s infinite ease-in-out !important;
+  }
+
+  .dash-podium-tree-stem::before {
+    content: "" !important;
+    position: absolute !important;
+    top: -2px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    background: #f59e0b !important;
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.85) !important;
+  }
+
+  .dash-podium-tree-stem::after {
+    content: "" !important;
+    position: absolute !important;
+    bottom: -2px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 5px !important;
+    height: 5px !important;
+    border-radius: 50% !important;
+    background: #ea580c !important;
+    box-shadow: 0 0 6px rgba(234, 88, 12, 0.8) !important;
   }
 
   @keyframes stemGlowPulse {
@@ -6724,7 +6751,6 @@
      ----------------------------------------------------------------------- */
   .dash-podium-card.podium-silver {
     grid-area: silver !important;
-    margin-right: 5px !important;
     padding: 12px 8px 10px !important;
     border-radius: 20px !important;
     border: 1.5px solid rgba(148, 163, 184, 0.4) !important;
@@ -6751,7 +6777,6 @@
 
   .dash-podium-card.podium-bronze {
     grid-area: bronze !important;
-    margin-left: 5px !important;
     padding: 12px 8px 10px !important;
     border-radius: 20px !important;
     border: 1.5px solid rgba(217, 119, 6, 0.35) !important;
@@ -6851,14 +6876,27 @@
 
   .dash-podium-card.podium-silver .dash-podium-metrics-row,
   .dash-podium-card.podium-bronze .dash-podium-metrics-row {
-    font-size: 0.64rem !important;
+    font-size: 0.60rem !important;
     font-weight: 750 !important;
-    padding: 2px 7px !important;
+    padding: 2.5px 6px !important;
     border-radius: 9999px !important;
     background: var(--dash-surface-elevated) !important;
     border: 1px solid var(--dash-card-border) !important;
     margin-top: 3px !important;
-    gap: 4px !important;
+    gap: 3px !important;
+    white-space: nowrap !important;
+    flex-wrap: nowrap !important;
+    max-width: 100% !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .dash-podium-card.podium-silver .dash-podium-metric,
+  .dash-podium-card.podium-bronze .dash-podium-metric {
+    white-space: nowrap !important;
+    font-size: 0.60rem !important;
+    gap: 2px !important;
   }
 
   .dash-community-synergy-strip {

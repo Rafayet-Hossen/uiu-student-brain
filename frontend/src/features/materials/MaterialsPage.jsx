@@ -874,7 +874,8 @@ export default function MaterialsPage() {
                   onClick={() => setWorkspaceTab("materials")}
                 >
                   <BookOpen size={16} />
-                  <span>Course Materials ({materials.length})</span>
+                  <span className="course-nav-tab-label-full">Course Materials ({materials.length})</span>
+                  <span className="course-nav-tab-label-short">Materials ({materials.length})</span>
                 </button>
                 <button
                   type="button"
@@ -882,7 +883,8 @@ export default function MaterialsPage() {
                   onClick={() => setWorkspaceTab("chat")}
                 >
                   <MessageSquare size={16} />
-                  <span>Course Study Assistant & Q&A</span>
+                  <span className="course-nav-tab-label-full">Course Study Assistant & Q&A</span>
+                  <span className="course-nav-tab-label-short">Study Assistant</span>
                   <span className="badge-assistant-pill">
                     <Bot size={11} />
                     <span>Assistant</span>

@@ -12259,6 +12259,10 @@ html[data-theme="dark"] .native-reader-main-viewport {
   box-shadow: var(--shadow-sm);
 }
 
+.course-nav-tab-label-short {
+  display: none;
+}
+
 /* AI Academic Tutor Chat Section */
 .course-ai-chat-container {
   background: var(--color-surface);
@@ -19961,29 +19965,505 @@ html[data-theme="dark"] .btn-celebration-extend:hover {
 /* ==========================================================================
    STUDY TRACKER, MODALS & CARDS FULL MOBILE RESPONSIVENESS
    ========================================================================== */
+/* ==========================================================================
+   STUDY CENTER MASTER MOBILE & TABLET RESPONSIVENESS
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .materials-workspace-grid {
+    grid-template-columns: 280px 1fr !important;
+    gap: 16px !important;
+  }
+  .study-center-unified-header {
+    padding: 12px 18px !important;
+  }
+}
+
 @media (max-width: 768px) {
-  .study-center-top-header {
-    padding: 16px 18px;
-    border-radius: 14px;
+  /* Unified Header & Nav Ribbon on Mobile */
+  .study-center-wrapper {
+    gap: 10px !important;
   }
+
+  .study-center-unified-header {
+    position: sticky !important;
+    top: 56px !important;
+    z-index: 60 !important;
+    padding: 10px 12px !important;
+    border-radius: 16px !important;
+    margin-bottom: 6px !important;
+    border: 1px solid var(--color-border-subtle) !important;
+    background: rgba(255, 255, 255, 0.94) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+  }
+
+  [data-theme="dark"] .study-center-unified-header {
+    background: rgba(15, 23, 42, 0.94) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
+  }
+
+  .study-center-header-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 9px !important;
+  }
+
+  .study-center-title-group {
+    gap: 9px !important;
+  }
+
+  .study-center-badge-icon {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 10px !important;
+  }
+
+  .study-center-badge-icon svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
   .study-center-main-title {
-    font-size: 1.35rem;
+    font-size: 1.05rem !important;
   }
+
+  .study-center-micro-pill {
+    font-size: 0.62rem !important;
+    padding: 1.5px 6px !important;
+  }
+
   .study-center-tagline {
-    font-size: 0.8125rem;
+    font-size: 0.69rem !important;
+    line-height: 1.25 !important;
   }
-  .study-center-main-tabs-wrapper {
-    top: 60px;
-    padding: 6px 0;
-  }
+
+  /* Smooth swipeable 4-module tabs without clipping */
   .study-center-nav-tabs {
-    padding: 4px;
-    gap: 6px;
-    -webkit-overflow-scrolling: touch;
+    width: 100% !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    padding: 3px !important;
+    gap: 4px !important;
+    box-sizing: border-box !important;
+    border-radius: 12px !important;
   }
+
+  .study-center-nav-tabs::-webkit-scrollbar {
+    display: none !important;
+  }
+
   .study-center-nav-tab {
-    padding: 8px 14px;
-    font-size: 0.8125rem;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    padding: 6px 11px !important;
+    font-size: 0.75rem !important;
+    border-radius: 9px !important;
+    gap: 5px !important;
+  }
+
+  .study-center-nav-tab svg {
+    width: 13px !important;
+    height: 13px !important;
+  }
+
+  /* Semester Bar */
+  .semester-selection-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    padding: 2px 0 6px !important;
+    margin-bottom: 2px !important;
+  }
+
+  .semester-bar-left {
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+
+  .semester-bar-label {
+    font-size: 0.72rem !important;
+    flex-shrink: 0 !important;
+  }
+
+  .semester-pills-list {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    gap: 5px !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    padding-bottom: 2px !important;
+    width: 100% !important;
+  }
+
+  .semester-pills-list::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .semester-pill-btn {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    padding: 4px 10px !important;
+    font-size: 0.73rem !important;
+    border-radius: 9999px !important;
+  }
+
+  .semester-bar-actions {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 6px !important;
+    width: 100% !important;
+  }
+
+  .semester-bar-actions button {
+    font-size: 0.74rem !important;
+    padding: 5px 9px !important;
+    border-radius: 8px !important;
+  }
+
+  /* Single Column Workspace on Mobile */
+  .materials-workspace-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .materials-sidebar {
+    position: static !important;
+    border-radius: 18px !important;
+    padding: 13px 12px !important;
+    gap: 9px !important;
+    box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.04) !important;
+  }
+
+  .sidebar-header-row {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+  }
+
+  .sidebar-title {
+    font-size: 0.92rem !important;
+  }
+
+  .sidebar-header-row .btn-primary {
+    padding: 5px 9px !important;
+    font-size: 0.74rem !important;
+    border-radius: 8px !important;
+  }
+
+  .sidebar-search-box input {
+    height: 35px !important;
+    font-size: 0.77rem !important;
+    border-radius: 10px !important;
+    padding: 6px 10px !important;
+  }
+
+  .project-list-container {
+    max-height: 230px !important;
+    gap: 5px !important;
+  }
+
+  .project-nav-card {
+    padding: 9px 11px !important;
+    border-radius: 12px !important;
+    gap: 4px !important;
+    transition: transform 0.15s ease, background 0.15s ease !important;
+  }
+
+  .project-nav-card:active {
+    transform: scale(0.985) !important;
+  }
+
+  .project-card-title {
+    font-size: 0.82rem !important;
+  }
+
+  .course-code-badge {
+    font-size: 0.69rem !important;
+    padding: 1.5px 6px !important;
+  }
+
+  .badge-summary-pill {
+    font-size: 0.64rem !important;
+  }
+
+  .project-card-stats {
+    font-size: 0.69rem !important;
+  }
+
+  /* Active Course Banner */
+  .active-project-banner {
+    padding: 13px 12px 11px !important;
+    border-radius: 18px !important;
+    gap: 10px !important;
+    flex-direction: column !important;
+    box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.04) !important;
+  }
+
+  .banner-details {
+    min-width: 0 !important;
+    width: 100% !important;
+    gap: 5px !important;
+  }
+
+  .banner-tag-row {
+    gap: 4px !important;
+  }
+
+  .banner-tag-row span {
+    font-size: 0.66rem !important;
+  }
+
+  .banner-project-title {
+    font-size: 1.18rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .banner-project-desc {
+    font-size: 0.74rem !important;
+    line-height: 1.35 !important;
+  }
+
+  .banner-action-buttons {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr auto !important;
+    gap: 6px !important;
+  }
+
+  .banner-action-buttons button {
+    font-size: 0.75rem !important;
+    padding: 7px 9px !important;
+    justify-content: center !important;
+    border-radius: 10px !important;
+  }
+
+  .btn-delete-project {
+    padding: 7px 9px !important;
+  }
+
+  /* Workspace Nav Tabs: Materials vs Assistant */
+  .course-workspace-nav-tabs {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 5px !important;
+    padding: 4px !important;
+    border-radius: 14px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .course-nav-tab {
+    flex: none !important;
+    width: 100% !important;
+    padding: 8px 6px !important;
+    font-size: 0.77rem !important;
+    gap: 5px !important;
+    border-radius: 10px !important;
+    justify-content: center !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+  }
+
+  .course-nav-tab svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+
+  .course-nav-tab-label-full {
+    display: none !important;
+  }
+
+  .course-nav-tab-label-short {
+    display: inline !important;
+  }
+
+  .badge-assistant-pill {
+    display: none !important;
+  }
+
+  /* Syllabus Topics Swipe Carousel */
+  .syllabus-card-section {
+    border-radius: 18px !important;
+    padding: 12px !important;
+    gap: 7px !important;
+  }
+
+  .syllabus-header-row {
+    margin-bottom: 3px !important;
+  }
+
+  .syllabus-title {
+    font-size: 0.83rem !important;
+  }
+
+  .syllabus-chips-wrap {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    gap: 5px !important;
+    padding: 2px 0 6px !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    width: 100% !important;
+  }
+
+  .syllabus-chips-wrap::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .syllabus-chip-btn {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    padding: 4.5px 9px !important;
+    font-size: 0.71rem !important;
+    border-radius: 9999px !important;
+    gap: 4px !important;
+  }
+
+  .syllabus-chip-count {
+    font-size: 0.64rem !important;
+    padding: 1px 4.5px !important;
+  }
+
+  .syllabus-filter-banner {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 7px !important;
+    padding: 8px 10px !important;
+  }
+
+  .syllabus-filter-banner button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* Materials Toolbar: Filter Pills & Search */
+  .materials-toolbar-row {
+    flex-direction: column !important;
+    gap: 7px !important;
+    width: 100% !important;
+  }
+
+  .materials-type-filters {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    gap: 5px !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    width: 100% !important;
+    padding-bottom: 2px !important;
+  }
+
+  .materials-type-filters::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .filter-pill-btn {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    padding: 5px 9.5px !important;
+    font-size: 0.73rem !important;
+    border-radius: 9999px !important;
+  }
+
+  .materials-search-field {
+    width: 100% !important;
+  }
+
+  .materials-search-field input {
+    height: 35px !important;
+    font-size: 0.78rem !important;
+    border-radius: 10px !important;
+  }
+
+  /* Materials & Notes Cards */
+  .materials-cards-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .material-card {
+    border-radius: 18px !important;
+    padding: 12px !important;
+    gap: 8px !important;
+    box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.04) !important;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease !important;
+  }
+
+  .material-card:active {
+    transform: scale(0.985) !important;
+  }
+
+  .mat-card-header {
+    gap: 7px !important;
+  }
+
+  .mat-card-title {
+    font-size: 0.88rem !important;
+  }
+
+  .mat-note-pill-row {
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+  }
+
+  .mat-note-formatted-preview {
+    font-size: 0.77rem !important;
+    max-height: 75px !important;
+  }
+
+  .mat-ai-snippet-box {
+    padding: 6px 9px !important;
+    border-radius: 10px !important;
+  }
+
+  .ai-snippet-text {
+    font-size: 0.73rem !important;
+    line-height: 1.35 !important;
+  }
+
+  .mat-card-footer {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 7px !important;
+    padding-top: 8px !important;
+  }
+
+  .mat-status-slot {
+    width: 100% !important;
+  }
+
+  .mat-status-chip {
+    font-size: 0.67rem !important;
+    padding: 3px 8px !important;
+  }
+
+  .mat-actions-slot {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 6px !important;
+    width: 100% !important;
+  }
+
+  .mat-actions-slot button,
+  .btn-action-view-note,
+  .btn-action-ai-report {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 6px 9px !important;
+    font-size: 0.73rem !important;
+    border-radius: 9px !important;
   }
 }
 
