@@ -47,9 +47,9 @@
 /* Master Layout Container */
 .dashboard-v2-container {
   width: 100%;
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 0 clamp(16px, 2.5vw, 40px);
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
   gap: 28px;
@@ -1517,7 +1517,6 @@
   background: var(--dash-primary);
 }
 
-
 .dash-timeline-sessions-group,
 .dash-timeline-routines-group {
   display: flex;
@@ -1807,7 +1806,7 @@
 
 .dash-github-cell {
   width: 100%;
-  max-width: 16px;
+  max-width: 22px;
   min-width: 10px;
   min-height: 10px;
   aspect-ratio: 1 / 1;
@@ -2529,15 +2528,24 @@
    STORYTELLING ACADEMIC COMMAND CENTER (SAVOY / LINEAR / APPLE EDUCATION)
    ========================================================================== */
 
+/* Master Main Content & Storytelling Flow Container for 100% Full-Width Screen */
+.main-content.dashboard-main-content {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: clamp(20px, 2.5vw, 32px) clamp(16px, 3vw, 48px) 64px !important;
+  box-sizing: border-box !important;
+}
+
 /* Master Storytelling Flow Container */
 .dashboard-storytelling-container {
   width: 100%;
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 0 clamp(16px, 2.5vw, 36px);
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: clamp(40px, 5vw, 64px);
+  gap: clamp(32px, 4vw, 56px);
   box-sizing: border-box;
   position: relative;
   overflow-x: hidden;
@@ -2856,7 +2864,7 @@
   font-size: clamp(0.92rem, 1.3vw, 1.05rem);
   color: var(--dash-text-muted);
   line-height: 1.6;
-  max-width: 520px;
+  max-width: 640px;
   margin: 0;
 }
 
@@ -2922,7 +2930,7 @@
 
 .dash-study-desk-scene {
   width: 100%;
-  max-width: 520px;
+  max-width: 580px;
   filter: drop-shadow(0 12px 28px rgba(15, 23, 42, 0.08));
 }
 
@@ -5268,6 +5276,13 @@
 
 /* Mobile Screens (<= 768px) — Full Mobile Optimization & Zero Horizontal Overflow */
 @media (max-width: 768px) {
+  .main-content.dashboard-main-content {
+    padding: 14px 10px 40px !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+  }
+
   .dashboard-storytelling-container {
     padding: 0 !important;
     gap: 22px !important;

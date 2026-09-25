@@ -370,7 +370,7 @@ export default function DashboardPage() {
     <div className="app-screen">
       <Navbar />
 
-      <main className="main-content">
+      <main className="main-content dashboard-main-content">
         <div className="dashboard-storytelling-container">
           {/* Active / In-Progress Session Alert Banner */}
           <ActiveSessionBanner
