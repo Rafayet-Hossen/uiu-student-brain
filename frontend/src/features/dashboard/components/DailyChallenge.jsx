@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
-import { Award, CheckCircle2, Play } from "lucide-react";
+import { Award, CheckCircle2, Play, Sparkles } from "lucide-react";
 
 export default function DailyChallenge({
   todayMinutes = 0,
   targetMinutes = 45,
+  xpReward = 80,
 }) {
   const isCompleted = todayMinutes >= targetMinutes;
   const progressPercent = Math.min(
@@ -19,28 +20,27 @@ export default function DailyChallenge({
   return (
     <div
       className={`dash-card-24 dash-challenge-card ${
-        isCompleted ? "border-emerald/40" : ""
+        isCompleted ? "border-emerald/40 is-completed" : ""
       }`}
     >
       <div className="dash-challenge-header">
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <div className="dash-challenge-title-group">
           {isCompleted ? (
-            <CheckCircle2 size={20} className="text-emerald" />
+            <CheckCircle2 size={18} className="text-emerald shrink-0" />
           ) : (
-            <Award size={20} className="text-amber" />
+            <Award size={18} className="text-amber shrink-0" />
           )}
-          <strong
-            style={{
-              fontSize: "0.92rem",
-              fontWeight: 800,
-              color: "var(--dash-text-main)",
-            }}
-          >
+          <strong className="dash-challenge-title">
             Daily Study Challenge
           </strong>
         </div>
-        <span className="dash-challenge-xp-badge">
-          {isCompleted ? "🎉 +50 XP Earned" : "+50 Scholar XP"}
+        <span
+          className={`dash-challenge-xp-badge ${
+            isCompleted ? "completed" : ""
+          }`}
+        >
+          <Sparkles size={12} className="dash-xp-sparkle shrink-0" />
+          <span>{isCompleted ? `+${xpReward} XP Earned` : `+${xpReward} Scholar XP`}</span>
         </span>
       </div>
 
@@ -81,8 +81,7 @@ export default function DailyChallenge({
                 Goal Achieved!
               </strong>
               <p className="dash-challenge-subcopy">
-                You logged {todayMinutes}m of deep focus today. Keep up the
-                great momentum!
+                You logged {todayMinutes}m of deep focus today. Keep up the great momentum!
               </p>
             </div>
           ) : (
@@ -91,8 +90,7 @@ export default function DailyChallenge({
                 {todayMinutes}m / {targetMinutes}m completed
               </h4>
               <p className="dash-challenge-subcopy">
-                Log at least {targetMinutes}m focused study today to hit your
-                streak goal.
+                Log at least {targetMinutes}m focused study today to hit your streak goal.
               </p>
             </div>
           )}
@@ -112,8 +110,15 @@ export default function DailyChallenge({
         </div>
       </div>
 
-      {!isCompleted && (
-        <div className="dash-challenge-btn-row">
+      <div className="dash-challenge-btn-row">
+        {isCompleted ? (
+          <Link
+            to="/study-center?tab=tracker"
+            className="dash-bento-btn secondary"
+          >
+            <span>+ Log More Focus →</span>
+          </Link>
+        ) : (
           <Link
             to="/study-center?tab=tracker"
             className="dash-bento-btn primary"
@@ -121,8 +126,8 @@ export default function DailyChallenge({
             <Play size={13} fill="currentColor" />
             <span>Start Focus Session →</span>
           </Link>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

@@ -1430,11 +1430,49 @@
   color: var(--dash-primary);
 }
 
+.dash-jump-today-btn {
+  font-size: 0.72rem;
+  font-weight: 750;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  background: var(--dash-primary-subtle);
+  color: var(--dash-primary);
+  border: 1px solid rgba(242, 101, 34, 0.3);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1.3;
+  outline: none;
+}
+
+.dash-jump-today-btn:hover {
+  background: var(--dash-primary);
+  color: #ffffff;
+  border-color: var(--dash-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px var(--dash-primary-glow);
+}
+
 .dash-timeline-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-top: 16px;
+  margin-top: 10px;
+  flex: 1;
+}
+
+.dash-timeline-motion-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.dash-timeline-sessions-group,
+.dash-timeline-routines-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
 }
 
 .dash-timeline-item {
@@ -1541,6 +1579,111 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Enhanced Empty State Card & Past Day Summary */
+.dash-timeline-empty-card {
+  padding: 20px 18px;
+  border-radius: 16px;
+  background: var(--dash-surface-subtle);
+  border: 1px dashed var(--dash-card-border);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.dash-timeline-empty-card.past {
+  flex-direction: column;
+  text-align: center;
+  padding: 30px 18px;
+  gap: 12px;
+}
+
+.dash-timeline-empty-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: var(--dash-primary-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dash-timeline-empty-icon-wrap.past {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: var(--dash-surface-elevated);
+}
+
+.dash-timeline-empty-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.dash-timeline-empty-card.past .dash-timeline-empty-content {
+  align-items: center;
+}
+
+.dash-timeline-empty-title {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--dash-text-main);
+}
+
+.dash-timeline-empty-sub {
+  font-size: 0.76rem;
+  color: var(--dash-text-muted);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.dash-btn-return-today {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border-radius: 9999px;
+  background: var(--dash-primary);
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 750;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px var(--dash-primary-glow);
+}
+
+.dash-btn-return-today:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px var(--dash-primary-glow);
+}
+
+.dash-timeline-past-summary {
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: var(--dash-surface-subtle);
+  border: 1px solid var(--dash-card-border);
+  margin-top: 2px;
+}
+
+.dash-timeline-inline-link {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--dash-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s ease;
+}
+
+.dash-timeline-inline-link:hover {
+  text-decoration: underline;
 }
 
 /* ==========================================================================
@@ -1720,23 +1863,104 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 12px;
+  width: 100%;
+  gap: 8px;
+}
+
+.dash-challenge-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.dash-challenge-title {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--dash-text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .dash-challenge-xp-badge {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 4px 10px;
+  padding: 5px 12px;
   border-radius: 9999px;
-  background: rgba(245, 158, 11, 0.12);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(242, 101, 34, 0.12));
   color: #b45309;
-  font-size: 0.74rem;
-  font-weight: 750;
-  border: 1px solid rgba(245, 158, 11, 0.25);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.12);
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.dash-challenge-xp-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.22);
+}
+
+.dash-challenge-xp-badge.completed {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.18), rgba(5, 150, 105, 0.12));
+  color: #059669;
+  border-color: rgba(16, 185, 129, 0.35);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.12);
 }
 
 [data-theme="dark"] .dash-challenge-xp-badge {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.22), rgba(242, 101, 34, 0.16));
   color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.45);
+  box-shadow: 0 2px 10px rgba(245, 158, 11, 0.2);
+}
+
+[data-theme="dark"] .dash-challenge-xp-badge.completed {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.22), rgba(5, 150, 105, 0.16));
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.45);
+  box-shadow: 0 2px 10px rgba(16, 185, 129, 0.2);
+}
+
+.dash-xp-sparkle {
+  color: #f59e0b;
+}
+
+[data-theme="dark"] .dash-xp-sparkle {
+  color: #fbbf24;
+}
+
+.dash-weekly-goal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  background: var(--dash-primary-subtle);
+  color: var(--dash-primary);
+  font-size: 0.78rem;
+  font-weight: 800;
+  border: 1px solid rgba(242, 101, 34, 0.25);
+  box-shadow: 0 2px 8px var(--dash-primary-glow);
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.dash-weekly-goal-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--dash-primary-glow);
+}
+
+.dash-weekly-goal-badge.completed {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.35);
 }
 
 .dash-challenge-body-split {
@@ -3042,7 +3266,8 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 16px;
   box-sizing: border-box;
 }
 
@@ -3066,7 +3291,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 18px;
+  padding: 20px;
   box-sizing: border-box;
 }
 
@@ -4804,20 +5029,39 @@
   .dash-challenge-header {
     margin-bottom: 0 !important;
     width: 100% !important;
-    justify-content: center !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 4px !important;
   }
 
-  .dash-challenge-header strong {
+  .dash-challenge-title-group {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+  }
+
+  .dash-challenge-title {
     font-size: 0.74rem !important;
+    text-align: center !important;
   }
 
   .dash-challenge-header svg {
-    width: 15px !important;
-    height: 15px !important;
+    width: 14px !important;
+    height: 14px !important;
   }
 
-  .dash-challenge-xp-badge {
-    display: none !important;
+  /* Visible, compact, and glowing XP badge & Weekly goal badge on mobile */
+  .dash-challenge-xp-badge,
+  .dash-weekly-goal-badge {
+    display: inline-flex !important;
+    font-size: 0.65rem !important;
+    font-weight: 800 !important;
+    padding: 2px 8px !important;
+    gap: 3px !important;
+    line-height: 1.2 !important;
+    border-radius: 9999px !important;
   }
 
   .dash-challenge-body-split {
@@ -4857,41 +5101,6 @@
 
   .dash-challenge-btn-row {
     display: none !important;
-  }
-
-  /* Weekly Ring Mobile */
-  .dash-weekly-ring-card {
-    justify-content: flex-start !important;
-  }
-
-  .dash-ring-wrapper {
-    width: 58px !important;
-    height: 58px !important;
-    margin: 0 auto !important;
-  }
-
-  .dash-ring-pct {
-    font-size: 0.92rem !important;
-  }
-
-  .dash-ring-meta {
-    text-align: center !important;
-    width: 100% !important;
-  }
-
-  .dash-ring-meta strong {
-    font-size: 0.8rem !important;
-    display: block !important;
-  }
-
-  .dash-ring-meta p {
-    display: none !important;
-  }
-
-  .dash-ring-meta a {
-    font-size: 0.65rem !important;
-    margin-top: 3px !important;
-    justify-content: center !important;
   }
 
   /* Upcoming Classes & Quote Card */
