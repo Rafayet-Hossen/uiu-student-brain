@@ -69,55 +69,8 @@ export default function CommunityMomentum({ leaderboard = [] }) {
 
       {/* 3D Scholar Podium Showcase (Desktop 3-Column / Mobile Tree Hierarchy) */}
       <div className="dash-podium-stage">
-        {/* Animated Tree Connector (Visible on Mobile & Tablet Tree View, Hidden on Desktop) */}
-        <div className="dash-podium-tree-connector" aria-hidden="true">
-          <svg
-            viewBox="0 0 100 28"
-            preserveAspectRatio="none"
-            className="dash-tree-svg"
-          >
-            <defs>
-              <linearGradient id="treeGradLeft" x1="50%" y1="0%" x2="27%" y2="100%">
-                <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.9" />
-                <stop offset="100%" stopColor="#94a3b8" stopOpacity="0.85" />
-              </linearGradient>
-              <linearGradient id="treeGradRight" x1="50%" y1="0%" x2="77%" y2="100%">
-                <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.9" />
-                <stop offset="100%" stopColor="#d97706" stopOpacity="0.85" />
-              </linearGradient>
-            </defs>
-            {/* Trunk descending from #1 Apex */}
-            <path
-              d="M 50,0 V 11"
-              stroke="#f59e0b"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              className="dash-tree-trunk"
-            />
-            {/* Branch forking left to #2 (Bigger Child, ~27% center of 1.14fr) */}
-            <path
-              d="M 50,11 H 27 V 28"
-              stroke="url(#treeGradLeft)"
-              strokeWidth="2.2"
-              fill="none"
-              strokeLinecap="round"
-              className="dash-tree-branch branch-silver"
-            />
-            {/* Branch forking right to #3 (Smaller Child, ~77% center of 0.86fr) */}
-            <path
-              d="M 50,11 H 77 V 28"
-              stroke="url(#treeGradRight)"
-              strokeWidth="1.8"
-              fill="none"
-              strokeLinecap="round"
-              className="dash-tree-branch branch-bronze"
-            />
-            {/* Glowing Apex & Branch Nodes */}
-            <circle cx="50" cy="11" r="3.2" fill="#f59e0b" className="dash-tree-node node-gold" />
-            <circle cx="27" cy="26" r="2.8" fill="#94a3b8" className="dash-tree-node node-silver" />
-            <circle cx="77" cy="26" r="2.4" fill="#d97706" className="dash-tree-node node-bronze" />
-          </svg>
-        </div>
+        {/* Glowing Vertical Tree Stem between Top Card (#1) and Bottom Cards (#2, #3) */}
+        <div className="dash-podium-tree-stem" aria-hidden="true" />
 
         {podiumOrder.map((student, pIdx) => {
           const isGold = student.rank === 1;

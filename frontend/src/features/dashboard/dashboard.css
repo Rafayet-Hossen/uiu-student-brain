@@ -4875,7 +4875,7 @@
   margin-top: 8px;
 }
 
-.dash-podium-tree-connector {
+.dash-podium-tree-stem {
   display: none;
 }
 
@@ -5265,7 +5265,7 @@
 
 }
 
-/* Tablet Screens (769px to 1024px) — Clean 3-Card Trio Layout & Tree Hierarchy */
+/* Tablet Screens (769px to 1024px) — Clean 3-Card Trio Layout & Proportional Scaling */
 @media (min-width: 769px) and (max-width: 1024px) {
   .dash-insights-trio-grid {
     display: grid !important;
@@ -5302,34 +5302,30 @@
     padding-top: 6px !important;
   }
 
-  /* Tree Layout on Tablet: Balanced & Proportional */
+  /* Tree Layout on Tablet: Centered & Proportional */
   .dash-podium-stage {
     display: grid !important;
-    grid-template-columns: 1.15fr 0.85fr !important;
+    grid-template-columns: 1fr 1fr !important;
     grid-template-areas:
       "gold gold"
-      "tree tree"
+      "stem stem"
       "silver bronze" !important;
     gap: 0 !important;
-    max-width: 640px !important;
+    max-width: 580px !important;
     margin: 10px auto 0 !important;
     width: 100% !important;
   }
 
-  .dash-podium-tree-connector {
-    grid-area: tree !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    width: 100% !important;
+  .dash-podium-tree-stem {
+    grid-area: stem !important;
+    display: block !important;
+    justify-self: center !important;
+    width: 2.5px !important;
     height: 32px !important;
-    margin: 4px 0 !important;
-    pointer-events: none !important;
-  }
-
-  .dash-tree-svg {
-    width: 100% !important;
-    height: 100% !important;
+    background: linear-gradient(180deg, #ea580c 0%, #f97316 60%, rgba(249, 115, 22, 0.25) 100%) !important;
+    box-shadow: 0 0 10px rgba(234, 88, 12, 0.6) !important;
+    border-radius: 9999px !important;
+    margin: 0 auto !important;
   }
 
   .dash-podium-pedestal {
@@ -5338,52 +5334,22 @@
 
   .dash-podium-card.podium-gold {
     grid-area: gold !important;
+    justify-self: center !important;
+    width: 52% !important;
+    max-width: 270px !important;
     transform: none !important;
-    display: grid !important;
-    grid-template-columns: 52px 1fr auto !important;
-    grid-template-areas:
-      "badge badge badge"
-      "avatar details metrics" !important;
-    align-items: center !important;
-    text-align: left !important;
-    padding: 13px 18px !important;
-    gap: 6px 14px !important;
-    border-radius: 20px !important;
-  }
-
-  .dash-podium-card.podium-gold .dash-podium-crown-badge {
-    grid-area: badge !important;
-    width: 100% !important;
-    display: flex !important;
-    justify-content: space-between !important;
-  }
-
-  .dash-podium-card.podium-gold .dash-podium-avatar-wrap {
-    grid-area: avatar !important;
-    width: 50px !important;
-    height: 50px !important;
-  }
-
-  .dash-podium-card.podium-gold .dash-podium-info {
-    grid-area: details !important;
-    align-items: flex-start !important;
-    text-align: left !important;
-  }
-
-  .dash-podium-card.podium-gold .dash-podium-metrics-row {
-    grid-area: metrics !important;
   }
 
   .dash-podium-card.podium-silver {
     grid-area: silver !important;
+    margin-right: 8px !important;
     transform: none !important;
-    padding: 14px 12px !important;
   }
 
   .dash-podium-card.podium-bronze {
     grid-area: bronze !important;
+    margin-left: 8px !important;
     transform: none !important;
-    padding: 13px 10px !important;
   }
 }
 
@@ -6568,7 +6534,7 @@
   }
 
   /* ==========================================================================
-     COMMUNITY MOMENTUM: RESPONSIVE TREE HIERARCHY (Mobile Phones <= 768px)
+     COMMUNITY MOMENTUM: PHOTO-MATCHED TREE HIERARCHY (Mobile Phones <= 768px)
      ========================================================================== */
   .dash-community-section {
     gap: 10px !important;
@@ -6587,94 +6553,59 @@
     line-height: 1.35 !important;
   }
 
-  /* Tree Grid: Left is bigger child #2 (1.14fr), Right is smaller child #3 (0.86fr) */
+  /* Tree Grid Stage: 1fr 1fr with centered Top Card and Glowing Vertical Stem */
   .dash-podium-stage {
     display: grid !important;
-    grid-template-columns: 1.14fr 0.86fr !important;
+    grid-template-columns: 1fr 1fr !important;
     grid-template-areas:
       "gold gold"
-      "tree tree"
+      "stem stem"
       "silver bronze" !important;
     gap: 0 !important;
-    align-items: stretch !important;
+    width: 100% !important;
     margin-top: 6px !important;
-    width: 100% !important;
+    align-items: stretch !important;
   }
 
-  /* Tree Connector Visual Fork */
-  .dash-podium-tree-connector {
-    grid-area: tree !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    width: 100% !important;
-    height: 26px !important;
-    margin: 1px 0 !important;
-    position: relative !important;
-    pointer-events: none !important;
-    z-index: 2 !important;
+  /* Glowing Vertical Connector Stem between #1 and [#2, #3] */
+  .dash-podium-tree-stem {
+    grid-area: stem !important;
+    display: block !important;
+    justify-self: center !important;
+    width: 2.5px !important;
+    height: 28px !important;
+    background: linear-gradient(180deg, #ea580c 0%, #f97316 60%, rgba(249, 115, 22, 0.25) 100%) !important;
+    box-shadow: 0 0 10px rgba(234, 88, 12, 0.6) !important;
+    border-radius: 9999px !important;
+    margin: 0 auto !important;
+    animation: stemGlowPulse 2.8s infinite ease-in-out !important;
   }
 
-  .dash-tree-svg {
-    width: 100% !important;
-    height: 100% !important;
-    overflow: visible !important;
-  }
-
-  .dash-tree-trunk {
-    filter: drop-shadow(0 0 4px rgba(245, 158, 11, 0.7));
-  }
-
-  .dash-tree-branch.branch-silver {
-    stroke-dasharray: 4, 3;
-    animation: treeDashPulse 3.5s linear infinite;
-    filter: drop-shadow(0 0 2px rgba(148, 163, 184, 0.5));
-  }
-
-  .dash-tree-branch.branch-bronze {
-    stroke-dasharray: 4, 3;
-    animation: treeDashPulse 3.5s linear infinite;
-    filter: drop-shadow(0 0 2px rgba(217, 119, 6, 0.5));
-  }
-
-  .dash-tree-node.node-gold {
-    animation: treeNodeGlow 2.5s infinite ease-in-out;
-  }
-
-  .dash-tree-node.node-silver {
-    animation: treeNodeGlow 2.5s infinite ease-in-out 0.4s;
-  }
-
-  .dash-tree-node.node-bronze {
-    animation: treeNodeGlow 2.5s infinite ease-in-out 0.8s;
-  }
-
-  @keyframes treeDashPulse {
-    to {
-      stroke-dashoffset: -28;
-    }
-  }
-
-  @keyframes treeNodeGlow {
+  @keyframes stemGlowPulse {
     0%, 100% {
-      transform: scale(1);
-      opacity: 0.85;
+      box-shadow: 0 0 6px rgba(234, 88, 12, 0.45);
+      opacity: 0.88;
     }
     50% {
-      transform: scale(1.3);
+      box-shadow: 0 0 14px rgba(234, 88, 12, 0.9);
       opacity: 1;
     }
   }
 
-  /* Hide Pedestal block bases in Tree View to save massive vertical space */
+  /* Hide Pedestals in Tree View */
   .dash-podium-pedestal {
     display: none !important;
   }
 
-  /* All Podium Cards on Mobile: Tactile App Feel & Compact */
+  /* Clean, Rounded, Centered Card Styling (Matching Photo) */
   .dash-podium-card {
-    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
     min-height: auto !important;
+    box-sizing: border-box !important;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease !important;
   }
 
   .dash-podium-card:active {
@@ -6682,267 +6613,252 @@
   }
 
   /* -----------------------------------------------------------------------
-     ROOT / APEX: #1 GOLD CHAMPION CARD (Spans full width, Sleek & Glorious)
+     TOP CARD: #1 GOLD CHAMPION (Centered, Dr. Jashodhan Saha Style)
      ----------------------------------------------------------------------- */
   .dash-podium-card.podium-gold {
     grid-area: gold !important;
-    transform: none !important;
-    margin: 0 !important;
-    padding: 10px 12px 10px !important;
-    border-radius: 18px !important;
+    justify-self: center !important;
+    width: 66% !important;
+    min-width: 195px !important;
+    max-width: 245px !important;
+    padding: 13px 12px 11px !important;
+    border-radius: 22px !important;
     border: 1.5px solid rgba(245, 158, 11, 0.45) !important;
     background: linear-gradient(
-      135deg,
-      rgba(254, 243, 199, 0.35) 0%,
-      var(--dash-card-bg) 60%
+      180deg,
+      rgba(254, 243, 199, 0.4) 0%,
+      var(--dash-card-bg) 65%
     ) !important;
     box-shadow:
-      0 4px 18px -2px rgba(245, 158, 11, 0.18),
-      0 1px 3px rgba(0, 0, 0, 0.04) !important;
-    display: grid !important;
-    grid-template-columns: 46px 1fr !important;
-    grid-template-rows: auto auto auto !important;
-    grid-template-areas:
-      "badge badge"
-      "avatar details"
-      "avatar metrics" !important;
-    align-items: center !important;
-    text-align: left !important;
-    gap: 3px 11px !important;
+      0 12px 28px -4px rgba(245, 158, 11, 0.18),
+      0 4px 12px rgba(0, 0, 0, 0.04) !important;
+    gap: 5px !important;
+    transform: none !important;
+    margin: 0 auto !important;
     position: relative !important;
-    overflow: hidden !important;
   }
 
   [data-theme="dark"] .dash-podium-card.podium-gold {
     background: linear-gradient(
-      135deg,
+      180deg,
       rgba(120, 53, 15, 0.28) 0%,
-      var(--dash-card-bg) 60%
+      var(--dash-card-bg) 65%
     ) !important;
     border-color: rgba(245, 158, 11, 0.45) !important;
-    box-shadow: 0 4px 20px -2px rgba(245, 158, 11, 0.25) !important;
+    box-shadow: 0 12px 28px -4px rgba(245, 158, 11, 0.25) !important;
   }
 
+  /* Top Crown Accent Badge */
   .dash-podium-card.podium-gold .dash-podium-crown-badge {
-    grid-area: badge !important;
-    width: 100% !important;
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    padding: 2.5px 8px !important;
-    font-size: 0.68rem !important;
-    box-sizing: border-box !important;
+    padding: 2px 8px !important;
+    font-size: 0.65rem !important;
+    background: rgba(245, 158, 11, 0.14) !important;
+    border-color: rgba(245, 158, 11, 0.35) !important;
+    color: #d97706 !important;
+    font-weight: 800 !important;
     margin-bottom: 2px !important;
-    border-color: rgba(245, 158, 11, 0.3) !important;
-    background: rgba(245, 158, 11, 0.12) !important;
   }
 
+  /* Avatar with golden circular ring */
   .dash-podium-card.podium-gold .dash-podium-avatar-wrap {
-    grid-area: avatar !important;
-    width: 44px !important;
-    height: 44px !important;
+    width: 50px !important;
+    height: 50px !important;
     margin: 0 !important;
   }
 
   .dash-podium-card.podium-gold .dash-podium-avatar-letter {
-    font-size: 1.10rem !important;
-    box-shadow: 0 0 12px rgba(245, 158, 11, 0.5) !important;
+    font-size: 1.2rem !important;
+    box-shadow: 0 0 14px rgba(245, 158, 11, 0.5) !important;
   }
 
-  .dash-podium-card.podium-gold .dash-podium-info {
-    grid-area: details !important;
-    align-items: flex-start !important;
-    text-align: left !important;
-    gap: 1px !important;
-    width: 100% !important;
+  .dash-podium-card.podium-gold .dash-podium-avatar-ring {
+    border: 2.5px solid rgba(245, 158, 11, 0.55) !important;
+    inset: -3.5px !important;
   }
 
+  /* Centered Name */
   .dash-podium-card.podium-gold .dash-podium-name {
-    font-size: 0.90rem !important;
+    font-size: 0.94rem !important;
     font-weight: 850 !important;
     color: var(--dash-text-main) !important;
+    margin-top: 3px !important;
+    letter-spacing: -0.01em !important;
   }
 
   .dash-podium-card.podium-gold .dash-podium-dept {
-    font-size: 0.66rem !important;
+    font-size: 0.64rem !important;
     color: var(--dash-text-muted) !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
-    max-width: 200px !important;
+    max-width: 190px !important;
   }
 
+  /* Uppercase Role Title like "CHIEF ADVISOR" */
   .dash-podium-card.podium-gold .dash-podium-achievement-badge {
-    display: none !important;
+    font-size: 0.64rem !important;
+    font-weight: 850 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: #ea580c !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    gap: 3px !important;
+    margin-top: 2px !important;
   }
 
   .dash-podium-card.podium-gold .dash-podium-metrics-row {
-    grid-area: metrics !important;
-    font-size: 0.69rem !important;
+    font-size: 0.68rem !important;
     font-weight: 750 !important;
+    padding: 2.5px 8px !important;
+    border-radius: 9999px !important;
+    background: var(--dash-surface-elevated) !important;
+    border: 1px solid var(--dash-card-border) !important;
+    margin-top: 3px !important;
     gap: 6px !important;
-    margin-top: 1px !important;
-    justify-content: flex-start !important;
   }
 
   /* -----------------------------------------------------------------------
-     LEFT BRANCH / BIGGER CHILD: #2 SILVER CONTENDER
+     BOTTOM CARDS: #2 SILVER & #3 BRONZE (Mallika Datta & Rajib Das Style)
      ----------------------------------------------------------------------- */
   .dash-podium-card.podium-silver {
     grid-area: silver !important;
-    transform: none !important;
-    padding: 10px 8px 9px !important;
-    border-radius: 16px !important;
-    border: 1px solid rgba(148, 163, 184, 0.38) !important;
+    margin-right: 5px !important;
+    padding: 12px 8px 10px !important;
+    border-radius: 20px !important;
+    border: 1.5px solid rgba(148, 163, 184, 0.4) !important;
     background: linear-gradient(
       180deg,
       rgba(241, 245, 249, 0.45) 0%,
-      var(--dash-card-bg) 75%
+      var(--dash-card-bg) 65%
     ) !important;
-    gap: 6px !important;
-    align-items: center !important;
-    text-align: center !important;
-    box-shadow: 0 4px 14px -2px rgba(148, 163, 184, 0.15) !important;
+    box-shadow:
+      0 8px 22px -4px rgba(148, 163, 184, 0.15),
+      0 2px 8px rgba(0, 0, 0, 0.03) !important;
+    gap: 5px !important;
+    transform: none !important;
   }
 
   [data-theme="dark"] .dash-podium-card.podium-silver {
     background: linear-gradient(
       180deg,
-      rgba(51, 65, 85, 0.32) 0%,
-      var(--dash-card-bg) 75%
+      rgba(51, 65, 85, 0.35) 0%,
+      var(--dash-card-bg) 65%
     ) !important;
-    border-color: rgba(148, 163, 184, 0.28) !important;
-  }
-
-  .dash-podium-card.podium-silver .dash-podium-crown-badge {
-    padding: 1.5px 6px !important;
-    font-size: 0.65rem !important;
-    gap: 3px !important;
-    background: rgba(148, 163, 184, 0.12) !important;
     border-color: rgba(148, 163, 184, 0.3) !important;
   }
 
-  .dash-podium-card.podium-silver .dash-podium-avatar-wrap {
-    width: 38px !important;
-    height: 38px !important;
-  }
-
-  .dash-podium-card.podium-silver .dash-podium-avatar-letter {
-    font-size: 0.98rem !important;
-  }
-
-  .dash-podium-card.podium-silver .dash-podium-info {
-    gap: 1px !important;
-    width: 100% !important;
-  }
-
-  .dash-podium-card.podium-silver .dash-podium-name {
-    font-size: 0.79rem !important;
-    font-weight: 800 !important;
-    max-width: 100% !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-  }
-
-  .dash-podium-card.podium-silver .dash-podium-dept {
-    font-size: 0.61rem !important;
-    max-width: 100% !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-  }
-
-  .dash-podium-card.podium-silver .dash-podium-achievement-badge {
-    font-size: 0.58rem !important;
-    padding: 1px 5px !important;
-    margin-top: 1px !important;
-  }
-
-  .dash-podium-card.podium-silver .dash-podium-metrics-row {
-    font-size: 0.65rem !important;
-    gap: 4px !important;
-    margin-top: 1px !important;
-  }
-
-  /* -----------------------------------------------------------------------
-     RIGHT BRANCH / SMALLER CHILD: #3 BRONZE SCHOLAR
-     ----------------------------------------------------------------------- */
   .dash-podium-card.podium-bronze {
     grid-area: bronze !important;
-    transform: none !important;
-    padding: 9px 6px 8px !important;
-    border-radius: 14px !important;
-    border: 1px solid rgba(217, 119, 6, 0.28) !important;
+    margin-left: 5px !important;
+    padding: 12px 8px 10px !important;
+    border-radius: 20px !important;
+    border: 1.5px solid rgba(217, 119, 6, 0.35) !important;
     background: linear-gradient(
       180deg,
-      rgba(255, 237, 213, 0.3) 0%,
-      var(--dash-card-bg) 75%
+      rgba(255, 237, 213, 0.35) 0%,
+      var(--dash-card-bg) 65%
     ) !important;
+    box-shadow:
+      0 8px 22px -4px rgba(217, 119, 6, 0.14),
+      0 2px 8px rgba(0, 0, 0, 0.03) !important;
     gap: 5px !important;
-    align-items: center !important;
-    text-align: center !important;
-    box-shadow: 0 4px 14px -2px rgba(217, 119, 6, 0.12) !important;
+    transform: none !important;
   }
 
   [data-theme="dark"] .dash-podium-card.podium-bronze {
     background: linear-gradient(
       180deg,
-      rgba(124, 45, 18, 0.22) 0%,
-      var(--dash-card-bg) 75%
+      rgba(124, 45, 18, 0.25) 0%,
+      var(--dash-card-bg) 65%
     ) !important;
-    border-color: rgba(217, 119, 6, 0.22) !important;
-  }
-
-  .dash-podium-card.podium-bronze .dash-podium-crown-badge {
-    padding: 1.5px 5px !important;
-    font-size: 0.62rem !important;
-    gap: 2px !important;
-    background: rgba(217, 119, 6, 0.1) !important;
     border-color: rgba(217, 119, 6, 0.25) !important;
   }
 
-  .dash-podium-card.podium-bronze .dash-podium-avatar-wrap {
-    width: 34px !important;
-    height: 34px !important;
-  }
-
-  .dash-podium-card.podium-bronze .dash-podium-avatar-letter {
-    font-size: 0.88rem !important;
-  }
-
-  .dash-podium-card.podium-bronze .dash-podium-info {
-    gap: 1px !important;
-    width: 100% !important;
-  }
-
-  .dash-podium-card.podium-bronze .dash-podium-name {
-    font-size: 0.74rem !important;
-    font-weight: 750 !important;
-    max-width: 100% !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-  }
-
-  .dash-podium-card.podium-bronze .dash-podium-dept {
-    font-size: 0.58rem !important;
-    max-width: 100% !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-  }
-
-  .dash-podium-card.podium-bronze .dash-podium-achievement-badge {
-    font-size: 0.56rem !important;
-    padding: 1px 4px !important;
-    margin-top: 1px !important;
-  }
-
-  .dash-podium-card.podium-bronze .dash-podium-metrics-row {
+  .dash-podium-card.podium-silver .dash-podium-crown-badge {
+    padding: 2px 6px !important;
     font-size: 0.62rem !important;
+    background: rgba(148, 163, 184, 0.12) !important;
+    border-color: rgba(148, 163, 184, 0.3) !important;
+  }
+
+  .dash-podium-card.podium-bronze .dash-podium-crown-badge {
+    padding: 2px 6px !important;
+    font-size: 0.62rem !important;
+    background: rgba(217, 119, 6, 0.12) !important;
+    border-color: rgba(217, 119, 6, 0.28) !important;
+  }
+
+  .dash-podium-card.podium-silver .dash-podium-avatar-wrap,
+  .dash-podium-card.podium-bronze .dash-podium-avatar-wrap {
+    width: 44px !important;
+    height: 44px !important;
+    margin: 0 !important;
+  }
+
+  .dash-podium-card.podium-silver .dash-podium-avatar-letter,
+  .dash-podium-card.podium-bronze .dash-podium-avatar-letter {
+    font-size: 1.05rem !important;
+  }
+
+  .dash-podium-card.podium-silver .dash-podium-avatar-ring {
+    border: 2px solid rgba(148, 163, 184, 0.45) !important;
+    inset: -3px !important;
+  }
+
+  .dash-podium-card.podium-bronze .dash-podium-avatar-ring {
+    border: 2px solid rgba(217, 119, 6, 0.4) !important;
+    inset: -3px !important;
+  }
+
+  .dash-podium-card.podium-silver .dash-podium-name,
+  .dash-podium-card.podium-bronze .dash-podium-name {
+    font-size: 0.81rem !important;
+    font-weight: 800 !important;
+    color: var(--dash-text-main) !important;
+    margin-top: 3px !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .dash-podium-card.podium-silver .dash-podium-dept,
+  .dash-podium-card.podium-bronze .dash-podium-dept {
+    font-size: 0.60rem !important;
+    color: var(--dash-text-muted) !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  /* Role Title: SENIOR ADVISOR style in uppercase slate */
+  .dash-podium-card.podium-silver .dash-podium-achievement-badge,
+  .dash-podium-card.podium-bronze .dash-podium-achievement-badge {
+    font-size: 0.60rem !important;
+    font-weight: 850 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: var(--dash-text-muted) !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
     gap: 3px !important;
-    margin-top: 1px !important;
+    margin-top: 2px !important;
+  }
+
+  .dash-podium-card.podium-silver .dash-podium-metrics-row,
+  .dash-podium-card.podium-bronze .dash-podium-metrics-row {
+    font-size: 0.64rem !important;
+    font-weight: 750 !important;
+    padding: 2px 7px !important;
+    border-radius: 9999px !important;
+    background: var(--dash-surface-elevated) !important;
+    border: 1px solid var(--dash-card-border) !important;
+    margin-top: 3px !important;
+    gap: 4px !important;
   }
 
   .dash-community-synergy-strip {
@@ -7000,10 +6916,11 @@
     font-size: 1.05rem !important;
   }
 
-  .dash-podium-card.podium-gold .dash-podium-dept {
-    max-width: 140px !important;
+  .dash-podium-card.podium-gold {
+    width: 78% !important;
   }
 
+  .dash-podium-card.podium-gold .dash-podium-dept,
   .dash-podium-card.podium-silver .dash-podium-dept,
   .dash-podium-card.podium-bronze .dash-podium-dept {
     display: none !important;
