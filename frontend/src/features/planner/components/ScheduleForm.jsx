@@ -103,6 +103,19 @@ function findScheduleConflict(
   return null;
 }
 
+function parseResourcesSafe(res) {
+  if (Array.isArray(res)) return res;
+  if (typeof res === "string") {
+    try {
+      const parsed = JSON.parse(res);
+      if (Array.isArray(parsed)) return parsed;
+    } catch (e) {
+      return [];
+    }
+  }
+  return [];
+}
+
 function scheduleToForm(schedule) {
   return {
     subject: schedule?.subject || "",
@@ -111,7 +124,7 @@ function scheduleToForm(schedule) {
     deadline: schedule?.deadline || "",
     days: schedule?.days || [],
     notes: schedule?.notes || "",
-    resources: Array.isArray(schedule?.resources) ? schedule.resources : [],
+    resources: parseResourcesSafe(schedule?.resources),
   };
 }
 

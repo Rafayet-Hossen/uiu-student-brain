@@ -688,29 +688,157 @@
   gap: 16px;
 }
 
+@keyframes brainRainbowWave {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes brandBorderGlow {
+  0% {
+    filter: hue-rotate(0deg);
+  }
+  100% {
+    filter: hue-rotate(360deg);
+  }
+}
+
+@keyframes capFloat {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-2.5px) rotate(-5deg);
+  }
+}
+
+@keyframes sparklePulse {
+  0%, 100% {
+    opacity: 0.55;
+    transform: scale(0.85) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2) rotate(180deg);
+  }
+}
+
 .navbar-brand-logo {
   display: flex;
   align-items: center;
   gap: 10px;
   text-decoration: none;
-  color: var(--color-text);
   font-family: "Plus Jakarta Sans", "Inter", sans-serif;
-  font-weight: 800;
-  font-size: 1.1875rem;
-  letter-spacing: -0.02em;
   flex-shrink: 0;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+.navbar-brand-logo:hover {
+  transform: translateY(-1px) scale(1.02);
 }
 
 .navbar-brand-icon-box {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: var(--color-primary);
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, #f26522 0%, #ea580c 50%, #f59e0b 100%);
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 14px rgba(242, 101, 34, 0.38), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.navbar-brand-icon-box::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 13px;
+  background: linear-gradient(45deg, #f26522, #f59e0b, #ec4899, #8b5cf6, #f26522);
+  background-size: 300% 300%;
+  animation: brandBorderGlow 4s linear infinite;
+  z-index: -1;
+  opacity: 0.7;
+  filter: blur(2px);
+}
+
+.navbar-brand-logo:hover .navbar-brand-icon-box {
+  transform: scale(1.08) rotate(-4deg);
+  box-shadow: 0 6px 20px rgba(242, 101, 34, 0.55);
+}
+
+.brand-logo-svg {
+  animation: capFloat 3.2s ease-in-out infinite;
+  transition: transform 0.25s ease;
+}
+
+.navbar-brand-logo:hover .brand-logo-svg {
+  animation-duration: 1.4s;
+}
+
+.navbar-brand-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 1.26rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  position: relative;
+}
+
+.brand-name-student {
+  color: var(--color-text);
+  font-weight: 900;
+  transition: color 0.2s ease;
+}
+
+.brand-name-brain {
+  background: linear-gradient(90deg, #f26522 0%, #f59e0b 25%, #ec4899 50%, #8b5cf6 75%, #f26522 100%);
+  background-size: 300% 100%;
+  animation: brainRainbowWave 5s linear infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  padding-left: 2px;
+  position: relative;
+  font-weight: 900;
+  filter: drop-shadow(0 2px 6px rgba(242, 101, 34, 0.25));
+}
+
+.brand-sparkle-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 3px;
+  margin-top: -8px;
+}
+
+.brand-sparkle-icon {
+  color: #f59e0b;
+  animation: sparklePulse 2.2s ease-in-out infinite;
+}
+
+[data-theme="dark"] .brand-sparkle-icon {
+  color: #fbbf24;
+}
+
+.drawer-brand-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 1.15rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1;
 }
 
 .brand-accent-text {
