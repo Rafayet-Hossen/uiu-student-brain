@@ -5842,52 +5842,291 @@
     gap: 10px !important;
   }
 
+  /* ==========================================================================
+     SMART LEARNING TOOLS: Sleek, Compact, Animated Mobile Cards
+     ========================================================================== */
+  .dash-masonry-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+
   .dash-masonry-card {
-    padding: 14px 12px !important;
+    padding: 13px 14px 11px !important;
     border-radius: 18px !important;
     gap: 8px !important;
+    box-sizing: border-box !important;
+    position: relative !important;
+    overflow: hidden !important;
+    box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+    border: 1px solid var(--dash-card-border) !important;
+    transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s ease !important;
+    -webkit-tap-highlight-color: transparent !important;
   }
 
-  .dash-card-headline {
-    font-size: 1rem !important;
+  [data-theme="dark"] .dash-masonry-card {
+    box-shadow: 0 6px 20px -2px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(255, 255, 255, 0.09) !important;
   }
 
-  .dash-card-copy {
-    font-size: 0.76rem !important;
-    line-height: 1.35 !important;
+  /* Micro tap animation */
+  .dash-masonry-card:active {
+    transform: scale(0.983) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
   }
 
-  .dash-module-stats-row {
-    grid-template-columns: 1fr 1fr !important;
+  /* Animated subtle corner glows on mobile */
+  .dash-card-glow {
+    display: block !important;
+    width: 90px !important;
+    height: 90px !important;
+    top: -25px !important;
+    right: -25px !important;
+    filter: blur(24px) !important;
+    opacity: 0.4 !important;
+  }
+
+  [data-theme="dark"] .dash-card-glow {
+    opacity: 0.55 !important;
+  }
+
+  .dash-card-badge-row {
+    margin-bottom: 0 !important;
     gap: 8px !important;
   }
 
-  .dash-module-stat-pill {
-    padding: 8px 10px !important;
-    border-radius: 12px !important;
+  .dash-module-icon-box {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 10px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+    animation: mobileIconFloat 3.6s ease-in-out infinite alternate !important;
   }
 
-  .dash-module-stat-num {
-    font-size: 1.15rem !important;
+  .dash-module-icon-box svg {
+    width: 16px !important;
+    height: 16px !important;
   }
 
-  .dash-module-tags-row {
-    grid-template-columns: repeat(3, 1fr) !important;
+  @keyframes mobileIconFloat {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-2px); }
+  }
+
+  .dash-card-main-content {
     gap: 4px !important;
   }
 
-  .dash-module-tag-badge {
-    padding: 6px 4px !important;
+  .dash-card-category {
+    font-size: 0.62rem !important;
+    letter-spacing: 0.05em !important;
+    margin: 0 !important;
+    line-height: 1.2 !important;
+  }
+
+  .dash-card-headline {
+    font-size: 0.96rem !important;
+    font-weight: 850 !important;
+    line-height: 1.22 !important;
+    margin: 0 !important;
+    letter-spacing: -0.015em !important;
+  }
+
+  /* Hide redundant multi-line paragraph text to make card ultra-compact */
+  .dash-card-copy {
+    display: none !important;
+  }
+
+  /* Card 1: Planner Mobile Optimization */
+  .dash-bento-routine-wrap {
+    margin-top: 4px !important;
+    padding: 7px 10px !important;
+    border-radius: 12px !important;
+    gap: 6px !important;
+    background: var(--dash-surface-subtle) !important;
+  }
+
+  .dash-bento-routine-header {
+    font-size: 0.72rem !important;
+  }
+
+  .dash-bento-routine-live-tag {
+    font-size: 0.74rem !important;
+    gap: 6px !important;
+  }
+
+  .dash-pulse-dot {
+    width: 7px !important;
+    height: 7px !important;
+  }
+
+  .dash-bento-routine-count {
     font-size: 0.68rem !important;
   }
 
-  .dash-bento-routine-wrap {
-    padding: 8px 10px !important;
-    border-radius: 12px !important;
+  .dash-bento-routine-empty {
+    padding: 4px 4px !important;
+    font-size: 0.74rem !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+
+  .dash-bento-routine-empty span {
+    font-size: 0.73rem !important;
+  }
+
+  .dash-bento-btn {
+    font-size: 0.72rem !important;
+    padding: 4px 10px !important;
+    border-radius: 8px !important;
+  }
+
+  .dash-bento-btn.primary {
+    padding: 5px 12px !important;
+    box-shadow: 0 2px 8px rgba(242, 101, 34, 0.3) !important;
+  }
+
+  .dash-bento-routine-item {
+    padding: 6px 10px !important;
+    border-radius: 10px !important;
+    gap: 8px !important;
+  }
+
+  .dash-bento-routine-time-badge {
+    font-size: 0.66rem !important;
+    padding: 2px 6px !important;
   }
 
   .dash-bento-routine-subject {
     font-size: 0.78rem !important;
+  }
+
+  /* Card 2: Materials Mobile Optimization */
+  .dash-module-stats-row {
+    margin-top: 4px !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 6px !important;
+  }
+
+  .dash-module-stat-pill {
+    padding: 7px 10px !important;
+    border-radius: 12px !important;
+    gap: 4px !important;
+  }
+
+  .dash-module-stat-header {
+    gap: 4px !important;
+  }
+
+  .dash-module-stat-header svg {
+    width: 13px !important;
+    height: 13px !important;
+  }
+
+  .dash-module-stat-label {
+    font-size: 0.66rem !important;
+  }
+
+  .dash-module-stat-num {
+    font-size: 1.15rem !important;
+    line-height: 1.1 !important;
+  }
+
+  .dash-module-stat-badge {
+    font-size: 0.62rem !important;
+    padding: 1px 6px !important;
+  }
+
+  .dash-module-features-strip {
+    margin-top: 5px !important;
+    gap: 5px !important;
+  }
+
+  .dash-feature-pill {
+    font-size: 0.65rem !important;
+    padding: 3px 8px !important;
+    border-radius: 8px !important;
+  }
+
+  /* Card 3: Scholar Community Mobile Optimization */
+  .dash-module-tags-row {
+    margin-top: 4px !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 5px !important;
+  }
+
+  .dash-module-tag-badge {
+    padding: 6px 4px !important;
+    border-radius: 10px !important;
+    gap: 2px !important;
+  }
+
+  .dash-tag-icon {
+    font-size: 0.95rem !important;
+  }
+
+  .dash-tag-title {
+    font-size: 0.67rem !important;
+  }
+
+  .dash-tag-sub {
+    font-size: 0.58rem !important;
+  }
+
+  .dash-community-network-metric {
+    margin-top: 5px !important;
+    padding: 5px 8px !important;
+    border-radius: 10px !important;
+    font-size: 0.69rem !important;
+    gap: 6px !important;
+  }
+
+  /* Card 4: Grade Planner Mobile Optimization */
+  .dash-module-gpa-box {
+    margin-top: 4px !important;
+    padding: 8px 10px !important;
+    border-radius: 12px !important;
+    gap: 5px !important;
+  }
+
+  .dash-module-gpa-label {
+    font-size: 0.64rem !important;
+  }
+
+  .dash-module-gpa-current,
+  .dash-module-gpa-target {
+    font-size: 0.95rem !important;
+  }
+
+  .dash-module-gpa-track {
+    height: 6px !important;
+  }
+
+  .dash-module-gpa-footer-meta {
+    font-size: 0.64rem !important;
+  }
+
+  .dash-gpa-target-hint {
+    display: none !important;
+  }
+
+  /* Bottom Actions Bar on Mobile */
+  .dash-card-bottom-bar {
+    padding-top: 7px !important;
+    margin-top: 2px !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+  }
+
+  .dash-module-action-cta {
+    font-size: 0.74rem !important;
+    font-weight: 750 !important;
+    gap: 4px !important;
+  }
+
+  .dash-module-action-cta svg {
+    width: 13px !important;
+    height: 13px !important;
   }
 
   /* Heatmap Horizontal Scroll Container */
