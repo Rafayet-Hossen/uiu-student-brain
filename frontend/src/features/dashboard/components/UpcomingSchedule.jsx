@@ -78,16 +78,16 @@ export default function UpcomingSchedule({
             );
           })
         ) : (
-          <div className="dash-timeline-empty" style={{ padding: "24px 12px" }}>
+          <div className="dash-timeline-empty" style={{ padding: "16px 12px" }}>
             <span
-              style={{ fontSize: "0.85rem", color: "var(--dash-text-muted)" }}
+              style={{ fontSize: "0.84rem", color: "var(--dash-text-muted)" }}
             >
               No upcoming classes scheduled yet.
             </span>
             <Link
               to="/planner"
               className="dash-bento-btn primary"
-              style={{ marginTop: "6px" }}
+              style={{ marginTop: "8px" }}
             >
               + Add Class to Timetable
             </Link>

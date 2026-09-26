@@ -1,6 +1,13 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { BarChart3, TrendingUp, PieChart, Sparkles, Award, CheckCircle2 } from "lucide-react";
+import {
+  BarChart3,
+  TrendingUp,
+  PieChart,
+  Sparkles,
+  Award,
+  CheckCircle2,
+} from "lucide-react";
 import StudyHeatmap from "./StudyHeatmap";
 
 export default function StudyInsights({
@@ -25,13 +32,17 @@ export default function StudyInsights({
       const iso = targetDate.toISOString().slice(0, 10);
 
       const dayMins = sessions.reduce((acc, s) => {
-        const dStr = s.session_date || (s.created_at ? s.created_at.slice(0, 10) : "");
+        const dStr =
+          s.session_date || (s.created_at ? s.created_at.slice(0, 10) : "");
         return dStr === iso ? acc + Number(s.duration_minutes || 0) : acc;
       }, 0);
 
       return {
         day: dayName,
-        date: targetDate.toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+        date: targetDate.toLocaleDateString(undefined, {
+          month: "short",
+          day: "numeric",
+        }),
         minutes: dayMins,
         isToday: diff === 0,
         isFuture: diff > 0,
@@ -108,7 +119,8 @@ export default function StudyInsights({
           </div>
           <h2 className="dash-insights-h2">Study Insights & Velocity</h2>
           <p className="dash-insights-desc">
-            Granular metrics tracking your daily learning distribution, streak momentum, and academic velocity.
+            Granular metrics tracking your daily learning distribution, streak
+            momentum, and academic velocity.
           </p>
         </div>
       </div>
@@ -132,14 +144,19 @@ export default function StudyInsights({
               <div className="dash-analytics-icon-badge orange">
                 <TrendingUp size={17} />
               </div>
-              <strong className="dash-analytics-card-title">Weekly Focus Trend</strong>
+              <strong className="dash-analytics-card-title">
+                Weekly Focus Trend
+              </strong>
             </div>
             <span className="dash-analytics-tag">Last 7 Days</span>
           </div>
 
           <div className="dash-bar-chart-container">
             {weeklyTrendData.days.map((item, idx) => {
-              const heightPct = Math.max(8, Math.round((item.minutes / weeklyTrendData.maxMins) * 100));
+              const heightPct = Math.max(
+                8,
+                Math.round((item.minutes / weeklyTrendData.maxMins) * 100),
+              );
               return (
                 <div key={idx} className="dash-bar-col">
                   <div className="dash-bar-track">
@@ -151,7 +168,9 @@ export default function StudyInsights({
                       title={`${item.day} (${item.date}): ${item.minutes} mins`}
                     />
                   </div>
-                  <span className={`dash-bar-day-lbl ${item.isToday ? "is-today" : ""}`}>
+                  <span
+                    className={`dash-bar-day-lbl ${item.isToday ? "is-today" : ""}`}
+                  >
                     {item.day}
                   </span>
                 </div>
@@ -176,7 +195,9 @@ export default function StudyInsights({
               <div className="dash-analytics-icon-badge emerald">
                 <PieChart size={17} />
               </div>
-              <strong className="dash-analytics-card-title">Subject Distribution</strong>
+              <strong className="dash-analytics-card-title">
+                Subject Distribution
+              </strong>
             </div>
             <span className="dash-analytics-tag">Curriculum Focus</span>
           </div>
@@ -187,7 +208,9 @@ export default function StudyInsights({
                 <div key={sIdx} className="dash-dist-item">
                   <div className="dash-dist-header">
                     <span className="dash-dist-name">{sub.name}</span>
-                    <strong className="dash-dist-val">{sub.hours}h ({sub.percent}%)</strong>
+                    <strong className="dash-dist-val">
+                      {sub.hours}h ({sub.percent}%)
+                    </strong>
                   </div>
                   <div className="dash-dist-track">
                     <motion.div
@@ -223,7 +246,9 @@ export default function StudyInsights({
               <div className="dash-analytics-icon-badge amber">
                 <Award size={17} />
               </div>
-              <strong className="dash-analytics-card-title">Productivity Score</strong>
+              <strong className="dash-analytics-card-title">
+                Productivity Score
+              </strong>
             </div>
             <span className="dash-analytics-tag">Scholar Index</span>
           </div>
@@ -248,12 +273,20 @@ export default function StudyInsights({
                   strokeWidth="8"
                   strokeLinecap="round"
                   strokeDasharray={2 * Math.PI * 40}
-                  strokeDashoffset={2 * Math.PI * 40 * (1 - productivityScore / 100)}
+                  strokeDashoffset={
+                    2 * Math.PI * 40 * (1 - productivityScore / 100)
+                  }
                   transform="rotate(-90 50 50)"
                   style={{ transition: "stroke-dashoffset 0.8s ease" }}
                 />
                 <defs>
-                  <linearGradient id="prodGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <linearGradient
+                    id="prodGrad"
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="100%"
+                  >
                     <stop offset="0%" stopColor="#f26522" />
                     <stop offset="100%" stopColor="#10b981" />
                   </linearGradient>
@@ -271,7 +304,8 @@ export default function StudyInsights({
                 <span>Exceptional Velocity</span>
               </span>
               <p className="dash-prod-sub">
-                Your study habits place you in the top 8% of focused learners this semester.
+                Your study habits place you in the top 8% of focused learners
+                this semester.
               </p>
             </div>
           </div>
