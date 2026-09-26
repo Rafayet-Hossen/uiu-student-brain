@@ -194,6 +194,12 @@ try:
 except ImportError:
     pass
 
+try:
+    from django.db.backends.mysql.base import DatabaseWrapper
+    DatabaseWrapper.check_database_version_supported = lambda self: None
+except (ImportError, AttributeError):
+    pass
+
 def _can_connect_postgres(host, port):
     try:
         with socket.create_connection((host, int(port)), timeout=0.8):

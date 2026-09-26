@@ -24,3 +24,11 @@ try:
     pymysql.install_as_MySQLdb()
 except ImportError:
     pass
+
+# TiDB reports version as 8.0.11 while supporting full MySQL 8.
+# Django 6.0 enforces MySQL >= 8.4 by default, so we allow TiDB by bypassing the version check.
+try:
+    from django.db.backends.mysql.base import DatabaseWrapper
+    DatabaseWrapper.check_database_version_supported = lambda self: None
+except (ImportError, AttributeError):
+    pass
