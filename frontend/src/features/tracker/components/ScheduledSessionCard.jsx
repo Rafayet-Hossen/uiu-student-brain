@@ -235,7 +235,6 @@ export default function ScheduledSessionCard({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       whileHover={{ y: -3 }}
-      whileTap={{ scale: 0.985 }}
       transition={{ duration: 0.2 }}
     >
       {/* Accent Top Border Bar */}

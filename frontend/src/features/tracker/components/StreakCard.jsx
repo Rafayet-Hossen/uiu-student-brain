@@ -1,6 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
 import { Flame, Sparkles, Target, Zap } from "lucide-react";
-import { motion } from "framer-motion";
 import Badge from "../../../components/Badge";
 import Button from "../../../components/Button";
 import Input from "../../../components/Input";
@@ -250,7 +249,7 @@ export default function StreakCard({ streakData, onGoalUpdated }) {
             const fillHeight = Math.max(item.studied ? 16 : 0, pct);
 
             return (
-              <motion.div
+              <div
                 key={item.date}
                 className={`weekly-day-card ${
                   item.goal_met
@@ -259,9 +258,6 @@ export default function StreakCard({ streakData, onGoalUpdated }) {
                       ? "day-studied"
                       : "day-rest"
                 } ${isToday ? "day-today" : ""}`}
-                whileHover={{ y: -3 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ duration: 0.15 }}
                 title={`${item.day_name}, ${formatShortDate(item.date)}: ${
                   item.minutes
                 } mins studied (${pct}% of target)${
@@ -321,7 +317,7 @@ export default function StreakCard({ streakData, onGoalUpdated }) {
                     {pct > 0 ? `${pct}%` : "—"}
                   </span>
                 </div>
-              </motion.div>
+              </div>
             );
           })}
         </div>

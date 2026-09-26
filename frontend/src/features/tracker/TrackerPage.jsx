@@ -311,26 +311,25 @@ export default function TrackerPage() {
   return (
     <div className="tracker-page-container">
       {/* Page Header */}
-      <div className="page-header tracker-page-header">
-        <div className="page-header-row tracker-header-row">
-          <div className="tracker-header-lead">
-            <h1 className="page-title tracker-page-title">
-              <Timer size={28} className="text-amber tracker-title-icon" />
+      <div className="page-header">
+        <div className="page-header-row">
+          <div>
+            <h1 className="page-title">
+              <Timer size={28} className="text-amber" />
               <span>Study Tracker & Focus Habits</span>
             </h1>
-            <p className="page-description tracker-page-desc">
+            <p className="page-description">
               Schedule time-gated focus blocks with uploaded course materials,
               complete strict consistency goals, and test conceptual retention
               with Gemini AI diagnostic quizzes.
             </p>
           </div>
 
-          <div className="flex gap-2 tracker-header-actions">
+          <div className="flex gap-2">
             <Button
               variant="primary"
               onClick={() => setIsBookModalOpen(true)}
               icon={Plus}
-              className="tracker-book-btn"
             >
               Book Study Session
             </Button>
@@ -339,7 +338,7 @@ export default function TrackerPage() {
       </div>
 
       {/* Top Streak & Summary Hero */}
-      <div className="tracker-streak-hero-wrapper" style={{ marginBottom: "20px" }}>
+      <div style={{ marginBottom: "24px" }}>
         <StreakCard
           streakData={streakData}
           totalHours={totalHours}
@@ -362,8 +361,7 @@ export default function TrackerPage() {
           }}
         >
           <Calendar size={15} />
-          <span className="tab-label-full">Today's Schedule ({todaysSessions.length})</span>
-          <span className="tab-label-short">Schedule ({todaysSessions.length})</span>
+          <span>Today's Schedule ({todaysSessions.length})</span>
         </button>
 
         <button
@@ -377,8 +375,7 @@ export default function TrackerPage() {
           }}
         >
           <Timer size={15} />
-          <span className="tab-label-full">Focus Timer</span>
-          <span className="tab-label-short">Timer</span>
+          <span>Focus Timer</span>
         </button>
 
         <button
@@ -392,8 +389,7 @@ export default function TrackerPage() {
           }}
         >
           <Clock size={15} />
-          <span className="tab-label-full">Session History ({safeSessions.length})</span>
-          <span className="tab-label-short">History ({safeSessions.length})</span>
+          <span>Session History ({safeSessions.length})</span>
         </button>
 
         <button
@@ -407,8 +403,7 @@ export default function TrackerPage() {
           }}
         >
           <Award size={15} />
-          <span className="tab-label-full">Milestone Badges ({rewards.length})</span>
-          <span className="tab-label-short">Badges ({rewards.length})</span>
+          <span>Milestone Badges ({rewards.length})</span>
         </button>
       </div>
 
@@ -430,216 +425,202 @@ export default function TrackerPage() {
         />
       )}
 
-      {/* Animated Tab Content Container */}
-      {!loading && !error && (
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.2 }}
-            className="tracker-tab-animated-wrapper"
-          >
-            {/* ============================================================ */}
-            {/* TAB 1: TODAY'S SCHEDULED SESSIONS */}
-            {/* ============================================================ */}
-            {activeTab === "scheduled" && (
-              <div className="tracker-tab-content">
-                {/* Strict Attendance Notice */}
-                <div className="tracker-timegate-callout mb-5">
-                  <div className="callout-icon-box">
-                    <Clock size={16} className="text-primary" />
-                  </div>
-                  <div className="callout-text-content">
-                    <strong className="callout-title">Strict Time-Gate Rule:</strong>{" "}
-                    <span>
-                      Study sessions must be started during their scheduled time
-                      window. Only completed sessions contribute to your daily goals,
-                      active habit streaks, and academic achievements.
-                    </span>
-                  </div>
-                </div>
+      {/* ============================================================ */}
+      {/* TAB 1: TODAY'S SCHEDULED SESSIONS */}
+      {/* ============================================================ */}
+      {!loading && !error && activeTab === "scheduled" && (
+        <div className="tracker-tab-content">
+          {/* Strict Attendance Notice */}
+          <div className="tracker-timegate-callout mb-5">
+            <div className="callout-icon-box">
+              <Clock size={16} className="text-primary" />
+            </div>
+            <div className="callout-text-content">
+              <strong className="callout-title">Strict Time-Gate Rule:</strong>{" "}
+              <span>
+                Study sessions must be started during their scheduled time
+                window. Only completed sessions contribute to your daily goals,
+                active habit streaks, and academic achievements.
+              </span>
+            </div>
+          </div>
 
-                {todaysSessions.length === 0 ? (
-                  <EmptyState
-                    icon={Calendar}
-                    title="No study sessions scheduled for today"
-                    description="Book a dedicated focus block linked with your course notes to maintain your streak and trigger post-session AI quizzes."
-                    actionLabel="Book Study Session for Today"
-                    onAction={() => setIsBookModalOpen(true)}
+          {todaysSessions.length === 0 ? (
+            <EmptyState
+              icon={Calendar}
+              title="No study sessions scheduled for today"
+              description="Book a dedicated focus block linked with your course notes to maintain your streak and trigger post-session AI quizzes."
+              actionLabel="Book Study Session for Today"
+              onAction={() => setIsBookModalOpen(true)}
+            />
+          ) : (
+            <div className="scheduled-sessions-grid mb-6">
+              {todaysSessions.map((session) => (
+                <ScheduledSessionCard
+                  key={session.id}
+                  session={session}
+                  onStart={handleStartSession}
+                  onComplete={handleCompleteSession}
+                  onExtend={handleExtendSession}
+                  onTakeQuiz={handleOpenQuiz}
+                  onViewDiagnostic={handleOpenDiagnostic}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onReschedule={handleReschedule}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Upcoming Days Preview if available */}
+          {upcomingSessions.length > 0 && (
+            <div className="mt-6 pt-4 border-t">
+              <h3 className="text-sm font-bold text-muted uppercase tracking-wider mb-3">
+                Upcoming Focus Sessions
+              </h3>
+              <div className="scheduled-sessions-grid">
+                {upcomingSessions.map((session) => (
+                  <ScheduledSessionCard
+                    key={session.id}
+                    session={session}
+                    onStart={handleStartSession}
+                    onComplete={handleCompleteSession}
+                    onExtend={handleExtendSession}
+                    onTakeQuiz={handleOpenQuiz}
+                    onViewDiagnostic={handleOpenDiagnostic}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onReschedule={handleReschedule}
                   />
-                ) : (
-                  <div className="scheduled-sessions-grid mb-6">
-                    {todaysSessions.map((session) => (
-                      <ScheduledSessionCard
-                        key={session.id}
-                        session={session}
-                        onStart={handleStartSession}
-                        onComplete={handleCompleteSession}
-                        onExtend={handleExtendSession}
-                        onTakeQuiz={handleOpenQuiz}
-                        onViewDiagnostic={handleOpenDiagnostic}
-                        onEdit={handleEdit}
-                        onDelete={handleDelete}
-                        onReschedule={handleReschedule}
-                      />
-                    ))}
-                  </div>
-                )}
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
-                {/* Upcoming Days Preview if available */}
-                {upcomingSessions.length > 0 && (
-                  <div className="mt-6 pt-4 border-t">
-                    <h3 className="text-sm font-bold text-muted uppercase tracking-wider mb-3">
-                      Upcoming Focus Sessions
-                    </h3>
-                    <div className="scheduled-sessions-grid">
-                      {upcomingSessions.map((session) => (
-                        <ScheduledSessionCard
-                          key={session.id}
-                          session={session}
-                          onStart={handleStartSession}
-                          onComplete={handleCompleteSession}
-                          onExtend={handleExtendSession}
-                          onTakeQuiz={handleOpenQuiz}
-                          onViewDiagnostic={handleOpenDiagnostic}
-                          onEdit={handleEdit}
-                          onDelete={handleDelete}
-                          onReschedule={handleReschedule}
-                        />
-                      ))}
-                    </div>
-                  </div>
+      {/* ============================================================ */}
+      {/* TAB 2: FOCUS TIMER */}
+      {/* ============================================================ */}
+      {!error && activeTab === "timer" && (
+        <FocusTimer
+          activeSession={activeTimerSession}
+          onSessionCompleted={async (payload) => {
+            if (activeTimerSession) {
+              return await completeStudySession(activeTimerSession.id);
+            } else {
+              return await handleCreate(payload);
+            }
+          }}
+          onExtendSession={handleExtendSession}
+          onTakeQuiz={handleOpenQuiz}
+          availableSubjects={availableSubjects}
+        />
+      )}
+
+      {/* ============================================================ */}
+      {/* TAB 3: SESSION HISTORY & QUIZ DIAGNOSTICS */}
+      {/* ============================================================ */}
+      {!loading && !error && activeTab === "history" && (
+        <>
+          {safeSessions.length > 0 && (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "16px",
+                gap: "12px",
+                flexWrap: "wrap",
+              }}
+            >
+              <div
+                className="community-search-box"
+                style={{ flex: "1", maxWidth: "340px" }}
+              >
+                <input
+                  type="text"
+                  placeholder="Search logs by subject or notes..."
+                  value={sessionSearch}
+                  onChange={(e) => setSessionSearch(e.target.value)}
+                  className="form-input form-input-sm"
+                />
+              </div>
+
+              {/* Status Filter Chips */}
+              <div className="flex gap-1 flex-wrap items-center">
+                {["all", "completed", "scheduled", "in_progress", "missed"].map(
+                  (st) => (
+                    <button
+                      key={st}
+                      type="button"
+                      className={`filter-status-chip ${
+                        selectedStatusFilter === st ? "active" : ""
+                      }`}
+                      onClick={() => setSelectedStatusFilter(st)}
+                    >
+                      {st === "all"
+                        ? "All Logs"
+                        : st === "in_progress"
+                          ? "In Progress"
+                          : st.charAt(0).toUpperCase() + st.slice(1)}
+                    </button>
+                  ),
                 )}
               </div>
-            )}
+            </div>
+          )}
 
-            {/* ============================================================ */}
-            {/* TAB 2: FOCUS TIMER */}
-            {/* ============================================================ */}
-            {activeTab === "timer" && (
-              <FocusTimer
-                activeSession={activeTimerSession}
-                onSessionCompleted={async (payload) => {
-                  if (activeTimerSession) {
-                    return await completeStudySession(activeTimerSession.id);
-                  } else {
-                    return await handleCreate(payload);
-                  }
+          {safeSessions.length === 0 ? (
+            <EmptyState
+              icon={Timer}
+              title="No study sessions recorded yet"
+              description="Schedule a focus block or start the timer to log completed sessions and unlock diagnostic quizzes."
+              actionLabel="Book Study Session"
+              onAction={() => setIsBookModalOpen(true)}
+            />
+          ) : filteredHistorySessions.length === 0 ? (
+            <div className="materials-empty-card my-3">
+              <div className="empty-card-icon">🔍</div>
+              <h4>No sessions found</h4>
+              <p>No logged study blocks match your filter criteria.</p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setSessionSearch("");
+                  setSelectedStatusFilter("all");
                 }}
-                onExtendSession={handleExtendSession}
-                onTakeQuiz={handleOpenQuiz}
-                availableSubjects={availableSubjects}
-              />
-            )}
+              >
+                Clear Filters
+              </Button>
+            </div>
+          ) : (
+            <div className="study-sessions-grid">
+              {filteredHistorySessions.map((session) => (
+                <StudySessionCard
+                  key={session.id}
+                  session={session}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onExtend={handleExtendSession}
+                  onTakeQuiz={handleOpenQuiz}
+                  onViewDiagnostic={handleOpenDiagnostic}
+                />
+              ))}
+            </div>
+          )}
+        </>
+      )}
 
-            {/* ============================================================ */}
-            {/* TAB 3: SESSION HISTORY & QUIZ DIAGNOSTICS */}
-            {/* ============================================================ */}
-            {activeTab === "history" && (
-              <>
-                {safeSessions.length > 0 && (
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      marginBottom: "16px",
-                      gap: "12px",
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    <div
-                      className="community-search-box"
-                      style={{ flex: "1", maxWidth: "340px" }}
-                    >
-                      <input
-                        type="text"
-                        placeholder="Search logs by subject or notes..."
-                        value={sessionSearch}
-                        onChange={(e) => setSessionSearch(e.target.value)}
-                        className="form-input form-input-sm"
-                      />
-                    </div>
-
-                    {/* Status Filter Chips */}
-                    <div className="flex gap-1 flex-wrap items-center">
-                      {["all", "completed", "scheduled", "in_progress", "missed"].map(
-                        (st) => (
-                          <button
-                            key={st}
-                            type="button"
-                            className={`filter-status-chip ${
-                              selectedStatusFilter === st ? "active" : ""
-                            }`}
-                            onClick={() => setSelectedStatusFilter(st)}
-                          >
-                            {st === "all"
-                              ? "All Logs"
-                              : st === "in_progress"
-                                ? "In Progress"
-                                : st.charAt(0).toUpperCase() + st.slice(1)}
-                          </button>
-                        ),
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {safeSessions.length === 0 ? (
-                  <EmptyState
-                    icon={Timer}
-                    title="No study sessions recorded yet"
-                    description="Schedule a focus block or start the timer to log completed sessions and unlock diagnostic quizzes."
-                    actionLabel="Book Study Session"
-                    onAction={() => setIsBookModalOpen(true)}
-                  />
-                ) : filteredHistorySessions.length === 0 ? (
-                  <div className="materials-empty-card my-3">
-                    <div className="empty-card-icon">🔍</div>
-                    <h4>No sessions found</h4>
-                    <p>No logged study blocks match your filter criteria.</p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSessionSearch("");
-                        setSelectedStatusFilter("all");
-                      }}
-                    >
-                      Clear Filters
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="study-sessions-grid">
-                    {filteredHistorySessions.map((session) => (
-                      <StudySessionCard
-                        key={session.id}
-                        session={session}
-                        onEdit={handleEdit}
-                        onDelete={handleDelete}
-                        onExtend={handleExtendSession}
-                        onTakeQuiz={handleOpenQuiz}
-                        onViewDiagnostic={handleOpenDiagnostic}
-                      />
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-
-            {/* ============================================================ */}
-            {/* TAB 4: MILESTONE BADGES */}
-            {/* ============================================================ */}
-            {activeTab === "rewards" && (
-              <RewardsShelf
-                rewards={rewards}
-                currentStreak={streakData?.current_streak || 0}
-              />
-            )}
-          </motion.div>
-        </AnimatePresence>
+      {/* ============================================================ */}
+      {/* TAB 4: MILESTONE BADGES */}
+      {/* ============================================================ */}
+      {!loading && !error && activeTab === "rewards" && (
+        <RewardsShelf
+          rewards={rewards}
+          currentStreak={streakData?.current_streak || 0}
+        />
       )}
 
       {/* ============================================================ */}
