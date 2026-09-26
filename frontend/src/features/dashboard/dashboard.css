@@ -5066,8 +5066,8 @@
 
 .dash-podium-avatar-wrap {
   position: relative;
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -5075,8 +5075,27 @@
 }
 
 .dash-podium-card.podium-gold .dash-podium-avatar-wrap {
-  width: 52px;
-  height: 52px;
+  width: 54px;
+  height: 54px;
+}
+
+.dash-podium-avatar-wrap .dash-podium-scholar-avatar,
+.dash-podium-avatar-wrap .scholar-avatar-box {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 100% !important;
+  min-height: 100% !important;
+  border-radius: 50% !important;
+  z-index: 2;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.dash-podium-avatar-wrap .scholar-avatar-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .dash-podium-avatar-letter {
@@ -5116,6 +5135,8 @@
   border-radius: 50%;
   border: 1.5px dashed rgba(242, 101, 34, 0.45);
   animation: rotateRing 14s linear infinite;
+  pointer-events: none;
+  z-index: 3;
 }
 
 .dash-podium-card.podium-gold .dash-podium-avatar-ring {
