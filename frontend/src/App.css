@@ -22148,3 +22148,452 @@ html[data-theme="dark"] .btn-celebration-extend:hover {
     white-space: nowrap !important;
   }
 }
+
+/* ============================================================
+   GRADE PLANNER ULTRA-RESPONSIVE DYNAMICS (PHONE & TABLET)
+   (Desktop layout remains 100% untouched)
+   ============================================================ */
+
+/* Utility Visibility Toggles */
+.show-mobile-only {
+  display: none !important;
+}
+
+.hide-mobile {
+  display: inline !important;
+}
+
+/* Action Button Container Defaults */
+.grade-page-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.retake-advisor-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.advisor-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.grade-plan-form-card {
+  padding: 24px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.25s ease;
+}
+
+.grade-form-card-header {
+  margin-bottom: 20px;
+}
+
+.grade-form-card-title {
+  font-size: 1.15rem;
+  font-weight: 750;
+  margin: 0;
+  color: var(--color-text);
+}
+
+.grade-form-card-desc {
+  font-size: 0.84rem;
+  color: var(--color-text-muted);
+  margin: 4px 0 0 0;
+  line-height: 1.45;
+}
+
+.advisor-feature-item-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+/* 1. TABLET SCREENS (641px - 1024px) */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .grade-planner-header-row {
+    gap: 14px;
+  }
+
+  .grade-page-header-actions {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    width: auto !important;
+  }
+
+  .grade-page-header-actions .btn {
+    white-space: nowrap !important;
+    padding: 8px 14px !important;
+    font-size: 0.85rem !important;
+  }
+
+  .advisor-inner-container {
+    padding: 20px 18px !important;
+  }
+
+  .advisor-empty-feature-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  .advisor-feature-item {
+    padding: 12px 14px !important;
+  }
+
+  .advisor-empty-actions-row {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 10px !important;
+  }
+
+  .advisor-empty-actions-row .btn {
+    white-space: nowrap !important;
+    font-size: 0.82rem !important;
+  }
+
+  .grades-grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important;
+    gap: 16px !important;
+  }
+
+  .grade-plan-card {
+    padding: 18px !important;
+  }
+}
+
+/* 2. MOBILE PHONE SCREENS (<= 640px) */
+@media (max-width: 640px) {
+  .show-mobile-only {
+    display: inline !important;
+  }
+
+  .hide-mobile {
+    display: none !important;
+  }
+
+  /* Header Row: Column stack title and full-width 2-column buttons */
+  .grade-planner-header-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 14px !important;
+  }
+
+  .page-title {
+    font-size: 1.45rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .page-title svg {
+    width: 24px !important;
+    height: 24px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .page-description {
+    font-size: 0.84rem !important;
+    line-height: 1.45 !important;
+    margin-top: 4px !important;
+  }
+
+  /* Key User Requirement: Upload Transcript & New Degree Goal ALWAYS 1 LINE on Mobile */
+  .grade-page-header-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    width: 100% !important;
+    margin-top: 2px !important;
+  }
+
+  .grade-page-header-actions .btn {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 9px 8px !important;
+    font-size: 0.8rem !important;
+    font-weight: 700 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    border-radius: var(--radius-md) !important;
+    min-height: 40px !important;
+  }
+
+  .grade-page-header-actions .btn svg {
+    width: 15px !important;
+    height: 15px !important;
+    margin-right: 5px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Grade Plan Form Modal/Card on Mobile */
+  .grade-plan-form-card {
+    padding: 16px 14px !important;
+    border-radius: var(--radius-lg) !important;
+  }
+
+  .grade-form-card-title {
+    font-size: 1rem !important;
+  }
+
+  .grade-form-card-desc {
+    font-size: 0.78rem !important;
+  }
+
+  /* 2-Column Inputs for Compact Numeric Fields */
+  .grade-plan-form-card .planner-time-row {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  .grade-plan-form-card .card-actions-row {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    margin-top: 14px !important;
+  }
+
+  .grade-plan-form-card .card-actions-row .btn {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 9px 10px !important;
+    font-size: 0.82rem !important;
+  }
+
+  /* Course Retake Advisor Container */
+  .advisor-inner-container {
+    padding: 16px 14px !important;
+    gap: 16px !important;
+  }
+
+  .advisor-header-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    margin-bottom: 14px !important;
+  }
+
+  .retake-advisor-header-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  .retake-advisor-header-actions .btn {
+    width: 100% !important;
+    justify-content: center !important;
+    font-size: 0.78rem !important;
+    padding: 8px 8px !important;
+    white-space: nowrap !important;
+    border-radius: var(--radius-md) !important;
+  }
+
+  .retake-advisor-header-actions .btn svg {
+    width: 14px !important;
+    height: 14px !important;
+    margin-right: 4px !important;
+  }
+
+  /* Empty Setup Card on Mobile */
+  .advisor-empty-setup-card {
+    padding: 16px 12px !important;
+    gap: 16px !important;
+    border-radius: var(--radius-lg) !important;
+  }
+
+  .advisor-empty-setup-header {
+    flex-direction: row !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .advisor-empty-icon-box {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    border-radius: var(--radius-md) !important;
+  }
+
+  .advisor-empty-icon-box svg {
+    width: 22px !important;
+    height: 22px !important;
+  }
+
+  .advisor-empty-title {
+    font-size: 1.05rem !important;
+  }
+
+  .advisor-empty-desc {
+    font-size: 0.78rem !important;
+    line-height: 1.4 !important;
+    margin-top: 4px !important;
+  }
+
+  /* Empty State Buttons: Side-by-Side in 1 Line on Mobile */
+  .advisor-empty-actions-row {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  .advisor-empty-actions-row .btn,
+  .advisor-empty-actions-row button {
+    width: 100% !important;
+    font-size: 0.76rem !important;
+    font-weight: 700 !important;
+    padding: 9px 6px !important;
+    justify-content: center !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    border-radius: var(--radius-md) !important;
+  }
+
+  .advisor-empty-actions-row .btn svg,
+  .advisor-empty-actions-row button svg {
+    width: 14px !important;
+    height: 14px !important;
+    margin-right: 4px !important;
+  }
+
+  /* Sleek Compact Horizontal Feature Item Cards */
+  .advisor-empty-feature-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+    margin-top: 4px !important;
+    padding-top: 14px !important;
+  }
+
+  .advisor-feature-item {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 9px 12px !important;
+    border-radius: var(--radius-md) !important;
+    background: var(--color-surface) !important;
+    border: 1px solid var(--color-border-subtle) !important;
+    transition: transform 0.18s ease !important;
+  }
+
+  .advisor-feature-item:active {
+    transform: scale(0.99) !important;
+  }
+
+  .advisor-feature-icon-badge {
+    font-size: 1.3rem !important;
+    margin-bottom: 0 !important;
+    flex-shrink: 0 !important;
+  }
+
+  .advisor-feature-item strong {
+    font-size: 0.81rem !important;
+    font-weight: 700 !important;
+  }
+
+  .advisor-feature-item span {
+    font-size: 0.72rem !important;
+    line-height: 1.35 !important;
+  }
+
+  /* Degree Target Plan Cards & Gauge on Mobile */
+  .grades-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  .grade-plan-card {
+    padding: 16px 14px !important;
+    border-radius: var(--radius-lg) !important;
+    gap: 14px !important;
+  }
+
+  .grade-plan-top-split {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+    margin-bottom: 14px !important;
+  }
+
+  .gpa-gauge-widget {
+    width: 76px !important;
+    height: 76px !important;
+  }
+
+  .gpa-gauge-widget svg {
+    width: 76px !important;
+    height: 76px !important;
+  }
+
+  .grade-plan-name {
+    font-size: 1.08rem !important;
+  }
+
+  .grade-plan-sub {
+    font-size: 0.76rem !important;
+  }
+
+  /* Metric Boxes on Mobile: Fit all 3 in 1 single horizontal row! */
+  .grade-metric-boxes-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+    margin-bottom: 14px !important;
+  }
+
+  .grade-metric-box {
+    padding: 8px 4px !important;
+    text-align: center !important;
+    gap: 2px !important;
+    border-radius: var(--radius-sm) !important;
+  }
+
+  .metric-box-label {
+    font-size: 0.6rem !important;
+    letter-spacing: -0.01em !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .metric-box-val {
+    font-size: 1.15rem !important;
+    line-height: 1.15 !important;
+  }
+
+  .metric-box-sub {
+    font-size: 0.64rem !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  /* Degree Roadmap & Milestones on Mobile */
+  .credit-milestone-timeline {
+    padding: 10px 12px !important;
+    margin-top: 10px !important;
+  }
+
+  .milestones-labels-row {
+    font-size: 0.67rem !important;
+    gap: 6px !important;
+  }
+
+  .degree-progress-bar-labels {
+    font-size: 0.7rem !important;
+  }
+}
+

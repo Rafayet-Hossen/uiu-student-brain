@@ -238,7 +238,7 @@ export default function GradePlannerPage() {
       <main className="main-content">
         {/* Page Header */}
         <div className="page-header">
-          <div className="page-header-row">
+          <div className="page-header-row grade-planner-header-row">
             <div>
               <h1 className="page-title">
                 <GraduationCap size={28} className="text-emerald" />
@@ -250,14 +250,7 @@ export default function GradePlannerPage() {
               </p>
             </div>
 
-            <div
-              style={{
-                display: "flex",
-                gap: "10px",
-                alignItems: "center",
-                flexWrap: "wrap",
-              }}
-            >
+            <div className="grade-page-header-actions">
               <Button
                 variant="primary"
                 onClick={() => setShowUploadModal(true)}
@@ -285,12 +278,26 @@ export default function GradePlannerPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.2 }}
+              style={{ marginBottom: "24px" }}
             >
-              <GradePlanForm
-                onSubmit={handleCreate}
-                onCancel={() => setShowForm(false)}
-                loading={submitting}
-              />
+              <Card className="grade-plan-form-card">
+                <div className="grade-form-card-header">
+                  <div className="flex items-center gap-2">
+                    <Target size={18} className="text-primary" />
+                    <h3 className="grade-form-card-title">
+                      Configure Degree & Target CGPA
+                    </h3>
+                  </div>
+                  <p className="grade-form-card-desc">
+                    Specify total credits and goal GPA to compute your exact required future semester performance.
+                  </p>
+                </div>
+                <GradePlanForm
+                  onSubmit={handleCreate}
+                  onCancel={() => setShowForm(false)}
+                  loading={submitting}
+                />
+              </Card>
             </motion.div>
           )}
         </AnimatePresence>

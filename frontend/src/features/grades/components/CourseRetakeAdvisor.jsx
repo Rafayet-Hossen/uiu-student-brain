@@ -458,16 +458,7 @@ export default function CourseRetakeAdvisor({
 
         <div className="advisor-inner-container">
           {/* 1. HEADER ROW */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-              flexWrap: "wrap",
-              gap: "16px",
-              marginBottom: "20px",
-            }}
-          >
+          <div className="advisor-header-row">
             <div>
               <div
                 style={{
@@ -517,14 +508,7 @@ export default function CourseRetakeAdvisor({
               </p>
             </div>
 
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                flexWrap: "wrap",
-              }}
-            >
+            <div className="retake-advisor-header-actions">
               <Button
                 variant={all_courses.length === 0 ? "primary" : "secondary"}
                 size="sm"
@@ -609,14 +593,16 @@ export default function CourseRetakeAdvisor({
                   icon={UploadCloud}
                   onClick={() => setShowUploadModal(true)}
                 >
-                  Upload Academic Transcript (PDF / CSV)
+                  <span className="hide-mobile">Upload Academic Transcript (PDF / CSV)</span>
+                  <span className="show-mobile-only">Upload Transcript</span>
                 </Button>
                 <Button
                   variant="secondary"
                   icon={Plus}
                   onClick={handleOpenAddModal}
                 >
-                  Add Course Grade Manually
+                  <span className="hide-mobile">Add Course Grade Manually</span>
+                  <span className="show-mobile-only">Add Grade Manually</span>
                 </Button>
               </div>
 
@@ -624,27 +610,33 @@ export default function CourseRetakeAdvisor({
               <div className="advisor-empty-feature-grid">
                 <div className="advisor-feature-item">
                   <div className="advisor-feature-icon-badge">🎯</div>
-                  <strong>Credit-Weighted Optimization</strong>
-                  <span>
-                    Prioritizes low grades in high-credit courses to deliver
-                    maximum mathematical quality points back to your CGPA.
-                  </span>
+                  <div className="advisor-feature-item-content">
+                    <strong>Credit-Weighted Optimization</strong>
+                    <span>
+                      Prioritizes low grades in high-credit courses to deliver
+                      maximum mathematical quality points back to your CGPA.
+                    </span>
+                  </div>
                 </div>
                 <div className="advisor-feature-item">
                   <div className="advisor-feature-icon-badge">⏱️</div>
-                  <strong>Study Habit Alignment</strong>
-                  <span>
-                    Cross-references your tracker sessions so you pick retakes
-                    in subjects where you already have study momentum.
-                  </span>
+                  <div className="advisor-feature-item-content">
+                    <strong>Study Habit Alignment</strong>
+                    <span>
+                      Cross-references your tracker sessions so you pick retakes
+                      in subjects where you already have study momentum.
+                    </span>
+                  </div>
                 </div>
                 <div className="advisor-feature-item">
                   <div className="advisor-feature-icon-badge">🚀</div>
-                  <strong>Real-Time Retake Simulator</strong>
-                  <span>
-                    Toggle any course combination to preview your immediate
-                    target GPA trajectory in real-time.
-                  </span>
+                  <div className="advisor-feature-item-content">
+                    <strong>Real-Time Retake Simulator</strong>
+                    <span>
+                      Toggle any course combination to preview your immediate
+                      target GPA trajectory in real-time.
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
