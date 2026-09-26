@@ -197,6 +197,8 @@ except ImportError:
 try:
     from django.db.backends.mysql.base import DatabaseWrapper
     DatabaseWrapper.check_database_version_supported = lambda self: None
+    from django.db.backends.mysql.schema import DatabaseSchemaEditor
+    DatabaseSchemaEditor.sql_create_column_inline_fk = None
 except (ImportError, AttributeError):
     pass
 
