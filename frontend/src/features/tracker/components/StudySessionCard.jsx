@@ -17,6 +17,7 @@ import {
   Timer,
   Trash2,
 } from "lucide-react";
+import { motion } from "framer-motion";
 import Button from "../../../components/Button";
 
 function getSubjectTheme(subject = "") {
@@ -196,7 +197,15 @@ export default function StudySessionCard({
   };
 
   return (
-    <div className={`study-session-card ${themeClass}`}>
+    <motion.div
+      className={`study-session-card ${themeClass}`}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.96 }}
+      whileHover={{ y: -3 }}
+      whileTap={{ scale: 0.985 }}
+      transition={{ duration: 0.2 }}
+    >
       {/* Top Accent Strip */}
       <div className="session-card-accent-strip" />
 
@@ -373,6 +382,6 @@ export default function StudySessionCard({
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -177,7 +177,6 @@ export default function RoutineCard({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -3, transition: { duration: 0.15 } }}
-      whileTap={{ scale: 0.985 }}
       className={`pro-routine-card ${theme.colorClass} ${
         isScheduledToday ? "card-active-today" : ""
       } ${isHighlighted ? "routine-card-highlighted" : ""}`}

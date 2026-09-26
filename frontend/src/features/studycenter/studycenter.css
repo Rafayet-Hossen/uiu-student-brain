@@ -1814,725 +1814,1132 @@
 }
 
 /* ==========================================================================
-   STUDY PLANNER & ROUTINE CARDS - RESPONSIVE & ANIMATED SUITE
-   Isolated to preserve 100% desktop fidelity while optimizing mobile & tablet.
+   STUDY TRACKER & FOCUS HABITS - MASTER RESPONSIVE OVERRIDES
+   Keeps Desktop (>1024px) 100% UNCHANGED
+   Optimizes Phone (<=768px) and Tablet (769px-1024px)
    ========================================================================== */
 
-/* Base desktop overrides: hide mobile-only helper components */
-.calendar-mobile-day-bar {
-  display: none;
+/* 1. Base / Desktop Defaults */
+.tab-label-short {
+  display: none !important;
 }
 
-.cal-nav-btn-text-short {
-  display: none;
+.tab-label-full {
+  display: inline !important;
 }
 
-/* ==========================================================================
-   TABLET RESPONSIVENESS (769px to 1024px)
-   ========================================================================== */
+/* 2. Tablet Overrides (769px - 1024px) */
 @media (min-width: 769px) and (max-width: 1024px) {
-  .planner-page-container {
+  .scheduled-sessions-grid,
+  .study-sessions-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 14px !important;
+  }
+
+  .streak-hero-card {
+    padding: 18px 20px !important;
+    gap: 14px !important;
+  }
+
+  .weekly-days-grid {
+    grid-template-columns: repeat(7, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .weekly-day-card {
+    min-height: 124px !important;
+    padding: 8px 4px !important;
+  }
+
+  .cylinder-gauge-track {
+    height: 40px !important;
+  }
+
+  .tracker-sub-tabs-bar {
+    padding: 4px !important;
+    gap: 5px !important;
+  }
+
+  .tracker-sub-tab-btn {
+    padding: 8px 12px !important;
+    font-size: 0.78rem !important;
+  }
+}
+
+/* 3. Mobile Phone Overrides (<= 768px) */
+@media (max-width: 768px) {
+  /* Tracker Page Container */
+  .tracker-page-container {
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
   }
 
-  .planner-page-header {
+  /* Compact Tracker Header */
+  .tracker-page-header {
     margin-bottom: 12px !important;
   }
 
-  .planner-page-title {
-    font-size: 1.35rem !important;
-  }
-
-  .planner-page-desc {
-    font-size: 0.8rem !important;
-    line-height: 1.4 !important;
-  }
-
-  .planner-header-actions {
-    display: flex !important;
-    align-items: center !important;
-    gap: 10px !important;
-  }
-
-  .calendar-scroll-area {
-    min-width: 720px !important;
-  }
-
-  .calendar-range-title {
-    font-size: 0.98rem !important;
-  }
-
-  .schedules-grid {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 12px !important;
-    width: 100% !important;
-  }
-
-  .pro-routine-card {
-    padding: 15px !important;
-    border-radius: 16px !important;
-    gap: 10px !important;
-  }
-
-  .routine-subject-heading {
-    font-size: 0.98rem !important;
-  }
-
-  .routine-subject-icon-box {
-    width: 36px !important;
-    height: 36px !important;
-  }
-
-  .day-capsule-item {
-    min-height: 32px !important;
-    font-size: 0.72rem !important;
-  }
-}
-
-/* ==========================================================================
-   MOBILE FULL RESPONSIVENESS & ANIMATIONS (<= 768px)
-   ========================================================================== */
-@media (max-width: 768px) {
-  .planner-page-container {
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-    padding: 0 !important;
-    overflow-x: hidden !important;
-  }
-
-  /* Compact Animated Planner Header */
-  .planner-page-header {
-    margin-bottom: 8px !important;
-    padding: 0 !important;
-  }
-
-  .planner-header-row {
+  .tracker-header-row {
     display: flex !important;
     flex-direction: column !important;
     align-items: stretch !important;
-    gap: 8px !important;
-    width: 100% !important;
+    gap: 10px !important;
   }
 
-  .planner-header-lead {
+  .tracker-header-lead {
     display: flex !important;
     flex-direction: column !important;
-    gap: 2px !important;
-    width: 100% !important;
+    gap: 3px !important;
   }
 
-  .planner-page-title {
-    font-size: 1.12rem !important;
-    font-weight: 800 !important;
+  .tracker-page-title {
+    font-size: 1.15rem !important;
+    font-weight: 850 !important;
     line-height: 1.25 !important;
     display: flex !important;
     align-items: center !important;
-    gap: 6px !important;
+    gap: 8px !important;
     margin: 0 !important;
-    color: var(--color-text) !important;
   }
 
-  .planner-title-icon {
-    width: 20px !important;
-    height: 20px !important;
-    flex-shrink: 0 !important;
+  .tracker-title-icon {
+    width: 22px !important;
+    height: 22px !important;
+    min-width: 22px !important;
   }
 
-  .planner-page-desc {
-    font-size: 0.72rem !important;
+  .tracker-page-desc {
+    font-size: 0.74rem !important;
     line-height: 1.35 !important;
-    margin: 0 !important;
     color: var(--color-text-muted) !important;
+    margin: 2px 0 0 0 !important;
     display: -webkit-box !important;
     -webkit-line-clamp: 2 !important;
     -webkit-box-orient: vertical !important;
     overflow: hidden !important;
   }
 
-  .planner-header-actions {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    gap: 8px !important;
+  .tracker-header-actions {
     width: 100% !important;
-    box-sizing: border-box !important;
   }
 
-  .planner-view-toggle {
-    display: flex !important;
-    flex: 1 1 auto !important;
-    padding: 3px !important;
-    gap: 3px !important;
-    border-radius: 10px !important;
-    background: var(--color-surface-subtle) !important;
-    border: 1px solid var(--color-border-subtle) !important;
-    box-sizing: border-box !important;
-  }
-
-  .view-toggle-btn {
-    flex: 1 1 50% !important;
-    padding: 6px 8px !important;
-    font-size: 0.74rem !important;
-    font-weight: 700 !important;
+  .tracker-book-btn {
+    width: 100% !important;
     justify-content: center !important;
-    text-align: center !important;
-    border-radius: 7px !important;
-    white-space: nowrap !important;
-    gap: 4px !important;
-    box-sizing: border-box !important;
-    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  }
-
-  .view-toggle-btn:active {
-    transform: scale(0.96) !important;
-  }
-
-  .planner-add-routine-btn {
-    flex-shrink: 0 !important;
-    padding: 6px 12px !important;
-    font-size: 0.75rem !important;
+    height: 38px !important;
+    font-size: 0.8rem !important;
     font-weight: 750 !important;
-    height: 34px !important;
     border-radius: 10px !important;
-    white-space: nowrap !important;
-    transition: transform 0.15s ease !important;
   }
 
-  .planner-add-routine-btn:active {
-    transform: scale(0.96) !important;
+  /* Top Streak & Summary Hero Card (Compact & Small) */
+  .tracker-streak-hero-wrapper {
+    margin-bottom: 14px !important;
   }
 
-  /* Calendar Container */
-  .planner-calendar-container {
-    border-radius: 14px !important;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04) !important;
-    border: 1px solid var(--color-border) !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-    overflow: hidden !important;
+  .streak-hero-card {
+    padding: 12px 14px !important;
+    gap: 12px !important;
+    border-radius: 16px !important;
+    margin-bottom: 0 !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
   }
 
-  .calendar-header-bar {
-    padding: 8px 10px !important;
-    gap: 7px !important;
+  .streak-main-row {
     display: flex !important;
     flex-direction: column !important;
     align-items: stretch !important;
-    background: var(--color-surface) !important;
-    border-bottom: 1px solid var(--color-border-subtle) !important;
+    gap: 10px !important;
   }
 
-  .calendar-nav-controls {
+  .streak-flame-section {
+    min-width: 0 !important;
+    width: 100% !important;
+    gap: 3px !important;
+  }
+
+  .streak-flame-badge {
     display: flex !important;
     align-items: center !important;
-    justify-content: space-between !important;
+    gap: 8px !important;
+  }
+
+  .streak-flame-icon {
+    font-size: 1.85rem !important;
+    line-height: 1 !important;
+  }
+
+  .streak-flame-number {
+    font-size: 1.55rem !important;
+    font-weight: 850 !important;
+    line-height: 1 !important;
+  }
+
+  .streak-flame-label {
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.04em !important;
+  }
+
+  .streak-status-text {
+    font-size: 0.72rem !important;
+    line-height: 1.35 !important;
+    margin: 0 !important;
+  }
+
+  /* Daily Study Target Block */
+  .daily-goal-section {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
     gap: 6px !important;
+    padding-top: 8px !important;
+    border-top: 1px solid var(--color-border-subtle) !important;
+  }
+
+  .daily-goal-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 6px !important;
+  }
+
+  .daily-goal-title-wrap {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    min-width: 0 !important;
+    flex-wrap: wrap !important;
+  }
+
+  .daily-goal-label {
+    font-size: 0.78rem !important;
+    font-weight: 750 !important;
+  }
+
+  .daily-goal-title-wrap .badge {
+    font-size: 0.68rem !important;
+    padding: 2px 6px !important;
+  }
+
+  .goal-edit-toggle {
+    font-size: 0.7rem !important;
+    padding: 2px 7px !important;
+    border-radius: 6px !important;
+  }
+
+  .goal-progress-bar-track {
+    height: 7px !important;
+  }
+
+  .goal-progress-footer {
+    font-size: 0.7rem !important;
+    margin-top: 2px !important;
+  }
+
+  /* 7-Day Consistency Horizontal Swipe Strip */
+  .weekly-streak-strip {
+    padding-top: 10px !important;
+    gap: 8px !important;
+    border-top: 1px solid var(--color-border-subtle) !important;
+  }
+
+  .weekly-strip-header {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+  }
+
+  .weekly-strip-title-group {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1px !important;
+  }
+
+  .weekly-strip-title {
+    font-size: 0.84rem !important;
+    font-weight: 800 !important;
+    line-height: 1.25 !important;
+  }
+
+  .weekly-strip-subtitle {
+    font-size: 0.66rem !important;
+  }
+
+  .weekly-strip-metrics {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 4px !important;
     width: 100% !important;
   }
 
-  .week-switch-buttons {
-    display: flex !important;
-    gap: 4px !important;
-    flex-shrink: 0 !important;
-  }
-
-  .cal-nav-btn {
-    padding: 4px 8px !important;
-    font-size: 0.72rem !important;
-    height: 30px !important;
-    border-radius: 8px !important;
-    white-space: nowrap !important;
+  .weekly-metric-chip {
+    font-size: 0.66rem !important;
     font-weight: 700 !important;
-    transition: transform 0.12s ease !important;
+    padding: 2px 7px !important;
+    border-radius: 9999px !important;
+    gap: 3px !important;
   }
 
-  .cal-nav-btn:active {
-    transform: scale(0.95) !important;
+  .weekly-metric-chip svg {
+    width: 10px !important;
+    height: 10px !important;
   }
 
-  .cal-nav-btn-text-full {
-    display: none !important;
-  }
-
-  .cal-nav-btn-text-short {
-    display: inline !important;
-  }
-
-  .calendar-range-title {
-    font-size: 0.82rem !important;
-    font-weight: 800 !important;
-    margin: 0 !important;
-    gap: 4px !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    min-width: 0 !important;
-  }
-
-  .calendar-summary-chips {
+  /* Smooth Touch Swipe Carousel for 7-Day Consistency Grid */
+  .weekly-days-grid {
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch !important;
-    scrollbar-width: none !important;
-    gap: 4px !important;
-    padding-bottom: 1px !important;
-    width: 100% !important;
-  }
-
-  .calendar-summary-chips::-webkit-scrollbar {
-    display: none !important;
-  }
-
-  .cal-stat-chip {
-    padding: 2.5px 7px !important;
-    font-size: 0.67rem !important;
-    border-radius: 9999px !important;
-    flex-shrink: 0 !important;
-    white-space: nowrap !important;
-    background: var(--color-surface-subtle) !important;
-  }
-
-  /* Quick Mobile Day Jump Bar */
-  .calendar-mobile-day-bar {
-    display: flex !important;
-    align-items: center !important;
+    overscroll-behavior-x: contain !important;
     gap: 6px !important;
-    padding: 6px 8px !important;
-    background: var(--color-surface-subtle) !important;
-    border-bottom: 1px solid var(--color-border-subtle) !important;
-    overflow: hidden !important;
+    padding: 3px 2px 6px 2px !important;
+    scrollbar-width: none !important;
     width: 100% !important;
     box-sizing: border-box !important;
   }
 
-  .mobile-day-bar-label {
-    font-size: 0.65rem !important;
-    font-weight: 800 !important;
-    text-transform: uppercase !important;
-    color: var(--color-text-muted) !important;
-    letter-spacing: 0.04em !important;
-    flex-shrink: 0 !important;
-  }
-
-  .mobile-day-chips-scroll {
-    display: flex !important;
-    align-items: center !important;
-    gap: 4px !important;
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    scrollbar-width: none !important;
-    flex: 1 !important;
-  }
-
-  .mobile-day-chips-scroll::-webkit-scrollbar {
+  .weekly-days-grid::-webkit-scrollbar {
     display: none !important;
   }
 
-  .mobile-day-chip {
-    padding: 3px 7px !important;
-    border-radius: 8px !important;
-    border: 1px solid var(--color-border-subtle) !important;
-    background: var(--color-surface) !important;
-    color: var(--color-text) !important;
-    font-size: 0.68rem !important;
-    font-weight: 700 !important;
-    display: inline-flex !important;
+  .weekly-day-card {
+    flex: 0 0 68px !important;
+    min-width: 68px !important;
+    max-width: 72px !important;
+    min-height: 114px !important;
+    padding: 7px 4px 6px 4px !important;
+    border-radius: 12px !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
     align-items: center !important;
-    gap: 3px !important;
-    cursor: pointer !important;
-    flex-shrink: 0 !important;
-    user-select: none !important;
-    transition: transform 0.15s ease, background 0.15s ease !important;
+    justify-content: space-between !important;
   }
 
-  .mobile-day-chip:active {
+  .weekly-day-card:active {
     transform: scale(0.95) !important;
   }
 
-  .mobile-day-chip.chip-today {
-    background: var(--color-accent) !important;
-    color: #ffffff !important;
-    border-color: var(--color-accent) !important;
+  .day-card-header {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 2px !important;
+    min-height: 25px !important;
   }
 
-  .chip-dot {
-    width: 4px !important;
-    height: 4px !important;
-    border-radius: 50% !important;
-    background: #10b981 !important;
+  .day-card-name {
+    font-size: 0.67rem !important;
+    font-weight: 750 !important;
+    letter-spacing: 0.03em !important;
   }
 
-  /* Calendar Grid Table */
-  .calendar-grid-wrapper {
+  .day-card-date {
+    font-size: 0.6rem !important;
+    font-weight: 600 !important;
+  }
+
+  .day-card-today-badge {
+    font-size: 0.58rem !important;
+    padding: 1px 4px !important;
+    border-radius: 4px !important;
+  }
+
+  .cylinder-gauge-container {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 3px !important;
+    margin: 3px 0 !important;
+  }
+
+  .cylinder-gauge-track {
+    width: 12px !important;
+    height: 36px !important;
+  }
+
+  .cylinder-badge-icon {
+    font-size: 0.72rem !important;
+  }
+
+  .day-card-footer {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 1px !important;
+  }
+
+  .day-card-mins {
+    font-size: 0.68rem !important;
+    font-weight: 750 !important;
+  }
+
+  .day-card-pct {
+    font-size: 0.6rem !important;
+  }
+
+  /* Compact Subtabs Bar (Horizontal Touch Scroll, Short Labels) */
+  .tracker-sub-tabs-bar {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch !important;
     overscroll-behavior-x: contain !important;
-    position: relative !important;
+    gap: 4px !important;
+    padding: 4px !important;
+    border-radius: 12px !important;
+    scrollbar-width: none !important;
+    margin-bottom: 12px !important;
     width: 100% !important;
     box-sizing: border-box !important;
   }
 
-  .calendar-scroll-area {
-    min-width: 600px !important;
-    width: 100% !important;
+  .tracker-sub-tabs-bar::-webkit-scrollbar {
+    display: none !important;
   }
 
-  .calendar-days-header-row {
-    grid-template-columns: 52px repeat(7, 1fr) !important;
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 20 !important;
-    background: var(--color-surface-subtle) !important;
+  .tab-label-full {
+    display: none !important;
   }
 
-  .time-axis-header-cell {
-    padding: 6px 4px !important;
-    position: sticky !important;
-    left: 0 !important;
-    top: 0 !important;
-    z-index: 25 !important;
-    background: var(--color-surface-subtle) !important;
-    border-right: 1px solid var(--color-border) !important;
+  .tab-label-short {
+    display: inline !important;
   }
 
-  .time-zone-label {
-    font-size: 0.6rem !important;
-    font-weight: 800 !important;
-  }
-
-  .day-header-cell {
-    padding: 6px 4px !important;
-    gap: 2px !important;
-  }
-
-  .day-name-label {
-    font-size: 0.68rem !important;
-    font-weight: 800 !important;
-  }
-
-  .day-date-number {
+  .tracker-sub-tab-btn {
+    padding: 6px 10px !important;
     font-size: 0.74rem !important;
-    width: 20px !important;
-    height: 20px !important;
+    font-weight: 700 !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    border-radius: 9px !important;
+    min-height: 32px !important;
+    gap: 5px !important;
+    display: inline-flex !important;
+    align-items: center !important;
   }
 
-  .day-hours-pill {
-    font-size: 0.58rem !important;
-    padding: 1px 4px !important;
+  .tracker-sub-tab-btn svg {
+    width: 13px !important;
+    height: 13px !important;
   }
 
-  .calendar-body-grid {
-    grid-template-columns: 52px 1fr !important;
+  /* Strict Time-Gate Callout Banner */
+  .tracker-timegate-callout {
+    padding: 8px 10px !important;
+    gap: 8px !important;
+    margin-bottom: 10px !important;
+    border-radius: 11px !important;
+    display: flex !important;
+    align-items: flex-start !important;
   }
 
-  .calendar-time-axis {
-    position: sticky !important;
-    left: 0 !important;
-    z-index: 15 !important;
-    background: var(--color-surface-subtle) !important;
-    box-shadow: 2px 0 6px rgba(0, 0, 0, 0.04) !important;
+  .callout-icon-box {
+    margin-top: 1px !important;
   }
 
-  .time-axis-slot {
-    padding-top: 2px !important;
+  .callout-icon-box svg {
+    width: 14px !important;
+    height: 14px !important;
   }
 
-  .time-axis-label {
-    font-size: 0.62rem !important;
-    font-weight: 750 !important;
+  .callout-text-content {
+    font-size: 0.72rem !important;
+    line-height: 1.35 !important;
   }
 
-  /* Time Blocks in Grid */
-  .calendar-time-block {
-    left: 2px !important;
-    right: 2px !important;
-    padding: 3px 5px !important;
-    border-radius: 6px !important;
-    gap: 1px !important;
-    transition: transform 0.12s ease !important;
+  .callout-title {
+    font-weight: 800 !important;
   }
 
-  .calendar-time-block:active {
-    transform: scale(0.97) !important;
-  }
-
-  .time-block-subject {
-    font-size: 0.7rem !important;
-    line-height: 1.15 !important;
-    font-weight: 750 !important;
-  }
-
-  .time-block-meta {
-    gap: 2px !important;
-  }
-
-  .time-block-time-pill {
-    font-size: 0.58rem !important;
-    padding: 1px 3px !important;
-    border-radius: 4px !important;
-  }
-
-  .time-block-dur-pill {
-    font-size: 0.56rem !important;
-  }
-
-  .time-block-deadline {
-    font-size: 0.56rem !important;
-    padding: 1px 3px !important;
-    border-radius: 4px !important;
-  }
-
-  /* ==========================================================================
-     ROUTINE CARDS - COMPACT & ANIMATED ON MOBILE
-     ========================================================================== */
-  .schedules-grid {
-    display: grid !important;
-    grid-template-columns: 1fr !important;
+  /* Scheduled Sessions Grid & Compact Cards */
+  .scheduled-sessions-grid {
+    display: flex !important;
+    flex-direction: column !important;
     gap: 10px !important;
     width: 100% !important;
     box-sizing: border-box !important;
   }
 
-  .pro-routine-card {
-    padding: 12px 14px !important;
+  .scheduled-session-card {
     border-radius: 14px !important;
-    gap: 8px !important;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03) !important;
-    border: 1px solid var(--color-border) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
     width: 100% !important;
+    max-width: 100% !important;
     box-sizing: border-box !important;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease !important;
+    overflow: hidden !important;
+    border: 1px solid var(--color-border) !important;
   }
 
-  .pro-routine-card:active {
+  .scheduled-session-card:active {
     transform: scale(0.985) !important;
   }
 
-  .routine-card-header {
+  .scheduled-card-body {
+    padding: 10px 12px !important;
     gap: 8px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    box-sizing: border-box !important;
   }
 
-  .routine-subject-meta {
-    gap: 8px !important;
-  }
-
-  .routine-subject-icon-box {
-    width: 32px !important;
-    height: 32px !important;
-    min-width: 32px !important;
-    border-radius: 9px !important;
-  }
-
-  .routine-subject-icon-box svg {
-    width: 16px !important;
-    height: 16px !important;
-  }
-
-  .routine-subject-heading {
-    font-size: 0.9rem !important;
-    line-height: 1.25 !important;
-    margin: 0 0 2px !important;
-    font-weight: 750 !important;
-  }
-
-  .routine-tag-subrow {
-    gap: 5px !important;
-  }
-
-  .routine-frequency-text {
-    font-size: 0.68rem !important;
-  }
-
-  .routine-today-pill {
-    font-size: 0.62rem !important;
-    padding: 1.5px 5px !important;
-  }
-
-  .routine-header-actions {
-    gap: 4px !important;
-  }
-
-  .routine-icon-btn {
-    width: 28px !important;
-    height: 28px !important;
-    border-radius: 7px !important;
-    transition: transform 0.12s ease !important;
-  }
-
-  .routine-icon-btn:active {
-    transform: scale(0.92) !important;
-  }
-
-  .routine-icon-btn svg {
-    width: 12px !important;
-    height: 12px !important;
-  }
-
-  .routine-time-row {
-    padding: 5px 8px !important;
-    border-radius: 8px !important;
+  .scheduled-card-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
     gap: 6px !important;
+    flex-wrap: wrap !important;
   }
 
-  .routine-time-box {
-    font-size: 0.76rem !important;
-    gap: 5px !important;
+  .scheduled-header-left {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-wrap: wrap !important;
+    min-width: 0 !important;
   }
 
-  .routine-time-box svg {
+  .course-chip-badge {
+    font-size: 0.67rem !important;
+    padding: 2px 6px !important;
+    border-radius: 6px !important;
+    gap: 4px !important;
+  }
+
+  .course-chip-dot {
+    width: 5px !important;
+    height: 5px !important;
+  }
+
+  .session-status-badge {
+    font-size: 0.67rem !important;
+    padding: 2px 6px !important;
+    border-radius: 6px !important;
+    gap: 4px !important;
+  }
+
+  .session-status-badge svg {
+    width: 11px !important;
+    height: 11px !important;
+  }
+
+  .scheduled-duration-badge {
+    font-size: 0.7rem !important;
+    padding: 2px 6px !important;
+    border-radius: 6px !important;
+    gap: 3px !important;
+  }
+
+  .scheduled-duration-badge svg {
+    width: 11px !important;
+    height: 11px !important;
+  }
+
+  .scheduled-session-title {
+    font-size: 0.88rem !important;
+    font-weight: 750 !important;
+    line-height: 1.25 !important;
+    margin: 0 !important;
+    word-break: break-word !important;
+  }
+
+  /* Active Window Banner */
+  .active-window-live-banner {
+    padding: 5px 8px !important;
+    gap: 6px !important;
+    border-radius: 8px !important;
+    margin: 2px 0 4px 0 !important;
+  }
+
+  .active-window-live-title {
+    font-size: 0.67rem !important;
+  }
+
+  .active-window-countdown-chip {
+    font-size: 0.67rem !important;
+    padding: 2px 6px !important;
+  }
+
+  /* Linked Material Card Inside Scheduled Card */
+  .scheduled-linked-material-card {
+    padding: 6px 8px !important;
+    gap: 7px !important;
+    border-radius: 9px !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  .scheduled-material-icon-box {
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    border-radius: 6px !important;
+  }
+
+  .scheduled-material-icon-box svg {
     width: 12px !important;
     height: 12px !important;
   }
 
-  .routine-duration-pill {
-    font-size: 0.66rem !important;
-    padding: 1.5px 5px !important;
+  .scheduled-material-info {
+    min-width: 0 !important;
+    flex: 1 !important;
   }
 
-  .routine-week-capsules-bar {
-    gap: 4px !important;
+  .scheduled-material-label {
+    font-size: 0.58rem !important;
+    letter-spacing: 0.03em !important;
   }
 
-  .day-capsule-item {
-    min-height: 28px !important;
-    padding: 3px 0 !important;
+  .scheduled-material-title {
+    font-size: 0.76rem !important;
+    font-weight: 700 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .scheduled-material-topics {
+    gap: 3px !important;
+    margin-top: 2px !important;
+    flex-wrap: wrap !important;
+  }
+
+  .scheduled-topic-badge,
+  .scheduled-topic-more {
+    font-size: 0.6rem !important;
+    padding: 1px 5px !important;
+    border-radius: 4px !important;
+  }
+
+  /* Schedule Time Strip */
+  .scheduled-time-strip {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-wrap: wrap !important;
     font-size: 0.68rem !important;
+  }
+
+  .time-strip-item {
+    gap: 3px !important;
+    font-size: 0.68rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+  }
+
+  .time-strip-icon {
+    width: 11px !important;
+    height: 11px !important;
+  }
+
+  .today-badge {
+    font-size: 0.58rem !important;
+    padding: 1px 4px !important;
+  }
+
+  .time-strip-context {
+    font-size: 0.65rem !important;
+    padding: 2px 6px !important;
     border-radius: 6px !important;
-    transition: transform 0.15s ease !important;
   }
 
-  .day-capsule-item:active {
-    transform: scale(0.94) !important;
-  }
-
-  .day-capsule-current::after {
-    width: 8px !important;
-    height: 1.5px !important;
-    bottom: 1.5px !important;
-  }
-
-  .routine-notes-box {
+  /* Notes */
+  .scheduled-session-notes {
     padding: 5px 8px !important;
-    border-radius: 6px !important;
-  }
-
-  .routine-notes-header {
-    font-size: 0.62rem !important;
-    margin-bottom: 1px !important;
-  }
-
-  .routine-notes-text {
-    font-size: 0.72rem !important;
+    gap: 5px !important;
+    border-radius: 7px !important;
+    font-size: 0.7rem !important;
     line-height: 1.35 !important;
   }
 
-  .routine-resources-wrap {
-    gap: 4px !important;
+  /* Quiz Result Ribbon */
+  .quiz-result-ribbon {
+    padding: 6px 8px !important;
+    border-radius: 9px !important;
+    gap: 6px !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
   }
 
-  .routine-resources-label {
-    font-size: 0.64rem !important;
+  .quiz-ribbon-left {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    min-width: 0 !important;
   }
 
-  .routine-resource-chip {
-    padding: 2.5px 6px !important;
-    font-size: 0.68rem !important;
-    border-radius: 6px !important;
+  .quiz-ribbon-icon-box {
+    width: 22px !important;
+    height: 22px !important;
+    min-width: 22px !important;
   }
 
-  .routine-start-focus-btn {
-    padding: 7px 10px !important;
-    font-size: 0.75rem !important;
+  .quiz-ribbon-icon-box svg {
+    width: 12px !important;
+    height: 12px !important;
+  }
+
+  .quiz-ribbon-title {
+    font-size: 0.73rem !important;
     font-weight: 750 !important;
-    border-radius: 8px !important;
-    gap: 5px !important;
+  }
+
+  .quiz-ribbon-sub {
+    font-size: 0.61rem !important;
+  }
+
+  .quiz-ribbon-score-pill {
+    font-size: 0.7rem !important;
+    padding: 2px 6px !important;
+    border-radius: 6px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Scheduled Card Action Buttons */
+  .scheduled-card-actions-row {
+    padding-top: 6px !important;
+    margin-top: 2px !important;
+    gap: 6px !important;
+    border-top: 1px solid var(--color-border-subtle) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    width: 100% !important;
+  }
+
+  .action-start-btn-container {
+    width: 100% !important;
+  }
+
+  .btn-start-focus-glow,
+  .btn-complete-focus,
+  .btn-quiz-full-cta,
+  .btn-reschedule-full-cta {
+    width: 100% !important;
+    min-height: 35px !important;
+    padding: 6px 12px !important;
+    font-size: 0.78rem !important;
+    font-weight: 750 !important;
+    border-radius: 9px !important;
+    display: inline-flex !important;
+    align-items: center !important;
     justify-content: center !important;
-    transition: transform 0.15s ease !important;
+    gap: 5px !important;
+    box-sizing: border-box !important;
   }
 
-  .routine-start-focus-btn:active {
-    transform: scale(0.97) !important;
-  }
-
-  .focus-btn-icon {
+  .btn-start-focus-glow svg,
+  .btn-complete-focus svg,
+  .btn-quiz-full-cta svg,
+  .btn-reschedule-full-cta svg {
     width: 13px !important;
     height: 13px !important;
   }
 
-  /* Planner Form Card */
-  .planner-form-card {
-    padding: 12px 14px !important;
-    border-radius: 14px !important;
-    margin-bottom: 12px !important;
-  }
-
-  .planner-time-row {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 8px !important;
-  }
-
-  .day-chips-grid {
+  .card-actions-right {
     display: flex !important;
-    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 6px !important;
+    width: 100% !important;
+  }
+
+  .action-icon-btn {
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    border-radius: 7px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .action-icon-btn svg {
+    width: 13px !important;
+    height: 13px !important;
+  }
+
+  .extend-session-row {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 6px !important;
+    margin-bottom: 4px !important;
+  }
+
+  .extend-label {
+    font-size: 0.7rem !important;
+    font-weight: 600 !important;
+  }
+
+  .extend-chips-group {
+    display: flex !important;
     gap: 4px !important;
   }
 
-  .day-chip {
-    padding: 4px 8px !important;
-    font-size: 0.72rem !important;
-    border-radius: 7px !important;
+  .btn-chip-extend {
+    padding: 2.5px 7px !important;
+    font-size: 0.67rem !important;
+    font-weight: 750 !important;
+    border-radius: 6px !important;
   }
 
-  /* Schedule Detail Modal on Mobile */
-  .modal-content-card {
-    padding: 16px 14px !important;
-    border-radius: 16px !important;
-    max-width: calc(100vw - 20px) !important;
+  /* History Session Cards (Compact & Animated) */
+  .study-sessions-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .study-session-card {
+    border-radius: 14px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    border: 1px solid var(--color-border) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+  }
+
+  .study-session-card:active {
+    transform: scale(0.985) !important;
+  }
+
+  .session-card-inner {
+    padding: 10px 12px !important;
+    gap: 7px !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .session-card-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 6px !important;
+  }
+
+  .session-header-left {
+    display: flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+    min-width: 0 !important;
+    flex: 1 !important;
+  }
+
+  .session-icon-avatar {
+    width: 26px !important;
+    height: 26px !important;
+    min-width: 26px !important;
+    border-radius: 7px !important;
+    font-size: 0.85rem !important;
+  }
+
+  .session-icon-avatar svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+
+  .session-header-text {
+    min-width: 0 !important;
+    flex: 1 !important;
+  }
+
+  .session-category-tag {
+    font-size: 0.6rem !important;
+    letter-spacing: 0.03em !important;
+  }
+
+  .session-subject-title {
+    font-size: 0.85rem !important;
+    font-weight: 750 !important;
+    line-height: 1.25 !important;
+    margin: 1px 0 0 0 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .session-duration-pill {
+    font-size: 0.7rem !important;
+    padding: 2.5px 7px !important;
+    border-radius: 6px !important;
+    gap: 3px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .session-linked-material-chip {
+    padding: 4px 6px !important;
+    font-size: 0.67rem !important;
+    border-radius: 6px !important;
+    gap: 4px !important;
+  }
+
+  .session-meta-row {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 4px !important;
+  }
+
+  .session-meta-chip {
+    font-size: 0.66rem !important;
+    gap: 3px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+  }
+
+  .session-meta-chip svg {
+    width: 11px !important;
+    height: 11px !important;
+  }
+
+  .session-relative-badge {
+    font-size: 0.58rem !important;
+    padding: 1px 4px !important;
+  }
+
+  .status-pill {
+    font-size: 0.62rem !important;
+    padding: 1.5px 5px !important;
+    border-radius: 5px !important;
+  }
+
+  .session-quiz-badge-row,
+  .session-quiz-prompt-row {
+    padding: 5px 7px !important;
+    font-size: 0.7rem !important;
+    border-radius: 7px !important;
+    gap: 5px !important;
+  }
+
+  .btn-view-diagnostic-link,
+  .btn-take-quiz-prompt {
+    font-size: 0.68rem !important;
+    padding: 2.5px 7px !important;
+    border-radius: 5px !important;
+  }
+
+  .session-notes-box {
+    padding: 5px 7px !important;
+    border-radius: 7px !important;
+    gap: 3px !important;
+  }
+
+  .session-notes-header {
+    font-size: 0.64rem !important;
+  }
+
+  .session-notes-content {
+    font-size: 0.7rem !important;
+    line-height: 1.35 !important;
+  }
+
+  .session-card-actions {
+    padding-top: 6px !important;
+    margin-top: 2px !important;
+    gap: 5px !important;
+    border-top: 1px solid var(--color-border-subtle) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+  }
+
+  .session-action-btn {
+    padding: 3px 8px !important;
+    font-size: 0.7rem !important;
+    border-radius: 6px !important;
+  }
+
+  /* Focus Timer Mobile Layout */
+  .focus-timer-card-wrapper {
+    padding: 10px !important;
+    border-radius: 14px !important;
+  }
+
+  .focus-timer-modes-bar {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    gap: 4px !important;
+    padding: 3px !important;
+    scrollbar-width: none !important;
+    border-radius: 10px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .focus-timer-modes-bar::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .focus-mode-chip {
+    font-size: 0.72rem !important;
+    padding: 4.5px 8px !important;
+    border-radius: 7px !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  .focus-timer-hero-container {
+    padding: 6px 0 !important;
     gap: 12px !important;
+  }
+
+  .focus-timer-dial {
+    width: 160px !important;
+    height: 160px !important;
+  }
+
+  .focus-timer-digits {
+    font-size: 2rem !important;
+  }
+
+  .focus-timer-state-label {
+    font-size: 0.66rem !important;
+  }
+
+  .focus-quick-adjust-bar {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    width: 100% !important;
+  }
+
+  .quick-adjust-label {
+    display: none !important;
+  }
+
+  .btn-quick-adjust {
+    padding: 3px 7px !important;
+    font-size: 0.7rem !important;
+    border-radius: 6px !important;
+  }
+
+  .focus-timer-controls-row {
+    gap: 8px !important;
+    justify-content: center !important;
+    width: 100% !important;
+  }
+
+  .btn-timer-main-action {
+    min-width: 110px !important;
+    height: 36px !important;
+    font-size: 0.8rem !important;
+    padding: 0 14px !important;
+    border-radius: 9px !important;
+  }
+
+  .btn-timer-reset,
+  .btn-timer-sound {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 9px !important;
+  }
+
+  .focus-timer-session-meta {
+    padding: 10px !important;
+    border-radius: 12px !important;
+    margin-top: 10px !important;
+  }
+
+  .meta-box-title {
+    font-size: 0.78rem !important;
+    margin-bottom: 8px !important;
+  }
+
+  .focus-timer-log-action-row {
+    flex-direction: column !important;
+    gap: 8px !important;
+    align-items: stretch !important;
+  }
+
+  .focus-timer-log-action-row button {
+    width: 100% !important;
+    min-height: 35px !important;
+    font-size: 0.78rem !important;
+    justify-content: center !important;
+  }
+
+  /* Post-Session Prompt Card */
+  .post-session-celebration-card {
+    padding: 10px 12px !important;
+    border-radius: 12px !important;
+  }
+
+  .celebration-card-title {
+    font-size: 0.85rem !important;
+  }
+
+  .celebration-card-subtitle {
+    font-size: 0.7rem !important;
+  }
+
+  .celebration-btn-group {
+    flex-direction: column !important;
+    gap: 5px !important;
+  }
+
+  .btn-celebration-quiz,
+  .btn-celebration-extend,
+  .btn-celebration-dismiss {
+    width: 100% !important;
+    min-height: 34px !important;
+    font-size: 0.76rem !important;
+    justify-content: center !important;
+    border-radius: 8px !important;
   }
 }
 
-/* ==========================================================================
-   EXTRA SMALL MOBILE REFINEMENTS (<= 480px)
-   ========================================================================== */
+/* 4. Extra-small devices (<= 480px) */
 @media (max-width: 480px) {
-  .planner-page-title {
+  .tracker-page-title {
     font-size: 1.05rem !important;
   }
 
-  .planner-page-desc {
-    font-size: 0.68rem !important;
+  .weekly-day-card {
+    flex: 0 0 64px !important;
+    min-width: 64px !important;
+    min-height: 110px !important;
+    padding: 6px 3px 5px 3px !important;
   }
 
-  .cal-stat-chip {
+  .cylinder-gauge-track {
+    height: 32px !important;
+    width: 11px !important;
+  }
+
+  .day-card-name {
     font-size: 0.64rem !important;
-    padding: 2px 6px !important;
   }
 
-  .day-name-label {
-    font-size: 0.64rem !important;
+  .day-card-mins {
+    font-size: 0.65rem !important;
   }
 
-  .day-date-number {
-    font-size: 0.7rem !important;
-    width: 18px !important;
-    height: 18px !important;
+  .focus-timer-dial {
+    width: 146px !important;
+    height: 146px !important;
   }
 
-  .routine-subject-heading {
-    font-size: 0.86rem !important;
-  }
-
-  .pro-routine-card {
-    padding: 10px 12px !important;
+  .focus-timer-digits {
+    font-size: 1.8rem !important;
   }
 }
 

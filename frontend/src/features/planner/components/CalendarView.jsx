@@ -106,16 +106,19 @@ export default function CalendarView({
   // Calculate week dates starting from Sunday of the active week
   const today = new Date();
   const currentDayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, ...
-  
+
   const startOfWeek = new Date(today);
-  startOfWeek.setDate(today.getDate() - currentDayOfWeek + currentWeekOffset * 7);
+  startOfWeek.setDate(
+    today.getDate() - currentDayOfWeek + currentWeekOffset * 7,
+  );
   startOfWeek.setHours(0, 0, 0, 0);
 
   const weekDays = ALL_DAYS.map((dayName, idx) => {
     const dayDate = new Date(startOfWeek);
     dayDate.setDate(startOfWeek.getDate() + idx);
     const isToday =
-      dayDate.toDateString() === today.toDateString() && currentWeekOffset === 0;
+      dayDate.toDateString() === today.toDateString() &&
+      currentWeekOffset === 0;
 
     return {
       dayName,
@@ -155,7 +158,10 @@ export default function CalendarView({
   const scrollToDay = (dayIndex) => {
     if (!gridWrapperRef.current) return;
     const colWidth = isMobile ? 85 : 110;
-    const targetScroll = Math.max(0, dayIndex * colWidth - (isMobile ? 10 : 30));
+    const targetScroll = Math.max(
+      0,
+      dayIndex * colWidth - (isMobile ? 10 : 30),
+    );
     gridWrapperRef.current.scrollTo({ left: targetScroll, behavior: "smooth" });
   };
 
@@ -194,7 +200,8 @@ export default function CalendarView({
   ALL_DAYS.forEach((d) => {
     const dayMins = schedulesByDay[d].reduce((acc, sch) => {
       return (
-        acc + Math.max(0, timeToMinutes(sch.end_time) - timeToMinutes(sch.start_time))
+        acc +
+        Math.max(0, timeToMinutes(sch.end_time) - timeToMinutes(sch.start_time))
       );
     }, 0);
     dailyHoursMap[d] = (dayMins / 60).toFixed(1);
@@ -243,7 +250,8 @@ export default function CalendarView({
         {/* Quick Weekly Statistics Pills */}
         <div className="calendar-summary-chips">
           <span className="cal-stat-chip">
-            ⏱️ <strong>{(totalWeeklyMinutes / 60).toFixed(1)} hrs</strong> planned
+            ⏱️ <strong>{(totalWeeklyMinutes / 60).toFixed(1)} hrs</strong>{" "}
+            planned
           </span>
           <span className="cal-stat-chip">
             📚 <strong>{activeSubjectsSet.size}</strong> courses
@@ -292,7 +300,9 @@ export default function CalendarView({
                 }`}
               >
                 <div className="day-name-row">
-                  <span className="day-name-label">{day.dayName.slice(0, 3)}</span>
+                  <span className="day-name-label">
+                    {day.dayName.slice(0, 3)}
+                  </span>
                   <span
                     className={`day-date-number ${
                       day.isToday ? "date-number-today" : ""
@@ -421,7 +431,8 @@ export default function CalendarView({
                                 background: "rgba(255,255,255,0.7)",
                               }}
                             >
-                              ⏰ {schedule.start_time.slice(0, 5)}–{schedule.end_time.slice(0, 5)}
+                              ⏰ {schedule.start_time.slice(0, 5)}–
+                              {schedule.end_time.slice(0, 5)}
                             </span>
 
                             {heightPx >= (isMobile ? 38 : 60) && (
@@ -431,11 +442,12 @@ export default function CalendarView({
                             )}
                           </div>
 
-                          {schedule.deadline && heightPx >= (isMobile ? 55 : 75) && (
-                            <div className="time-block-deadline">
-                              🎯 Due {schedule.deadline.slice(5)}
-                            </div>
-                          )}
+                          {schedule.deadline &&
+                            heightPx >= (isMobile ? 55 : 75) && (
+                              <div className="time-block-deadline">
+                                🎯 Due {schedule.deadline.slice(5)}
+                              </div>
+                            )}
                         </div>
                       );
                     })}
@@ -465,4 +477,3 @@ export default function CalendarView({
     </div>
   );
 }
-

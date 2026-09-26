@@ -174,7 +174,10 @@ export default function PlannerPage() {
         <div className="page-header-row planner-header-row">
           <div className="planner-header-lead">
             <h1 className="page-title planner-page-title">
-              <CalendarIcon size={24} className="text-orange planner-title-icon" />
+              <CalendarIcon
+                size={24}
+                className="text-orange planner-title-icon"
+              />
               <span>Study Planner & Timetable</span>
             </h1>
             <p className="page-description planner-page-desc">
