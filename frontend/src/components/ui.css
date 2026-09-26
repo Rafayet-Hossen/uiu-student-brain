@@ -289,6 +289,9 @@
 [data-theme="dark"] .badge-concepts-pill {
   color: #34d399;
 }
+.badge-concepts-text-short {
+  display: none;
+}
 
 /* --------------------------------------------------------------------------
    3. Cards & Surfaces (18-20px Radius, Human Elevation)

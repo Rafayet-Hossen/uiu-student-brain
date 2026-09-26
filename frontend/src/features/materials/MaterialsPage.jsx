@@ -278,10 +278,6 @@ export default function MaterialsPage() {
     try {
       await deleteCourse(course.id);
       setSuccessMsg(`Course "${course.title}" deleted.`);
-      setCourses((prev) => prev.filter((c) => c.id !== course.id));
-      if (selectedCourseId === course.id) {
-        setSelectedCourseId(null);
-      }
       await fetchCourses(selectedSemesterId);
     } catch (err) {
       setErrorMsg(extractMaterialsErrorMessage(err));
@@ -743,50 +739,27 @@ export default function MaterialsPage() {
                         )}
                       </div>
 
-                      <div className="flex items-center gap-1">
-                        <button
-                          type="button"
-                          className="btn-icon-subtle"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenEditCourse(c);
-                          }}
-                          title="Edit Course"
-                          style={{
-                            background: "transparent",
-                            border: "none",
-                            cursor: "pointer",
-                            padding: "4px",
-                            borderRadius: "4px",
-                            color: "var(--color-text-muted)",
-                            display: "inline-flex",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Pencil size={13} />
-                        </button>
-                        <button
-                          type="button"
-                          className="btn-icon-subtle btn-course-item-delete"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteCourse(c);
-                          }}
-                          title="Delete Course"
-                          style={{
-                            background: "transparent",
-                            border: "none",
-                            cursor: "pointer",
-                            padding: "4px",
-                            borderRadius: "4px",
-                            color: "#ef4444",
-                            display: "inline-flex",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
+                      <button
+                        type="button"
+                        className="btn-icon-subtle"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenEditCourse(c);
+                        }}
+                        title="Edit Course"
+                        style={{
+                          background: "transparent",
+                          border: "none",
+                          cursor: "pointer",
+                          padding: "4px",
+                          borderRadius: "4px",
+                          color: "var(--color-text-muted)",
+                          display: "inline-flex",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Pencil size={13} />
+                      </button>
                     </div>
                     <h4 className="project-card-title">{c.title}</h4>
                     <div className="project-card-stats">
@@ -884,32 +857,26 @@ export default function MaterialsPage() {
 
                 <div className="banner-action-buttons">
                   <Button
-                    variant="primary"
-                    size="sm"
-                    className="btn-banner-add-material"
-                    onClick={() => setIsAddMaterialOpen(true)}
-                    icon={Plus}
-                  >
-                    + Add Material
-                  </Button>
-                  <Button
                     variant="outline"
                     size="sm"
-                    className="btn-banner-edit-course"
                     onClick={() => handleOpenEditCourse(selectedCourse)}
                     icon={Pencil}
                   >
                     Edit Course
                   </Button>
+                  <Button
+                    variant="primary"
+                    onClick={() => setIsAddMaterialOpen(true)}
+                  >
+                    + Add Material
+                  </Button>
                   <button
                     type="button"
-                    className="btn-delete-project btn-banner-delete-course"
+                    className="btn-delete-project"
                     onClick={() => handleDeleteCourse(selectedCourse)}
                     title="Delete Course"
-                    aria-label="Delete Course"
                   >
-                    <Trash2 size={15} />
-                    <span className="btn-delete-course-text">Delete Course</span>
+                    <Trash2 size={16} />
                   </button>
                 </div>
               </div>

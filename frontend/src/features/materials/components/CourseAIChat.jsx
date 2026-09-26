@@ -102,7 +102,7 @@ export default function CourseAIChat({
       <div className="chat-header-bar">
         <div className="chat-header-left">
           <div className="ai-avatar-badge">🎓</div>
-          <div>
+          <div className="chat-header-info">
             <h4 className="chat-header-title">
               Study Assistant • {courseCode ? `[${courseCode}] ` : ""}
               {courseTitle}
@@ -114,9 +114,17 @@ export default function CourseAIChat({
           </div>
         </div>
         {extractedTopics.length > 0 && (
-          <span className="badge-concepts-pill">
-            <BookOpen size={13} />
-            <span>{extractedTopics.length} Syllabus Concepts Active</span>
+          <span
+            className="badge-concepts-pill"
+            title={`${extractedTopics.length} Syllabus Concepts Active`}
+          >
+            <BookOpen size={12} />
+            <span className="badge-concepts-text-full">
+              {extractedTopics.length} Syllabus Concepts Active
+            </span>
+            <span className="badge-concepts-text-short">
+              {extractedTopics.length} Concepts
+            </span>
           </span>
         )}
       </div>
@@ -238,8 +246,8 @@ export default function CourseAIChat({
       <div className="chat-input-bar">
         <textarea
           className="chat-input-field"
-          rows={2}
-          placeholder={`Ask about ${courseTitle}... (Shift+Enter for new line)`}
+          rows={1}
+          placeholder={`Ask about ${courseCode ? `[${courseCode}] ` : ""}${courseTitle}...`}
           value={inputMessage}
           onChange={(e) => setInputMessage(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -248,6 +256,7 @@ export default function CourseAIChat({
         <Button
           type="button"
           variant="primary"
+          className="chat-send-btn"
           onClick={() => handleSend()}
           disabled={!inputMessage.trim() || sending}
           loading={sending}
