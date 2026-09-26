@@ -1,54 +1,48 @@
 import { motion } from "framer-motion";
 import { Users, Trophy, Flame, Clock, Award, ArrowRight, MessageSquare, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
-import ScholarAvatar from "../../auth/components/ScholarAvatar";
 
 export default function CommunityMomentum({ leaderboard = [] }) {
   // Use API leaderboard data if available, or rich top scholar champions
   const topScholars = leaderboard.length >= 3
     ? leaderboard.slice(0, 3).map((item, idx) => ({
         rank: idx + 1,
-        id: item.user?.id || item.user_id || idx + 1,
-        name: item.user?.full_name || item.username || item.display_name || `Scholar #${idx + 1}`,
-        email: item.user?.email || item.email,
-        profile_image: item.user?.profile_image || item.profile_image || item.user?.avatar || item.avatar,
+        name: item.user?.full_name || item.username || `Scholar #${idx + 1}`,
         department: item.user?.department || (idx === 0 ? "Computer Science" : idx === 1 ? "Software Eng" : "Data Science"),
-        weeklyHours: `${(item.weekly_minutes ? item.weekly_minutes / 60 : item.study_hours || (24 - idx * 4)).toFixed(1)}h`,
+        weeklyHours: `${(item.weekly_minutes ? item.weekly_minutes / 60 : 24 - idx * 4).toFixed(1)}h`,
         streak: item.current_streak ? `${item.current_streak} Days` : `${14 - idx * 3} Days`,
         badge: idx === 0 ? "Master Scholar" : idx === 1 ? "Deep Diver" : "Consistent Learner",
+        avatar: item.user?.full_name ? item.user.full_name.charAt(0).toUpperCase() : ["A", "T", "F"][idx],
       }))
     : [
         {
           rank: 2,
-          id: 102,
           name: "Tanvir Ahmed",
           department: "Software Engineering",
           weeklyHours: "22.5h",
           streak: "11 Days",
           badge: "Deep Diver",
-          profile_image: null,
+          avatar: "T",
           color: "silver",
         },
         {
           rank: 1,
-          id: 101,
           name: "Ayesha Rahman",
           department: "Computer Science & Eng",
           weeklyHours: "28.5h",
           streak: "16 Days",
           badge: "Master Scholar",
-          profile_image: null,
+          avatar: "A",
           color: "gold",
         },
         {
           rank: 3,
-          id: 103,
           name: "Farhana Karim",
           department: "Data Science & AI",
           weeklyHours: "18.0h",
           streak: "8 Days",
           badge: "Consistent Learner",
-          profile_image: null,
+          avatar: "F",
           color: "bronze",
         },
       ];
@@ -90,34 +84,19 @@ export default function CommunityMomentum({ leaderboard = [] }) {
               key={student.name}
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45, delay: pIdx * 0.1 }}
-              whileHover={{
-                y: isGold ? -9 : -5,
-                scale: 1.018,
-                transition: { type: "spring", stiffness: 350, damping: 20 },
-              }}
-              whileTap={{ scale: 0.985 }}
+              transition={{ duration: 0.5, delay: pIdx * 0.12 }}
+              whileHover={{ y: -8, scale: 1.02 }}
               className={`dash-podium-card rank-${student.rank} ${isGold ? "podium-gold" : isSilver ? "podium-silver" : "podium-bronze"}`}
             >
               {/* Crown / Medal Top Ribbon */}
               <div className="dash-podium-crown-badge">
                 <span className="dash-podium-medal">{medalEmoji}</span>
                 <span className="dash-podium-rank-tag">#{student.rank} {medalLabel}</span>
-                {isGold && <Sparkles size={11} className="dash-gold-sparkle" />}
               </div>
 
-              {/* Scholar Avatar with Glowing Aura: Profile Image or Cartoon Avatar */}
+              {/* Scholar Avatar with Glowing Aura */}
               <div className={`dash-podium-avatar-wrap rank-${student.rank}`}>
-                <ScholarAvatar
-                  user={{
-                    id: student.id,
-                    full_name: student.name,
-                    email: student.email,
-                    profile_image: student.profile_image,
-                  }}
-                  size={isGold ? 52 : 44}
-                  className="dash-podium-scholar-avatar"
-                />
+                <div className="dash-podium-avatar-letter">{student.avatar}</div>
                 <div className="dash-podium-avatar-ring" />
               </div>
 

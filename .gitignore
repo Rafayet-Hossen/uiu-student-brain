@@ -1,17 +1,26 @@
 # Environment variables
 .env
+.env.*
+*.env
+backend/.env
+frontend/.env
+frontend/.env.local
 
 # Python / uv / Django
 __pycache__/
 *.py[cod]
 .venv/
+backend/.venv/
 *.sqlite3
+backend/db.sqlite3
 backend/media/
 backend/staticfiles/
 
 # Node / Vite
 node_modules/
+frontend/node_modules/
 frontend/dist/
+dist/
 
 # Editors / OS
 .vscode/

@@ -202,9 +202,8 @@ export default function ScheduledSessionCard({
     }
   };
 
-  const course = session.course_details || session.course;
-  const material = session.material_details || session.material;
-  const hasMaterial = Boolean(material || session.material_id);
+  const course = session.course_details;
+  const material = session.material_details;
   const status = session.status || "scheduled";
 
   const StatusIcon =
@@ -494,7 +493,7 @@ export default function ScheduledSessionCard({
                 onClick={handleComplete}
                 className="btn-complete-focus w-full"
               >
-                Complete Session{hasMaterial ? " & Launch Quiz" : ""}
+                Complete Session & Launch Quiz
               </Button>
             </div>
           )}
@@ -529,32 +528,30 @@ export default function ScheduledSessionCard({
                 </div>
               </div>
 
-              {/* Row 2: AI Diagnostic Quiz CTA Button (Only if quiz taken or material attached) */}
-              {(session.quiz_taken || hasMaterial) && (
-                <div className="quiz-cta-row">
-                  {session.quiz_taken ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      icon={Sparkles}
-                      onClick={() => onViewDiagnostic(session)}
-                      className="btn-quiz-full-cta"
-                    >
-                      View Diagnostic Report
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      icon={Sparkles}
-                      onClick={() => onTakeQuiz(session)}
-                      className="btn-quiz-full-cta"
-                    >
-                      Take AI Diagnostic Quiz
-                    </Button>
-                  )}
-                </div>
-              )}
+              {/* Row 2: AI Diagnostic Quiz CTA Button (Full Width & Prominent!) */}
+              <div className="quiz-cta-row">
+                {session.quiz_taken ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    icon={Sparkles}
+                    onClick={() => onViewDiagnostic(session)}
+                    className="btn-quiz-full-cta"
+                  >
+                    View Diagnostic Report
+                  </Button>
+                ) : (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    icon={Sparkles}
+                    onClick={() => onTakeQuiz(session)}
+                    className="btn-quiz-full-cta"
+                  >
+                    Take AI Diagnostic Quiz
+                  </Button>
+                )}
+              </div>
             </div>
           )}
 

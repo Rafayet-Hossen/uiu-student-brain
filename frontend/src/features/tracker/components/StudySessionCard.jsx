@@ -156,9 +156,8 @@ export default function StudySessionCard({
     label,
   } = useMemo(() => getSubjectTheme(session?.subject), [session?.subject]);
 
-  const course = session?.course_details || session?.course;
-  const material = session?.material_details || session?.material;
-  const hasMaterial = Boolean(material || session?.material_id);
+  const course = session?.course_details;
+  const material = session?.material_details;
 
   const categoryTag = useMemo(() => {
     if (course?.title) {
@@ -292,7 +291,7 @@ export default function StudySessionCard({
               </button>
             )}
           </div>
-        ) : session.status === "completed" && hasMaterial && onTakeQuiz ? (
+        ) : session.status === "completed" && onTakeQuiz ? (
           <div className="session-quiz-prompt-row">
             <button
               type="button"
