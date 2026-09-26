@@ -72,6 +72,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     # CORS
     "corsheaders.middleware.CorsMiddleware",
@@ -165,6 +166,28 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 import socket
 
+# Support TiDB / MySQL connections with PyMySQL
+try:
+    import pymysql
+    import pymysql.connections
+
+    if not getattr(pymysql.connections.Connection, "_is_ssl_mode_patched", False):
+        _orig_init = pymysql.connections.Connection.__init__
+
+        def _patched_init(self, *args, **kwargs):
+            if "ssl_mode" in kwargs:
+                ssl_mode = kwargs.pop("ssl_mode")
+                if ssl_mode and str(ssl_mode).upper() != "DISABLED":
+                    kwargs["ssl_verify_identity"] = True
+                    kwargs["ssl_verify_cert"] = True
+            return _orig_init(self, *args, **kwargs)
+
+        pymysql.connections.Connection.__init__ = _patched_init
+        pymysql.connections.Connection._is_ssl_mode_patched = True
+    pymysql.install_as_MySQLdb()
+except ImportError:
+    pass
+
 def _can_connect_postgres(host, port):
     try:
         with socket.create_connection((host, int(port)), timeout=0.8):
@@ -172,11 +195,44 @@ def _can_connect_postgres(host, port):
     except (OSError, ValueError):
         return False
 
+_database_url = env("DATABASE_URL", default="").strip()
+_tidb_host = env("TIDB_HOST", default="").strip()
+_tidb_password = env("TIDB_PASSWORD", default="").strip()
 _pg_host = env("POSTGRES_HOST", default="localhost")
 _pg_port = env("POSTGRES_PORT", default="5432")
 _force_sqlite = env.bool("USE_SQLITE", default=False)
 
-if not _force_sqlite and _can_connect_postgres(_pg_host, _pg_port):
+if (
+    _database_url
+    and _database_url.startswith(("mysql://", "mysqlclient://", "postgresql://", "postgres://", "sqlite://"))
+    and "YOUR_TIDB_PASSWORD" not in _database_url
+):
+    DATABASES = {
+        "default": env.db("DATABASE_URL")
+    }
+    if DATABASES["default"].get("ENGINE") == "django.db.backends.mysql":
+        opts = DATABASES["default"].setdefault("OPTIONS", {})
+        ssl_mode = opts.pop("ssl_mode", None)
+        if ssl_mode and str(ssl_mode).upper() != "DISABLED":
+            opts["ssl_verify_identity"] = True
+            opts["ssl_verify_cert"] = True
+elif _tidb_host and _tidb_password and "YOUR_TIDB_PASSWORD" not in _tidb_password:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.mysql",
+            "NAME": env("TIDB_DATABASE", default="test"),
+            "USER": env("TIDB_USER", default="8iTvbQk1MzrmCrq.root"),
+            "PASSWORD": _tidb_password,
+            "HOST": _tidb_host,
+            "PORT": env.int("TIDB_PORT", default=4000),
+            "OPTIONS": {
+                "ssl_verify_identity": True,
+                "ssl_verify_cert": True,
+                "charset": "utf8mb4",
+            },
+        }
+    }
+elif not _force_sqlite and _can_connect_postgres(_pg_host, _pg_port):
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",

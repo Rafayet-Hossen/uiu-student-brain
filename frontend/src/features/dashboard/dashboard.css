@@ -4953,10 +4953,14 @@
 
 @keyframes goldFloatPulse {
   0% {
-    box-shadow: 0 10px 24px -4px rgba(245, 158, 11, 0.16), 0 0 10px rgba(245, 158, 11, 0.08);
+    box-shadow:
+      0 10px 24px -4px rgba(245, 158, 11, 0.16),
+      0 0 10px rgba(245, 158, 11, 0.08);
   }
   100% {
-    box-shadow: 0 14px 30px -4px rgba(245, 158, 11, 0.26), 0 0 18px rgba(245, 158, 11, 0.18);
+    box-shadow:
+      0 14px 30px -4px rgba(245, 158, 11, 0.26),
+      0 0 18px rgba(245, 158, 11, 0.18);
   }
 }
 
@@ -5061,7 +5065,8 @@
 }
 
 @keyframes sparkleTwinkle {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(0.9) rotate(0deg);
     opacity: 0.7;
   }
@@ -5167,7 +5172,7 @@
 }
 
 .dash-podium-name {
-  font-size: 0.90rem;
+  font-size: 0.9rem;
   font-weight: 750;
   color: var(--dash-text-main);
   margin: 0;
@@ -5231,7 +5236,9 @@
   font-weight: 850;
   letter-spacing: -0.02em;
   border-top: 1.5px solid rgba(255, 255, 255, 0.35);
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2), inset 0 -2px 4px rgba(0, 0, 0, 0.15);
+  box-shadow:
+    inset 0 2px 4px rgba(255, 255, 255, 0.2),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.15);
   position: relative;
   overflow: hidden;
 }
@@ -5243,7 +5250,12 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.6),
+    transparent
+  );
 }
 
 .dash-podium-pedestal.step-1 {
@@ -5257,7 +5269,7 @@
   height: 25px;
   background: linear-gradient(180deg, #94a3b8, #64748b);
   color: #ffffff;
-  font-size: 1.0rem;
+  font-size: 1rem;
 }
 
 .dash-podium-pedestal.step-3 {
@@ -5313,7 +5325,8 @@
 }
 
 @keyframes pulseGreenDot {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 2.5px rgba(16, 185, 129, 0.25);
   }
   50% {
@@ -5415,7 +5428,6 @@
   .dash-card-planner {
     grid-column: span 1;
   }
-
 }
 
 /* Tablet Screens (769px to 1024px) — Clean 3-Card Trio Layout & Proportional Scaling */
@@ -5475,7 +5487,12 @@
     justify-self: center !important;
     width: 2.5px !important;
     height: 32px !important;
-    background: linear-gradient(180deg, #ea580c 0%, #f97316 60%, rgba(249, 115, 22, 0.25) 100%) !important;
+    background: linear-gradient(
+      180deg,
+      #ea580c 0%,
+      #f97316 60%,
+      rgba(249, 115, 22, 0.25) 100%
+    ) !important;
     box-shadow: 0 0 10px rgba(234, 88, 12, 0.6) !important;
     border-radius: 9999px !important;
     margin: 0 auto !important;
@@ -6157,7 +6174,8 @@
   }
 
   @keyframes mobileBarGlowPulse {
-    0%, 100% {
+    0%,
+    100% {
       box-shadow: 0 0 8px rgba(16, 185, 129, 0.45) !important;
     }
     50% {
@@ -6398,7 +6416,7 @@
   }
 
   .dash-insights-desc {
-    font-size: 0.70rem !important;
+    font-size: 0.7rem !important;
     line-height: 1.35 !important;
   }
 
@@ -6408,7 +6426,9 @@
     border-radius: 18px !important;
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
     box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.05) !important;
-    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease !important;
+    transition:
+      transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.2s ease !important;
     overflow: hidden !important;
   }
 
@@ -6474,7 +6494,9 @@
   .dash-github-cell {
     height: 9.5px !important;
     border-radius: 2.5px !important;
-    transition: transform 0.15s ease, filter 0.15s ease !important;
+    transition:
+      transform 0.15s ease,
+      filter 0.15s ease !important;
   }
 
   .dash-github-cell:active {
@@ -6517,7 +6539,10 @@
     background: var(--dash-card-bg) !important;
     border: 1px solid var(--dash-card-border) !important;
     box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.04) !important;
-    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease !important;
+    transition:
+      transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.2s ease,
+      border-color 0.2s ease !important;
     position: relative !important;
     overflow: hidden !important;
   }
@@ -6670,7 +6695,7 @@
   }
 
   .dash-prod-badge {
-    font-size: 0.70rem !important;
+    font-size: 0.7rem !important;
     font-weight: 750 !important;
     padding: 2px 8px !important;
     border-radius: 9999px !important;
@@ -6702,7 +6727,7 @@
   }
 
   .dash-community-desc {
-    font-size: 0.70rem !important;
+    font-size: 0.7rem !important;
     line-height: 1.35 !important;
   }
 
@@ -6727,7 +6752,12 @@
     justify-self: center !important;
     width: 2.5px !important;
     height: 28px !important;
-    background: linear-gradient(180deg, #ea580c 0%, #f97316 60%, rgba(249, 115, 22, 0.25) 100%) !important;
+    background: linear-gradient(
+      180deg,
+      #ea580c 0%,
+      #f97316 60%,
+      rgba(249, 115, 22, 0.25) 100%
+    ) !important;
     box-shadow: 0 0 10px rgba(234, 88, 12, 0.6) !important;
     border-radius: 9999px !important;
     margin: 0 auto !important;
@@ -6762,7 +6792,8 @@
   }
 
   @keyframes stemGlowPulse {
-    0%, 100% {
+    0%,
+    100% {
       box-shadow: 0 0 6px rgba(234, 88, 12, 0.45);
       opacity: 0.88;
     }
@@ -6785,7 +6816,9 @@
     text-align: center !important;
     min-height: auto !important;
     box-sizing: border-box !important;
-    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease !important;
+    transition:
+      transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.2s ease !important;
   }
 
   .dash-podium-card:active {
@@ -7004,7 +7037,7 @@
 
   .dash-podium-card.podium-silver .dash-podium-dept,
   .dash-podium-card.podium-bronze .dash-podium-dept {
-    font-size: 0.60rem !important;
+    font-size: 0.6rem !important;
     color: var(--dash-text-muted) !important;
     max-width: 100% !important;
     overflow: hidden !important;
@@ -7015,7 +7048,7 @@
   /* Role Title: SENIOR ADVISOR style in uppercase slate */
   .dash-podium-card.podium-silver .dash-podium-achievement-badge,
   .dash-podium-card.podium-bronze .dash-podium-achievement-badge {
-    font-size: 0.60rem !important;
+    font-size: 0.6rem !important;
     font-weight: 850 !important;
     text-transform: uppercase !important;
     letter-spacing: 0.05em !important;
@@ -7029,7 +7062,7 @@
 
   .dash-podium-card.podium-silver .dash-podium-metrics-row,
   .dash-podium-card.podium-bronze .dash-podium-metrics-row {
-    font-size: 0.60rem !important;
+    font-size: 0.6rem !important;
     font-weight: 750 !important;
     padding: 2.5px 6px !important;
     border-radius: 9999px !important;
@@ -7048,7 +7081,7 @@
   .dash-podium-card.podium-silver .dash-podium-metric,
   .dash-podium-card.podium-bronze .dash-podium-metric {
     white-space: nowrap !important;
-    font-size: 0.60rem !important;
+    font-size: 0.6rem !important;
     gap: 2px !important;
   }
 
