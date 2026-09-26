@@ -2774,7 +2774,9 @@
 .weekly-days-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 10px;
+  gap: clamp(4px, 1vw, 10px);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .weekly-day-card {
@@ -2782,13 +2784,16 @@
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 6px 10px 6px;
-  border-radius: var(--radius-lg);
+  padding: clamp(8px, 1.2vw, 12px) clamp(2px, 0.6vw, 6px);
+  border-radius: clamp(8px, 1.5vw, 14px);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
-  min-height: 152px;
+  min-height: clamp(106px, 14vw, 145px);
+  min-width: 0 !important;
+  width: 100%;
+  box-sizing: border-box;
   cursor: default;
 }
 
@@ -2809,47 +2814,58 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  min-height: 32px;
+  gap: 2px;
+  min-height: 28px;
+  width: 100%;
+  overflow: hidden;
 }
 
 .day-card-name {
-  font-size: 0.75rem;
-  font-weight: 750;
+  font-size: clamp(0.58rem, 1.6vw, 0.75rem);
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
 }
 
 .day-card-date {
-  font-size: 0.6875rem;
+  font-size: clamp(0.5rem, 1.4vw, 0.6875rem);
   font-weight: 600;
   color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
 }
 
 .day-card-today-badge {
-  font-size: 0.625rem;
+  font-size: clamp(0.48rem, 1.4vw, 0.625rem);
   font-weight: 800;
   text-transform: uppercase;
   color: #ffffff;
   background: var(--color-accent);
-  padding: 1px 6px;
+  padding: 1px 4px;
   border-radius: 4px;
-  letter-spacing: 0.03em;
-  line-height: 1.2;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  white-space: nowrap;
 }
 
 .cylinder-gauge-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  margin: 6px 0;
+  gap: clamp(3px, 0.8vw, 6px);
+  margin: clamp(2px, 0.6vw, 6px) 0;
 }
 
 .cylinder-gauge-track {
-  width: 14px;
-  height: 52px;
+  width: clamp(8px, 1.5vw, 14px);
+  height: clamp(30px, 5vw, 48px);
   border-radius: 9999px;
   background: var(--color-surface-subtle);
   border: 1px solid var(--color-border-subtle);
@@ -2880,7 +2896,7 @@
 }
 
 .cylinder-badge-icon {
-  font-size: 0.8125rem;
+  font-size: clamp(0.6rem, 1.5vw, 0.8125rem);
   line-height: 1;
   display: flex;
   align-items: center;
@@ -2892,18 +2908,30 @@
   flex-direction: column;
   align-items: center;
   gap: 1px;
+  width: 100%;
+  overflow: hidden;
 }
 
 .day-card-mins {
-  font-size: 0.75rem;
-  font-weight: 750;
+  font-size: clamp(0.56rem, 1.6vw, 0.75rem);
+  font-weight: 800;
   color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  text-align: center;
 }
 
 .day-card-pct {
-  font-size: 0.625rem;
+  font-size: clamp(0.48rem, 1.3vw, 0.625rem);
   font-weight: 600;
   color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  text-align: center;
 }
 
 .weekly-day-card.day-goal-met {
@@ -2928,14 +2956,67 @@
   opacity: 0.75;
 }
 
+/* Zero-overflow onscreen 7-day consistency for Tablet and Mobile */
 @media (max-width: 768px) {
   .weekly-days-grid {
-    overflow-x: auto;
-    padding-bottom: 8px;
-    gap: 8px;
+    overflow-x: visible !important;
+    padding-bottom: 0 !important;
+    gap: clamp(2px, 0.9vw, 5px) !important;
   }
+
   .weekly-day-card {
-    min-width: 64px;
+    min-width: 0 !important;
+    padding: clamp(5px, 1vw, 8px) 2px !important;
+    min-height: clamp(98px, 14vw, 116px) !important;
+    border-radius: 8px !important;
+  }
+
+  .day-card-header {
+    min-height: 24px;
+    gap: 1px;
+  }
+
+  .day-card-name {
+    font-size: clamp(0.54rem, 2vw, 0.64rem);
+    font-weight: 800;
+  }
+
+  .day-card-date {
+    font-size: clamp(0.46rem, 1.6vw, 0.54rem);
+  }
+
+  .day-card-today-badge {
+    font-size: clamp(0.46rem, 1.6vw, 0.54rem);
+    padding: 1px 3px;
+  }
+
+  .cylinder-gauge-container {
+    gap: 3px;
+    margin: 3px 0;
+  }
+
+  .cylinder-gauge-track {
+    width: clamp(7px, 1.5vw, 10px);
+    height: clamp(28px, 4.5vw, 36px);
+  }
+
+  .cylinder-badge-icon {
+    font-size: 0.62rem;
+  }
+
+  .day-card-mins {
+    font-size: clamp(0.54rem, 2vw, 0.64rem);
+    font-weight: 800;
+  }
+
+  .day-card-pct {
+    font-size: clamp(0.44rem, 1.5vw, 0.52rem);
+  }
+
+  .weekly-metric-chip {
+    padding: 3px 7px;
+    font-size: 0.68rem;
+    gap: 3px;
   }
 }
 
@@ -5097,6 +5178,32 @@
     font-size: 0.78rem;
     border-radius: 8px;
   }
+
+  /* Study Tracker Tablet (641px - 1024px) */
+  .streak-hero-card {
+    padding: 18px;
+    gap: 16px;
+  }
+
+  .weekly-days-grid {
+    gap: 6px;
+  }
+
+  .weekly-day-card {
+    min-width: 0 !important;
+    padding: 8px 4px 6px 4px;
+    min-height: 120px;
+  }
+
+  .cylinder-gauge-track {
+    width: 10px;
+    height: 38px;
+  }
+
+  .scheduled-sessions-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 14px;
+  }
 }
 
 /* Schedule Detail Modal */
@@ -5669,14 +5776,117 @@
     max-width: 100%;
   }
 
-  /* Tracker Streak Hero */
+  /* Tracker Streak Hero Mobile */
   .streak-hero-card {
-    padding: 16px 14px;
+    padding: clamp(12px, 3vw, 16px) !important;
+    gap: 14px !important;
+    border-radius: 14px !important;
+    margin-bottom: 20px !important;
+  }
+
+  .streak-main-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
   }
 
   .streak-flame-section {
-    min-width: 0;
-    width: 100%;
+    min-width: 0 !important;
+    width: 100% !important;
+    gap: 4px !important;
+  }
+
+  .streak-flame-badge {
+    gap: 10px !important;
+  }
+
+  .streak-flame-icon {
+    font-size: 2.2rem !important;
+  }
+
+  .streak-flame-number {
+    font-size: 1.85rem !important;
+  }
+
+  .streak-status-text {
+    font-size: 0.8rem !important;
+  }
+
+  .daily-goal-section {
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 12px 14px !important;
+    border-radius: 12px !important;
+  }
+
+  .daily-goal-header {
+    margin-bottom: 8px !important;
+  }
+
+  .daily-goal-label {
+    font-size: 0.86rem !important;
+  }
+
+  .weekly-streak-strip {
+    padding-top: 14px !important;
+    gap: 10px !important;
+  }
+
+  .weekly-strip-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+
+  .weekly-strip-title {
+    font-size: 0.88rem !important;
+  }
+
+  .weekly-strip-subtitle {
+    font-size: 0.7rem !important;
+  }
+
+  .weekly-strip-metrics {
+    width: 100% !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+  }
+
+  .weekly-metric-chip {
+    padding: 3px 8px !important;
+    font-size: 0.68rem !important;
+  }
+
+  .tracker-sub-tabs-bar {
+    padding: 4px !important;
+    gap: 5px !important;
+    border-radius: 12px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .tracker-sub-tab-btn {
+    padding: 7px 12px !important;
+    font-size: 0.76rem !important;
+    border-radius: 8px !important;
+    gap: 6px !important;
+  }
+
+  .tracker-timegate-callout {
+    padding: 10px 12px !important;
+    gap: 10px !important;
+    border-radius: 10px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .tracker-timegate-callout .callout-text-content {
+    font-size: 0.76rem !important;
+    line-height: 1.4 !important;
+  }
+
+  .scheduled-sessions-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
   }
 }
 
