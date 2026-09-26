@@ -4416,24 +4416,26 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: clamp(14px, 2.5vw, 24px);
+  gap: clamp(10px, 1.8vw, 18px);
 }
 
 .planner-page-header {
-  margin-bottom: 0;
+  margin-bottom: 0 !important;
+  padding: 0 !important;
 }
 
 .planner-header-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: clamp(12px, 2.5vw, 20px);
+  gap: clamp(10px, 1.8vw, 16px);
   flex-wrap: wrap;
 }
 
 .planner-header-lead {
-  flex: 1 1 300px;
+  flex: 1 1 auto;
   min-width: 0;
+  margin: 0;
 }
 
 .planner-page-title {
@@ -5323,7 +5325,14 @@
   .planner-header-row {
     flex-direction: column;
     align-items: stretch;
-    gap: 12px;
+    gap: 10px;
+    margin: 0;
+  }
+
+  .planner-header-lead {
+    flex: none !important;
+    width: 100% !important;
+    margin: 0 !important;
   }
 
   .planner-header-actions {
@@ -22853,17 +22862,18 @@ html[data-theme="dark"] .btn-celebration-extend:hover {
   }
 
   .retake-advisor-header-actions {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
+    display: flex !important;
+    align-items: center !important;
     gap: 8px !important;
     width: 100% !important;
   }
 
   .retake-advisor-header-actions .btn {
+    flex: 1 1 0 !important;
     width: 100% !important;
     justify-content: center !important;
     font-size: 0.78rem !important;
-    padding: 8px 8px !important;
+    padding: 8px 10px !important;
     white-space: nowrap !important;
     border-radius: var(--radius-md) !important;
   }

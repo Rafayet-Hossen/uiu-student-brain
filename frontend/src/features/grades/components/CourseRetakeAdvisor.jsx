@@ -509,15 +509,6 @@ export default function CourseRetakeAdvisor({
             </div>
 
             <div className="retake-advisor-header-actions">
-              <Button
-                variant={all_courses.length === 0 ? "primary" : "secondary"}
-                size="sm"
-                icon={UploadCloud}
-                onClick={() => setShowUploadModal(true)}
-                title="Upload PDF, screenshot image, or CSV transcript"
-              >
-                Upload Transcript
-              </Button>
               {all_courses.length > 0 && (
                 <Button
                   variant="outline"
@@ -531,7 +522,7 @@ export default function CourseRetakeAdvisor({
                 </Button>
               )}
               <Button
-                variant="secondary"
+                variant={all_courses.length === 0 ? "primary" : "secondary"}
                 size="sm"
                 icon={Plus}
                 onClick={handleOpenAddModal}
@@ -578,32 +569,12 @@ export default function CourseRetakeAdvisor({
                     No Course Grades Recorded Yet
                   </h3>
                   <p className="advisor-empty-desc">
-                    Upload your university transcript or add your completed
-                    courses manually to activate the AI Retake Optimizer.
+                    Upload your university transcript using the button above or click &quot;Add Course Grade&quot; to activate the AI Retake Optimizer.
                     StudentBrain AI will analyze your course credit weights,
                     cross-reference your tracked focus hours, and project the
                     highest CGPA boost with minimum study burnout.
                   </p>
                 </div>
-              </div>
-
-              <div className="advisor-empty-actions-row">
-                <Button
-                  variant="primary"
-                  icon={UploadCloud}
-                  onClick={() => setShowUploadModal(true)}
-                >
-                  <span className="hide-mobile">Upload Academic Transcript (PDF / CSV)</span>
-                  <span className="show-mobile-only">Upload Transcript</span>
-                </Button>
-                <Button
-                  variant="secondary"
-                  icon={Plus}
-                  onClick={handleOpenAddModal}
-                >
-                  <span className="hide-mobile">Add Course Grade Manually</span>
-                  <span className="show-mobile-only">Add Grade Manually</span>
-                </Button>
               </div>
 
               {/* Feature Preview Pillars */}
