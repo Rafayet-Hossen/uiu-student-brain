@@ -175,6 +175,12 @@ try:
         _orig_init = pymysql.connections.Connection.__init__
 
         def _patched_init(self, *args, **kwargs):
+            for key in ("password", "passwd"):
+                if key in kwargs and isinstance(kwargs[key], str):
+                    try:
+                        kwargs[key] = kwargs[key].encode("latin1")
+                    except UnicodeEncodeError:
+                        kwargs[key] = kwargs[key].encode("utf-8")
             if "ssl_mode" in kwargs:
                 ssl_mode = kwargs.pop("ssl_mode")
                 if ssl_mode and str(ssl_mode).upper() != "DISABLED":
