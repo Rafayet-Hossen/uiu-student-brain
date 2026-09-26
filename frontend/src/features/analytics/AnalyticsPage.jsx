@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
 import {
   BarChart3,
   BookOpen,
@@ -79,6 +78,7 @@ export default function AnalyticsPage() {
           <div>
             <h1 className="page-title">
               <BarChart3 size={28} className="text-indigo" />
+              <BarChart3 size={28} className="text-orange" />
               <span>Academic & Focus Analytics</span>
             </h1>
             <p className="page-description">
@@ -119,190 +119,161 @@ export default function AnalyticsPage() {
 
       {/* Loaded Analytics Dashboard */}
       {!loading && !error && data && (
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, ease: "easeOut" }}
-        >
+        <div>
           {/* KPI Summary Grid with 4 dynamic, responsive cards */}
           <div className="stats-cards-row">
             {/* Card 1: Focus Investment */}
-            <motion.div
-              whileHover={{ y: -3, transition: { duration: 0.2 } }}
-              style={{ height: "100%" }}
-            >
-              <Card variant="stat" className="stat-orange">
-                <div className="stat-top-row">
-                  <span className="stat-header-label">Focus Investment</span>
-                  <div className="stat-icon-pill bg-orange-subtle">
-                    <Clock size={16} className="text-orange" />
-                  </div>
+            <Card variant="stat" className="stat-orange">
+              <div className="stat-top-row">
+                <span className="stat-header-label">Focus Investment</span>
+                <div className="stat-icon-pill bg-orange-subtle">
+                  <Clock size={16} className="text-orange" />
                 </div>
-                <div className="stat-number-row">
-                  <strong className="stat-metric-value">
-                    {totalHours}h {remainingMins}m
-                  </strong>
-                </div>
-                {/* Progress bar towards 15h weekly goal */}
-                <div className="stat-progress-track">
-                  <div
-                    className="stat-progress-bar bg-orange"
-                    style={{
-                      width: `${Math.min(100, Math.round((totalStudyMinutes / (15 * 60)) * 100))}%`,
-                    }}
-                  />
-                </div>
-                <div className="stat-metric-footer">
-                  <span className="stat-micro-badge badge-orange-subtle">
-                    {Math.min(
-                      100,
-                      Math.round((totalStudyMinutes / (15 * 60)) * 100),
-                    )}
-                    % of 15h Goal
-                  </span>
-                  <span className="stat-footer-subtext">
-                    {totalSessions} sessions
-                  </span>
-                </div>
-              </Card>
-            </motion.div>
+              </div>
+              <div className="stat-number-row">
+                <strong className="stat-metric-value">
+                  {totalHours}h {remainingMins}m
+                </strong>
+              </div>
+              {/* Progress bar towards 15h weekly goal */}
+              <div className="stat-progress-track">
+                <div
+                  className="stat-progress-bar bg-orange"
+                  style={{
+                    width: `${Math.min(100, Math.round((totalStudyMinutes / (15 * 60)) * 100))}%`,
+                  }}
+                />
+              </div>
+              <div className="stat-metric-footer">
+                <span className="stat-micro-badge badge-orange-subtle">
+                  {Math.min(
+                    100,
+                    Math.round((totalStudyMinutes / (15 * 60)) * 100),
+                  )}
+                  % of 15h Goal
+                </span>
+                <span className="stat-footer-subtext">
+                  {totalSessions} sessions
+                </span>
+              </div>
+            </Card>
 
             {/* Card 2: Subject Breadth */}
-            <motion.div
-              whileHover={{ y: -3, transition: { duration: 0.2 } }}
-              style={{ height: "100%" }}
-            >
-              <Card variant="stat" className="stat-emerald">
-                <div className="stat-top-row">
-                  <span className="stat-header-label">Subject Breadth</span>
-                  <div className="stat-icon-pill bg-emerald-subtle">
-                    <BookOpen size={16} className="text-emerald" />
-                  </div>
+            <Card variant="stat" className="stat-emerald">
+              <div className="stat-top-row">
+                <span className="stat-header-label">Subject Breadth</span>
+                <div className="stat-icon-pill bg-emerald-subtle">
+                  <BookOpen size={16} className="text-emerald" />
                 </div>
-                <div className="stat-number-row">
-                  <strong className="stat-metric-value">
-                    {totalSubjects} Subjects
-                  </strong>
-                </div>
-                {/* Progress bar representing subject coverage */}
-                <div className="stat-progress-track">
-                  <div
-                    className="stat-progress-bar bg-emerald"
-                    style={{ width: `${Math.min(100, totalSubjects * 25)}%` }}
-                  />
-                </div>
-                <div className="stat-metric-footer">
-                  <span className="stat-micro-badge badge-emerald-subtle">
-                    {totalSubjects >= 4
-                      ? "Broad Mastery"
-                      : totalSubjects >= 2
-                        ? "Balanced Focus"
-                        : totalSubjects === 1
-                          ? "Deep Focus"
-                          : "No Subjects"}
-                  </span>
-                  <span className="stat-footer-subtext">
-                    {avgSessionMinutes > 0
-                      ? `Avg ${avgSessionMinutes}m`
-                      : "No sessions"}
-                  </span>
-                </div>
-              </Card>
-            </motion.div>
+              </div>
+              <div className="stat-number-row">
+                <strong className="stat-metric-value">
+                  {totalSubjects} Subjects
+                </strong>
+              </div>
+              {/* Progress bar representing subject coverage */}
+              <div className="stat-progress-track">
+                <div
+                  className="stat-progress-bar bg-emerald"
+                  style={{ width: `${Math.min(100, totalSubjects * 25)}%` }}
+                />
+              </div>
+              <div className="stat-metric-footer">
+                <span className="stat-micro-badge badge-emerald-subtle">
+                  {totalSubjects >= 4
+                    ? "Broad Mastery"
+                    : totalSubjects >= 2
+                      ? "Balanced Focus"
+                      : totalSubjects === 1
+                        ? "Deep Focus"
+                        : "No Subjects"}
+                </span>
+                <span className="stat-footer-subtext">
+                  {avgSessionMinutes > 0
+                    ? `Avg ${avgSessionMinutes}m`
+                    : "No sessions"}
+                </span>
+              </div>
+            </Card>
 
             {/* Card 3: Academic Standing */}
-            <motion.div
-              whileHover={{ y: -3, transition: { duration: 0.2 } }}
-              style={{ height: "100%" }}
-            >
-              <Card variant="stat" className="stat-amber">
-                <div className="stat-top-row">
-                  <span className="stat-header-label">Academic Standing</span>
-                  <div className="stat-icon-pill bg-amber-subtle">
-                    <GraduationCap size={16} className="text-amber" />
-                  </div>
+            <Card variant="stat" className="stat-amber">
+              <div className="stat-top-row">
+                <span className="stat-header-label">Academic Standing</span>
+                <div className="stat-icon-pill bg-amber-subtle">
+                  <GraduationCap size={16} className="text-amber" />
                 </div>
-                <div className="stat-number-row">
-                  <strong className="stat-metric-value">
-                    {gpaSummary && typeof gpaSummary.current_gpa === "number"
-                      ? `${gpaSummary.current_gpa.toFixed(2)}`
-                      : "N/A"}
-                  </strong>
-                </div>
-                {/* Progress bar representing GPA on 4.0 scale */}
-                <div className="stat-progress-track">
-                  <div
-                    className="stat-progress-bar bg-amber"
-                    style={{
-                      width: `${gpaSummary && gpaSummary.current_gpa ? Math.min(100, Math.round((gpaSummary.current_gpa / 4.0) * 100)) : 0}%`,
-                    }}
-                  />
-                </div>
-                <div className="stat-metric-footer">
-                  <span className="stat-micro-badge badge-amber-subtle">
-                    {gpaSummary?.target_gpa && gpaSummary?.current_gpa
-                      ? gpaSummary.target_gpa - gpaSummary.current_gpa > 0
-                        ? `+${(gpaSummary.target_gpa - gpaSummary.current_gpa).toFixed(2)} to Goal`
-                        : "Goal Reached! 🌟"
-                      : "Scale / 4.00"}
-                  </span>
-                  <span className="stat-footer-subtext">
-                    {gpaSummary?.remaining_credits
-                      ? `${gpaSummary.remaining_credits} cr left`
-                      : "Goal Active"}
-                  </span>
-                </div>
-              </Card>
-            </motion.div>
+              </div>
+              <div className="stat-number-row">
+                <strong className="stat-metric-value">
+                  {gpaSummary && typeof gpaSummary.current_gpa === "number"
+                    ? `${gpaSummary.current_gpa.toFixed(2)}`
+                    : "N/A"}
+                </strong>
+              </div>
+              {/* Progress bar representing GPA on 4.0 scale */}
+              <div className="stat-progress-track">
+                <div
+                  className="stat-progress-bar bg-amber"
+                  style={{
+                    width: `${gpaSummary && gpaSummary.current_gpa ? Math.min(100, Math.round((gpaSummary.current_gpa / 4.0) * 100)) : 0}%`,
+                  }}
+                />
+              </div>
+              <div className="stat-metric-footer">
+                <span className="stat-micro-badge badge-amber-subtle">
+                  {gpaSummary?.target_gpa && gpaSummary?.current_gpa
+                    ? gpaSummary.target_gpa - gpaSummary.current_gpa > 0
+                      ? `+${(gpaSummary.target_gpa - gpaSummary.current_gpa).toFixed(2)} to Goal`
+                      : "Goal Reached! 🌟"
+                    : "Scale / 4.00"}
+                </span>
+                <span className="stat-footer-subtext">
+                  {gpaSummary?.remaining_credits
+                    ? `${gpaSummary.remaining_credits} cr left`
+                    : "Goal Active"}
+                </span>
+              </div>
+            </Card>
 
             {/* Card 4: Routine Adherence */}
-            <motion.div
-              whileHover={{ y: -3, transition: { duration: 0.2 } }}
-              style={{ height: "100%" }}
-            >
-              <Card variant="stat" className="stat-rose">
-                <div className="stat-top-row">
-                  <span className="stat-header-label">Routine Adherence</span>
-                  <div className="stat-icon-pill bg-rose-subtle">
-                    <Calendar size={16} className="text-rose" />
-                  </div>
+            <Card variant="stat" className="stat-rose">
+              <div className="stat-top-row">
+                <span className="stat-header-label">Routine Adherence</span>
+                <div className="stat-icon-pill bg-rose-subtle">
+                  <Calendar size={16} className="text-rose" />
                 </div>
-                <div className="stat-number-row">
-                  <strong className="stat-metric-value">{adherenceRate}%</strong>
-                </div>
-                {/* Progress bar representing adherence */}
-                <div className="stat-progress-track">
-                  <div
-                    className="stat-progress-bar bg-rose"
-                    style={{ width: `${adherenceRate}%` }}
-                  />
-                </div>
-                <div className="stat-metric-footer">
-                  <span className="stat-micro-badge badge-rose-subtle">
-                    {adherenceRate >= 80
-                      ? "On Track 🌟"
-                      : adherenceRate >= 50
-                        ? "Moderate ⚡"
-                        : adherenceRate > 0
-                          ? "Needs Focus 🎯"
-                          : "0% Adherent"}
-                  </span>
-                  <span className="stat-footer-subtext">
-                    {coveredCount}/{scheduledCount} routines
-                  </span>
-                </div>
-              </Card>
-            </motion.div>
+              </div>
+              <div className="stat-number-row">
+                <strong className="stat-metric-value">{adherenceRate}%</strong>
+              </div>
+              {/* Progress bar representing adherence */}
+              <div className="stat-progress-track">
+                <div
+                  className="stat-progress-bar bg-rose"
+                  style={{ width: `${adherenceRate}%` }}
+                />
+              </div>
+              <div className="stat-metric-footer">
+                <span className="stat-micro-badge badge-rose-subtle">
+                  {adherenceRate >= 80
+                    ? "On Track 🌟"
+                    : adherenceRate >= 50
+                      ? "Moderate ⚡"
+                      : adherenceRate > 0
+                        ? "Needs Focus 🎯"
+                        : "0% Adherent"}
+                </span>
+                <span className="stat-footer-subtext">
+                  {coveredCount}/{scheduledCount} routines
+                </span>
+              </div>
+            </Card>
           </div>
 
           {/* Smart AI Academic Intelligence Insights */}
           {insights.length > 0 && (
-            <motion.div
-              className="analytics-insights-banner"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.1 }}
-            >
+            <div className="analytics-insights-banner">
               <div className="insights-banner-header">
                 <div
                   style={{ display: "flex", alignItems: "center", gap: "8px" }}
@@ -349,14 +320,7 @@ export default function AnalyticsPage() {
                   }
 
                   return (
-                    <motion.div
-                      key={idx}
-                      className={`insight-rich-card ${cardClass}`}
-                      whileHover={{ y: -2, transition: { duration: 0.15 } }}
-                      initial={{ opacity: 0, scale: 0.98 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.25, delay: idx * 0.04 }}
-                    >
+                    <div key={idx} className={`insight-rich-card ${cardClass}`}>
                       <div className="insight-card-icon-col">{icon}</div>
                       <div className="insight-card-body">
                         <div className="insight-card-meta">
@@ -366,11 +330,11 @@ export default function AnalyticsPage() {
                         </div>
                         <p className="insight-card-text">{insight}</p>
                       </div>
-                    </motion.div>
+                    </div>
                   );
                 })}
               </div>
-            </motion.div>
+            </div>
           )}
 
           {/* Analytics Visual Charts Grid */}
@@ -382,7 +346,7 @@ export default function AnalyticsPage() {
             <GpaTrajectoryCard gpaSummary={data.gpa_summary} />
             <ScheduleAdherenceCard adherence={data.schedule_adherence} />
           </div>
-        </motion.div>
+        </div>
       )}
     </div>
   );

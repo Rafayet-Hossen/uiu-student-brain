@@ -84,12 +84,15 @@ export default function CommunityPage() {
   const [activeTab, setActiveTab] = useState(
     urlTab && ["posts", "events", "network", "leaderboard"].includes(urlTab)
       ? urlTab
-      : "posts"
+      : "posts",
   );
   const tabsBarRef = useRef(null);
 
   useEffect(() => {
-    if (urlTab && ["posts", "events", "network", "leaderboard"].includes(urlTab)) {
+    if (
+      urlTab &&
+      ["posts", "events", "network", "leaderboard"].includes(urlTab)
+    ) {
       setActiveTab(urlTab);
     }
   }, [urlTab]);

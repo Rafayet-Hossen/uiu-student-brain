@@ -24,6 +24,10 @@ export function togglePostReaction(id) {
   return api.post(`/community/posts/${id}/react/`).then((res) => res.data);
 }
 
+export function sharePost(id) {
+  return api.post(`/community/posts/${id}/share/`).then((res) => res.data);
+}
+
 // Comments
 export function getComments(postId) {
   return api

@@ -3867,67 +3867,37 @@
    ========================================================================== */
 
 /* Community Sticky Navigation Tabs Wrapper */
-/* Community Sticky Navigation Tabs Wrapper */
 .community-main-tabs-wrapper {
   position: sticky;
   top: 62px;
   z-index: 80;
   background: var(--color-bg);
-  padding: 6px 0 2px;
+  padding: 8px 0 2px;
   margin-bottom: 20px;
   border-bottom: 1px solid var(--color-border);
-  width: 100%;
-  max-width: 100%;
-  overflow: hidden;
 }
 
 .community-tabs-bar {
   display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  align-items: center;
-  justify-content: flex-start;
   gap: 8px;
-  width: 100%;
-  max-width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
-  overscroll-behavior-x: contain;
-  touch-action: pan-x;
-  scrollbar-width: none;
-  box-sizing: border-box;
-  padding: 2px 2px 8px;
-  border-bottom: none;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 8px;
   margin-bottom: 0;
-}
-
-.community-tabs-bar::-webkit-scrollbar {
-  display: none;
-  width: 0;
-  height: 0;
+  padding-bottom: 6px;
+  flex-wrap: wrap;
 }
 
 .community-tab-btn {
-  flex: 0 0 auto;
-  flex-shrink: 0;
-  white-space: nowrap;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 9px 18px;
-  font-size: 0.9rem;
-  font-weight: 700;
+  padding: 10px 20px;
+  font-size: 0.9375rem;
+  font-weight: 600;
   border-radius: var(--radius-md);
   border: 1px solid transparent;
   background: transparent;
   color: var(--color-text-muted);
   cursor: pointer;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.15s ease;
 }
 
 .community-tab-btn:hover {
@@ -3940,10 +3910,6 @@
   background: var(--color-primary-subtle);
   border-color: var(--color-primary-border);
   box-shadow: 0 1px 3px rgba(99, 102, 241, 0.12);
-}
-
-.community-tab-btn:active {
-  transform: scale(0.96);
 }
 
 .community-filters-row {
@@ -6277,22 +6243,21 @@
    ========================================================================== */
 .students-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
-  width: 100%;
 }
 
 @media (max-width: 1024px) {
   .students-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 14px;
   }
 }
 
 @media (max-width: 640px) {
   .students-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
   }
 }
 
@@ -6307,23 +6272,19 @@
   text-align: center;
   box-shadow: var(--shadow-sm);
   height: 100%;
-  box-sizing: border-box;
 }
 
 .student-card-top {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 12px;
-  min-width: 0;
-  width: 100%;
+  margin-bottom: 14px;
 }
 
 .student-avatar-wrap {
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   display: flex;
   justify-content: center;
-  flex-shrink: 0;
 }
 
 .student-name {
@@ -6332,19 +6293,19 @@
   margin: 0 0 2px;
   color: var(--color-text);
   line-height: 1.3;
-  width: 100%;
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .student-email-sub {
   font-size: 0.75rem;
   color: var(--color-text-muted);
-  width: 100%;
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
   margin-bottom: 8px;
 }
 
@@ -6367,14 +6328,12 @@
 .student-stats-row {
   display: flex;
   align-items: center;
-  justify-content: space-evenly;
+  justify-content: space-around;
   background: var(--color-surface-subtle);
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-md);
   padding: 8px 6px;
-  margin-bottom: 12px;
-  width: 100%;
-  box-sizing: border-box;
+  margin-bottom: 14px;
 }
 
 .student-stat-col {
@@ -9102,6 +9061,18 @@
 .event-fb-btn.event-btn-interested.is-active:hover {
   background: #d97706;
   border-color: #b45309;
+}
+
+.event-fb-btn:disabled,
+.event-fb-btn.is-full-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+  background: var(--color-surface-subtle);
+  border-color: var(--color-border-subtle);
+  color: var(--color-text-muted);
+  box-shadow: none;
+  transform: none;
 }
 
 /* ==========================================================================
@@ -23104,897 +23075,4 @@ html[data-theme="dark"] .btn-celebration-extend:hover {
     font-size: 0.7rem !important;
   }
 }
-
-/* ============================================================
-   STUDY ANALYTICS ULTRA-RESPONSIVE DYNAMICS (PHONE & TABLET)
-   (Desktop layout remains 100% untouched)
-   ============================================================ */
-
-/* 1. TABLET SCREENS (641px - 1024px) */
-@media (min-width: 641px) and (max-width: 1024px) {
-  .analytics-page-container {
-    padding: clamp(16px, 2.5vw, 24px) !important;
-  }
-
-  .stats-cards-row {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: clamp(12px, 2vw, 16px) !important;
-  }
-
-  .analytics-insights-banner {
-    padding: clamp(16px, 2vw, 20px) !important;
-    border-radius: var(--radius-lg) !important;
-  }
-
-  .insights-cards-grid {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 12px !important;
-  }
-
-  .analytics-charts-grid {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: clamp(14px, 2vw, 20px) !important;
-  }
-
-  .analytics-card {
-    padding: clamp(18px, 2vw, 24px) !important;
-    border-radius: var(--radius-lg) !important;
-  }
-
-  .trend-bar-chart {
-    height: 180px !important;
-    gap: 8px !important;
-  }
-
-  .trend-bar-track {
-    max-width: 32px !important;
-  }
-
-  .adherence-metric-cards-grid {
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 10px !important;
-  }
-
-  .adherence-courses-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px !important;
-  }
-}
-
-/* 2. MOBILE PHONE SCREENS (<= 640px) */
-@media (max-width: 640px) {
-  .analytics-page-container {
-    padding: clamp(10px, 3vw, 16px) !important;
-    max-width: 100% !important;
-    overflow-x: hidden !important;
-    box-sizing: border-box !important;
-  }
-
-  /* Page Header Stack */
-  .analytics-page-container .page-header {
-    margin-bottom: clamp(12px, 3vw, 18px) !important;
-  }
-
-  .analytics-page-container .page-header-row {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 12px !important;
-  }
-
-  .analytics-page-container .page-header-row .btn,
-  .analytics-page-container .page-header-row button {
-    width: 100% !important;
-    justify-content: center !important;
-    min-height: 40px !important;
-    font-size: 0.82rem !important;
-    font-weight: 700 !important;
-    border-radius: var(--radius-md) !important;
-  }
-
-  .analytics-page-container .page-title {
-    font-size: clamp(1.25rem, 4.5vw, 1.45rem) !important;
-    line-height: 1.25 !important;
-    gap: 8px !important;
-  }
-
-  .analytics-page-container .page-title svg {
-    width: 24px !important;
-    height: 24px !important;
-    flex-shrink: 0 !important;
-  }
-
-  .analytics-page-container .page-description {
-    font-size: clamp(0.78rem, 2.5vw, 0.84rem) !important;
-    line-height: 1.4 !important;
-    margin-top: 4px !important;
-  }
-
-  /* 4 KPI Summary Cards in a sleek 2x2 Grid */
-  .stats-cards-row {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: clamp(6px, 2vw, 10px) !important;
-    margin-bottom: clamp(14px, 3vw, 20px) !important;
-    width: 100% !important;
-  }
-
-  .stats-cards-row .card-stat {
-    padding: clamp(10px, 2.5vw, 14px) clamp(8px, 2vw, 12px) !important;
-    border-radius: var(--radius-md) !important;
-    gap: 6px !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: space-between !important;
-    box-sizing: border-box !important;
-  }
-
-  .stat-top-row {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    gap: 4px !important;
-    margin-bottom: 2px !important;
-  }
-
-  .stat-header-label {
-    font-size: clamp(0.64rem, 2vw, 0.74rem) !important;
-    font-weight: 700 !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-  }
-
-  .stat-icon-pill {
-    width: 24px !important;
-    height: 24px !important;
-    min-width: 24px !important;
-    border-radius: 6px !important;
-  }
-
-  .stat-icon-pill svg {
-    width: 13px !important;
-    height: 13px !important;
-  }
-
-  .stat-number-row {
-    margin: 2px 0 !important;
-  }
-
-  .stat-metric-value {
-    font-size: clamp(1.05rem, 3.8vw, 1.35rem) !important;
-    font-weight: 800 !important;
-    line-height: 1.15 !important;
-    letter-spacing: -0.02em !important;
-  }
-
-  .stat-progress-track {
-    height: 4px !important;
-    margin: 4px 0 !important;
-    border-radius: 999px !important;
-  }
-
-  .stat-metric-footer {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 3px !important;
-    margin-top: 2px !important;
-  }
-
-  .stat-micro-badge {
-    font-size: clamp(0.56rem, 1.8vw, 0.66rem) !important;
-    padding: 2px 6px !important;
-    border-radius: 4px !important;
-    font-weight: 700 !important;
-    max-width: 100% !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-  }
-
-  .stat-footer-subtext {
-    font-size: clamp(0.56rem, 1.8vw, 0.65rem) !important;
-    color: var(--color-text-muted) !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-  }
-
-  /* Smart AI Academic Intelligence Insights Banner */
-  .analytics-insights-banner {
-    padding: clamp(12px, 3vw, 16px) !important;
-    border-radius: var(--radius-lg) !important;
-    margin-bottom: clamp(14px, 3vw, 20px) !important;
-    gap: 10px !important;
-  }
-
-  .insights-banner-header {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 6px !important;
-  }
-
-  .insights-banner-title {
-    font-size: clamp(0.84rem, 2.8vw, 0.95rem) !important;
-    line-height: 1.35 !important;
-  }
-
-  .insights-banner-header .badge {
-    font-size: 0.66rem !important;
-    padding: 2px 8px !important;
-    align-self: flex-start !important;
-  }
-
-  .insights-cards-grid {
-    display: grid !important;
-    grid-template-columns: 1fr !important;
-    gap: 8px !important;
-    width: 100% !important;
-  }
-
-  .insight-rich-card {
-    padding: 10px 12px !important;
-    gap: 10px !important;
-    border-radius: var(--radius-md) !important;
-  }
-
-  .insight-card-icon-col {
-    width: 24px !important;
-    height: 24px !important;
-    min-width: 24px !important;
-    border-radius: 6px !important;
-    margin-top: 1px !important;
-  }
-
-  .insight-card-icon-col svg {
-    width: 13px !important;
-    height: 13px !important;
-  }
-
-  .insight-category-tag {
-    font-size: 0.62rem !important;
-    font-weight: 800 !important;
-  }
-
-  .insight-card-text {
-    font-size: clamp(0.74rem, 2.2vw, 0.8rem) !important;
-    line-height: 1.38 !important;
-  }
-
-  /* Main Visual Charts Grid */
-  .analytics-charts-grid {
-    display: grid !important;
-    grid-template-columns: 1fr !important;
-    gap: clamp(12px, 3vw, 16px) !important;
-    width: 100% !important;
-  }
-
-  .analytics-card {
-    padding: clamp(14px, 3vw, 18px) !important;
-    gap: clamp(12px, 2.5vw, 16px) !important;
-    border-radius: var(--radius-lg) !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-  }
-
-  .analytics-card-header {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 8px !important;
-  }
-
-  .analytics-card-header > :last-child {
-    align-self: flex-start !important;
-  }
-
-  .analytics-card-title {
-    font-size: clamp(0.98rem, 3vw, 1.1rem) !important;
-    gap: 6px !important;
-  }
-
-  .analytics-card-desc {
-    font-size: clamp(0.72rem, 2.2vw, 0.8rem) !important;
-    line-height: 1.35 !important;
-  }
-
-  /* Weekly Trend Bar Chart */
-  .trend-bar-chart {
-    height: clamp(130px, 32vw, 165px) !important;
-    gap: clamp(4px, 1.5vw, 8px) !important;
-    padding: 10px 2px 2px !important;
-    grid-template-columns: repeat(7, 1fr) !important;
-  }
-
-  .trend-bar-track {
-    max-width: clamp(20px, 6vw, 30px) !important;
-    height: clamp(95px, 24vw, 120px) !important;
-    border-radius: 6px !important;
-  }
-
-  .trend-bar-fill {
-    border-radius: 4px !important;
-    padding-top: 2px !important;
-  }
-
-  .trend-bar-value {
-    font-size: clamp(0.55rem, 1.6vw, 0.65rem) !important;
-    font-weight: 800 !important;
-  }
-
-  .trend-bar-label {
-    font-size: clamp(0.6rem, 1.8vw, 0.7rem) !important;
-    font-weight: 700 !important;
-  }
-
-  /* Subject Time Distribution */
-  .distribution-multi-bar {
-    height: 8px !important;
-    border-radius: 999px !important;
-  }
-
-  .distribution-list {
-    gap: 6px !important;
-  }
-
-  .distribution-row {
-    padding: 6px 8px !important;
-    border-radius: var(--radius-sm) !important;
-    gap: 6px !important;
-  }
-
-  .distribution-subject-info {
-    gap: 6px !important;
-    min-width: 0 !important;
-    flex: 1 1 auto !important;
-  }
-
-  .distribution-color-dot {
-    width: 8px !important;
-    height: 8px !important;
-  }
-
-  .distribution-subject-name {
-    font-size: clamp(0.74rem, 2.2vw, 0.82rem) !important;
-    max-width: clamp(90px, 30vw, 140px) !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-  }
-
-  .distribution-sessions-pill {
-    font-size: 0.62rem !important;
-    padding: 1px 5px !important;
-  }
-
-  .distribution-meta {
-    gap: 6px !important;
-    flex-shrink: 0 !important;
-  }
-
-  .distribution-duration {
-    font-size: 0.72rem !important;
-  }
-
-  .distribution-pct-badge {
-    font-size: 0.68rem !important;
-    padding: 1.5px 5px !important;
-  }
-
-  /* Academic GPA Forecast Card */
-  .gpa-comparison-grid {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 8px !important;
-  }
-
-  .gpa-comparison-box {
-    padding: 10px 8px !important;
-    gap: 2px !important;
-    border-radius: var(--radius-md) !important;
-  }
-
-  .gpa-comp-label {
-    font-size: clamp(0.58rem, 1.6vw, 0.66rem) !important;
-  }
-
-  .gpa-comp-val {
-    font-size: clamp(1.35rem, 4.5vw, 1.65rem) !important;
-  }
-
-  .gpa-comp-sub {
-    font-size: clamp(0.6rem, 1.7vw, 0.68rem) !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-  }
-
-  .forecast-message {
-    font-size: clamp(0.72rem, 2.2vw, 0.8rem) !important;
-    line-height: 1.4 !important;
-  }
-
-  /* Routine Adherence Card */
-  .adherence-content {
-    gap: 12px !important;
-    margin-top: 8px !important;
-  }
-
-  .adherence-metric-cards-grid {
-    display: grid !important;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 6px !important;
-  }
-
-  .adherence-metric-box {
-    padding: 8px 4px !important;
-    gap: 2px !important;
-    border-radius: var(--radius-sm) !important;
-    text-align: center !important;
-    align-items: center !important;
-  }
-
-  .metric-box-label {
-    font-size: clamp(0.54rem, 1.5vw, 0.62rem) !important;
-    gap: 3px !important;
-    justify-content: center !important;
-  }
-
-  .metric-box-label svg {
-    width: 11px !important;
-    height: 11px !important;
-  }
-
-  .metric-box-value-row {
-    justify-content: center !important;
-  }
-
-  .metric-box-number {
-    font-size: clamp(0.92rem, 3vw, 1.1rem) !important;
-    line-height: 1.15 !important;
-  }
-
-  .metric-box-number small {
-    font-size: 0.62rem !important;
-  }
-
-  .metric-box-sub {
-    font-size: clamp(0.54rem, 1.5vw, 0.62rem) !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-  }
-
-  .adherence-courses-grid {
-    display: grid !important;
-    grid-template-columns: 1fr !important;
-    gap: 8px !important;
-  }
-
-  .adherence-course-card {
-    padding: 10px !important;
-    gap: 6px !important;
-  }
-
-  .course-card-name {
-    font-size: 0.8rem !important;
-  }
-
-  .adherence-tip-banner {
-    padding: 8px 10px !important;
-    gap: 8px !important;
-  }
-
-  .adherence-tip-text {
-    font-size: 0.72rem !important;
-    line-height: 1.35 !important;
-  }
-}
-
-/* ============================================================
-   COMMUNITY & KNOWLEDGE HUB ULTRA-RESPONSIVE (PHONE & TABLET)
-   Horizontal scrolling tabs, 2 cards/line on phone, 3 on tablet
-   ============================================================ */
-
-/* 1. TABLET SCREENS (641px - 1024px) */
-@media (min-width: 641px) and (max-width: 1024px) {
-  .community-main-tabs-wrapper {
-    position: sticky !important;
-    top: 60px !important;
-    z-index: 70 !important;
-    background: var(--color-bg) !important;
-    padding: 6px 0 !important;
-    margin-bottom: 20px !important;
-  }
-
-  .community-tabs-bar {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    align-items: center !important;
-    justify-content: flex-start !important;
-    gap: 8px !important;
-    width: 100% !important;
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    scrollbar-width: none !important;
-    padding: 2px 2px 6px !important;
-  }
-
-  .community-tab-btn {
-    flex: 0 0 auto !important;
-    white-space: nowrap !important;
-    padding: 8px 16px !important;
-    font-size: 0.86rem !important;
-  }
-
-  /* User requirement: Tablet shows 3 student cards in 1 line */
-  .students-grid {
-    display: grid !important;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: clamp(10px, 1.5vw, 14px) !important;
-    width: 100% !important;
-  }
-
-  .student-profile-vertical-card {
-    padding: 16px 12px !important;
-    border-radius: var(--radius-lg) !important;
-  }
-
-  .events-grid {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: clamp(12px, 1.8vw, 16px) !important;
-  }
-
-  .community-layout-grid {
-    grid-template-columns: 1fr !important;
-    gap: 18px !important;
-  }
-
-  .leaderboard-podium-container {
-    display: grid !important;
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 12px !important;
-  }
-}
-
-/* 2. MOBILE PHONE SCREENS (<= 640px) */
-@media (max-width: 640px) {
-  /* Sticky Horizontal Scroll Bar for Community Tabs (same as Study Center) */
-  .community-main-tabs-wrapper {
-    position: sticky !important;
-    top: 56px !important;
-    z-index: 60 !important;
-    background: var(--color-bg) !important;
-    padding: 4px 0 2px !important;
-    margin-bottom: 14px !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    overflow: hidden !important;
-    border-bottom: 1px solid var(--color-border-subtle) !important;
-  }
-
-  .community-tabs-bar {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    align-items: center !important;
-    justify-content: flex-start !important;
-    gap: 6px !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-    -webkit-overflow-scrolling: touch !important;
-    scroll-behavior: smooth !important;
-    overscroll-behavior-x: contain !important;
-    touch-action: pan-x !important;
-    scrollbar-width: none !important;
-    padding: 2px 4px 6px !important;
-    box-sizing: border-box !important;
-  }
-
-  .community-tabs-bar::-webkit-scrollbar {
-    display: none !important;
-    width: 0 !important;
-    height: 0 !important;
-  }
-
-  .community-tab-btn {
-    flex: 0 0 auto !important;
-    flex-shrink: 0 !important;
-    white-space: nowrap !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 6px !important;
-    padding: 7px 13px !important;
-    font-size: 0.8rem !important;
-    font-weight: 700 !important;
-    border-radius: var(--radius-md) !important;
-    -webkit-tap-highlight-color: transparent !important;
-  }
-
-  .community-tab-btn svg {
-    width: 14px !important;
-    height: 14px !important;
-    flex-shrink: 0 !important;
-  }
-
-  /* User requirement: Phone shows 2 student cards in 1 line with dynamic padding & gap */
-  .students-grid {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: clamp(6px, 2vw, 10px) !important;
-    width: 100% !important;
-  }
-
-  .student-profile-vertical-card {
-    padding: clamp(10px, 2.5vw, 14px) clamp(8px, 2vw, 10px) !important;
-    border-radius: var(--radius-lg) !important;
-    gap: 6px !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: space-between !important;
-    box-sizing: border-box !important;
-  }
-
-  .student-card-top {
-    margin-bottom: 6px !important;
-    width: 100% !important;
-    min-width: 0 !important;
-  }
-
-  .student-avatar-wrap {
-    margin-bottom: 6px !important;
-  }
-
-  .student-avatar-wrap svg,
-  .student-avatar-wrap img {
-    width: 44px !important;
-    height: 44px !important;
-    min-width: 44px !important;
-  }
-
-  .student-name {
-    font-size: clamp(0.78rem, 2.4vw, 0.88rem) !important;
-    line-height: 1.25 !important;
-    margin-bottom: 1px !important;
-    width: 100% !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-  }
-
-  .student-email-sub {
-    font-size: clamp(0.62rem, 1.8vw, 0.7rem) !important;
-    margin-bottom: 6px !important;
-    width: 100% !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-  }
-
-  .student-dept-pill {
-    font-size: 0.6rem !important;
-    padding: 2px 6px !important;
-    max-width: 100% !important;
-  }
-
-  .student-stats-row {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-evenly !important;
-    padding: 5px 3px !important;
-    margin-bottom: 8px !important;
-    border-radius: var(--radius-sm) !important;
-    gap: 2px !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-  }
-
-  .student-stat-col {
-    flex: 1 1 0px !important;
-    text-align: center !important;
-    min-width: 0 !important;
-    gap: 1px !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-  }
-
-  .student-stat-num {
-    font-size: clamp(0.85rem, 2.8vw, 0.95rem) !important;
-    line-height: 1 !important;
-  }
-
-  .student-stat-lbl {
-    font-size: clamp(0.55rem, 1.7vw, 0.62rem) !important;
-    color: var(--color-text-muted) !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    line-height: 1.1 !important;
-  }
-
-  .student-stat-divider {
-    height: 16px !important;
-    flex-shrink: 0 !important;
-  }
-
-  .student-card-action {
-    width: 100% !important;
-  }
-
-  .student-card-action button,
-  .student-card-action .btn {
-    padding: 6px 4px !important;
-    font-size: 0.72rem !important;
-    font-weight: 700 !important;
-    min-height: 32px !important;
-    border-radius: var(--radius-md) !important;
-    width: 100% !important;
-    justify-content: center !important;
-  }
-
-  .student-card-action button svg {
-    width: 13px !important;
-    height: 13px !important;
-    margin-right: 3px !important;
-  }
-
-  /* Campus Events Grid & Cards on Mobile */
-  .events-grid {
-    display: grid !important;
-    grid-template-columns: 1fr !important;
-    gap: 12px !important;
-    width: 100% !important;
-  }
-
-  .event-card-modern {
-    padding: 14px 12px !important;
-    border-radius: var(--radius-lg) !important;
-    gap: 10px !important;
-  }
-
-  .event-card-header {
-    gap: 10px !important;
-  }
-
-  .event-date-badge {
-    width: 46px !important;
-    min-width: 46px !important;
-    padding: 6px 3px !important;
-    border-radius: 8px !important;
-  }
-
-  .event-date-month {
-    font-size: 0.6rem !important;
-  }
-
-  .event-date-day {
-    font-size: 1.1rem !important;
-  }
-
-  .event-title {
-    font-size: 0.92rem !important;
-  }
-
-  .event-rsvp-bar {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 8px !important;
-  }
-
-  .event-rsvp-buttons {
-    width: 100% !important;
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 6px !important;
-  }
-
-  /* Discussions Tab Feed & Quick Creator on Mobile */
-  .community-layout-grid {
-    grid-template-columns: 1fr !important;
-    gap: 14px !important;
-  }
-
-  .quick-post-creator-card {
-    padding: 12px !important;
-    border-radius: var(--radius-lg) !important;
-  }
-
-  .quick-creator-input-trigger {
-    font-size: 0.78rem !important;
-    padding: 8px 10px !important;
-  }
-
-  .quick-creator-chips {
-    overflow-x: auto !important;
-    flex-wrap: nowrap !important;
-    padding-bottom: 4px !important;
-    -webkit-overflow-scrolling: touch !important;
-    scrollbar-width: none !important;
-  }
-
-  .feed-filter-tabs {
-    overflow-x: auto !important;
-    flex-wrap: nowrap !important;
-    scrollbar-width: none !important;
-    -webkit-overflow-scrolling: touch !important;
-  }
-
-  .post-card-container {
-    padding: 14px 12px !important;
-    border-radius: var(--radius-lg) !important;
-  }
-
-  /* Scholar Leaderboard on Mobile */
-  .leaderboard-podium-container {
-    display: grid !important;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 6px !important;
-    padding: 10px 2px !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-  }
-
-  .podium-card {
-    padding: 10px 4px !important;
-    border-radius: var(--radius-md) !important;
-  }
-
-  .podium-avatar-wrap svg,
-  .podium-avatar-wrap img {
-    width: 36px !important;
-    height: 36px !important;
-    min-width: 36px !important;
-  }
-
-  .podium-name {
-    font-size: 0.72rem !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-  }
-
-  .podium-quote {
-    font-size: 0.58rem !important;
-    display: -webkit-box !important;
-    -webkit-line-clamp: 1 !important;
-    -webkit-box-orient: vertical !important;
-    overflow: hidden !important;
-  }
-
-  .podium-metrics-row {
-    flex-direction: column !important;
-    gap: 2px !important;
-    align-items: center !important;
-  }
-
-  .podium-follow-btn {
-    padding: 4px 6px !important;
-    font-size: 0.66rem !important;
-    width: 100% !important;
-    justify-content: center !important;
-  }
-
-  .timeframe-buttons-group {
-    overflow-x: auto !important;
-    flex-wrap: nowrap !important;
-    scrollbar-width: none !important;
-    -webkit-overflow-scrolling: touch !important;
-  }
-
-  .timeframe-btn {
-    flex: 0 0 auto !important;
-    white-space: nowrap !important;
-    font-size: 0.76rem !important;
-    padding: 6px 12px !important;
-  }
-}
-
 

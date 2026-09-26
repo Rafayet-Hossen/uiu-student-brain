@@ -88,13 +88,12 @@ class CommentSerializer(serializers.ModelSerializer):
 class StudyEventSerializer(serializers.ModelSerializer):
     creator = AuthorSummarySerializer(read_only=True)
     rsvp_count = serializers.IntegerField(read_only=True, default=0)
-    going_count = serializers.IntegerField(read_only=True, default=0)
-    interested_count = serializers.IntegerField(read_only=True, default=0)
     going_count = serializers.SerializerMethodField()
     interested_count = serializers.SerializerMethodField()
     is_rsvped = serializers.BooleanField(read_only=True, default=False)
     is_attending = serializers.SerializerMethodField()
     user_rsvp_status = serializers.SerializerMethodField()
+    is_full = serializers.SerializerMethodField()
 
     class Meta:
         model = StudyEvent
@@ -108,6 +107,8 @@ class StudyEventSerializer(serializers.ModelSerializer):
             "start_time",
             "end_time",
             "location",
+            "max_participants",
+            "is_full",
             "rsvp_count",
             "going_count",
             "interested_count",
@@ -120,6 +121,7 @@ class StudyEventSerializer(serializers.ModelSerializer):
         read_only_fields = [
             "id",
             "creator",
+            "is_full",
             "rsvp_count",
             "going_count",
             "interested_count",
@@ -139,6 +141,12 @@ class StudyEventSerializer(serializers.ModelSerializer):
         if hasattr(obj, "interested_count"):
             return obj.interested_count
         return obj.rsvps.filter(status__in=["interested", "going"]).count()
+
+    def get_is_full(self, obj) -> bool:
+        if obj.max_participants:
+            going = self.get_going_count(obj)
+            return going >= obj.max_participants
+        return False
 
     def get_is_attending(self, obj) -> bool:
         request = self.context.get("request")
