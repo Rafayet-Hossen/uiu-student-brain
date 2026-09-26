@@ -21,7 +21,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 COPY pyproject.toml uv.lock* ./
 
 # Install python dependencies into system environment
-RUN uv pip install --system --no-cache -r pyproject.toml
+RUN uv pip install --system --no-cache -r pyproject.toml pymysql cryptography
 
 # Copy project source files
 COPY . /app
@@ -32,5 +32,5 @@ RUN chmod +x /app/entrypoint.sh
 EXPOSE 8000
 
 ENTRYPOINT ["/app/entrypoint.sh"]
-CMD ["sh", "-c", "gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8000}"]
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
 
