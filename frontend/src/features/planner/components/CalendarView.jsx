@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Badge from "../../../components/Badge";
 import Button from "../../../components/Button";
 import ScheduleDetailModal from "./ScheduleDetailModal";
@@ -141,11 +141,29 @@ export default function CalendarView({
     year: "numeric",
   })}`;
 
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== "undefined" && window.innerWidth <= 768,
+  );
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const gridWrapperRef = useRef(null);
+
+  const scrollToDay = (dayIndex) => {
+    if (!gridWrapperRef.current) return;
+    const colWidth = isMobile ? 85 : 110;
+    const targetScroll = Math.max(0, dayIndex * colWidth - (isMobile ? 10 : 30));
+    gridWrapperRef.current.scrollTo({ left: targetScroll, behavior: "smooth" });
+  };
+
   // Time Axis configuration (from 07:00 to 22:00)
   const START_HOUR = 7;
   const END_HOUR = 22;
   const TOTAL_HOURS = END_HOUR - START_HOUR;
-  const HOUR_HEIGHT = 64; // pixels per hour
+  const HOUR_HEIGHT = isMobile ? 46 : 64; // responsive compact pixels per hour on mobile
   const PIXELS_PER_MINUTE = HOUR_HEIGHT / 60;
 
   const hoursArray = Array.from(
@@ -191,13 +209,16 @@ export default function CalendarView({
             <Button
               size="sm"
               variant="secondary"
+              className="cal-nav-btn"
               onClick={() => setCurrentWeekOffset((prev) => prev - 1)}
             >
-              ◀ Prev Week
+              <span className="cal-nav-btn-text-full">◀ Prev Week</span>
+              <span className="cal-nav-btn-text-short">◀ Prev</span>
             </Button>
             <Button
               size="sm"
               variant={currentWeekOffset === 0 ? "primary" : "secondary"}
+              className="cal-nav-btn"
               onClick={() => setCurrentWeekOffset(0)}
             >
               Today
@@ -205,9 +226,11 @@ export default function CalendarView({
             <Button
               size="sm"
               variant="secondary"
+              className="cal-nav-btn"
               onClick={() => setCurrentWeekOffset((prev) => prev + 1)}
             >
-              Next Week ▶
+              <span className="cal-nav-btn-text-full">Next Week ▶</span>
+              <span className="cal-nav-btn-text-short">Next ▶</span>
             </Button>
           </div>
 
@@ -231,8 +254,27 @@ export default function CalendarView({
         </div>
       </div>
 
+      {/* Mobile Quick Day Jump Bar */}
+      <div className="calendar-mobile-day-bar">
+        <span className="mobile-day-bar-label">Quick Jump:</span>
+        <div className="mobile-day-chips-scroll">
+          {weekDays.map((day, i) => (
+            <button
+              key={day.dayName}
+              type="button"
+              className={`mobile-day-chip ${day.isToday ? "chip-today" : ""}`}
+              onClick={() => scrollToDay(i)}
+            >
+              <span className="chip-day-name">{day.dayName.slice(0, 3)}</span>
+              <span className="chip-day-num">{day.dayNumber}</span>
+              {dailyHoursMap[day.dayName] > 0 && <span className="chip-dot" />}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Main Calendar Grid */}
-      <div className="calendar-grid-wrapper">
+      <div className="calendar-grid-wrapper" ref={gridWrapperRef}>
         <div className="calendar-scroll-area">
           {/* Day Headers Row */}
           <div className="calendar-days-header-row">
@@ -339,7 +381,7 @@ export default function CalendarView({
 
                       const topPx = topMinutes * PIXELS_PER_MINUTE;
                       const heightPx = Math.max(
-                        42,
+                        isMobile ? 36 : 42,
                         durationMinutes * PIXELS_PER_MINUTE - 4,
                       );
 
@@ -354,7 +396,7 @@ export default function CalendarView({
                             top: `${topPx}px`,
                             height: `${heightPx}px`,
                             backgroundColor: colorTheme.bg,
-                            borderLeft: `4px solid ${colorTheme.accent}`,
+                            borderLeft: `${isMobile ? 3 : 4}px solid ${colorTheme.accent}`,
                             boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
                           }}
                           onClick={(e) => {
@@ -382,14 +424,14 @@ export default function CalendarView({
                               ⏰ {schedule.start_time.slice(0, 5)}–{schedule.end_time.slice(0, 5)}
                             </span>
 
-                            {heightPx >= 60 && (
+                            {heightPx >= (isMobile ? 38 : 60) && (
                               <span className="time-block-dur-pill">
                                 {durationHours}h
                               </span>
                             )}
                           </div>
 
-                          {schedule.deadline && heightPx >= 75 && (
+                          {schedule.deadline && heightPx >= (isMobile ? 55 : 75) && (
                             <div className="time-block-deadline">
                               🎯 Due {schedule.deadline.slice(5)}
                             </div>

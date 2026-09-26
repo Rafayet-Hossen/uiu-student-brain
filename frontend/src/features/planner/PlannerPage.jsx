@@ -170,27 +170,20 @@ export default function PlannerPage() {
   return (
     <div className="planner-page-container">
       {/* Page Header */}
-      <div className="page-header">
-        <div className="page-header-row">
-          <div>
-            <h1 className="page-title">
-              <CalendarIcon size={26} className="text-orange" />
+      <div className="page-header planner-page-header">
+        <div className="page-header-row planner-header-row">
+          <div className="planner-header-lead">
+            <h1 className="page-title planner-page-title">
+              <CalendarIcon size={24} className="text-orange planner-title-icon" />
               <span>Study Planner & Timetable</span>
             </h1>
-            <p className="page-description">
+            <p className="page-description planner-page-desc">
               Organize coursework into focused weekly blocks, attach Drive notes
               and video links, and maintain academic momentum.
             </p>
           </div>
 
-          <div
-            style={{
-              display: "flex",
-              gap: "10px",
-              alignItems: "center",
-              flexWrap: "wrap",
-            }}
-          >
+          <div className="planner-header-actions">
             {/* View Toggle */}
             <div className="planner-view-toggle">
               <button
@@ -219,6 +212,7 @@ export default function PlannerPage() {
               variant={showForm && !editingSchedule ? "secondary" : "primary"}
               onClick={handleAddSchedule}
               icon={showForm && !editingSchedule ? X : Plus}
+              className="planner-add-routine-btn"
             >
               {showForm && !editingSchedule ? "Close Form" : "Add Routine"}
             </Button>
@@ -276,33 +270,49 @@ export default function PlannerPage() {
         />
       )}
 
-      {/* Mode 1: CALENDAR VIEW */}
-      {!loading &&
-        !error &&
-        schedules.length > 0 &&
-        viewMode === "calendar" && (
-          <CalendarView
-            schedules={schedules}
-            onEditSchedule={handleEdit}
-            onDeleteSchedule={handleDelete}
-            onSlotClick={handleSlotClick}
-          />
-        )}
+      {/* Main Views Container with Animated Switching */}
+      <AnimatePresence mode="wait">
+        {!loading &&
+          !error &&
+          schedules.length > 0 &&
+          viewMode === "calendar" && (
+            <motion.div
+              key="calendar-view"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.18 }}
+            >
+              <CalendarView
+                schedules={schedules}
+                onEditSchedule={handleEdit}
+                onDeleteSchedule={handleDelete}
+                onSlotClick={handleSlotClick}
+              />
+            </motion.div>
+          )}
 
-      {/* Mode 2: LIST / CARDS VIEW */}
-      {!loading && !error && schedules.length > 0 && viewMode === "list" && (
-        <div className="schedules-grid">
-          {schedules.map((schedule) => (
-            <RoutineCard
-              key={schedule.id}
-              schedule={schedule}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              isHighlighted={Number(schedule.id) === Number(highlightedId)}
-            />
-          ))}
-        </div>
-      )}
+        {!loading && !error && schedules.length > 0 && viewMode === "list" && (
+          <motion.div
+            key="list-view"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.18 }}
+            className="schedules-grid"
+          >
+            {schedules.map((schedule) => (
+              <RoutineCard
+                key={schedule.id}
+                schedule={schedule}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                isHighlighted={Number(schedule.id) === Number(highlightedId)}
+              />
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
