@@ -37,7 +37,7 @@
   --dash-card-bg: #1e293b;
   --dash-card-border: rgba(51, 65, 85, 0.7);
   --dash-surface-subtle: #0f172a;
-  --dash-surface-elevated: #1e293b;
+  --dash-surface-elevated: #334155;
   --dash-text-main: #f8fafc;
   --dash-text-muted: #94a3b8;
   --dash-shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.35);
@@ -4457,18 +4457,35 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   position: relative;
   z-index: 1;
+  width: 100%;
+}
+
+.dash-analytics-title-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+  flex: 1;
 }
 
 .dash-analytics-icon-badge {
   width: 36px;
   height: 36px;
-  border-radius: 12px;
+  min-width: 36px;
+  border-radius: 11px;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.dash-analytics-card:hover .dash-analytics-icon-badge {
+  transform: scale(1.05);
 }
 
 .dash-analytics-icon-badge.indigo,
@@ -4503,20 +4520,25 @@
 }
 
 .dash-analytics-card-title {
-  font-size: 0.98rem;
-  font-weight: 800;
+  font-size: 0.95rem;
+  font-weight: 750;
   letter-spacing: -0.015em;
   color: var(--dash-text-main);
+  white-space: nowrap;
+  line-height: 1.25;
 }
 
 .dash-analytics-tag {
   font-size: 0.72rem;
   font-weight: 700;
-  padding: 3px 9px;
+  padding: 4px 10px;
   border-radius: 9999px;
   background: var(--dash-surface-elevated);
   border: 1px solid var(--dash-card-border);
   color: var(--dash-text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+  letter-spacing: 0.01em;
 }
 
 /* Panel A: 7-Day Trend Bar Chart */
@@ -4561,19 +4583,39 @@
   flex: 1;
   width: 100%;
   max-width: 28px;
-  background: var(--dash-surface-elevated);
+  background: rgba(148, 163, 184, 0.12);
+  border: 1px solid rgba(148, 163, 184, 0.2);
   border-radius: 10px;
   display: flex;
   align-items: flex-end;
   overflow: hidden;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+[data-theme="dark"] .dash-bar-track {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(71, 85, 105, 0.55);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.55);
+}
+
+.dash-bar-col:hover .dash-bar-track {
+  border-color: rgba(242, 101, 34, 0.45);
+  background: rgba(242, 101, 34, 0.08);
+}
+
+[data-theme="dark"] .dash-bar-col:hover .dash-bar-track {
+  border-color: rgba(251, 146, 60, 0.65);
+  background: rgba(15, 23, 42, 0.9);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.7), 0 0 10px rgba(251, 146, 60, 0.18);
 }
 
 .dash-bar-fill {
   width: 100%;
   background: linear-gradient(180deg, #fb923c 0%, #ea580c 100%);
-  border-radius: 10px;
-  min-height: 6px;
+  border-radius: 8px;
+  min-height: 8px;
   transition:
     transform 0.2s ease,
     filter 0.2s ease;
@@ -6554,6 +6596,14 @@
 
   .dash-analytics-card-header {
     gap: 8px !important;
+  }
+
+  .dash-analytics-title-group {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    min-width: 0 !important;
+    flex: 1 !important;
   }
 
   .dash-analytics-icon-badge {

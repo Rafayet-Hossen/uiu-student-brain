@@ -128,9 +128,9 @@ export default function StudyInsights({
           className="dash-card-24 dash-analytics-card"
         >
           <div className="dash-analytics-card-header">
-            <div className="flex items-center gap-2">
+            <div className="dash-analytics-title-group">
               <div className="dash-analytics-icon-badge orange">
-                <TrendingUp size={16} />
+                <TrendingUp size={17} />
               </div>
               <strong className="dash-analytics-card-title">Weekly Focus Trend</strong>
             </div>
@@ -172,9 +172,9 @@ export default function StudyInsights({
           className="dash-card-24 dash-analytics-card"
         >
           <div className="dash-analytics-card-header">
-            <div className="flex items-center gap-2">
+            <div className="dash-analytics-title-group">
               <div className="dash-analytics-icon-badge emerald">
-                <PieChart size={16} />
+                <PieChart size={17} />
               </div>
               <strong className="dash-analytics-card-title">Subject Distribution</strong>
             </div>
@@ -219,9 +219,9 @@ export default function StudyInsights({
           className="dash-card-24 dash-analytics-card"
         >
           <div className="dash-analytics-card-header">
-            <div className="flex items-center gap-2">
+            <div className="dash-analytics-title-group">
               <div className="dash-analytics-icon-badge amber">
-                <Award size={16} />
+                <Award size={17} />
               </div>
               <strong className="dash-analytics-card-title">Productivity Score</strong>
             </div>
