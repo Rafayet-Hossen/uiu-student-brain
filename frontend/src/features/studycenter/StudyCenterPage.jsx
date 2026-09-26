@@ -74,7 +74,7 @@ export default function StudyCenterPage() {
   const activeTabMeta = tabs.find((t) => t.id === currentTab) || tabs[0];
 
   return (
-    <div className="app-screen">
+    <div className="app-screen study-center-screen">
       <Navbar />
 
       <main className="main-content study-center-main-content">

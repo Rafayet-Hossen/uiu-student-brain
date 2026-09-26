@@ -19,6 +19,7 @@
    ========================================================================== */
 @media (max-width: 768px) {
   /* Eliminate gap above Study Center */
+  .app-screen.study-center-screen,
   .app-screen:has(.study-center-main-content) {
     padding-top: 56px !important;
   }
