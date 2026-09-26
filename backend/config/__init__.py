@@ -29,8 +29,27 @@ except ImportError:
 # Django 6.0 enforces MySQL >= 8.4 by default, so we allow TiDB by bypassing the version check.
 try:
     from django.db.backends.mysql.base import DatabaseWrapper
-    DatabaseWrapper.check_database_version_supported = lambda self: None
     from django.db.backends.mysql.schema import DatabaseSchemaEditor
+    from django.db.backends.base.schema import BaseDatabaseSchemaEditor
+
+    DatabaseWrapper.check_database_version_supported = lambda self: None
     DatabaseSchemaEditor.sql_create_column_inline_fk = None
+
+    if not getattr(BaseDatabaseSchemaEditor, "_is_safe_execute_patched", False):
+        _orig_execute = BaseDatabaseSchemaEditor.execute
+
+        def _safe_execute(self, sql, params=()):
+            try:
+                return _orig_execute(self, sql, params)
+            except Exception as e:
+                err_str = str(e).lower()
+                if any(code in err_str for code in ["1060", "duplicate column", "1061", "duplicate key", "1050", "already exists", "1826"]):
+                    print(f"⚠️ [TiDB Schema] Warning: Object already exists, skipping: {e}")
+                    return
+                raise
+
+        BaseDatabaseSchemaEditor.execute = _safe_execute
+        DatabaseSchemaEditor.execute = _safe_execute
+        BaseDatabaseSchemaEditor._is_safe_execute_patched = True
 except (ImportError, AttributeError):
     pass
