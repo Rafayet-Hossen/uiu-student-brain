@@ -1,5 +1,14 @@
 import { motion } from "framer-motion";
-import { Users, Trophy, Flame, Clock, Award, ArrowRight, MessageSquare, Sparkles } from "lucide-react";
+import {
+  Users,
+  Trophy,
+  Flame,
+  Clock,
+  Award,
+  ArrowRight,
+  MessageSquare,
+  Sparkles,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function CommunityMomentum({
@@ -28,9 +37,7 @@ export default function CommunityMomentum({
         item.username ||
         `Scholar #${idx + 1}`,
       department:
-        item.user?.department ||
-        item.department ||
-        "Academic Scholar",
+        item.user?.department || item.department || "Academic Scholar",
       weeklyHours: `${rawHours.toFixed(1)}h`,
       streak: item.current_streak ? `${item.current_streak} Days` : "0 Days",
       badge:
@@ -67,7 +74,8 @@ export default function CommunityMomentum({
           </div>
           <h2 className="dash-community-h2">Community Momentum</h2>
           <p className="dash-community-desc">
-            Celebrate study consistency with fellow university scholars and climb the weekly academic honors podium.
+            Celebrate study consistency with fellow university scholars and
+            climb the weekly academic honors podium.
           </p>
         </div>
       </div>
@@ -94,8 +102,9 @@ export default function CommunityMomentum({
               Weekly Honors Podium is Open!
             </h3>
             <p className="dash-podium-empty-desc">
-              No scholars have logged focus hours on the public leaderboard this week yet.
-              Opt in and complete focus sessions in Study Tracker to claim the #1 Gold spot!
+              No scholars have logged focus hours on the public leaderboard this
+              week yet. Opt in and complete focus sessions in Study Tracker to
+              claim the #1 Gold spot!
             </p>
             <div className="dash-podium-empty-actions">
               <Link to="/community" className="dash-btn-community-cta">
@@ -140,9 +149,7 @@ export default function CommunityMomentum({
                 </div>
 
                 {/* Scholar Avatar with Glowing Aura */}
-                <div
-                  className={`dash-podium-avatar-wrap rank-${student.rank}`}
-                >
+                <div className={`dash-podium-avatar-wrap rank-${student.rank}`}>
                   <div className="dash-podium-avatar-letter">
                     {student.avatar}
                   </div>
@@ -152,9 +159,7 @@ export default function CommunityMomentum({
                 {/* Scholar Details */}
                 <div className="dash-podium-info">
                   <h3 className="dash-podium-name">{student.name}</h3>
-                  <span className="dash-podium-dept">
-                    {student.department}
-                  </span>
+                  <span className="dash-podium-dept">{student.department}</span>
 
                   <div className="dash-podium-achievement-badge">
                     <Award size={13} />
@@ -176,9 +181,7 @@ export default function CommunityMomentum({
                 </div>
 
                 {/* Podium Pedestal Base */}
-                <div
-                  className={`dash-podium-pedestal step-${student.rank}`}
-                >
+                <div className={`dash-podium-pedestal step-${student.rank}`}>
                   <span className="dash-pedestal-num">{student.rank}</span>
                 </div>
               </motion.div>

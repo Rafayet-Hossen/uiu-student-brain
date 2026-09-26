@@ -1,4 +1,12 @@
 import { useState, useEffect, useRef } from "react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Calendar as CalendarIcon,
+  Clock,
+  Layers,
+  Sparkles,
+} from "lucide-react";
 import Badge from "../../../components/Badge";
 import Button from "../../../components/Button";
 import ScheduleDetailModal from "./ScheduleDetailModal";
@@ -145,22 +153,35 @@ export default function CalendarView({
   })}`;
 
   const [isMobile, setIsMobile] = useState(
-    () => typeof window !== "undefined" && window.innerWidth <= 768,
+    () => typeof window !== "undefined" && window.innerWidth <= 640,
   );
+  const [isTablet, setIsTablet] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      window.innerWidth > 640 &&
+      window.innerWidth <= 1024,
+  );
+
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    const handleResize = () => {
+      const w = window.innerWidth;
+      setIsMobile(w <= 640);
+      setIsTablet(w > 640 && w <= 1024);
+    };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const gridWrapperRef = useRef(null);
+  const [activeJumpDay, setActiveJumpDay] = useState(() => today.getDay());
 
   const scrollToDay = (dayIndex) => {
+    setActiveJumpDay(dayIndex);
     if (!gridWrapperRef.current) return;
-    const colWidth = isMobile ? 85 : 110;
+    const colWidth = isMobile ? 80 : isTablet ? 95 : 110;
     const targetScroll = Math.max(
       0,
-      dayIndex * colWidth - (isMobile ? 10 : 30),
+      dayIndex * colWidth - (isMobile ? 12 : 30),
     );
     gridWrapperRef.current.scrollTo({ left: targetScroll, behavior: "smooth" });
   };
@@ -169,7 +190,8 @@ export default function CalendarView({
   const START_HOUR = 7;
   const END_HOUR = 22;
   const TOTAL_HOURS = END_HOUR - START_HOUR;
-  const HOUR_HEIGHT = isMobile ? 46 : 64; // responsive compact pixels per hour on mobile
+  // Compact, responsive hour heights
+  const HOUR_HEIGHT = isMobile ? 38 : isTablet ? 46 : 56;
   const PIXELS_PER_MINUTE = HOUR_HEIGHT / 60;
 
   const hoursArray = Array.from(
@@ -213,36 +235,37 @@ export default function CalendarView({
       <div className="calendar-header-bar">
         <div className="calendar-nav-controls">
           <div className="week-switch-buttons">
-            <Button
-              size="sm"
-              variant="secondary"
+            <button
+              type="button"
               className="cal-nav-btn"
               onClick={() => setCurrentWeekOffset((prev) => prev - 1)}
+              title="Previous Week"
             >
-              <span className="cal-nav-btn-text-full">◀ Prev Week</span>
-              <span className="cal-nav-btn-text-short">◀ Prev</span>
-            </Button>
-            <Button
-              size="sm"
-              variant={currentWeekOffset === 0 ? "primary" : "secondary"}
-              className="cal-nav-btn"
+              <ChevronLeft size={15} />
+              <span className="cal-nav-btn-text">Prev</span>
+            </button>
+            <button
+              type="button"
+              className={`cal-nav-btn ${
+                currentWeekOffset === 0 ? "cal-nav-today-active" : ""
+              }`}
               onClick={() => setCurrentWeekOffset(0)}
             >
               Today
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
+            </button>
+            <button
+              type="button"
               className="cal-nav-btn"
               onClick={() => setCurrentWeekOffset((prev) => prev + 1)}
+              title="Next Week"
             >
-              <span className="cal-nav-btn-text-full">Next Week ▶</span>
-              <span className="cal-nav-btn-text-short">Next ▶</span>
-            </Button>
+              <span className="cal-nav-btn-text">Next</span>
+              <ChevronRight size={15} />
+            </button>
           </div>
 
           <h2 className="calendar-range-title">
-            <span>🗓️</span>
+            <span className="cal-range-emoji">🗓️</span>
             <span>{weekRangeLabel}</span>
           </h2>
         </div>
@@ -250,8 +273,7 @@ export default function CalendarView({
         {/* Quick Weekly Statistics Pills */}
         <div className="calendar-summary-chips">
           <span className="cal-stat-chip">
-            ⏱️ <strong>{(totalWeeklyMinutes / 60).toFixed(1)} hrs</strong>{" "}
-            planned
+            ⏱️ <strong>{(totalWeeklyMinutes / 60).toFixed(1)}h</strong> planned
           </span>
           <span className="cal-stat-chip">
             📚 <strong>{activeSubjectsSet.size}</strong> courses
@@ -262,22 +284,39 @@ export default function CalendarView({
         </div>
       </div>
 
-      {/* Mobile Quick Day Jump Bar */}
-      <div className="calendar-mobile-day-bar">
-        <span className="mobile-day-bar-label">Quick Jump:</span>
-        <div className="mobile-day-chips-scroll">
-          {weekDays.map((day, i) => (
-            <button
-              key={day.dayName}
-              type="button"
-              className={`mobile-day-chip ${day.isToday ? "chip-today" : ""}`}
-              onClick={() => scrollToDay(i)}
-            >
-              <span className="chip-day-name">{day.dayName.slice(0, 3)}</span>
-              <span className="chip-day-num">{day.dayNumber}</span>
-              {dailyHoursMap[day.dayName] > 0 && <span className="chip-dot" />}
-            </button>
-          ))}
+      {/* Quick Day Jump Bar (Phone & Tablet) */}
+      <div className="calendar-quick-jump-container">
+        <div className="quick-jump-label-row">
+          <div className="quick-jump-badge">
+            <CalendarIcon size={12} className="text-orange" />
+            <span>Quick Day Jump:</span>
+          </div>
+          <span className="quick-jump-hint">Tap day to center timeline</span>
+        </div>
+        <div className="quick-jump-chips-track">
+          {weekDays.map((day, i) => {
+            const hasRoutines = Number(dailyHoursMap[day.dayName]) > 0;
+            const isSelected = activeJumpDay === i;
+            return (
+              <button
+                key={day.dayName}
+                type="button"
+                className={`quick-jump-chip ${
+                  isSelected ? "chip-selected" : ""
+                } ${day.isToday ? "chip-today" : ""}`}
+                onClick={() => scrollToDay(i)}
+              >
+                <span className="chip-day-name">{day.dayName.slice(0, 3)}</span>
+                <span className="chip-day-num">{day.dayNumber}</span>
+                {hasRoutines && (
+                  <span
+                    className="chip-hours-dot"
+                    title={`${dailyHoursMap[day.dayName]} hrs scheduled`}
+                  />
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -313,8 +352,8 @@ export default function CalendarView({
                 </div>
                 <div className="day-hours-pill">
                   {dailyHoursMap[day.dayName] > 0
-                    ? `${dailyHoursMap[day.dayName]} hrs`
-                    : "No routines"}
+                    ? `${dailyHoursMap[day.dayName]}h`
+                    : "0h"}
                 </div>
               </div>
             ))}
