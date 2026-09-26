@@ -551,10 +551,24 @@ export default function MaterialsPage() {
                     className={`semester-pill-btn ${isActive ? "semester-pill-active" : ""}`}
                     onClick={() => setSelectedSemesterId(sem.id)}
                   >
-                    <span>{sem.name}</span>
+                    <span className="semester-pill-name">{sem.name}</span>
                     {sem.is_current && (
                       <span className="current-term-dot" title="Current Term">
                         •
+                      </span>
+                    )}
+                    {isActive && (
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        className="semester-pill-delete-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteSemester(sem);
+                        }}
+                        title={`Delete ${sem.name}`}
+                      >
+                        <Trash2 size={12} className="semester-pill-trash-icon" />
                       </span>
                     )}
                   </button>
@@ -575,7 +589,7 @@ export default function MaterialsPage() {
           {selectedSemester && (
             <button
               type="button"
-              className="btn-delete-semester"
+              className="btn-delete-semester desktop-only-delete"
               onClick={() => handleDeleteSemester(selectedSemester)}
               title="Delete Semester"
             >
