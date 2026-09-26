@@ -84,14 +84,20 @@ export default function CommunityMomentum({ leaderboard = [] }) {
               key={student.name}
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: pIdx * 0.12 }}
-              whileHover={{ y: -8, scale: 1.02 }}
+              transition={{ duration: 0.45, delay: pIdx * 0.1 }}
+              whileHover={{
+                y: isGold ? -9 : -5,
+                scale: 1.018,
+                transition: { type: "spring", stiffness: 350, damping: 20 },
+              }}
+              whileTap={{ scale: 0.985 }}
               className={`dash-podium-card rank-${student.rank} ${isGold ? "podium-gold" : isSilver ? "podium-silver" : "podium-bronze"}`}
             >
               {/* Crown / Medal Top Ribbon */}
               <div className="dash-podium-crown-badge">
                 <span className="dash-podium-medal">{medalEmoji}</span>
                 <span className="dash-podium-rank-tag">#{student.rank} {medalLabel}</span>
+                {isGold && <Sparkles size={11} className="dash-gold-sparkle" />}
               </div>
 
               {/* Scholar Avatar with Glowing Aura */}

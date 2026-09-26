@@ -4863,16 +4863,18 @@
 .dash-community-section {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
   width: 100%;
 }
 
 .dash-podium-stage {
   display: grid;
-  grid-template-columns: 1fr 1.15fr 1fr;
-  gap: 20px;
+  grid-template-columns: 1fr 1.08fr 1fr;
+  gap: 14px;
   align-items: end;
-  margin-top: 8px;
+  margin: 4px auto 0 auto;
+  max-width: 860px;
+  width: 100%;
 }
 
 .dash-podium-tree-stem {
@@ -4880,22 +4882,47 @@
 }
 
 .dash-podium-card {
-  border-radius: 24px;
+  border-radius: 18px;
   background: var(--dash-card-bg);
   border: 1px solid var(--dash-card-border);
-  box-shadow: var(--dash-shadow-card);
-  padding: 22px 18px 0 18px;
+  box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.05);
+  padding: 14px 14px 0 14px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 12px;
+  gap: 8px;
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
+  backdrop-filter: blur(8px);
   transition:
-    box-shadow 0.25s ease,
-    border-color 0.25s ease;
+    box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dash-podium-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 80%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.22) 50%,
+    transparent 100%
+  );
+  transform: skewX(-20deg);
+  pointer-events: none;
+  transition: none;
+}
+
+.dash-podium-card:hover::after {
+  left: 150%;
+  transition: left 0.75s ease-in-out;
 }
 
 .dash-podium-card:hover {
@@ -4904,95 +4931,152 @@
 
 /* Podium Rank Themes */
 .dash-podium-card.podium-gold {
-  border: 2px solid rgba(245, 158, 11, 0.45);
+  border: 1.5px solid rgba(245, 158, 11, 0.45);
   background: linear-gradient(
     180deg,
     rgba(254, 243, 199, 0.35) 0%,
-    var(--dash-card-bg) 60%
+    var(--dash-card-bg) 55%
   );
   box-shadow:
-    0 16px 36px -6px rgba(245, 158, 11, 0.16),
-    0 4px 12px rgba(15, 23, 42, 0.04);
-  transform: translateY(-14px);
+    0 10px 24px -4px rgba(245, 158, 11, 0.18),
+    0 2px 8px rgba(15, 23, 42, 0.04);
+  transform: translateY(-8px);
+  animation: goldFloatPulse 4s ease-in-out infinite alternate;
+}
+
+@keyframes goldFloatPulse {
+  0% {
+    box-shadow: 0 10px 24px -4px rgba(245, 158, 11, 0.16), 0 0 10px rgba(245, 158, 11, 0.08);
+  }
+  100% {
+    box-shadow: 0 14px 30px -4px rgba(245, 158, 11, 0.26), 0 0 18px rgba(245, 158, 11, 0.18);
+  }
 }
 
 [data-theme="dark"] .dash-podium-card.podium-gold {
   background: linear-gradient(
     180deg,
     rgba(120, 53, 15, 0.25) 0%,
-    var(--dash-card-bg) 60%
+    var(--dash-card-bg) 55%
   );
   border-color: rgba(245, 158, 11, 0.5);
   box-shadow:
-    0 16px 36px -6px rgba(245, 158, 11, 0.25),
-    0 4px 12px rgba(0, 0, 0, 0.4);
+    0 12px 28px -6px rgba(245, 158, 11, 0.25),
+    0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 .dash-podium-card.podium-silver {
-  border-color: rgba(148, 163, 184, 0.5);
+  border-color: rgba(148, 163, 184, 0.45);
   background: linear-gradient(
     180deg,
-    rgba(241, 245, 249, 0.6) 0%,
-    var(--dash-card-bg) 60%
+    rgba(241, 245, 249, 0.5) 0%,
+    var(--dash-card-bg) 55%
   );
+  box-shadow:
+    0 6px 18px -4px rgba(148, 163, 184, 0.14),
+    0 2px 6px rgba(15, 23, 42, 0.03);
 }
 
 [data-theme="dark"] .dash-podium-card.podium-silver {
   border-color: rgba(148, 163, 184, 0.3);
   background: linear-gradient(
     180deg,
-    rgba(51, 65, 85, 0.3) 0%,
-    var(--dash-card-bg) 60%
+    rgba(51, 65, 85, 0.25) 0%,
+    var(--dash-card-bg) 55%
   );
+  box-shadow:
+    0 6px 18px -4px rgba(148, 163, 184, 0.14),
+    0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 .dash-podium-card.podium-bronze {
   border-color: rgba(217, 119, 6, 0.3);
   background: linear-gradient(
     180deg,
-    rgba(255, 237, 213, 0.35) 0%,
-    var(--dash-card-bg) 60%
+    rgba(255, 237, 213, 0.3) 0%,
+    var(--dash-card-bg) 55%
   );
+  box-shadow:
+    0 6px 18px -4px rgba(217, 119, 6, 0.13),
+    0 2px 6px rgba(15, 23, 42, 0.03);
 }
 
 [data-theme="dark"] .dash-podium-card.podium-bronze {
   border-color: rgba(217, 119, 6, 0.25);
   background: linear-gradient(
     180deg,
-    rgba(124, 45, 18, 0.2) 0%,
-    var(--dash-card-bg) 60%
+    rgba(124, 45, 18, 0.18) 0%,
+    var(--dash-card-bg) 55%
   );
+  box-shadow:
+    0 6px 18px -4px rgba(217, 119, 6, 0.13),
+    0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 .dash-podium-crown-badge {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  font-size: 0.74rem;
-  font-weight: 750;
+  gap: 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
   color: var(--dash-text-main);
-  padding: 3px 10px;
+  padding: 2.5px 8px;
   border-radius: 9999px;
   background: var(--dash-surface-subtle);
   border: 1px solid var(--dash-card-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.dash-podium-card.podium-gold .dash-podium-crown-badge {
+  background: rgba(254, 243, 199, 0.65);
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #92400e;
+}
+
+[data-theme="dark"] .dash-podium-card.podium-gold .dash-podium-crown-badge {
+  background: rgba(120, 53, 15, 0.45);
+  border-color: rgba(245, 158, 11, 0.5);
+  color: #fde68a;
 }
 
 .dash-podium-medal {
-  font-size: 1rem;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.dash-podium-rank-tag {
+  letter-spacing: 0.01em;
+}
+
+.dash-gold-sparkle {
+  color: #f59e0b;
+  animation: sparkleTwinkle 2s ease-in-out infinite;
+}
+
+@keyframes sparkleTwinkle {
+  0%, 100% {
+    transform: scale(0.9) rotate(0deg);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.2) rotate(15deg);
+    opacity: 1;
+  }
 }
 
 .dash-podium-avatar-wrap {
   position: relative;
-  width: 60px;
-  height: 60px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 1px 0;
 }
 
 .dash-podium-card.podium-gold .dash-podium-avatar-wrap {
-  width: 70px;
-  height: 70px;
+  width: 52px;
+  height: 52px;
 }
 
 .dash-podium-avatar-letter {
@@ -5002,36 +5086,40 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.35rem;
-  font-weight: 850;
+  font-size: 1.1rem;
+  font-weight: 800;
   color: #ffffff;
   background: linear-gradient(135deg, #f26522, #ea580c);
   z-index: 2;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 .dash-podium-card.podium-gold .dash-podium-avatar-letter {
   background: linear-gradient(135deg, #f59e0b, #d97706);
-  font-size: 1.55rem;
+  font-size: 1.28rem;
+  box-shadow: 0 3px 10px rgba(245, 158, 11, 0.35);
 }
 
 .dash-podium-card.podium-silver .dash-podium-avatar-letter {
   background: linear-gradient(135deg, #64748b, #475569);
+  box-shadow: 0 2px 8px rgba(100, 116, 139, 0.22);
 }
 
 .dash-podium-card.podium-bronze .dash-podium-avatar-letter {
   background: linear-gradient(135deg, #b45309, #78350f);
+  box-shadow: 0 2px 8px rgba(180, 83, 9, 0.22);
 }
 
 .dash-podium-avatar-ring {
   position: absolute;
-  inset: -4px;
+  inset: -3.5px;
   border-radius: 50%;
-  border: 2px dashed rgba(242, 101, 34, 0.4);
-  animation: rotateRing 16s linear infinite;
+  border: 1.5px dashed rgba(242, 101, 34, 0.45);
+  animation: rotateRing 14s linear infinite;
 }
 
 .dash-podium-card.podium-gold .dash-podium-avatar-ring {
-  border-color: rgba(245, 158, 11, 0.6);
+  border-color: rgba(245, 158, 11, 0.65);
 }
 
 @keyframes rotateRing {
@@ -5047,18 +5135,24 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
 }
 
 .dash-podium-name {
-  font-size: 1.05rem;
-  font-weight: 800;
+  font-size: 0.90rem;
+  font-weight: 750;
   color: var(--dash-text-main);
   margin: 0;
+  line-height: 1.25;
+}
+
+.dash-podium-card.podium-gold .dash-podium-name {
+  font-size: 0.96rem;
+  font-weight: 800;
 }
 
 .dash-podium-dept {
-  font-size: 0.76rem;
+  font-size: 0.69rem;
   color: var(--dash-text-muted);
   font-weight: 500;
 }
@@ -5066,65 +5160,83 @@
 .dash-podium-achievement-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 2px 8px;
+  gap: 3.5px;
+  font-size: 0.68rem;
+  font-weight: 650;
+  padding: 1.5px 7px;
   border-radius: 9999px;
   background: var(--dash-surface-elevated);
   color: var(--dash-text-main);
-  margin-top: 4px;
+  margin-top: 2px;
+  border: 1px solid var(--dash-card-border);
 }
 
 .dash-podium-metrics-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.76rem;
+  gap: 6px;
+  font-size: 0.71rem;
   font-weight: 650;
   color: var(--dash-text-main);
+  margin-top: 1px;
 }
 
 .dash-podium-metric {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
 }
 
 .dash-podium-sep {
   color: var(--dash-text-muted);
+  opacity: 0.6;
 }
 
 /* 3D Pedestal Step Base */
 .dash-podium-pedestal {
-  width: calc(100% + 36px);
-  margin: 8px -18px 0 -18px;
+  width: calc(100% + 28px);
+  margin: 6px -14px 0 -14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12px 12px 0 0;
-  font-weight: 900;
+  border-radius: 8px 8px 0 0;
+  font-weight: 850;
+  letter-spacing: -0.02em;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.35);
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2), inset 0 -2px 4px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.dash-podium-pedestal::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
 }
 
 .dash-podium-pedestal.step-1 {
-  height: 52px;
+  height: 32px;
   background: linear-gradient(180deg, #f59e0b, #d97706);
   color: #ffffff;
-  font-size: 1.6rem;
+  font-size: 1.15rem;
 }
 
 .dash-podium-pedestal.step-2 {
-  height: 40px;
+  height: 25px;
   background: linear-gradient(180deg, #94a3b8, #64748b);
   color: #ffffff;
-  font-size: 1.4rem;
+  font-size: 1.0rem;
 }
 
 .dash-podium-pedestal.step-3 {
-  height: 30px;
+  height: 20px;
   background: linear-gradient(180deg, #b45309, #92400e);
   color: #ffffff;
-  font-size: 1.25rem;
+  font-size: 0.92rem;
 }
 
 /* Synergy Action Strip Below Podium */
@@ -5132,45 +5244,58 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 22px;
-  border-radius: 20px;
+  padding: 10px 18px;
+  border-radius: 14px;
   background: var(--dash-surface-subtle);
   border: 1px solid var(--dash-card-border);
-  gap: 16px;
-  flex-wrap: wrap;
+  gap: 14px;
+  max-width: 860px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .dash-synergy-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   flex-wrap: wrap;
 }
 
 .dash-synergy-stat {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.84rem;
+  gap: 6px;
+  font-size: 0.78rem;
   color: var(--dash-text-main);
 }
 
 .dash-synergy-stat strong {
-  font-size: 0.96rem;
+  font-size: 0.88rem;
   font-weight: 800;
 }
 
 .dash-synergy-pulse-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+  box-shadow: 0 0 0 2.5px rgba(16, 185, 129, 0.25);
+  animation: pulseGreenDot 2s ease-in-out infinite;
+}
+
+@keyframes pulseGreenDot {
+  0%, 100% {
+    box-shadow: 0 0 0 2.5px rgba(16, 185, 129, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(16, 185, 129, 0.45);
+  }
 }
 
 .dash-synergy-divider {
   width: 1px;
-  height: 18px;
+  height: 14px;
   background: var(--dash-card-border);
 }
 
@@ -5180,11 +5305,11 @@
 .dash-btn-community-cta:active {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.85rem;
+  gap: 6px;
+  font-size: 0.78rem;
   font-weight: 700;
-  padding: 8px 18px;
-  border-radius: 12px;
+  padding: 6px 14px;
+  border-radius: 10px;
   background: var(--dash-primary, #f26522);
   color: #ffffff !important;
   text-decoration: none;
@@ -5196,7 +5321,7 @@
   background: var(--dash-primary-hover, #d9531e) !important;
   color: #ffffff !important;
   transform: translateY(-1px) translateX(2px);
-  box-shadow: 0 4px 14px rgba(242, 101, 34, 0.4);
+  box-shadow: 0 4px 12px rgba(242, 101, 34, 0.35);
 }
 
 .dash-btn-community-cta span,
