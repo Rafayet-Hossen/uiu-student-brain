@@ -1,11 +1,10 @@
 #!/bin/sh
 set -e
 
-if [ -n "$DATABASE_URL" ] || [ "$USE_SQLITE" = "true" ] || [ "$USE_SQLITE" = "True" ] || [ "$USE_SQLITE" = "1" ]; then
-    echo "ℹ️ [Entrypoint] Using DATABASE_URL or SQLite. Skipping local container PostgreSQL wait."
-else
-    echo "⏳ [Entrypoint] Waiting for PostgreSQL database at ${POSTGRES_HOST:-db}:${POSTGRES_PORT:-5432}..."
-    python << 'EOF'
+echo "⏳ [Entrypoint] Waiting for PostgreSQL database at ${POSTGRES_HOST:-db}:${POSTGRES_PORT:-5432}..."
+
+# Wait for PostgreSQL to be ready
+python << 'EOF'
 import os
 import sys
 import time
@@ -17,7 +16,7 @@ user = os.environ.get("POSTGRES_USER", "student_brain")
 password = os.environ.get("POSTGRES_PASSWORD", "rafayet150903")
 dbname = os.environ.get("POSTGRES_DB", "student_brain")
 
-max_attempts = 15
+max_attempts = 30
 attempt = 0
 
 while attempt < max_attempts:
@@ -38,9 +37,9 @@ while attempt < max_attempts:
         print(f"⏳ Waiting for database... (attempt {attempt}/{max_attempts}): {e}")
         time.sleep(1)
 
-print("⚠️ [Entrypoint] Local database check completed. Proceeding...")
+print("❌ [Entrypoint] Could not connect to database after 30 attempts. Exiting.")
+sys.exit(1)
 EOF
-fi
 
 echo "🚀 [Entrypoint] Running database migrations..."
 python manage.py migrate --noinput

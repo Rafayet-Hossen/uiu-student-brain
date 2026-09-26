@@ -18,6 +18,4 @@ dependencies = [
     "pillow>=11.0.0",
     "gunicorn>=23.0.0",
     "whitenoise>=6.8.2",
-    "pymysql>=1.1.0",
-    "cryptography>=43.0.0",
 ]

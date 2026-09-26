@@ -94,10 +94,22 @@ CORS_ALLOWED_ORIGINS = env.list(
         "http://127.0.0.1:5173",
         "http://0.0.0.0:5173",
         "http://localhost:3000",
+        "https://uiu-student-brain.onrender.com",
     ],
 )
 CORS_ALLOW_ALL_ORIGINS = env.bool("CORS_ALLOW_ALL_ORIGINS", default=True)
 CORS_ALLOW_CREDENTIALS = True
+
+CSRF_TRUSTED_ORIGINS = env.list(
+    "CSRF_TRUSTED_ORIGINS",
+    default=[
+        "https://uiu-student-brain.onrender.com",
+        "https://*.onrender.com",
+        "https://*.vercel.app",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
+)
 
 
 # ============================================================
@@ -153,13 +165,6 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 import socket
 
-# Support TiDB / MySQL connections
-try:
-    import pymysql
-    pymysql.install_as_MySQLdb()
-except ImportError:
-    pass
-
 def _can_connect_postgres(host, port):
     try:
         with socket.create_connection((host, int(port)), timeout=0.8):
@@ -167,33 +172,11 @@ def _can_connect_postgres(host, port):
     except (OSError, ValueError):
         return False
 
-_database_url = env("DATABASE_URL", default="").strip()
-_tidb_host = env("TIDB_HOST", default="").strip()
-_tidb_password = env("TIDB_PASSWORD", default="").strip()
 _pg_host = env("POSTGRES_HOST", default="localhost")
 _pg_port = env("POSTGRES_PORT", default="5432")
 _force_sqlite = env.bool("USE_SQLITE", default=False)
 
-if _database_url and "YOUR_TIDB_PASSWORD" not in _database_url:
-    DATABASES = {
-        "default": env.db("DATABASE_URL")
-    }
-elif _tidb_host and _tidb_password:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.mysql",
-            "NAME": env("TIDB_DATABASE", default="test"),
-            "USER": env("TIDB_USER", default="8iTvbQk1MzrmCrq.root"),
-            "PASSWORD": _tidb_password,
-            "HOST": _tidb_host,
-            "PORT": env.int("TIDB_PORT", default=4000),
-            "OPTIONS": {
-                "ssl": {"ssl_mode": "VERIFY_IDENTITY"},
-                "charset": "utf8mb4",
-            },
-        }
-    }
-elif not _force_sqlite and _can_connect_postgres(_pg_host, _pg_port):
+if not _force_sqlite and _can_connect_postgres(_pg_host, _pg_port):
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",

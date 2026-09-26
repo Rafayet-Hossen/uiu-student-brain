@@ -21,7 +21,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 COPY pyproject.toml uv.lock* ./
 
 # Install python dependencies into system environment
-RUN uv pip install --system --no-cache -r pyproject.toml pymysql cryptography
+RUN uv pip install --system --no-cache -r pyproject.toml
 
 # Copy project source files
 COPY . /app

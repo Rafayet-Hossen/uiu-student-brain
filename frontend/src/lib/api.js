@@ -24,12 +24,21 @@ const getApiBaseUrl = () => {
     return envUrl;
   }
   if (typeof window !== "undefined") {
+    if (
+      window.location.hostname !== "localhost" &&
+      window.location.hostname !== "127.0.0.1" &&
+      !window.location.hostname.startsWith("192.168.") &&
+      !window.location.hostname.startsWith("10.") &&
+      !window.location.hostname.startsWith("172.")
+    ) {
+      return "https://uiu-student-brain.onrender.com/api";
+    }
     if (window.location.port !== "8000" && window.location.port !== "") {
       return `${window.location.protocol}//${window.location.hostname}:8000/api`;
     }
     return "/api";
   }
-  return "http://localhost:8000/api";
+  return "https://uiu-student-brain.onrender.com/api";
 };
 
 const API_BASE_URL = getApiBaseUrl();
