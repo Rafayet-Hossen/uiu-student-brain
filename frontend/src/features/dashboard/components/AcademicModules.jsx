@@ -225,13 +225,17 @@ export default function AcademicModules({
                 <div className="dash-module-gpa-item">
                   <span className="dash-module-gpa-label">Current Standing</span>
                   <strong className="dash-module-gpa-current">
-                    {topGradePlan?.current_gpa || "3.20"} GPA
+                    {topGradePlan && Number(topGradePlan.current_gpa) > 0
+                      ? `${Number(topGradePlan.current_gpa).toFixed(2)} GPA`
+                      : "0.00 GPA"}
                   </strong>
                 </div>
                 <div className="dash-module-gpa-item right">
                   <span className="dash-module-gpa-label">Honors Goal</span>
                   <strong className="dash-module-gpa-target">
-                    🎯 {topGradePlan?.target_gpa || "3.50"} GPA
+                    🎯 {topGradePlan && Number(topGradePlan.target_gpa) > 0
+                      ? `${Number(topGradePlan.target_gpa).toFixed(2)} GPA`
+                      : "0.00 GPA"}
                   </strong>
                 </div>
               </div>
@@ -239,18 +243,32 @@ export default function AcademicModules({
                 <div
                   className="dash-module-gpa-fill"
                   style={{
-                    width: topGradePlan
-                      ? `${Math.min((topGradePlan.current_gpa / topGradePlan.target_gpa) * 100, 100)}%`
-                      : "91%",
+                    width:
+                      topGradePlan && Number(topGradePlan.target_gpa) > 0
+                        ? `${Math.min(
+                            (Number(topGradePlan.current_gpa) /
+                              Number(topGradePlan.target_gpa)) *
+                              100,
+                            100,
+                          )}%`
+                        : "0%",
                   }}
                 />
               </div>
               <div className="dash-module-gpa-footer-meta">
-                <span>Degree Honors Track</span>
-                <span className="dash-module-gpa-pct">
+                <span>
                   {topGradePlan
-                    ? `${Math.round((topGradePlan.current_gpa / topGradePlan.target_gpa) * 100)}% Achieved`
-                    : "91% Achieved"}
+                    ? `${topGradePlan.completed_credits || 0} / ${topGradePlan.total_credits || 0} Credits Done`
+                    : "0 / 0 Credits Configured"}
+                </span>
+                <span className="dash-module-gpa-pct">
+                  {topGradePlan && Number(topGradePlan.target_gpa) > 0
+                    ? `${Math.round(
+                        (Number(topGradePlan.current_gpa) /
+                          Number(topGradePlan.target_gpa)) *
+                          100,
+                      )}% Achieved`
+                    : "0% Achieved"}
                 </span>
               </div>
             </div>

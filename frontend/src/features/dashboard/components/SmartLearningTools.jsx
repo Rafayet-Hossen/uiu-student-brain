@@ -21,9 +21,37 @@ export default function SmartLearningTools({
   materials = [],
   totalExtractedTopics = 0,
   topGradePlan,
+  communityStats,
   onOpenScheduleModal,
 }) {
   const navigate = useNavigate();
+
+  const hasPlan = Boolean(topGradePlan);
+  const currentGpa =
+    hasPlan && Number(topGradePlan.current_gpa) > 0
+      ? Number(topGradePlan.current_gpa).toFixed(2)
+      : "0.00";
+  const targetGpa =
+    hasPlan && Number(topGradePlan.target_gpa) > 0
+      ? Number(topGradePlan.target_gpa).toFixed(2)
+      : "0.00";
+  const totalCredits = hasPlan ? Number(topGradePlan.total_credits || 0) : 0;
+  const completedCredits = hasPlan
+    ? Number(topGradePlan.completed_credits || 0)
+    : 0;
+  const remainingCredits = Math.max(0, totalCredits - completedCredits);
+
+  const gpaAchievedPct =
+    hasPlan && Number(topGradePlan.target_gpa) > 0
+      ? Math.min(
+          100,
+          Math.round(
+            (Number(topGradePlan.current_gpa) /
+              Number(topGradePlan.target_gpa)) *
+              100,
+          ),
+        )
+      : 0;
 
   return (
     <section className="dash-tools-section" aria-label="Smart Learning Tools">
@@ -241,7 +269,11 @@ export default function SmartLearningTools({
 
             <div className="dash-community-network-metric">
               <span className="dash-pulse-dot" />
-              <span>140+ active university peers online today</span>
+              <span>
+                {communityStats?.totalPosts > 0
+                  ? `${communityStats.totalPosts} active discussions & peer study groups`
+                  : `${communityStats?.totalParticipants || 0} active scholars on campus network`}
+              </span>
             </div>
           </div>
 
@@ -280,13 +312,13 @@ export default function SmartLearningTools({
                 <div className="dash-module-gpa-item">
                   <span className="dash-module-gpa-label">Current Standing</span>
                   <strong className="dash-module-gpa-current">
-                    {topGradePlan?.current_gpa || "3.20"} GPA
+                    {currentGpa} GPA
                   </strong>
                 </div>
                 <div className="dash-module-gpa-item right">
                   <span className="dash-module-gpa-label">Honors Goal</span>
                   <strong className="dash-module-gpa-target">
-                    🎯 {topGradePlan?.target_gpa || "3.50"} GPA
+                    🎯 {targetGpa} GPA
                   </strong>
                 </div>
               </div>
@@ -294,24 +326,34 @@ export default function SmartLearningTools({
                 <div
                   className="dash-module-gpa-fill"
                   style={{
-                    width: topGradePlan
-                      ? `${Math.min((topGradePlan.current_gpa / topGradePlan.target_gpa) * 100, 100)}%`
-                      : "91%",
+                    width: `${gpaAchievedPct}%`,
                   }}
                 />
               </div>
               <div className="dash-module-gpa-footer-meta">
-                <span>Degree Honors Track</span>
+                <span>
+                  {hasPlan
+                    ? `${completedCredits} / ${totalCredits} Credits Done`
+                    : "0 / 0 Credits Configured"}
+                </span>
                 <span className="dash-module-gpa-pct">
-                  {topGradePlan
-                    ? `${Math.round((topGradePlan.current_gpa / topGradePlan.target_gpa) * 100)}% Achieved`
-                    : "91% Achieved"}
+                  {gpaAchievedPct}% Achieved
                 </span>
               </div>
             </div>
 
             <div className="dash-gpa-target-hint">
-              <span>Target pacing: <strong>{topGradePlan?.target_gpa ? `${topGradePlan.target_gpa} GPA` : "3.50+ GPA"}</strong> on remaining credits</span>
+              <span>
+                {hasPlan ? (
+                  <>
+                    Target pacing: <strong>{targetGpa} GPA</strong> on {remainingCredits} remaining credits
+                  </>
+                ) : (
+                  <>
+                    Target pacing: <strong>0.00 GPA</strong> • Set degree target in Grade Planner
+                  </>
+                )}
+              </span>
             </div>
           </div>
 

@@ -7,7 +7,7 @@ import { getMaterials } from "../materials/api";
 import { getSchedules } from "../planner/api";
 import ScheduleDetailModal from "../planner/components/ScheduleDetailModal";
 import { getStreakSummary, getStudySessions } from "../tracker/api";
-import { getLeaderboard } from "../community/api";
+import { getLeaderboard, getPosts } from "../community/api";
 
 // Storytelling Academic Command Center Components
 import HeroSection from "./components/HeroSection";
@@ -89,6 +89,7 @@ export default function DashboardPage() {
   const [materials, setMaterials] = useState([]);
   const [streakData, setStreakData] = useState(null);
   const [leaderboard, setLeaderboard] = useState([]);
+  const [communityPosts, setCommunityPosts] = useState([]);
   const [quoteIndex, setQuoteIndex] = useState(0);
   const [flowDayOffset, setFlowDayOffset] = useState(0); // 0 = Today, 1 = Yesterday, 2 = 2 days ago, 3 = 3 days ago
   const [selectedScheduleModal, setSelectedScheduleModal] = useState(null);
@@ -120,6 +121,7 @@ export default function DashboardPage() {
           streakRes,
           materialsRes,
           leaderboardRes,
+          postsRes,
         ] = await Promise.allSettled([
           getSchedules(),
           getGradePlans(),
@@ -127,6 +129,7 @@ export default function DashboardPage() {
           getStreakSummary(),
           getMaterials(),
           getLeaderboard("weekly"),
+          getPosts(),
         ]);
 
         if (schedulesRes.status === "fulfilled")
@@ -141,6 +144,8 @@ export default function DashboardPage() {
           setMaterials(materialsRes.value || []);
         if (leaderboardRes.status === "fulfilled")
           setLeaderboard(leaderboardRes.value || []);
+        if (postsRes.status === "fulfilled")
+          setCommunityPosts(postsRes.value || []);
       } catch (err) {
         console.error("Error loading dashboard data:", err);
       } finally {
@@ -361,10 +366,56 @@ export default function DashboardPage() {
   const dayHours = Math.floor(dayTotalMinutes / 60);
   const dayMins = dayTotalMinutes % 60;
 
-  // Calculate weekly progress percentage (based on last 7 days vs 10h target)
-  const weeklyHours = Math.min(10, totalStudyMinutes / 60).toFixed(1);
-  const weeklyPercent =
-    Math.min(100, Math.round((parseFloat(weeklyHours) / 10) * 100)) || 84;
+  // Fully Dynamic Weekly Progress (Last 7 days vs User's configured daily target * 7)
+  const targetWeeklyHours = useMemo(() => {
+    const dailyMins = Number(user?.target_daily_minutes) || 60;
+    return Number(((dailyMins * 7) / 60).toFixed(1));
+  }, [user]);
+
+  const { weeklyHours, weeklyPercent } = useMemo(() => {
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 6);
+    oneWeekAgo.setHours(0, 0, 0, 0);
+
+    const weeklyMins = sessions.reduce((acc, s) => {
+      const sDate = new Date(s.session_date || s.created_at);
+      if (!isNaN(sDate.getTime()) && sDate >= oneWeekAgo) {
+        return acc + Number(s.duration_minutes || 0);
+      }
+      return acc;
+    }, 0);
+
+    const hours = (weeklyMins / 60).toFixed(1);
+    const pct = targetWeeklyHours > 0
+      ? Math.min(100, Math.round((Number(hours) / targetWeeklyHours) * 100))
+      : 0;
+
+    return { weeklyHours: hours, weeklyPercent: pct };
+  }, [sessions, targetWeeklyHours]);
+
+  // Fully Dynamic Community Stats (No demo data)
+  const communityStats = useMemo(() => {
+    const todayStr = currentTick.toISOString().split("T")[0];
+    const todaySessionsCount = sessions.filter(
+      (s) =>
+        s.session_date === todayStr ||
+        (s.created_at && s.created_at.slice(0, 10) === todayStr),
+    ).length;
+
+    const totalPosts = communityPosts.length;
+    const solvedPosts = communityPosts.filter((p) => p.is_solved).length;
+    const rankings = Array.isArray(leaderboard)
+      ? leaderboard
+      : leaderboard?.rankings || [];
+    const totalParticipants = leaderboard?.total_participants || rankings.length;
+
+    return {
+      todaySessionsCount,
+      totalPosts,
+      solvedPosts,
+      totalParticipants,
+    };
+  }, [sessions, currentTick, communityPosts, leaderboard]);
 
   return (
     <div className="app-screen">
@@ -387,6 +438,7 @@ export default function DashboardPage() {
             currentStreak={currentStreak}
             totalExtractedTopics={totalExtractedTopics}
             weeklyPercent={weeklyPercent}
+            targetWeeklyHours={targetWeeklyHours}
             todayClasses={todayClasses}
           />
 
@@ -414,6 +466,8 @@ export default function DashboardPage() {
             onOpenScheduleModal={(routine) => setSelectedScheduleModal(routine)}
             todayMinutes={todayMinutes}
             weeklyHours={weeklyHours}
+            targetWeeklyHours={targetWeeklyHours}
+            targetDailyMinutes={Number(user?.target_daily_minutes) || 60}
             weeklyPercent={weeklyPercent}
             schedules={schedules}
             todayWeekdayName={todayWeekdayName}
@@ -432,6 +486,7 @@ export default function DashboardPage() {
             materials={materials}
             totalExtractedTopics={totalExtractedTopics}
             topGradePlan={topGradePlan}
+            communityStats={communityStats}
             onOpenScheduleModal={(routine) => setSelectedScheduleModal(routine)}
           />
 
@@ -444,7 +499,10 @@ export default function DashboardPage() {
           />
 
           {/* Section 6 — Community Momentum: Top 3 Scholar Champions Podium */}
-          <CommunityMomentum leaderboard={leaderboard} />
+          <CommunityMomentum
+            leaderboard={leaderboard}
+            communityStats={communityStats}
+          />
         </div>
 
         {/* Schedule Detail Modal when viewing from Dashboard */}

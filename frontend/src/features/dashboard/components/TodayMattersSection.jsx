@@ -18,6 +18,8 @@ export default function TodayMattersSection({
   onOpenScheduleModal,
   todayMinutes,
   weeklyHours,
+  targetWeeklyHours = 10,
+  targetDailyMinutes = 60,
   weeklyPercent,
   schedules,
   todayWeekdayName,
@@ -62,12 +64,16 @@ export default function TodayMattersSection({
         <div className="dash-today-right-col">
           <div className="dash-today-dual-rings">
             {/* Daily Challenge Gamified Ring */}
-            <DailyChallenge todayMinutes={todayMinutes} targetMinutes={45} xpReward={80} />
+            <DailyChallenge
+              todayMinutes={todayMinutes}
+              targetMinutes={targetDailyMinutes}
+              xpReward={80}
+            />
 
             {/* Weekly Progress Ring */}
             <WeeklyRing
               weeklyHours={weeklyHours}
-              targetWeeklyHours={10}
+              targetWeeklyHours={targetWeeklyHours}
               weeklyPercent={weeklyPercent}
             />
           </div>

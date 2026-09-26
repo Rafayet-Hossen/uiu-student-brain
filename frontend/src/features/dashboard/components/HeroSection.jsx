@@ -19,16 +19,13 @@ export default function HeroSection({
   topGradePlan,
   currentStreak = 0,
   totalExtractedTopics = 0,
-  weeklyPercent = 84,
+  weeklyPercent = 0,
+  targetWeeklyHours = 10,
   todayClasses = [],
 }) {
   const navigate = useNavigate();
 
-  const nextClass = todayClasses[0] || {
-    subject: "Database Systems",
-    start_time: "09:42",
-    end_time: "10:43",
-  };
+  const nextClass = todayClasses && todayClasses.length > 0 ? todayClasses[0] : null;
 
   return (
     <motion.section
@@ -272,7 +269,9 @@ export default function HeroSection({
                 <span className="dash-float-badge-pill orange">🎯 Goal</span>
               </div>
               <strong className="dash-float-value">
-                {topGradePlan ? `${topGradePlan.target_gpa} GPA` : "3.85 GPA"}
+                {topGradePlan && Number(topGradePlan.target_gpa) > 0
+                  ? `${Number(topGradePlan.target_gpa).toFixed(2)} GPA`
+                  : "0.00 GPA"}
               </strong>
             </div>
           </motion.div>
@@ -295,7 +294,7 @@ export default function HeroSection({
                 <span className="dash-float-badge-pill emerald">✨ Synced</span>
               </div>
               <strong className="dash-float-value text-emerald">
-                {totalExtractedTopics > 0 ? `${totalExtractedTopics} Topics` : "AI Syllabus"}
+                {totalExtractedTopics > 0 ? `${totalExtractedTopics} Topics` : "0 Topics"}
               </strong>
             </div>
           </motion.div>
@@ -320,7 +319,7 @@ export default function HeroSection({
                   style={{ width: `${Math.min(100, Math.max(0, weeklyPercent))}%` }}
                 />
               </div>
-              <span className="dash-float-subtext">Goal: 10 hrs / week</span>
+              <span className="dash-float-subtext">Goal: {targetWeeklyHours} hrs / week</span>
             </div>
           </motion.div>
 
@@ -342,7 +341,7 @@ export default function HeroSection({
                 <span className="dash-float-badge-pill amber">🔥 Habit</span>
               </div>
               <strong className="dash-float-value text-amber">
-                {currentStreak > 0 ? `${currentStreak} Days` : "Streak Ready"}
+                {currentStreak > 0 ? `${currentStreak} Days` : "0 Days"}
               </strong>
             </div>
           </motion.div>
@@ -360,16 +359,33 @@ export default function HeroSection({
               <Clock size={18} />
             </div>
             <div className="dash-float-info">
-              <div className="dash-float-header-row">
-                <span className="dash-float-label">Next Class</span>
-                <span className="dash-float-badge-pill orange">Upcoming</span>
-              </div>
-              <strong className="dash-float-value-compact">
-                {nextClass.subject || "Course Lecture"}
-              </strong>
-              <span className="dash-float-subtext">
-                {nextClass.start_time?.slice(0, 5)} - {nextClass.end_time?.slice(0, 5)}
-              </span>
+              {nextClass ? (
+                <>
+                  <div className="dash-float-header-row">
+                    <span className="dash-float-label">Next Class</span>
+                    <span className="dash-float-badge-pill orange">Upcoming</span>
+                  </div>
+                  <strong className="dash-float-value-compact">
+                    {nextClass.subject || "Course Lecture"}
+                  </strong>
+                  <span className="dash-float-subtext">
+                    {nextClass.start_time?.slice(0, 5)} - {nextClass.end_time?.slice(0, 5)}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <div className="dash-float-header-row">
+                    <span className="dash-float-label">Classes Today</span>
+                    <span className="dash-float-badge-pill emerald">Clear</span>
+                  </div>
+                  <strong className="dash-float-value-compact">
+                    No Lectures Today
+                  </strong>
+                  <span className="dash-float-subtext">
+                    Schedule is open
+                  </span>
+                </>
+              )}
             </div>
           </motion.div>
         </motion.div>

@@ -36,13 +36,13 @@ export default function KPIGrid({
   const streakProgress = Math.min(100, Math.round((currentStreak / 7) * 100));
 
   // Calculate GPA completion if available
-  const gpaCurrent = topGradePlan
-    ? parseFloat(topGradePlan.current_gpa) || 0
-    : 3.8;
-  const gpaTarget = topGradePlan
-    ? parseFloat(topGradePlan.target_gpa) || 4.0
-    : 4.0;
-  const gpaProgress = Math.min(100, Math.round((gpaCurrent / gpaTarget) * 100));
+  const hasPlan = Boolean(topGradePlan);
+  const gpaCurrent = hasPlan ? parseFloat(topGradePlan.current_gpa) || 0 : 0;
+  const gpaTarget = hasPlan ? parseFloat(topGradePlan.target_gpa) || 0 : 0;
+  const gpaProgress =
+    gpaTarget > 0
+      ? Math.min(100, Math.round((gpaCurrent / gpaTarget) * 100))
+      : 0;
 
   // Materials progress
   const materialProgress = Math.min(100, Math.max(10, materialsCount * 12));
@@ -90,20 +90,22 @@ export default function KPIGrid({
         icon={Target}
         variant="kpi-amber"
         value={
-          topGradePlan ? Number(topGradePlan.target_gpa).toFixed(2) : "3.80"
+          hasPlan && gpaTarget > 0
+            ? Number(topGradePlan.target_gpa).toFixed(2)
+            : "0.00"
         }
         trend={
-          topGradePlan
+          hasPlan && gpaCurrent > 0
             ? `CGPA: ${Number(topGradePlan.current_gpa).toFixed(2)}`
-            : "Target Honors"
+            : "No degree plan set"
         }
         trendColor="text-amber bg-amber-subtle"
         progressPercent={gpaProgress}
         progressColor="bg-amber"
         subtext={
-          topGradePlan
-            ? `${topGradePlan.completed_credits}/${topGradePlan.total_credits} credits done`
-            : "Grade projection calculator"
+          hasPlan
+            ? `${topGradePlan.completed_credits || 0}/${topGradePlan.total_credits || 0} credits done`
+            : "0 / 0 credits configured"
         }
         iconBg="bg-amber-subtle text-amber"
         onClick={() => navigate("/grades")}

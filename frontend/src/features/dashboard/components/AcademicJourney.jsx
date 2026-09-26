@@ -10,8 +10,15 @@ export default function AcademicJourney({
   materialsCount = 0,
   totalExtractedTopics = 0,
 }) {
-  const targetGpa = topGradePlan?.target_gpa || "3.85";
-  const currentGpa = topGradePlan?.current_gpa || "3.20";
+  const hasPlan = Boolean(topGradePlan);
+  const targetGpa =
+    hasPlan && Number(topGradePlan.target_gpa) > 0
+      ? Number(topGradePlan.target_gpa).toFixed(2)
+      : "0.00";
+  const currentGpa =
+    hasPlan && Number(topGradePlan.current_gpa) > 0
+      ? Number(topGradePlan.current_gpa).toFixed(2)
+      : "0.00";
 
   const milestones = [
     {
@@ -38,8 +45,8 @@ export default function AcademicJourney({
       id: "gpa",
       title: "Honors Projection",
       stat: `${targetGpa} GPA`,
-      sub: `Current: ${currentGpa} GPA`,
-      badge: "Target Degree",
+      sub: hasPlan ? `Current: ${currentGpa} GPA` : "No degree plan configured",
+      badge: hasPlan ? "Target Degree" : "Set Target",
       icon: GraduationCap,
       color: "emerald",
       link: "/grades",

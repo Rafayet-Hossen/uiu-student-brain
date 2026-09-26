@@ -2,9 +2,9 @@ import { Target, TrendingUp, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function WeeklyRing({
-  weeklyHours = 8.4,
+  weeklyHours = "0.0",
   targetWeeklyHours = 10,
-  weeklyPercent = 84,
+  weeklyPercent = 0,
 }) {
   const radius = 34;
   const circ = 2 * Math.PI * radius;
@@ -84,7 +84,7 @@ export default function WeeklyRing({
                 {weeklyHours}h / {targetWeeklyHours}h Logged
               </h4>
               <p className="dash-challenge-subcopy">
-                {(targetWeeklyHours - weeklyHours).toFixed(1)}h remaining to hit this week's honors target.
+                {Math.max(0, Number(targetWeeklyHours) - Number(weeklyHours)).toFixed(1)}h remaining to hit this week's honors target.
               </p>
             </div>
           )}

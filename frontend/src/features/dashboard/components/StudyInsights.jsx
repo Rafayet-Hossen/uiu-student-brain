@@ -22,10 +22,10 @@ export default function StudyInsights({
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Map sessions of last 7 days
+    // Map sessions of current week
     const result = days.map((dayName, idx) => {
-      // Find date for that day in the current week
-      const currentDayIdx = (today.getDay() + 6) % 7; // 0=Mon, 6=Sun
+      // Find date for that day in the current week (0=Mon, 6=Sun)
+      const currentDayIdx = (today.getDay() + 6) % 7;
       const diff = idx - currentDayIdx;
       const targetDate = new Date(today);
       targetDate.setDate(today.getDate() + diff);
@@ -50,10 +50,12 @@ export default function StudyInsights({
     });
 
     const maxMins = Math.max(...result.map((d) => d.minutes), 60); // minimum 60m scale
-    return { days: result, maxMins };
+    const totalWeekMins = result.reduce((acc, d) => acc + d.minutes, 0);
+    const activeDaysCount = result.filter((d) => d.minutes > 0).length;
+    return { days: result, maxMins, totalWeekMins, activeDaysCount };
   }, [sessions]);
 
-  // 2. Subject Distribution breakdown
+  // 2. Subject Distribution breakdown (Pure dynamic from real sessions, no dummy fillers)
   const subjectDistribution = useMemo(() => {
     const subjectMins = {};
     let totalMins = 0;
@@ -66,22 +68,6 @@ export default function StudyInsights({
       totalMins += mins;
     });
 
-    // If no sessions, use schedules as placeholder distribution
-    if (totalMins === 0 && schedules.length > 0) {
-      schedules.slice(0, 4).forEach((sch, idx) => {
-        const pseudoMins = (4 - idx) * 45;
-        subjectMins[sch.subject] = pseudoMins;
-        totalMins += pseudoMins;
-      });
-    }
-
-    const colors = [
-      { bg: "linear-gradient(90deg, #f26522, #ea580c)", text: "#f26522" },
-      { bg: "linear-gradient(90deg, #10b981, #059669)", text: "#059669" },
-      { bg: "linear-gradient(90deg, #f59e0b, #d97706)", text: "#d97706" },
-      { bg: "linear-gradient(90deg, #ec4899, #db2777)", text: "#db2777" },
-    ];
-
     const sorted = Object.entries(subjectMins)
       .map(([name, mins]) => ({
         name,
@@ -93,20 +79,29 @@ export default function StudyInsights({
       .slice(0, 4);
 
     return { subjects: sorted, totalMins };
-  }, [sessions, schedules]);
+  }, [sessions]);
 
-  // 3. Dynamic Productivity Score (0 to 100)
+  // 3. Dynamic Productivity Score (0 to 100 based entirely on real user progress)
   const productivityScore = useMemo(() => {
-    let score = 50; // baseline
-    if (parseFloat(totalHours) > 5) score += 20;
-    else if (parseFloat(totalHours) > 2) score += 10;
+    const hours = parseFloat(totalHours) || 0;
+    if (sessions.length === 0 && hours === 0 && currentStreak === 0) {
+      return 0;
+    }
+    let score = 20; // baseline if there is logged activity
+    if (hours > 10) score += 35;
+    else if (hours > 5) score += 25;
+    else if (hours > 2) score += 15;
+    else if (hours > 0) score += 8;
 
-    if (currentStreak >= 7) score += 20;
-    else if (currentStreak >= 3) score += 12;
-    else if (currentStreak > 0) score += 6;
+    if (currentStreak >= 7) score += 25;
+    else if (currentStreak >= 3) score += 15;
+    else if (currentStreak > 0) score += 8;
 
-    if (sessions.length >= 5) score += 10;
-    return Math.min(98, score);
+    if (sessions.length >= 10) score += 20;
+    else if (sessions.length >= 5) score += 12;
+    else if (sessions.length > 0) score += 6;
+
+    return Math.min(100, score);
   }, [totalHours, currentStreak, sessions]);
 
   return (
@@ -153,20 +148,27 @@ export default function StudyInsights({
 
           <div className="dash-bar-chart-container">
             {weeklyTrendData.days.map((item, idx) => {
-              const heightPct = Math.max(
-                8,
-                Math.round((item.minutes / weeklyTrendData.maxMins) * 100),
-              );
+              const heightPct =
+                item.minutes > 0
+                  ? Math.max(
+                      12,
+                      Math.round(
+                        (item.minutes / weeklyTrendData.maxMins) * 100,
+                      ),
+                    )
+                  : 0;
               return (
                 <div key={idx} className="dash-bar-col">
                   <div className="dash-bar-track">
-                    <motion.div
-                      initial={{ height: 0 }}
-                      animate={{ height: `${heightPct}%` }}
-                      transition={{ duration: 0.6, delay: idx * 0.08 }}
-                      className={`dash-bar-fill ${item.isToday ? "active-today" : ""}`}
-                      title={`${item.day} (${item.date}): ${item.minutes} mins`}
-                    />
+                    {heightPct > 0 && (
+                      <motion.div
+                        initial={{ height: 0 }}
+                        animate={{ height: `${heightPct}%` }}
+                        transition={{ duration: 0.6, delay: idx * 0.08 }}
+                        className={`dash-bar-fill ${item.isToday ? "active-today" : ""}`}
+                        title={`${item.day} (${item.date}): ${item.minutes} mins`}
+                      />
+                    )}
                   </div>
                   <span
                     className={`dash-bar-day-lbl ${item.isToday ? "is-today" : ""}`}
@@ -179,7 +181,11 @@ export default function StudyInsights({
           </div>
 
           <div className="dash-analytics-footer-summary">
-            <span>Daily focus minutes across the active learning week</span>
+            <span>
+              {weeklyTrendData.totalWeekMins > 0
+                ? `${(weeklyTrendData.totalWeekMins / 60).toFixed(1)}h focus logged across ${weeklyTrendData.activeDaysCount} active ${weeklyTrendData.activeDaysCount === 1 ? "day" : "days"} this week`
+                : "0.0h focus logged this week • Complete focus blocks to build weekly trend"}
+            </span>
           </div>
         </motion.div>
 
@@ -223,14 +229,18 @@ export default function StudyInsights({
                 </div>
               ))
             ) : (
-              <div className="dash-dist-empty">
-                <span>Start logging sessions to see subject distribution</span>
+              <div className="dash-dist-empty py-4 text-center text-muted text-xs">
+                <span>No study sessions logged yet. Complete focus blocks to see subject breakdown.</span>
               </div>
             )}
           </div>
 
           <div className="dash-analytics-footer-summary">
-            <span>Balancing high-difficulty coursework with core subjects</span>
+            <span>
+              {subjectDistribution.totalMins > 0
+                ? "Balancing high-difficulty coursework with core subjects"
+                : "Log study sessions to analyze your curriculum balance"}
+            </span>
           </div>
         </motion.div>
 
@@ -301,11 +311,24 @@ export default function StudyInsights({
             <div className="dash-prod-verdict">
               <span className="dash-prod-badge">
                 <CheckCircle2 size={13} />
-                <span>Exceptional Velocity</span>
+                <span>
+                  {productivityScore === 0
+                    ? "Ready to Ignite"
+                    : productivityScore >= 80
+                      ? "Exceptional Velocity"
+                      : productivityScore >= 50
+                        ? "Steady Momentum"
+                        : "Igniting Habits"}
+                </span>
               </span>
               <p className="dash-prod-sub">
-                Your study habits place you in the top 8% of focused learners
-                this semester.
+                {productivityScore === 0
+                  ? "Start your first study session to calculate your academic momentum score."
+                  : productivityScore >= 80
+                    ? "Your study habits place you in the top tier of consistent learners this semester."
+                    : productivityScore >= 50
+                      ? "Solid study consistency. Continue daily sprints to elevate your honors score."
+                      : "Great start! Keep logging daily sessions to build high-yield habit momentum."}
               </p>
             </div>
           </div>

@@ -608,17 +608,6 @@ export default function MaterialsPage() {
           </button>
         </div>
       )}
-      {successMsg && (
-        <div className="alert-banner alert-banner-success mb-4">
-          <span>{successMsg}</span>
-          <button
-            className="alert-dismiss-btn"
-            onClick={() => setSuccessMsg("")}
-          >
-            ✕
-          </button>
-        </div>
-      )}
 
       {/* Main 2-Column Workspace Grid */}
       <div className="materials-workspace-grid">
