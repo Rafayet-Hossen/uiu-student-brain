@@ -64,14 +64,6 @@ class PostReactionToggleView(APIView):
         return Response(result, status=status.HTTP_200_OK)
 
 
-class PostShareView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, pk):
-        result = services.record_post_share(user=request.user, post_id=pk)
-        return Response(result, status=status.HTTP_200_OK)
-
-
 class CommentListCreateView(generics.ListCreateAPIView):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated]

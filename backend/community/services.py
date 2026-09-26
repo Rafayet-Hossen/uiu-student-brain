@@ -89,25 +89,6 @@ def toggle_post_reaction(*, user, post: Post) -> dict:
     return {"liked": liked, "likes_count": likes_count}
 
 
-def record_post_share(*, user, post_id: int) -> dict:
-    post = Post.objects.select_related("author").get(id=post_id)
-    if post.author != user:
-        try:
-            from accounts.models import create_user_notification
-            create_user_notification(
-                recipient=post.author,
-                sender=user,
-                category="reaction",
-                title=f"🔗 {user.full_name or 'A classmate'} shared your post",
-                message=f"{user.full_name or 'Someone'} shared your discussion \"{post.title[:45]}\"!",
-                link="/community?tab=posts",
-                metadata={"post_id": post.id, "dedup_key": f"share_{post.id}_{user.id}_{date.today()}"},
-            )
-        except Exception:
-            pass
-    return {"shared": True, "post_id": post.id}
-
-
 # ============================================================
 # COMMENT SERVICES
 # ============================================================
@@ -188,21 +169,7 @@ def list_upcoming_events(*, user) -> QuerySet[StudyEvent]:
 
 
 def create_study_event(*, user, validated_data: dict) -> StudyEvent:
-    event = StudyEvent.objects.create(creator=user, **validated_data)
-    try:
-        from accounts.models import create_user_notification
-        create_user_notification(
-            recipient=user,
-            sender=user,
-            category="event",
-            title=f"📅 Study Event Published: {event.title[:35]}",
-            message=f"Your study meetup has been created for {event.event_date} ({event.start_time.strftime('%I:%M %p')} - {event.end_time.strftime('%I:%M %p')}). Peers can now RSVP!",
-            link="/community?tab=events",
-            metadata={"event_id": event.id, "dedup_key": f"event_create_{event.id}"},
-        )
-    except Exception:
-        pass
-    return event
+    return StudyEvent.objects.create(creator=user, **validated_data)
 
 
 def delete_study_event(*, event_id: int, user) -> None:
@@ -224,14 +191,6 @@ def toggle_event_rsvp(*, user, event_id: int, status: str = "going") -> dict:
     rsvp = EventRSVP.objects.filter(event=event, user=user).first()
 
     norm_status = "interested" if str(status).lower() == "interested" else "going"
-    max_cap = event.max_participants or 30
-
-    # If user wants to be "going", check capacity
-    if norm_status == "going":
-        current_going = EventRSVP.objects.filter(event=event, status="going").exclude(user=user).count()
-        if current_going >= max_cap:
-            # Capacity full! Downgrade to interested
-            norm_status = "interested"
 
     if rsvp:
         if rsvp.status == norm_status:
@@ -275,48 +234,18 @@ def toggle_event_rsvp(*, user, event_id: int, status: str = "going") -> dict:
         import logging
         logging.getLogger(__name__).warning("Failed to sync event to planner schedule: %s", e)
 
-    # 1. Notify the Event Creator
-    if user_rsvp_status and event.creator != user:
+    if user_rsvp_status == "going" and event.creator != user:
         try:
             from accounts.models import create_user_notification
-            status_text = "Going" if user_rsvp_status == "going" else "Interested in"
-            emoji = "🎟️" if user_rsvp_status == "going" else "⭐"
             create_user_notification(
                 recipient=event.creator,
                 sender=user,
                 category="event",
-                title=f"{emoji} {user.full_name or 'A student'} is {status_text} your event",
-                message=f"{user.full_name or 'A peer'} marked '{status_text}' for your study meetup '{event.title[:35]}' on {event.event_date}.",
-                link="/community?tab=events",
-                metadata={"event_id": event.id, "dedup_key": f"rsvp_creator_{event.id}_{user.id}_{user_rsvp_status}"},
+                title=f"📅 New RSVP for '{event.title[:35]}'",
+                message=f"{user.full_name or 'A student'} RSVP'd 'Going' to your study event scheduled for {event.event_date}.",
+                link="/community",
+                metadata={"event_id": event.id, "dedup_key": f"rsvp_{event.id}_{user.id}"},
             )
-        except Exception:
-            pass
-
-    # 2. Notify the User (RSVP Confirmation)
-    if user_rsvp_status:
-        try:
-            from accounts.models import create_user_notification
-            if user_rsvp_status == "going":
-                create_user_notification(
-                    recipient=user,
-                    sender=event.creator,
-                    category="event",
-                    title=f"✅ RSVP Confirmed: {event.title[:35]}",
-                    message=f"You are confirmed as Going for '{event.title}' on {event.event_date} at {event.location}. Synced to your Study Planner!",
-                    link="/community?tab=events",
-                    metadata={"event_id": event.id, "dedup_key": f"rsvp_user_{event.id}_{user.id}_going"},
-                )
-            else:
-                create_user_notification(
-                    recipient=user,
-                    sender=event.creator,
-                    category="event",
-                    title=f"⭐ Event Bookmarked: {event.title[:35]}",
-                    message=f"You marked Interest for '{event.title}' on {event.event_date}. We'll keep you updated!",
-                    link="/community?tab=events",
-                    metadata={"event_id": event.id, "dedup_key": f"rsvp_user_{event.id}_{user.id}_int"},
-                )
         except Exception:
             pass
 
@@ -329,7 +258,6 @@ def toggle_event_rsvp(*, user, event_id: int, status: str = "going") -> dict:
         "interested_count": interested_count,
         "rsvp_count": going_count + interested_count,
         "rsvps_count": going_count + interested_count,
-        "is_full": going_count >= max_cap,
     }
 
 
@@ -367,19 +295,6 @@ def toggle_follow_student(*, follower, target_user_id: int) -> dict:
     else:
         Follow.objects.create(follower=follower, following=target_user)
         following = True
-        try:
-            from accounts.models import create_user_notification
-            create_user_notification(
-                recipient=target_user,
-                sender=follower,
-                category="follow",
-                title=f"👤 {follower.full_name or 'A classmate'} started following you",
-                message=f"{follower.full_name or 'Someone'} is now following your academic journey and study streaks!",
-                link="/community?tab=network",
-                metadata={"user_id": follower.id, "dedup_key": f"follow_{follower.id}_{target_user.id}"},
-            )
-        except Exception:
-            pass
 
     followers_count = Follow.objects.filter(following=target_user).count()
     return {"following": following, "followers_count": followers_count}

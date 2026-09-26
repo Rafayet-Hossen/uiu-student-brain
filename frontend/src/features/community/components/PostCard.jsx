@@ -44,7 +44,6 @@ import {
   extractCommunityErrorMessage,
   getComments,
   markCommentHelpful,
-  sharePost,
   togglePostReaction,
   updatePost,
 } from "../api";
@@ -723,11 +722,6 @@ export default function PostCard({ post, onDeleted, onUpdated }) {
           .slice(0, 140)
           .trim()
       : "Check out this discussion on Student Brain!";
-
-    // Trigger backend share tracking and author notification
-    try {
-      sharePost(currentPost.id).catch(() => {});
-    } catch (_) {}
 
     // Direct Native Web Share (opens native Windows Share Sheet / mobile sheet)
     if (

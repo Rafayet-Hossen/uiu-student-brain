@@ -57,10 +57,8 @@ export default function EventCard({ event, onToggleRSVP, onDeleted }) {
 
   const isCreator = user?.id === event.creator?.id;
 
-  // Max capacity for university study sessions (dynamic from event)
-  const maxCapacity = Number(event?.max_participants) || 30;
-  const isFull = goingCount >= maxCapacity;
-  const isGoingDisabled = isFull && userStatus !== "going";
+  // Max capacity for university study sessions
+  const maxCapacity = 30;
 
   async function handleToggleStatus(targetStatus) {
     if (loading) return;
@@ -302,26 +300,18 @@ export default function EventCard({ event, onToggleRSVP, onDeleted }) {
               <div className="event-fb-actions-row">
                 <motion.button
                   type="button"
-                  whileTap={!isGoingDisabled ? { scale: 0.95 } : {}}
-                  className={`event-fb-btn event-btn-going ${userStatus === "going" ? "is-active" : ""} ${isGoingDisabled ? "is-full-disabled" : ""}`}
-                  onClick={() => !isGoingDisabled && handleToggleStatus("going")}
-                  disabled={loading || isGoingDisabled}
+                  whileTap={{ scale: 0.95 }}
+                  className={`event-fb-btn event-btn-going ${userStatus === "going" ? "is-active" : ""}`}
+                  onClick={() => handleToggleStatus("going")}
+                  disabled={loading}
                   title={
                     userStatus === "going"
                       ? "You are going (Click to remove)"
-                      : isGoingDisabled
-                        ? "Event is full! You can still mark Interested."
-                        : "Mark as Going"
+                      : "Mark as Going"
                   }
                 >
                   <CheckCircle2 size={15} />
-                  <span>
-                    {userStatus === "going"
-                      ? "Going ✓"
-                      : isGoingDisabled
-                        ? "Full (0 seats)"
-                        : "Going"}
-                  </span>
+                  <span>{userStatus === "going" ? "Going ✓" : "Going"}</span>
                 </motion.button>
 
                 <motion.button

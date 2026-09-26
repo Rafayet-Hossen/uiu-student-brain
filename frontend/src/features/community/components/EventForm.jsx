@@ -13,7 +13,6 @@ export default function EventForm({ onSubmit, onCreated, onCancel }) {
   const [endTime, setEndTime] = useState("16:00");
   const [eventType, setEventType] = useState("offline"); // "offline" | "online"
   const [location, setLocation] = useState("");
-  const [maxParticipants, setMaxParticipants] = useState(30);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -62,7 +61,6 @@ export default function EventForm({ onSubmit, onCreated, onCancel }) {
         start_time: startTime,
         end_time: endTime,
         location: finalLocation,
-        max_participants: Number(maxParticipants) > 0 ? Number(maxParticipants) : 30,
       };
 
       if (onSubmit) {
@@ -240,51 +238,6 @@ export default function EventForm({ onSubmit, onCreated, onCancel }) {
         disabled={loading}
         required
       />
-
-      <div className="form-group" style={{ marginBottom: "16px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-          <label className="form-label" style={{ fontWeight: 600, margin: 0 }}>
-            👥 Participant Capacity Limit (Seats)
-          </label>
-          <span style={{ fontSize: "0.8rem", color: "var(--color-primary)", fontWeight: 700 }}>
-            {maxParticipants} Max Attendees
-          </span>
-        </div>
-        
-        <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "8px" }}>
-          {[5, 10, 15, 20, 30, 50].map((preset) => (
-            <button
-              key={preset}
-              type="button"
-              onClick={() => setMaxParticipants(preset)}
-              className={`event-preset-pill ${maxParticipants === preset ? "pill-active" : ""}`}
-              style={{
-                padding: "4px 10px",
-                fontSize: "0.78rem",
-                borderRadius: "6px",
-                border: maxParticipants === preset ? "1px solid var(--color-primary)" : "1px solid var(--color-border)",
-                background: maxParticipants === preset ? "var(--color-primary-subtle)" : "var(--color-surface)",
-                color: maxParticipants === preset ? "var(--color-primary)" : "var(--color-text-muted)",
-                fontWeight: 600,
-                cursor: "pointer",
-              }}
-            >
-              {preset} Seats
-            </button>
-          ))}
-        </div>
-
-        <Input
-          type="number"
-          min="1"
-          max="500"
-          value={maxParticipants}
-          onChange={(e) => setMaxParticipants(Math.max(1, parseInt(e.target.value) || 1))}
-          placeholder="Custom capacity (e.g. 25)"
-          disabled={loading}
-          required
-        />
-      </div>
 
       <div className="form-group">
         <label className="form-label">Description & Agenda (Optional)</label>
