@@ -822,11 +822,11 @@ export default function PostCard({ post, onDeleted, onUpdated }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 14 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -3 }}
-      transition={{ duration: 0.24, ease: "easeOut" }}
-      className="premium-social-post-card-wrapper"
+      transition={{ duration: 0.22, ease: "easeOut" }}
+      style={{ marginBottom: "20px" }}
       id={`post-${currentPost.id}`}
     >
       <Card
