@@ -261,7 +261,14 @@ _pg_host = env("POSTGRES_HOST", default="localhost")
 _pg_port = env("POSTGRES_PORT", default="5432")
 _force_sqlite = env.bool("USE_SQLITE", default=False)
 
-if (
+if _force_sqlite:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+elif (
     _database_url
     and _database_url.startswith(("mysql://", "mysqlclient://", "postgresql://", "postgres://", "sqlite://"))
     and "YOUR_TIDB_PASSWORD" not in _database_url

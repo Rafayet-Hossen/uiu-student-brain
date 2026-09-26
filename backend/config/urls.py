@@ -24,17 +24,21 @@ from django.urls import include, path
 
 def home_view(request):
     """
-    Redirect browser visitors to the frontend app, or return API status for JSON clients.
+    Return API status for health monitors and visitors, avoiding broken localhost redirects.
     """
-    accept = request.headers.get("Accept", "")
-    if "application/json" in accept:
-        return JsonResponse({
-            "service": "StudentBrain Backend API",
-            "status": "running",
-            "frontend_url": "http://localhost:5173/",
-            "admin_url": "/admin/",
-        })
-    return redirect("http://localhost:5173/")
+    return JsonResponse({
+        "service": "StudentBrain Backend API",
+        "status": "healthy",
+        "endpoints": {
+            "api": "/api/",
+            "admin": "/admin/",
+            "health": "/healthz/",
+        }
+    }, status=200)
+
+
+def health_check_view(request):
+    return JsonResponse({"status": "ok", "healthy": True}, status=200)
 
 
 def api_root_view(request):
@@ -57,6 +61,8 @@ def api_root_view(request):
 
 urlpatterns = [
     path('', home_view, name='home'),
+    path('healthz/', health_check_view, name='healthz'),
+    path('health/', health_check_view, name='health'),
     path('api/', api_root_view, name='api-root'),
     path('admin/', admin.site.urls),
     path('api/accounts/', include('accounts.urls')),
