@@ -9,7 +9,6 @@ import {
   VolumeX,
   Plus,
   Clock,
-  Sparkles,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Button from "../../../components/Button";
@@ -49,7 +48,6 @@ export default function FocusTimer({
   const [completedSessionData, setCompletedSessionData] = useState(null);
   const [sessionSuccess, setSessionSuccess] = useState("");
   const [voiceAnnouncement, setVoiceAnnouncement] = useState("");
-  const [isLoadingQuiz, setIsLoadingQuiz] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(() => {
     return localStorage.getItem("student_brain_notif_sound") !== "false";
   });
@@ -259,7 +257,11 @@ export default function FocusTimer({
     }
 
     // 4. 25% Milestone (for sessions of 2 minutes or longer)
-    if (total >= 120 && pct >= 25 && !spokenMilestonesRef.current.has("pct_25")) {
+    if (
+      total >= 120 &&
+      pct >= 25 &&
+      !spokenMilestonesRef.current.has("pct_25")
+    ) {
       spokenMilestonesRef.current.add("pct_25");
       playAudibleTone(520, 0.2);
       const timeLeft = getSpokenTimeText(remaining);
@@ -382,7 +384,9 @@ export default function FocusTimer({
             if (next > 0 && next % 900 === 0) {
               const mins = Math.floor(next / 60);
               playAudibleTone(520, 0.2);
-              speakText(`You have been studying for ${mins} minutes. Great focus.`);
+              speakText(
+                `You have been studying for ${mins} minutes. Great focus.`,
+              );
             }
             return next;
           });
@@ -414,14 +418,9 @@ export default function FocusTimer({
     setIsActive(nextActive);
     playAudibleTone(nextActive ? 620 : 420, 0.15);
     if (nextActive) {
-      if (
-        activeMode !== "stopwatch" &&
-        totalSeconds - secondsRemaining === 0
-      ) {
+      if (activeMode !== "stopwatch" && totalSeconds - secondsRemaining === 0) {
         const timeText = getSpokenTimeText(totalSeconds);
-        speakText(
-          `Focus session started for ${timeText}. Stay in flow.`,
-        );
+        speakText(`Focus session started for ${timeText}. Stay in flow.`);
       } else {
         speakText("Focus session resumed.");
       }
@@ -490,69 +489,23 @@ export default function FocusTimer({
           notes: notes.trim() || `Completed ${activeMode} focus timer session.`,
           status: "completed",
         });
-        const finalData =
+        setCompletedSessionData(
           res ||
-          activeSession || {
-            id: res?.id || activeSession?.id,
-            subject: finalSubject,
-            duration_minutes: elapsedMins,
-          };
-        setCompletedSessionData(finalData);
+            activeSession || {
+              subject: finalSubject,
+              duration_minutes: elapsedMins,
+            },
+        );
         setShowCompletionOptions(true);
         setSessionSuccess(
           `Completed ${elapsedMins}m focus session! Streak updated 🔥`,
         );
-        return finalData;
       } catch (err) {
         console.error("Failed to save focus timer session", err);
       } finally {
         setIsSaving(false);
       }
     }
-    return null;
-  };
-
-  const handleTakeDiagnosticQuiz = async () => {
-    try {
-      setIsLoadingQuiz(true);
-      let sessionData = completedSessionData;
-      if (!sessionData || !sessionData.id) {
-        sessionData = await handleCompleteAndLog();
-      }
-      if (sessionData && onTakeQuiz) {
-        onTakeQuiz(sessionData);
-      }
-    } catch (err) {
-      console.error("Failed to launch diagnostic quiz:", err);
-    } finally {
-      setIsLoadingQuiz(false);
-    }
-  };
-
-  const handleExtendCurrentSession = () => {
-    try {
-      if (onExtendSession && (completedSessionData || activeSession)) {
-        onExtendSession(completedSessionData || activeSession, 15);
-      }
-      setTotalSeconds(15 * 60);
-      setSecondsRemaining(15 * 60);
-      setIsActive(true);
-      setShowCompletionOptions(false);
-      spokenMilestonesRef.current.clear();
-      setSessionSuccess("Session extended by +15 mins! Keep the flow going 🚀");
-      playAudibleTone(660, 0.2);
-      speakText("Session extended by 15 minutes. Stay locked in.");
-    } catch (err) {
-      console.error("Failed to extend session:", err);
-    }
-  };
-
-  const handleDoneForNow = async () => {
-    setShowCompletionOptions(false);
-    if (!completedSessionData && !activeSession) {
-      await handleCompleteAndLog();
-    }
-    handleReset();
   };
 
   const progressPercent =
@@ -597,7 +550,9 @@ export default function FocusTimer({
                 min="0"
                 max="12"
                 value={manualHours}
-                onChange={(e) => updateManualDuration(e.target.value, manualMinutes)}
+                onChange={(e) =>
+                  updateManualDuration(e.target.value, manualMinutes)
+                }
                 className="form-input form-input-sm manual-num-input"
                 disabled={isActive}
               />
@@ -612,7 +567,9 @@ export default function FocusTimer({
                 min="0"
                 max="59"
                 value={manualMinutes}
-                onChange={(e) => updateManualDuration(manualHours, e.target.value)}
+                onChange={(e) =>
+                  updateManualDuration(manualHours, e.target.value)
+                }
                 className="form-input form-input-sm manual-num-input"
                 disabled={isActive}
               />
@@ -625,7 +582,9 @@ export default function FocusTimer({
           </div>
 
           <div className="custom-duration-presets">
-            <span className="text-xs text-muted font-medium mr-1">Presets:</span>
+            <span className="text-xs text-muted font-medium mr-1">
+              Presets:
+            </span>
             {[
               { label: "15m", h: 0, m: 15 },
               { label: "30m", h: 0, m: 30 },
@@ -784,12 +743,19 @@ export default function FocusTimer({
                 playAudibleTone(660, 0.2);
                 speakText("Voice coach enabled. Sound guidance active.");
               } else {
-                if (typeof window !== "undefined" && "speechSynthesis" in window) {
+                if (
+                  typeof window !== "undefined" &&
+                  "speechSynthesis" in window
+                ) {
                   window.speechSynthesis.cancel();
                 }
               }
             }}
-            title={soundEnabled ? "Voice coach active (click to mute)" : "Enable voice coach & audio"}
+            title={
+              soundEnabled
+                ? "Voice coach active (click to mute)"
+                : "Enable voice coach & audio"
+            }
           >
             {soundEnabled ? <Volume2 size={18} /> : <VolumeX size={18} />}
           </button>
@@ -816,85 +782,61 @@ export default function FocusTimer({
       <AnimatePresence>
         {showCompletionOptions && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.97, y: 12 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.97, y: 10 }}
-            transition={{ duration: 0.24, ease: "easeOut" }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
             className="post-session-celebration-card my-4"
           >
-            <div className="celebration-card-glow-bg" />
-
-            <div className="celebration-card-header">
-              <div className="celebration-icon-box">
-                <span className="celebration-emoji">🎉</span>
-              </div>
-              <div className="celebration-text-content">
-                <div className="celebration-badge-pill">
-                  <Sparkles size={13} />
-                  <span>Session Target Completed</span>
-                </div>
-                <h4 className="celebration-card-title">
-                  Outstanding Focus Sprint! What's Next?
-                </h4>
-                <p className="celebration-card-subtitle">
-                  {Boolean(
-                    activeSession?.material ||
-                    activeSession?.material_details ||
-                    activeSession?.material_id ||
-                    completedSessionData?.material ||
-                    completedSessionData?.material_details ||
-                    completedSessionData?.material_id
-                  )
-                    ? "Solidify your retention with a 5-question AI diagnostic test or extend your focus block to boost your daily goal & streak."
-                    : "Extend your focus block to boost your daily goal & streak, or finish up."}
-                </p>
-              </div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xl">🎉</span>
+              <h4 className="font-bold text-success text-sm m-0">
+                Session Finished! What's Next?
+              </h4>
             </div>
+            <p className="text-xs text-muted mb-3">
+              Solidify your retention with a 5-question AI diagnostic test or
+              extend your focus block to boost your daily goal & streak.
+            </p>
 
-            <div className="celebration-btn-group">
-              {Boolean(
-                activeSession?.material ||
-                activeSession?.material_details ||
-                activeSession?.material_id ||
-                completedSessionData?.material ||
-                completedSessionData?.material_details ||
-                completedSessionData?.material_id
-              ) && (
-                <button
-                  type="button"
-                  className="btn-celebration-quiz"
-                  onClick={handleTakeDiagnosticQuiz}
-                  disabled={isLoadingQuiz}
-                >
-                  <Sparkles
-                    size={16}
-                    className={isLoadingQuiz ? "animate-spin" : "sparkle-icon"}
-                  />
-                  <span>
-                    {isLoadingQuiz
-                      ? "Generating AI Quiz..."
-                      : "Take AI Diagnostic Quiz"}
-                  </span>
-                </button>
-              )}
-
-              <button
-                type="button"
-                className="btn-celebration-extend"
-                onClick={handleExtendCurrentSession}
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="primary"
+                size="sm"
+                icon={Sparkles}
+                onClick={() => {
+                  if (onTakeQuiz && completedSessionData) {
+                    onTakeQuiz(completedSessionData);
+                  }
+                }}
               >
-                <Plus size={16} />
-                <span>Extend +15 Minutes</span>
-              </button>
+                Take AI Diagnostic Quiz
+              </Button>
 
-              <button
-                type="button"
-                className="btn-celebration-dismiss"
-                onClick={handleDoneForNow}
+              <Button
+                variant="outline"
+                size="sm"
+                icon={Plus}
+                onClick={() => {
+                  if (onExtendSession && completedSessionData) {
+                    onExtendSession(completedSessionData, 15);
+                    setShowCompletionOptions(false);
+                    setSessionSuccess("Session extended by +15 mins! 🚀");
+                  }
+                }}
               >
-                <CheckCircle2 size={16} />
-                <span>Done for now</span>
-              </button>
+                Extend +15 Minutes
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setShowCompletionOptions(false);
+                  handleReset();
+                }}
+              >
+                Done for now
+              </Button>
             </div>
           </motion.div>
         )}

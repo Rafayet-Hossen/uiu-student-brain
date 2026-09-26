@@ -20,7 +20,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Environment variables
 env = environ.Env()
-environ.Env.read_env(BASE_DIR.parent / ".env")
+if (BASE_DIR.parent / ".env").exists():
+    environ.Env.read_env(BASE_DIR.parent / ".env")
+elif (BASE_DIR / ".env").exists():
+    environ.Env.read_env(BASE_DIR / ".env")
 
 
 # ============================================================
@@ -153,13 +156,6 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 import socket
 
-# Support TiDB / MySQL connections if PyMySQL is available
-try:
-    import pymysql
-    pymysql.install_as_MySQLdb()
-except ImportError:
-    pass
-
 def _can_connect_postgres(host, port):
     try:
         with socket.create_connection((host, int(port)), timeout=0.8):
@@ -167,16 +163,11 @@ def _can_connect_postgres(host, port):
     except (OSError, ValueError):
         return False
 
-_database_url = env("DATABASE_URL", default="")
 _pg_host = env("POSTGRES_HOST", default="localhost")
 _pg_port = env("POSTGRES_PORT", default="5432")
 _force_sqlite = env.bool("USE_SQLITE", default=False)
 
-if _database_url:
-    DATABASES = {
-        "default": env.db("DATABASE_URL")
-    }
-elif not _force_sqlite and _can_connect_postgres(_pg_host, _pg_port):
+if not _force_sqlite and _can_connect_postgres(_pg_host, _pg_port):
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
