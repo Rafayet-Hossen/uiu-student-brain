@@ -9,6 +9,7 @@ import {
   Clock,
   Code2,
   Crown,
+  Edit3,
   FileText,
   Flame,
   HelpCircle,
@@ -573,7 +574,7 @@ export default function CommunityPage() {
               {/* 1. Quick Post Creator Bar */}
               <Card className="quick-post-creator-card">
                 <div className="quick-creator-top">
-                  <ScholarAvatar user={user} size={40} />
+                  <ScholarAvatar user={user} size={42} />
                   <button
                     type="button"
                     className="quick-creator-input-trigger"
@@ -582,8 +583,7 @@ export default function CommunityPage() {
                       setShowPostModal(true);
                     }}
                   >
-                    <Edit3 size={15} className="quick-creator-pen-icon" />
-                    <span>Share notes, ask questions, or discuss topics...</span>
+                    <span>Share or Ask Something to Everyone?</span>
                   </button>
                 </div>
                 <div className="quick-creator-bottom">
@@ -609,26 +609,33 @@ export default function CommunityPage() {
                       <span>Exam Question</span>
                     </span>
                     <span
-                      className="quick-chip-item chip-code-highlight"
+                      className="quick-chip-item"
                       onClick={() => {
                         setModalCategory("Code Help");
                         setShowPostModal(true);
+                      }}
+                      style={{
+                        background: "rgba(16, 185, 129, 0.12)",
+                        borderColor: "rgba(16, 185, 129, 0.35)",
+                        color: "#10b981",
+                        fontWeight: 600,
                       }}
                     >
                       <Code2 size={14} className="text-emerald" />
                       <span>💻 Code & Live Share</span>
                     </span>
-                    <span
-                      className="quick-chip-item"
-                      onClick={() => {
-                        setModalCategory("Study Group");
-                        setShowPostModal(true);
-                      }}
-                    >
-                      <Users size={14} className="text-cyan" />
-                      <span>Study Group</span>
-                    </span>
                   </div>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => {
+                      setModalCategory("General");
+                      setShowPostModal(true);
+                    }}
+                    icon={Plus}
+                  >
+                    Create Post
+                  </Button>
                 </div>
               </Card>
 
