@@ -214,41 +214,26 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div
-        className="modal-content-card"
+        className="modal-content-card profile-modal-content"
         onClick={(e) => e.stopPropagation()}
-        style={{ maxWidth: "680px" }}
       >
         {/* Modal Header */}
-        <div className="modal-header-row">
-          <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+        <div className="modal-header-row profile-modal-header">
+          <div className="profile-header-user-row">
             <ScholarAvatar
               user={user}
-              size={48}
+              size={46}
               avatarOverride={currentAvatar}
             />
-            <div>
-              <h3 className="modal-title" style={{ fontSize: "1.2rem" }}>
+            <div className="profile-header-text-meta">
+              <h3 className="profile-modal-title">
                 {fullName || user?.full_name || "Scholar Profile"}
               </h3>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  fontSize: "0.8125rem",
-                  color: "var(--color-text-muted)",
-                }}
-              >
-                <span>{user?.email}</span>
-                <span>•</span>
-                <span
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "4px",
-                  }}
-                >
-                  <Calendar size={13} />
+              <div className="profile-header-sub-meta">
+                <span className="profile-email-text">{user?.email}</span>
+                <span className="profile-meta-dot">•</span>
+                <span className="profile-joined-tag">
+                  <Calendar size={12} />
                   Joined {joinedFormatted}
                 </span>
               </div>
@@ -266,27 +251,17 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
         </div>
 
         {/* Modal Navigation Tabs */}
-        <div
-          className="community-tabs-bar"
-          style={{
-            marginBottom: "16px",
-            flexShrink: 0,
-            overflowX: "auto",
-            display: "flex",
-            gap: "8px",
-            paddingBottom: "4px",
-          }}
-        >
+        <div className="profile-modal-tabs-bar">
           <button
             type="button"
-            className={`community-tab-btn ${activeTab === "profile" ? "tab-active" : ""}`}
+            className={`profile-modal-tab-btn ${activeTab === "profile" ? "tab-active" : ""}`}
             onClick={() => setActiveTab("profile")}
           >
-            👤 Edit Profile & Photo
+            <span>👤 Edit Profile & Photo</span>
           </button>
           <button
             type="button"
-            className={`community-tab-btn ${activeTab === "performance" ? "tab-active" : ""}`}
+            className={`profile-modal-tab-btn ${activeTab === "performance" ? "tab-active" : ""}`}
             onClick={() => {
               setActiveTab("performance");
               setLoadingSummary(true);
@@ -298,14 +273,14 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
                 .finally(() => setLoadingSummary(false));
             }}
           >
-            📊 Overall Performance & Rank
+            <span>📊 Overall Performance</span>
           </button>
           <button
             type="button"
-            className={`community-tab-btn ${activeTab === "settings" ? "tab-active" : ""}`}
+            className={`profile-modal-tab-btn ${activeTab === "settings" ? "tab-active" : ""}`}
             onClick={() => setActiveTab("settings")}
           >
-            ⚙️ Preferences & Account
+            <span>⚙️ Preferences & Account</span>
           </button>
         </div>
 
@@ -615,73 +590,25 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
                 }}
               >
                 {/* 4 Highlight Metric Cards */}
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
-                    gap: "12px",
-                  }}
-                >
-                  <div
-                    style={{
-                      background: "var(--color-surface-subtle)",
-                      padding: "12px",
-                      borderRadius: "var(--radius-md)",
-                      border: "1px solid var(--color-border)",
-                      textAlign: "center",
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontSize: "0.75rem",
-                        color: "var(--color-text-muted)",
-                        display: "block",
-                      }}
-                    >
-                      Community Rank
-                    </span>
+                <div className="profile-metrics-grid">
+                  <div className="profile-metric-item">
+                    <span className="metric-item-lbl">Community Rank</span>
                     <strong
-                      style={{
-                        fontSize: "1.25rem",
-                        color: "var(--color-primary)",
-                      }}
+                      className="metric-item-val"
+                      style={{ color: "var(--color-primary)" }}
                     >
                       🏆 #{summaryData?.performance?.community_rank || 1}
                     </strong>
-                    <span
-                      style={{
-                        fontSize: "0.75rem",
-                        display: "block",
-                        color: "var(--color-text-muted)",
-                      }}
-                    >
+                    <span className="metric-item-sub">
                       {summaryData?.performance?.total_xp || 0} XP
                     </span>
                   </div>
 
-                  <div
-                    style={{
-                      background: "var(--color-surface-subtle)",
-                      padding: "12px",
-                      borderRadius: "var(--radius-md)",
-                      border: "1px solid var(--color-border)",
-                      textAlign: "center",
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontSize: "0.75rem",
-                        color: "var(--color-text-muted)",
-                        display: "block",
-                      }}
-                    >
-                      Academic CGPA
-                    </span>
+                  <div className="profile-metric-item">
+                    <span className="metric-item-lbl">Academic CGPA</span>
                     <strong
-                      style={{
-                        fontSize: "1.25rem",
-                        color: "var(--color-text)",
-                      }}
+                      className="metric-item-val"
+                      style={{ color: "var(--color-text)" }}
                     >
                       🎓{" "}
                       {typeof summaryData?.performance?.current_cgpa ===
@@ -691,13 +618,7 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
                           ? Number(currentGpa).toFixed(2)
                           : "N/A"}
                     </strong>
-                    <span
-                      style={{
-                        fontSize: "0.75rem",
-                        display: "block",
-                        color: "var(--color-text-muted)",
-                      }}
-                    >
+                    <span className="metric-item-sub">
                       Target:{" "}
                       {typeof summaryData?.performance?.target_gpa === "number"
                         ? summaryData.performance.target_gpa.toFixed(2)
@@ -707,77 +628,29 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
                     </span>
                   </div>
 
-                  <div
-                    style={{
-                      background: "var(--color-surface-subtle)",
-                      padding: "12px",
-                      borderRadius: "var(--radius-md)",
-                      border: "1px solid var(--color-border)",
-                      textAlign: "center",
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontSize: "0.75rem",
-                        color: "var(--color-text-muted)",
-                        display: "block",
-                      }}
-                    >
-                      Study Time
-                    </span>
+                  <div className="profile-metric-item">
+                    <span className="metric-item-lbl">Study Time</span>
                     <strong
-                      style={{
-                        fontSize: "1.25rem",
-                        color: "var(--color-text)",
-                      }}
+                      className="metric-item-val"
+                      style={{ color: "var(--color-text)" }}
                     >
                       ⏱️ {summaryData?.performance?.total_study_hours || 0}h
                     </strong>
-                    <span
-                      style={{
-                        fontSize: "0.75rem",
-                        display: "block",
-                        color: "var(--color-text-muted)",
-                      }}
-                    >
+                    <span className="metric-item-sub">
                       {summaryData?.performance?.total_sessions || 0} sessions
                     </span>
                   </div>
 
-                  <div
-                    style={{
-                      background: "var(--color-surface-subtle)",
-                      padding: "12px",
-                      borderRadius: "var(--radius-md)",
-                      border: "1px solid var(--color-border)",
-                      textAlign: "center",
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontSize: "0.75rem",
-                        color: "var(--color-text-muted)",
-                        display: "block",
-                      }}
-                    >
-                      Active Streak
-                    </span>
+                  <div className="profile-metric-item">
+                    <span className="metric-item-lbl">Active Streak</span>
                     <strong
-                      style={{
-                        fontSize: "1.25rem",
-                        color: "var(--color-accent)",
-                      }}
+                      className="metric-item-val"
+                      style={{ color: "var(--color-accent)" }}
                     >
                       🔥 {summaryData?.performance?.current_streak_days || 0}{" "}
                       Days
                     </strong>
-                    <span
-                      style={{
-                        fontSize: "0.75rem",
-                        display: "block",
-                        color: "var(--color-text-muted)",
-                      }}
-                    >
+                    <span className="metric-item-sub">
                       Consecutive habits
                     </span>
                   </div>
@@ -934,287 +807,159 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
           </div>
         )}
 
-        {/* TAB 3: PREFERENCES & SETTINGS */}
+        {/* TAB 3: PREFERENCES & ACCOUNT SETTINGS */}
         {activeTab === "settings" && (
-          <div
-            style={{ display: "flex", flexDirection: "column", gap: "16px" }}
-          >
-            <div
-              style={{
-                background: "var(--color-surface-subtle)",
-                padding: "14px 16px",
-                borderRadius: "var(--radius-md)",
-                border: "1px solid var(--color-border)",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <div>
-                <strong style={{ display: "block", fontSize: "0.9375rem" }}>
-                  🎨 Visual Theme
-                </strong>
-                <span
-                  style={{
-                    fontSize: "0.8125rem",
-                    color: "var(--color-text-muted)",
-                  }}
-                >
+          <div className="profile-settings-container">
+            {/* Visual Theme */}
+            <div className="profile-setting-row-card">
+              <div className="setting-text-col">
+                <strong className="setting-title">🎨 Visual Theme</strong>
+                <span className="setting-desc">
                   Switch between Light and Dark visual academic modes
                 </span>
               </div>
-              <ThemeToggle />
+              <div className="setting-action-col">
+                <ThemeToggle />
+              </div>
             </div>
 
-            <div
-              style={{
-                background: "var(--color-surface-subtle)",
-                padding: "14px 16px",
-                borderRadius: "var(--radius-md)",
-                border: "1px solid var(--color-border)",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <div>
-                <strong style={{ display: "block", fontSize: "0.9375rem" }}>
-                  🏆 Community Leaderboard
-                </strong>
-                <span
-                  style={{
-                    fontSize: "0.8125rem",
-                    color: "var(--color-text-muted)",
-                  }}
-                >
+            {/* Community Leaderboard */}
+            <div className="profile-setting-row-card">
+              <div className="setting-text-col">
+                <strong className="setting-title">🏆 Community Leaderboard</strong>
+                <span className="setting-desc">
                   Your rank and XP points are visible to fellow scholars
                 </span>
               </div>
-              <Badge variant="secondary">Active / Opted In</Badge>
+              <div className="setting-action-col">
+                <Badge variant="secondary">Active / Opted In</Badge>
+              </div>
             </div>
 
             {/* Notification Channels Dynamic Preferences */}
-            <div
-              style={{
-                background: "var(--color-surface)",
-                border: "1px solid var(--color-border)",
-                borderRadius: "var(--radius-md)",
-                padding: "16px",
-              }}
-            >
-              <strong
-                style={{
-                  display: "block",
-                  fontSize: "0.9375rem",
-                  marginBottom: "4px",
-                }}
-              >
-                🔔 Notification Channels & Dynamic Alerts
-              </strong>
-              <span
-                style={{
-                  display: "block",
-                  fontSize: "0.8125rem",
-                  color: "var(--color-text-muted)",
-                  marginBottom: "14px",
-                }}
-              >
-                Disable or enable notifications. Disabled channels will not
-                generate or display alerts.
-              </span>
+            <div className="profile-notifs-box-card">
+              <div className="notifs-box-header">
+                <strong className="setting-title">
+                  🔔 Notification Channels & Dynamic Alerts
+                </strong>
+                <span className="setting-desc">
+                  Disable or enable notifications. Disabled channels will not
+                  generate or display alerts.
+                </span>
+              </div>
 
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "12px",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <div>
-                    <strong style={{ fontSize: "0.875rem", display: "block" }}>
+              <div className="notifs-channels-list">
+                <div className="notif-channel-row">
+                  <div className="setting-text-col">
+                    <strong className="notif-item-title">
                       📢 Campus Announcements & Events
                     </strong>
-                    <span
-                      style={{
-                        fontSize: "0.75rem",
-                        color: "var(--color-text-muted)",
-                      }}
-                    >
+                    <span className="notif-item-desc">
                       Faculty exam reviews, study sessions, and university
                       circulars
                     </span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => handleToggleNotif("announcements")}
-                    className={`filter-pill-btn ${notifAnnouncements ? "filter-pill-active" : ""}`}
-                    style={{
-                      minWidth: "88px",
-                      textAlign: "center",
-                      cursor: "pointer",
-                    }}
-                  >
-                    {notifAnnouncements ? "✓ Enabled" : "✕ Disabled"}
-                  </button>
+                  <div className="setting-action-col">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleNotif("announcements")}
+                      className={`notif-toggle-pill ${notifAnnouncements ? "toggle-active" : "toggle-disabled"}`}
+                    >
+                      {notifAnnouncements ? "✓ Enabled" : "✕ Disabled"}
+                    </button>
+                  </div>
                 </div>
 
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <div>
-                    <strong style={{ fontSize: "0.875rem", display: "block" }}>
+                <div className="notif-channel-row">
+                  <div className="setting-text-col">
+                    <strong className="notif-item-title">
                       💬 Comments & Discussion Replies
                     </strong>
-                    <span
-                      style={{
-                        fontSize: "0.75rem",
-                        color: "var(--color-text-muted)",
-                      }}
-                    >
+                    <span className="notif-item-desc">
                       Classmate comments on your posts and solutions marked
                       helpful
                     </span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => handleToggleNotif("comments")}
-                    className={`filter-pill-btn ${notifComments ? "filter-pill-active" : ""}`}
-                    style={{
-                      minWidth: "88px",
-                      textAlign: "center",
-                      cursor: "pointer",
-                    }}
-                  >
-                    {notifComments ? "✓ Enabled" : "✕ Disabled"}
-                  </button>
+                  <div className="setting-action-col">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleNotif("comments")}
+                      className={`notif-toggle-pill ${notifComments ? "toggle-active" : "toggle-disabled"}`}
+                    >
+                      {notifComments ? "✓ Enabled" : "✕ Disabled"}
+                    </button>
+                  </div>
                 </div>
 
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <div>
-                    <strong style={{ fontSize: "0.875rem", display: "block" }}>
+                <div className="notif-channel-row">
+                  <div className="setting-text-col">
+                    <strong className="notif-item-title">
                       🎓 Academic Targets & Habit Streaks
                     </strong>
-                    <span
-                      style={{
-                        fontSize: "0.75rem",
-                        color: "var(--color-text-muted)",
-                      }}
-                    >
+                    <span className="notif-item-desc">
                       Target CGPA updates and daily study streak consistency
                       reminders
                     </span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => handleToggleNotif("academic")}
-                    className={`filter-pill-btn ${notifAcademic ? "filter-pill-active" : ""}`}
-                    style={{
-                      minWidth: "88px",
-                      textAlign: "center",
-                      cursor: "pointer",
-                    }}
-                  >
-                    {notifAcademic ? "✓ Enabled" : "✕ Disabled"}
-                  </button>
+                  <div className="setting-action-col">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleNotif("academic")}
+                      className={`notif-toggle-pill ${notifAcademic ? "toggle-active" : "toggle-disabled"}`}
+                    >
+                      {notifAcademic ? "✓ Enabled" : "✕ Disabled"}
+                    </button>
+                  </div>
                 </div>
 
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <div>
-                    <strong style={{ fontSize: "0.875rem", display: "block" }}>
+                <div className="notif-channel-row">
+                  <div className="setting-text-col">
+                    <strong className="notif-item-title">
                       🔊 Audio & Alert Chimes
                     </strong>
-                    <span
-                      style={{
-                        fontSize: "0.75rem",
-                        color: "var(--color-text-muted)",
-                      }}
-                    >
+                    <span className="notif-item-desc">
                       Sound notifications when study timers or reminders
                       complete
                     </span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => handleToggleNotif("sound")}
-                    className={`filter-pill-btn ${notifSound ? "filter-pill-active" : ""}`}
-                    style={{
-                      minWidth: "88px",
-                      textAlign: "center",
-                      cursor: "pointer",
-                    }}
-                  >
-                    {notifSound ? "✓ Enabled" : "✕ Disabled"}
-                  </button>
+                  <div className="setting-action-col">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleNotif("sound")}
+                      className={`notif-toggle-pill ${notifSound ? "toggle-active" : "toggle-disabled"}`}
+                    >
+                      {notifSound ? "✓ Enabled" : "✕ Disabled"}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div
-              style={{
-                background: "var(--color-surface-subtle)",
-                padding: "14px 16px",
-                borderRadius: "var(--radius-md)",
-                border: "1px solid var(--color-border)",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <div>
-                <strong
-                  style={{
-                    display: "block",
-                    fontSize: "0.9375rem",
-                    color: "var(--color-danger)",
-                  }}
-                >
+            {/* Account Logout */}
+            <div className="profile-setting-row-card logout-card">
+              <div className="setting-text-col">
+                <strong className="setting-title text-danger">
                   🚪 Account Logout
                 </strong>
-                <span
-                  style={{
-                    fontSize: "0.8125rem",
-                    color: "var(--color-text-muted)",
-                  }}
-                >
+                <span className="setting-desc">
                   Sign out of StudentBrain on this device
                 </span>
               </div>
-              <Button
-                variant="danger"
-                size="sm"
-                onClick={() => {
-                  onClose();
-                  logout();
-                }}
-              >
-                Sign Out
-              </Button>
+              <div className="setting-action-col">
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={() => {
+                    onClose();
+                    logout();
+                  }}
+                >
+                  Sign Out
+                </Button>
+              </div>
             </div>
 
-            <div className="modal-footer-row" style={{ marginTop: "12px" }}>
+            <div className="modal-footer-row" style={{ marginTop: "10px" }}>
               <Button variant="secondary" onClick={onClose}>
                 Close
               </Button>

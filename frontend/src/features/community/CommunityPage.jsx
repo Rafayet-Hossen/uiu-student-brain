@@ -9,7 +9,6 @@ import {
   Clock,
   Code2,
   Crown,
-  Edit3,
   FileText,
   Flame,
   HelpCircle,
