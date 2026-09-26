@@ -6279,57 +6279,30 @@
   .quick-post-creator-card {
     padding: 12px 14px;
   }
-  .quick-creator-top {
-    gap: 8px;
-    margin-bottom: 8px;
-  }
-  .quick-creator-input-trigger {
-    padding: 8px 12px;
-    font-size: 0.78rem;
-  }
   .quick-creator-bottom {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    padding-top: 8px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
   }
   .quick-creator-chips {
     width: 100%;
     justify-content: flex-start;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-  }
-  .quick-creator-post-btn {
-    display: none !important;
   }
   .community-feed-filters-bar {
-    display: flex;
     flex-direction: column;
     align-items: stretch;
-    gap: 8px;
-    width: 100%;
+    gap: 10px;
   }
   .feed-filter-tabs {
     width: 100%;
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    padding: 3px;
-    gap: 4px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
   }
   .feed-filter-btn {
     justify-content: center;
-    padding: 7px 10px;
-    font-size: 0.8rem;
-    width: 100%;
   }
   .feed-search-wrap {
-    width: 100% !important;
+    width: 100%;
   }
 }
 
@@ -7843,35 +7816,14 @@
   }
 
   .social-post-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-wrap: wrap;
     gap: 8px;
     margin-bottom: 10px;
-    flex-wrap: nowrap;
-  }
-
-  .social-post-author-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-width: 0;
-    flex: 1;
-  }
-
-  .author-name {
-    font-size: 0.84rem;
-  }
-
-  .author-sub-line {
-    font-size: 0.7rem;
   }
 
   .social-header-right {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    flex-shrink: 0;
+    flex-wrap: wrap;
+    gap: 6px;
   }
 
   .study-meeting-action-banner {
@@ -7919,16 +7871,8 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
+    flex-wrap: wrap;
     width: 100%;
-    padding-bottom: 2px;
-  }
-
-  .social-action-buttons::-webkit-scrollbar {
-    display: none;
   }
 
   .social-action-pill {
@@ -7937,8 +7881,6 @@
     min-height: 32px;
     border-radius: var(--radius-full);
     box-sizing: border-box;
-    flex-shrink: 0;
-    white-space: nowrap;
   }
 
   .social-action-pill.social-share-btn,

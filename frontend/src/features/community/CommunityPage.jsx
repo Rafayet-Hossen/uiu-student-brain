@@ -627,7 +627,6 @@ export default function CommunityPage() {
                   <Button
                     variant="primary"
                     size="sm"
-                    className="quick-creator-post-btn"
                     onClick={() => {
                       setModalCategory("General");
                       setShowPostModal(true);
