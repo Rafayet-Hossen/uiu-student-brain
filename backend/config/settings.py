@@ -195,6 +195,7 @@ except ImportError:
     pass
 
 try:
+    import re
     from django.db.backends.mysql.base import DatabaseWrapper
     from django.db.backends.mysql.schema import DatabaseSchemaEditor
     from django.db.backends.base.schema import BaseDatabaseSchemaEditor
@@ -202,10 +203,35 @@ try:
     DatabaseWrapper.check_database_version_supported = lambda self: None
     DatabaseSchemaEditor.sql_create_column_inline_fk = None
 
+    _orig_skip_default = DatabaseSchemaEditor.skip_default
+    def _tidb_skip_default(self, field):
+        if field.get_internal_type() == "JSONField":
+            return True
+        return _orig_skip_default(self, field)
+    DatabaseSchemaEditor.skip_default = _tidb_skip_default
+
+    _orig_skip_default_on_alter = DatabaseSchemaEditor.skip_default_on_alter
+    def _tidb_skip_default_on_alter(self, field):
+        if field.get_internal_type() == "JSONField":
+            return True
+        return _orig_skip_default_on_alter(self, field)
+    DatabaseSchemaEditor.skip_default_on_alter = _tidb_skip_default_on_alter
+
+    def _clean_tidb_sql(sql):
+        if not isinstance(sql, str):
+            return sql
+        # TiDB doesn't allow expression defaults on JSON columns, e.g. json DEFAULT ('[]') NOT NULL
+        return re.sub(
+            r"(?i)\bjson\b\s+DEFAULT\s*\([^)]*\)(\s+NOT\s+NULL)?",
+            "json NULL",
+            sql,
+        )
+
     if not getattr(BaseDatabaseSchemaEditor, "_is_safe_execute_patched", False):
         _orig_execute = BaseDatabaseSchemaEditor.execute
 
         def _safe_execute(self, sql, params=()):
+            sql = _clean_tidb_sql(sql)
             try:
                 return _orig_execute(self, sql, params)
             except Exception as e:
@@ -239,6 +265,8 @@ if (
     _database_url
     and _database_url.startswith(("mysql://", "mysqlclient://", "postgresql://", "postgres://", "sqlite://"))
     and "YOUR_TIDB_PASSWORD" not in _database_url
+    and "<PASSWORD>" not in _database_url
+    and "আপনার_আসল_পাসওয়ার্ড" not in _database_url
 ):
     DATABASES = {
         "default": env.db("DATABASE_URL")
