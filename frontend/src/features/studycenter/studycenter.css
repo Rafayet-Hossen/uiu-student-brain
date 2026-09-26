@@ -178,9 +178,7 @@
     cursor: pointer !important;
     user-select: none !important;
     -webkit-tap-highlight-color: transparent !important;
-    transition:
-      transform 0.15s ease,
-      color 0.18s ease !important;
+    transition: transform 0.15s ease, color 0.18s ease !important;
   }
 
   .study-center-nav-tab:active {

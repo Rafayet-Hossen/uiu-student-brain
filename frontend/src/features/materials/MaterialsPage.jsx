@@ -43,6 +43,7 @@ import MaterialAnalysisModal from "./components/MaterialAnalysisModal";
 import CourseAIChat from "./components/CourseAIChat";
 import CourseNotesWorkspace from "./components/CourseNotesWorkspace";
 import { formatRichContent } from "../../lib/markdownHelper";
+import "../studycenter/studycenter.css";
 
 export default function MaterialsPage() {
   // Semesters state
