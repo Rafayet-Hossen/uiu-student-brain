@@ -86,12 +86,27 @@ export default function CommunityPage() {
       ? urlTab
       : "posts"
   );
+  const tabsBarRef = useRef(null);
 
   useEffect(() => {
     if (urlTab && ["posts", "events", "network", "leaderboard"].includes(urlTab)) {
       setActiveTab(urlTab);
     }
   }, [urlTab]);
+
+  // Smooth auto-scroll active tab into view when changed (same as Study Center)
+  useEffect(() => {
+    if (tabsBarRef.current) {
+      const activeEl = tabsBarRef.current.querySelector(".tab-active");
+      if (activeEl) {
+        activeEl.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+          inline: "center",
+        });
+      }
+    }
+  }, [activeTab]);
 
   const handleTabSwitch = (tabKey) => {
     setActiveTab(tabKey);
@@ -501,7 +516,7 @@ export default function CommunityPage() {
           className="community-main-tabs-wrapper"
           style={{ marginBottom: "24px" }}
         >
-          <div className="community-tabs-bar">
+          <div className="community-tabs-bar" ref={tabsBarRef}>
             <button
               type="button"
               className={`community-tab-btn ${
