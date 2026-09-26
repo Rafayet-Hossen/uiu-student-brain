@@ -1,3 +1,4 @@
+import logging
 from datetime import date, datetime, timedelta
 from typing import Any, Dict, List
 from django.core.cache import cache
@@ -9,6 +10,8 @@ from django.utils import timezone
 
 from ai.services import analyze_quiz_weakness, generate_topic_quiz
 from .models import StudyGoal, StudySession
+
+logger = logging.getLogger(__name__)
 
 
 def expire_overdue_sessions(*, user=None) -> int:
@@ -150,45 +153,70 @@ def extend_study_session(*, session: StudySession, extra_minutes: int) -> StudyS
 
 
 def generate_session_quiz(*, session: StudySession, force_refresh: bool = False) -> Dict[str, Any]:
+    # Strictly require attached study material for AI diagnostic quizzes
+    if not session.material_id or not session.material:
+        raise ValidationError(
+            "This study session does not have any attached study material. "
+            "AI Diagnostic Concept Quizzes are generated directly from attached lecture notes or documents."
+        )
+
     # 1. Instant return if session already has generated quiz questions
     if not force_refresh and session.quiz_results and isinstance(session.quiz_results, dict):
         saved_questions = session.quiz_results.get("questions")
         if saved_questions and len(saved_questions) >= 3:
             return session.quiz_results
 
-    # 2. Check material-level cache if material is linked
-    mat_cache_key = None
-    if session.material_id:
-        mat_cache_key = f"quiz_mat_{session.material_id}"
-        if not force_refresh:
-            cached_quiz = cache.get(mat_cache_key)
-            if cached_quiz and isinstance(cached_quiz, dict) and cached_quiz.get("questions"):
-                return cached_quiz
+    material = session.material
+    mat_cache_key = f"quiz_mat_{material.id}"
+    if not force_refresh:
+        cached_quiz = cache.get(mat_cache_key)
+        if cached_quiz and isinstance(cached_quiz, dict) and cached_quiz.get("questions"):
+            return cached_quiz
+
+    # Extract text from material file if content_text is empty
+    content_text = (material.content_text or "").strip()
+    if not content_text and material.file:
+        try:
+            from materials.services import extract_text_from_uploaded_file
+            content_text = extract_text_from_uploaded_file(material.file)
+            if content_text:
+                material.content_text = content_text
+                material.save(update_fields=["content_text"])
+        except Exception as e:
+            logger.warning(f"Could not auto-extract text from material file: {e}")
+
+    # Build comprehensive source material context
+    context_parts = []
+    if material.title:
+        context_parts.append(f"Material Title: {material.title}")
+    if material.category:
+        context_parts.append(f"Material Type / Category: {material.category}")
+    if material.summary:
+        context_parts.append(f"Summary / Key Findings:\n{material.summary}")
+    if material.key_topics:
+        context_parts.append(f"Extracted Key Topics: {', '.join(str(t) for t in material.key_topics)}")
+    if material.key_concepts:
+        context_parts.append(f"Extracted Key Concepts: {', '.join(str(c) for c in material.key_concepts)}")
+    if material.key_questions:
+        context_parts.append(f"Key Review Questions:\n" + "\n".join(f"- {q}" for q in material.key_questions))
+    if content_text:
+        context_parts.append(f"Extracted Document Text / Lecture Notes:\n{content_text[:14000]}")
+
+    material_context = "\n\n".join(context_parts)
 
     topics: List[str] = []
-    difficulty = "Intermediate"
-    subject = session.subject or "Study Session"
+    if material.key_topics:
+        topics.extend([str(t) for t in material.key_topics if str(t).strip()])
+    if not topics and material.title:
+        topics.append(material.title)
+    if not topics and session.subject:
+        topics.append(session.subject)
 
-    if session.material:
-        material = session.material
-        if material.key_topics:
-            topics.extend([str(t) for t in material.key_topics if str(t).strip()])
-        if not topics and material.title:
-            topics.append(material.title)
-        if material.difficulty_level:
-            difficulty = material.difficulty_level
-        if session.course:
-            subject = f"{session.course.title} - {material.title}"
-        else:
-            subject = material.title
-    elif session.course:
-        subject = session.course.title
-        topics = [session.subject]
+    difficulty = material.difficulty_level or "Intermediate"
+    if session.course:
+        subject = f"{session.course.title} - {material.title}"
     else:
-        topics = [session.subject]
-
-    if not topics:
-        topics = [subject]
+        subject = material.title
 
     quiz_result = generate_topic_quiz(
         subject=subject,
@@ -196,6 +224,7 @@ def generate_session_quiz(*, session: StudySession, force_refresh: bool = False)
         num_questions=5,
         difficulty=difficulty,
         force_refresh=force_refresh,
+        material_content=material_context,
     )
 
     if mat_cache_key and quiz_result and quiz_result.get("questions"):

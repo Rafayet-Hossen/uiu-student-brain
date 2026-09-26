@@ -62,8 +62,13 @@ export default function SessionQuizModal({
       .catch((err) => {
         if (!isMounted) return;
         console.error("Failed to generate session quiz", err);
+        const serverMsg =
+          err?.response?.data?.detail ||
+          err?.response?.data?.message ||
+          (typeof err?.response?.data === "string" ? err.response.data : "");
         setError(
-          "Failed to generate AI quiz for this study material. Please try again.",
+          serverMsg ||
+            "Failed to generate AI quiz for this study material. Please try again.",
         );
       })
       .finally(() => {

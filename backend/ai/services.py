@@ -114,10 +114,16 @@ def generate_topic_quiz(
     num_questions: int = 5,
     difficulty: str = "Intermediate",
     force_refresh: bool = False,
+    material_content: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """Generates an academic multiple-choice test for concept assessment with instant caching and fast model priority."""
+    """Generates an academic multiple-choice test directly grounded in extracted study materials and notes."""
     clean_topics = sorted(t.strip().lower() for t in topics if t.strip())
-    raw_key = f"quiz_{subject.strip().lower()}_{'_'.join(clean_topics)}_{difficulty}_{num_questions}"
+    content_hash = (
+        hashlib.md5((material_content or "").encode("utf-8")).hexdigest()[:10]
+        if material_content
+        else "none"
+    )
+    raw_key = f"quiz_{subject.strip().lower()}_{'_'.join(clean_topics)}_{difficulty}_{num_questions}_{content_hash}"
     cache_key = f"ai_quiz_{hashlib.md5(raw_key.encode('utf-8')).hexdigest()}"
 
     if not force_refresh:
@@ -126,24 +132,42 @@ def generate_topic_quiz(
             logger.info(f"Returning cached quiz for {subject} ({cache_key})")
             return cached
 
+    material_prompt_section = ""
+    if material_content:
+        # Include up to 14,000 characters of extracted course material
+        material_prompt_section = f"""
+    --- EXTRACTED COURSE MATERIAL & LECTURE NOTES ---
+    {material_content[:14000]}
+    --- END OF SOURCE MATERIAL ---
+
+    MANDATORY GROUNDING RULES:
+    1. Every single question, correct answer, and distractor MUST be directly grounded in the provided source material above.
+    2. Test core conceptual definitions, mechanisms, theoretical principles, formulas, or key ideas present in this document.
+    3. Do NOT make up generic questions. The student specifically studied this material, so evaluate their actual retention of this content.
+    """
+
     prompt = f"""
-    Create a rapid academic multiple-choice assessment for '{subject}'.
+    Create a rigorous, high-yield academic multiple-choice diagnostic test for '{subject}'.
     Difficulty level: {difficulty}.
     Number of questions: {num_questions}.
-    Topics: {', '.join(topics)}.
+    Core Topics: {', '.join(topics)}.
+    {material_prompt_section}
 
     Rules:
-    - 4 distinct options per question.
+    - 4 distinct plausible options per question (A, B, C, D).
     - Zero-based index for correct_answer_index (0, 1, 2, or 3).
-    - Provide a concise 1-sentence explanation for the correct answer.
-    - Attach the concise sub-topic tag.
+    - Provide a concise 1-2 sentence explanation of why the correct answer is true, referencing the concept from the material.
+    - Attach the concise sub-topic tag for diagnostic retention tracking.
     """
 
     result = _call_gemini_structured(
         contents=prompt,
         response_schema=QuizGenerationResult,
-        system_instruction="You are an expert university examiner generating concise, high-yield diagnostic questions. Keep questions, options, and explanations brief and direct for rapid evaluation.",
-        temperature=0.1,
+        system_instruction=(
+            "You are an expert university examiner generating rigorous, highly accurate diagnostic concept questions "
+            "directly derived from uploaded lecture slides, student notes, and curriculum materials."
+        ),
+        temperature=0.15,
         models=[PRIMARY_MODEL, FALLBACK_MODEL],
     )
 

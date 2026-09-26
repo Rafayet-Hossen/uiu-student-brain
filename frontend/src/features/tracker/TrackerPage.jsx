@@ -134,9 +134,19 @@ export default function TrackerPage() {
       const updated = await completeStudySession(session.id);
       setActiveTimerSession(null);
       await loadTrackerData();
-      // Prompt quiz
-      setActiveQuizSession(updated);
-      setIsQuizModalOpen(true);
+      // Prompt quiz ONLY if this session has attached study material!
+      const hasMaterial = Boolean(
+        updated?.material ||
+        updated?.material_details ||
+        updated?.material_id ||
+        session?.material ||
+        session?.material_details ||
+        session?.material_id
+      );
+      if (hasMaterial) {
+        setActiveQuizSession(updated || session);
+        setIsQuizModalOpen(true);
+      }
     } catch (err) {
       setError(extractTrackerErrorMessage(err));
     }

@@ -17,7 +17,6 @@ import {
   Timer,
   Trash2,
 } from "lucide-react";
-import { motion } from "framer-motion";
 import Button from "../../../components/Button";
 
 function getSubjectTheme(subject = "") {
@@ -157,8 +156,9 @@ export default function StudySessionCard({
     label,
   } = useMemo(() => getSubjectTheme(session?.subject), [session?.subject]);
 
-  const course = session?.course_details;
-  const material = session?.material_details;
+  const course = session?.course_details || session?.course;
+  const material = session?.material_details || session?.material;
+  const hasMaterial = Boolean(material || session?.material_id);
 
   const categoryTag = useMemo(() => {
     if (course?.title) {
@@ -197,15 +197,7 @@ export default function StudySessionCard({
   };
 
   return (
-    <motion.div
-      className={`study-session-card ${themeClass}`}
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.96 }}
-      whileHover={{ y: -2 }}
-      whileTap={{ scale: 0.985 }}
-      transition={{ duration: 0.18 }}
-    >
+    <div className={`study-session-card ${themeClass}`}>
       {/* Top Accent Strip */}
       <div className="session-card-accent-strip" />
 
@@ -300,7 +292,7 @@ export default function StudySessionCard({
               </button>
             )}
           </div>
-        ) : session.status === "completed" && onTakeQuiz ? (
+        ) : session.status === "completed" && hasMaterial && onTakeQuiz ? (
           <div className="session-quiz-prompt-row">
             <button
               type="button"
@@ -320,10 +312,7 @@ export default function StudySessionCard({
               <StickyNote size={12} className="session-notes-icon" />
               <span>Session Key Takeaways</span>
             </div>
-            <p className="session-notes-content">
-              <StickyNote size={11} className="session-notes-inline-icon" />
-              <span>{session.notes}</span>
-            </p>
+            <p className="session-notes-content">{session.notes}</p>
           </div>
         ) : (
           <div className="session-notes-placeholder">
@@ -335,7 +324,7 @@ export default function StudySessionCard({
         {/* Footer Actions */}
         <div className="session-card-actions">
           {session.status === "completed" && onExtend && (
-            <div className="flex items-center gap-1 mr-auto session-extend-cluster">
+            <div className="flex items-center gap-1 mr-auto">
               <span className="text-xs text-muted">Extend:</span>
               <button
                 type="button"
@@ -358,35 +347,33 @@ export default function StudySessionCard({
             </div>
           )}
 
-          <div className="session-card-btns-right">
-            {onEdit && (
-              <Button
-                variant="ghost"
-                size="sm"
-                icon={Pencil}
-                className="session-action-btn edit-btn"
-                onClick={() => onEdit(session)}
-                aria-label={`Edit ${session.subject} session`}
-              >
-                Edit
-              </Button>
-            )}
+          {onEdit && (
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={Pencil}
+              className="session-action-btn edit-btn"
+              onClick={() => onEdit(session)}
+              aria-label={`Edit ${session.subject} session`}
+            >
+              Edit
+            </Button>
+          )}
 
-            {onDelete && (
-              <Button
-                variant="ghost"
-                size="sm"
-                icon={Trash2}
-                className="session-action-btn delete-btn"
-                onClick={() => onDelete(session.id)}
-                aria-label={`Delete ${session.subject} session`}
-              >
-                Delete
-              </Button>
-            )}
-          </div>
+          {onDelete && (
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={Trash2}
+              className="session-action-btn delete-btn"
+              onClick={() => onDelete(session.id)}
+              aria-label={`Delete ${session.subject} session`}
+            >
+              Delete
+            </Button>
+          )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

@@ -837,29 +837,46 @@ export default function FocusTimer({
                   Outstanding Focus Sprint! What's Next?
                 </h4>
                 <p className="celebration-card-subtitle">
-                  Solidify your retention with a 5-question AI diagnostic test or
-                  extend your focus block to boost your daily goal & streak.
+                  {Boolean(
+                    activeSession?.material ||
+                    activeSession?.material_details ||
+                    activeSession?.material_id ||
+                    completedSessionData?.material ||
+                    completedSessionData?.material_details ||
+                    completedSessionData?.material_id
+                  )
+                    ? "Solidify your retention with a 5-question AI diagnostic test or extend your focus block to boost your daily goal & streak."
+                    : "Extend your focus block to boost your daily goal & streak, or finish up."}
                 </p>
               </div>
             </div>
 
             <div className="celebration-btn-group">
-              <button
-                type="button"
-                className="btn-celebration-quiz"
-                onClick={handleTakeDiagnosticQuiz}
-                disabled={isLoadingQuiz}
-              >
-                <Sparkles
-                  size={16}
-                  className={isLoadingQuiz ? "animate-spin" : "sparkle-icon"}
-                />
-                <span>
-                  {isLoadingQuiz
-                    ? "Generating AI Quiz..."
-                    : "Take AI Diagnostic Quiz"}
-                </span>
-              </button>
+              {Boolean(
+                activeSession?.material ||
+                activeSession?.material_details ||
+                activeSession?.material_id ||
+                completedSessionData?.material ||
+                completedSessionData?.material_details ||
+                completedSessionData?.material_id
+              ) && (
+                <button
+                  type="button"
+                  className="btn-celebration-quiz"
+                  onClick={handleTakeDiagnosticQuiz}
+                  disabled={isLoadingQuiz}
+                >
+                  <Sparkles
+                    size={16}
+                    className={isLoadingQuiz ? "animate-spin" : "sparkle-icon"}
+                  />
+                  <span>
+                    {isLoadingQuiz
+                      ? "Generating AI Quiz..."
+                      : "Take AI Diagnostic Quiz"}
+                  </span>
+                </button>
+              )}
 
               <button
                 type="button"
