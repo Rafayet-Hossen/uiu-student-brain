@@ -21,9 +21,6 @@ urlpatterns = [
     path("materials/<int:pk>/export-pdf/", views.StudyMaterialExportPDFView.as_view(), name="materials-material-export-pdf"),
     path("materials/<int:pk>/download/", views.StudyMaterialDownloadView.as_view(), name="materials-material-download"),
 
-    # High-Performance Bundle
-    path("bundle/", views.MaterialsBundleView.as_view(), name="materials-bundle"),
-
     # Direct top-level shortcuts for compatibility
     path("", views.GlobalMaterialListCreateView.as_view(), name="material-list-create"),
     path("stats/", views.MaterialStatsView.as_view(), name="material-stats"),

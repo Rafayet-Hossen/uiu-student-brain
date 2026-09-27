@@ -4,12 +4,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .serializers import (
+    OnboardingSerializer,
     ProfileSummarySerializer,
     RegisterSerializer,
     UpdateProfileSerializer,
     UserSerializer,
 )
-from .services import get_user_profile_summary, register_user, update_user_profile
+from .services import get_user_profile_summary, register_user, setup_user_onboarding, update_user_profile
 
 
 class RegisterView(APIView):
@@ -24,6 +25,19 @@ class RegisterView(APIView):
             full_name=serializer.validated_data.get("full_name", ""),
         )
         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
+
+
+class OnboardingView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = OnboardingSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = setup_user_onboarding(
+            user=request.user,
+            data=serializer.validated_data,
+        )
+        return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
 
 
 class MeView(generics.RetrieveUpdateAPIView):

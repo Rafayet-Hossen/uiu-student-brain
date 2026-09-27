@@ -12,6 +12,7 @@ import {
 import AuthOrbitalShowcase from "../components/AuthOrbitalShowcase";
 import AuthAmbientBackground from "../components/AuthAmbientBackground";
 import AuthPillInput from "../components/AuthPillInput";
+import AcademicOnboardingModal from "../components/AcademicOnboardingModal";
 import FormError from "../../../components/FormError";
 import ThemeToggle from "../../../components/ThemeToggle";
 
@@ -27,6 +28,7 @@ export default function RegisterPage() {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
   const [notice, setNotice] = useState("");
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const errors = {
     fullName: validateFullName(fullName),
@@ -64,7 +66,7 @@ export default function RegisterPage() {
         full_name: fullName.trim(),
       });
       await login({ email, password });
-      navigate("/dashboard", { replace: true });
+      setShowOnboarding(true);
     } catch (error) {
       setFormError(extractErrorMessage(error));
     } finally {
@@ -245,6 +247,15 @@ export default function RegisterPage() {
           </div>
         </div>
       </main>
+
+      {/* Post-Signup Academic Onboarding Modal */}
+      {showOnboarding && (
+        <AcademicOnboardingModal
+          isOpen={showOnboarding}
+          onComplete={() => navigate("/dashboard", { replace: true })}
+          onClose={() => navigate("/dashboard", { replace: true })}
+        />
+      )}
     </div>
   );
 }

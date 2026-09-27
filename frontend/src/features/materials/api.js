@@ -1,5 +1,4 @@
 import apiClient from "../../lib/api";
-import queryCache from "../../lib/queryCache";
 
 export const extractMaterialsErrorMessage = (error) => {
   if (error?.response?.data) {
@@ -25,50 +24,21 @@ export const extractMaterialsErrorMessage = (error) => {
 export const extractMaterialErrorMessage = extractMaterialsErrorMessage;
 
 // ============================================================
-// HIGH-PERFORMANCE UNIFIED BUNDLE API
-// ============================================================
-
-export const getMaterialsBundle = async (semesterId = null, courseId = null, forceRefresh = false) => {
-  const params = {};
-  if (semesterId) params.semester_id = semesterId;
-  if (courseId) params.course_id = courseId;
-
-  const cacheKey = `materials_bundle_${semesterId || "default"}_${courseId || "default"}`;
-
-  return queryCache.fetchWithSWR(
-    cacheKey,
-    async () => {
-      const res = await apiClient.get("/materials/bundle/", { params });
-      return res.data;
-    },
-    { forceRefresh, ttl: 120000, staleTtl: 600000 },
-  );
-};
-
-// ============================================================
 // SEMESTERS API
 // ============================================================
 
-export const getSemesters = async (forceRefresh = false) => {
-  return queryCache.fetchWithSWR(
-    "materials_semesters",
-    async () => {
-      const res = await apiClient.get("/materials/semesters/");
-      return res.data;
-    },
-    { forceRefresh, ttl: 120000, staleTtl: 600000 },
-  );
+export const getSemesters = async () => {
+  const res = await apiClient.get("/materials/semesters/");
+  return res.data;
 };
 
 export const createSemester = async (payload) => {
   const res = await apiClient.post("/materials/semesters/", payload);
-  queryCache.invalidate("materials_");
   return res.data;
 };
 
 export const deleteSemester = async (id) => {
   const res = await apiClient.delete(`/materials/semesters/${id}/`);
-  queryCache.invalidate("materials_");
   return res.data;
 };
 
@@ -76,23 +46,15 @@ export const deleteSemester = async (id) => {
 // COURSES API
 // ============================================================
 
-export const getCourses = async (semesterId = null, forceRefresh = false) => {
-  const cacheKey = semesterId ? `materials_courses_sem_${semesterId}` : "materials_courses_global";
-
-  return queryCache.fetchWithSWR(
-    cacheKey,
-    async () => {
-      if (semesterId) {
-        const res = await apiClient.get(
-          `/materials/semesters/${semesterId}/courses/`,
-        );
-        return res.data;
-      }
-      const res = await apiClient.get("/materials/courses/");
-      return res.data;
-    },
-    { forceRefresh, ttl: 120000, staleTtl: 600000 },
-  );
+export const getCourses = async (semesterId = null) => {
+  if (semesterId) {
+    const res = await apiClient.get(
+      `/materials/semesters/${semesterId}/courses/`,
+    );
+    return res.data;
+  }
+  const res = await apiClient.get("/materials/courses/");
+  return res.data;
 };
 
 export const createCourse = async (semesterId, payload) => {
@@ -100,19 +62,16 @@ export const createCourse = async (semesterId, payload) => {
     `/materials/semesters/${semesterId}/courses/`,
     payload,
   );
-  queryCache.invalidate("materials_");
   return res.data;
 };
 
 export const updateCourse = async (id, payload) => {
   const res = await apiClient.patch(`/materials/courses/${id}/`, payload);
-  queryCache.invalidate("materials_");
   return res.data;
 };
 
 export const deleteCourse = async (id) => {
   const res = await apiClient.delete(`/materials/courses/${id}/`);
-  queryCache.invalidate("materials_");
   return res.data;
 };
 
@@ -124,7 +83,6 @@ export const getMaterials = async (
   courseIdOrSubject,
   paramsOrCategory = {},
   maybeSearch = null,
-  forceRefresh = false,
 ) => {
   // If first param is number or numeric string, it's courseId
   if (
@@ -134,20 +92,13 @@ export const getMaterials = async (
       !Array.isArray(paramsOrCategory) &&
       !maybeSearch)
   ) {
-    const cacheKey = `materials_course_${courseIdOrSubject}_${JSON.stringify(paramsOrCategory)}`;
-    return queryCache.fetchWithSWR(
-      cacheKey,
-      async () => {
-        const res = await apiClient.get(
-          `/materials/courses/${courseIdOrSubject}/materials/`,
-          {
-            params: paramsOrCategory,
-          },
-        );
-        return res.data;
+    const res = await apiClient.get(
+      `/materials/courses/${courseIdOrSubject}/materials/`,
+      {
+        params: paramsOrCategory,
       },
-      { forceRefresh, ttl: 120000, staleTtl: 600000 },
     );
+    return res.data;
   }
 
   // Otherwise global getMaterials(subject, category, search)
@@ -161,27 +112,13 @@ export const getMaterials = async (
   )
     params.category = paramsOrCategory;
   if (maybeSearch) params.search = maybeSearch;
-
-  const cacheKey = `materials_global_${JSON.stringify(params)}`;
-  return queryCache.fetchWithSWR(
-    cacheKey,
-    async () => {
-      const res = await apiClient.get("/materials/", { params });
-      return res.data;
-    },
-    { forceRefresh, ttl: 120000, staleTtl: 600000 },
-  );
+  const res = await apiClient.get("/materials/", { params });
+  return res.data;
 };
 
-export const getMaterialStats = async (forceRefresh = false) => {
-  return queryCache.fetchWithSWR(
-    "materials_stats",
-    async () => {
-      const res = await apiClient.get("/materials/stats/");
-      return res.data;
-    },
-    { forceRefresh, ttl: 120000, staleTtl: 600000 },
-  );
+export const getMaterialStats = async () => {
+  const res = await apiClient.get("/materials/stats/");
+  return res.data;
 };
 
 export const getMaterialById = async (id) => {
@@ -193,8 +130,6 @@ export const createMaterial = async (
   courseIdOrPayload,
   maybeFormData = null,
 ) => {
-  queryCache.invalidate("materials_");
-
   // Case 1: Called with single object payload: createMaterial(payload)
   if (
     !maybeFormData &&
@@ -246,7 +181,6 @@ export const createMaterial = async (
 };
 
 export const updateMaterial = async (id, payload) => {
-  queryCache.invalidate("materials_");
   try {
     const res = await apiClient.patch(`/materials/${id}/`, payload);
     return res.data;
@@ -263,7 +197,6 @@ export const updateMaterial = async (id, payload) => {
 };
 
 export const deleteMaterial = async (id) => {
-  queryCache.invalidate("materials_");
   try {
     const res = await apiClient.delete(`/materials/${id}/`);
     return res.data;
@@ -277,7 +210,6 @@ export const deleteMaterial = async (id) => {
 };
 
 export const analyzeMaterial = async (id) => {
-  queryCache.invalidate("materials_");
   const res = await apiClient.post(`/materials/${id}/analyze/`);
   return res.data;
 };

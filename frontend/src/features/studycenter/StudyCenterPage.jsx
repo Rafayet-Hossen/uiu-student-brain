@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   BarChart3,
@@ -8,7 +8,7 @@ import {
   Sparkles,
   Timer,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "../../components/Navbar";
 import MaterialsPage from "../materials/MaterialsPage";
 import PlannerPage from "../planner/PlannerPage";
@@ -21,18 +21,6 @@ export default function StudyCenterPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const currentTab = searchParams.get("tab") || "materials";
   const navTabsRef = useRef(null);
-
-  // Keep-alive set of visited tabs for 0ms instantaneous switching without destroying state
-  const [visitedTabs, setVisitedTabs] = useState(() => new Set([currentTab]));
-
-  useEffect(() => {
-    setVisitedTabs((prev) => {
-      if (prev.has(currentTab)) return prev;
-      const next = new Set(prev);
-      next.add(currentTab);
-      return next;
-    });
-  }, [currentTab]);
 
   const tabs = [
     {
@@ -154,53 +142,23 @@ export default function StudyCenterPage() {
             </div>
           </motion.header>
 
-          {/* Active Tab View Body with 0ms Keep-Alive Persistent State */}
+          {/* Active Tab View Body with Smooth Transitions */}
           <div className="study-center-view-body">
-            <ErrorBoundary>
-              {visitedTabs.has("materials") && (
-                <div
-                  key="materials"
-                  style={{
-                    display: currentTab === "materials" ? "block" : "none",
-                  }}
-                  className="study-center-tab-panel"
+            <ErrorBoundary key={currentTab}>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentTab}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.22, ease: "easeOut" }}
                 >
-                  <MaterialsPage />
-                </div>
-              )}
-              {visitedTabs.has("planner") && (
-                <div
-                  key="planner"
-                  style={{
-                    display: currentTab === "planner" ? "block" : "none",
-                  }}
-                  className="study-center-tab-panel"
-                >
-                  <PlannerPage />
-                </div>
-              )}
-              {visitedTabs.has("tracker") && (
-                <div
-                  key="tracker"
-                  style={{
-                    display: currentTab === "tracker" ? "block" : "none",
-                  }}
-                  className="study-center-tab-panel"
-                >
-                  <TrackerPage />
-                </div>
-              )}
-              {visitedTabs.has("analytics") && (
-                <div
-                  key="analytics"
-                  style={{
-                    display: currentTab === "analytics" ? "block" : "none",
-                  }}
-                  className="study-center-tab-panel"
-                >
-                  <AnalyticsPage />
-                </div>
-              )}
+                  {currentTab === "materials" && <MaterialsPage />}
+                  {currentTab === "planner" && <PlannerPage />}
+                  {currentTab === "tracker" && <TrackerPage />}
+                  {currentTab === "analytics" && <AnalyticsPage />}
+                </motion.div>
+              </AnimatePresence>
             </ErrorBoundary>
           </div>
         </div>

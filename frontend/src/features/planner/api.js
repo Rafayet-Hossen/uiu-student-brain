@@ -1,31 +1,20 @@
 import api from "../../lib/api";
-import queryCache from "../../lib/queryCache";
 
-export function getSchedules(forceRefresh = false) {
-  return queryCache.fetchWithSWR(
-    "planner_schedules",
-    () => api.get("/planner/schedules/").then((res) => res.data),
-    { forceRefresh, ttl: 120000, staleTtl: 600000 },
-  );
+export function getSchedules() {
+  return api.get("/planner/schedules/").then((res) => res.data);
 }
 
 export function createSchedule(schedule) {
-  queryCache.invalidate("planner_");
-  queryCache.invalidate("analytics_");
   return api.post("/planner/schedules/", schedule).then((res) => res.data);
 }
 
 export function updateSchedule(id, schedule) {
-  queryCache.invalidate("planner_");
-  queryCache.invalidate("analytics_");
   return api
     .patch(`/planner/schedules/${id}/`, schedule)
     .then((res) => res.data);
 }
 
 export function deleteSchedule(id) {
-  queryCache.invalidate("planner_");
-  queryCache.invalidate("analytics_");
   return api.delete(`/planner/schedules/${id}/`).then((res) => res.data);
 }
 

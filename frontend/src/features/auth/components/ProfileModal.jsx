@@ -55,6 +55,16 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
       ? String(user.target_gpa)
       : "",
   );
+  const [completedCredits, setCompletedCredits] = useState(() =>
+    user?.completed_credits !== null && user?.completed_credits !== undefined
+      ? String(user.completed_credits)
+      : "",
+  );
+  const [totalCredits, setTotalCredits] = useState(() =>
+    user?.total_credits !== null && user?.total_credits !== undefined
+      ? String(user.total_credits)
+      : "140",
+  );
 
   const [notifAnnouncements, setNotifAnnouncements] = useState(() => {
     return (
@@ -191,6 +201,8 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
         target_daily_minutes: Number(targetDailyMinutes) || 120,
         current_gpa: currentGpa === "" ? null : parseFloat(currentGpa),
         target_gpa: targetGpa === "" ? null : parseFloat(targetGpa),
+        completed_credits: completedCredits === "" ? null : parseFloat(completedCredits),
+        total_credits: totalCredits === "" ? 140.0 : parseFloat(totalCredits),
       };
       const updated = await updateProfile(payload);
       updateUser(updated);
@@ -505,6 +517,46 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
                   value={targetGpa}
                   onChange={(e) => setTargetGpa(e.target.value)}
                   placeholder="e.g. 3.90"
+                  className="form-input-control"
+                  disabled={saving}
+                />
+              </div>
+            </div>
+
+            <div className="modal-grid-2col" style={{ marginBottom: "16px" }}>
+              <div className="form-group">
+                <label
+                  className="form-label"
+                  style={{ fontWeight: 600, fontSize: "0.8125rem" }}
+                >
+                  ✅ Completed Degree Credits
+                </label>
+                <input
+                  type="number"
+                  step="0.5"
+                  min="0"
+                  value={completedCredits}
+                  onChange={(e) => setCompletedCredits(e.target.value)}
+                  placeholder="e.g. 45"
+                  className="form-input-control"
+                  disabled={saving}
+                />
+              </div>
+
+              <div className="form-group">
+                <label
+                  className="form-label"
+                  style={{ fontWeight: 600, fontSize: "0.8125rem" }}
+                >
+                  📚 Total Degree Credits Required
+                </label>
+                <input
+                  type="number"
+                  step="1"
+                  min="1"
+                  value={totalCredits}
+                  onChange={(e) => setTotalCredits(e.target.value)}
+                  placeholder="e.g. 140"
                   className="form-input-control"
                   disabled={saving}
                 />
