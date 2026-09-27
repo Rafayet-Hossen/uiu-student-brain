@@ -97,7 +97,9 @@ export default function MandatoryOnboardingModal() {
     if (dailyFocusOption === "custom") {
       const parsedCustom = parseInt(customFocusMinutes, 10);
       if (isNaN(parsedCustom) || parsedCustom < 15 || parsedCustom > 1440) {
-        setFormError("Please enter valid custom daily focus minutes (between 15 and 1440 mins).");
+        setFormError(
+          "Please enter valid custom daily focus minutes (between 15 and 1440 mins).",
+        );
         return;
       }
       calculatedDailyMinutes = parsedCustom;
