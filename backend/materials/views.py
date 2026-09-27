@@ -337,21 +337,33 @@ class StudyMaterialDownloadView(APIView):
 
     def get(self, request, pk):
         material = services.get_user_material(user=request.user, material_id=pk)
-        from django.http import FileResponse, HttpResponse, Http404
+        from django.http import FileResponse, HttpResponse, HttpResponseRedirect
 
-        if material.file and material.file.storage.exists(material.file.name):
-            return FileResponse(
-                material.file.open("rb"),
-                as_attachment=True,
-                filename=material.file.name.split("/")[-1],
-            )
+        if material.file:
+            try:
+                if hasattr(material.file, "open") and material.file.storage.exists(material.file.name):
+                    return FileResponse(
+                        material.file.open("rb"),
+                        as_attachment=True,
+                        filename=material.file.name.split("/")[-1],
+                    )
+            except Exception:
+                pass
 
-        if material.content_text:
-            safe_title = "".join(
-                c for c in (material.title or "material") if c.isalnum() or c in ("-", "_")
-            ).rstrip()
-            response = HttpResponse(material.content_text, content_type="text/plain; charset=utf-8")
-            response["Content-Disposition"] = f'attachment; filename="{safe_title}.txt"'
-            return response
+        if material.file_url:
+            return HttpResponseRedirect(material.file_url)
 
-        raise Http404("Document file not found on server.")
+        # Fallback to text content or summary
+        content = (
+            material.content_text
+            or (material.ai_analysis.get("summary") if material.ai_analysis else None)
+            or material.summary
+            or f"Study Material: {material.title}\nCourse: {material.course.title if material.course else ''}"
+        )
+        safe_title = "".join(
+            c for c in (material.title or "material") if c.isalnum() or c in ("-", "_")
+        ).rstrip() or "study_material"
+        response = HttpResponse(content, content_type="text/plain; charset=utf-8")
+        response["Content-Disposition"] = f'attachment; filename="{safe_title}.txt"'
+        return response
+

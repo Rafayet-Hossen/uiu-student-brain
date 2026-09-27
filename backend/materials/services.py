@@ -378,10 +378,7 @@ def analyze_material_with_ai(*, user, material_id: int) -> StudyMaterial:
 
     if material.file:
         try:
-            material.file.open("rb")
-            file_bytes = material.file.read()
-            material.file.close()
-            if material.file.storage.exists(material.file.name):
+            if hasattr(material.file, "open"):
                 material.file.open("rb")
                 file_bytes = material.file.read()
                 material.file.close()
@@ -389,18 +386,11 @@ def analyze_material_with_ai(*, user, material_id: int) -> StudyMaterial:
             guessed, _ = mimetypes.guess_type(material.file.name)
             if guessed:
                 mime_type = guessed
-                guessed, _ = mimetypes.guess_type(material.file.name)
-                if guessed:
-                    mime_type = guessed
-            else:
-                logger.warning(
-                    f"Physical file '{material.file.name}' not found in storage for material {material.id}. Falling back to text content."
-                )
         except Exception as e:
-            raise ValidationError(f"Failed to read file for AI analysis: {e}")
             logger.warning(
                 f"Could not read physical file '{material.file.name}': {e}. Falling back to text content."
             )
+            file_bytes = None
 
     if material.content_text:
         raw_text = material.content_text
@@ -426,7 +416,16 @@ def analyze_material_with_ai(*, user, material_id: int) -> StudyMaterial:
     material.key_topics = analysis_result.get("key_topics", [])
     material.difficulty_level = analysis_result.get("difficulty", "Intermediate")
     material.analyzed_at = timezone.now()
-    material.save(update_fields=["ai_analysis", "summary", "key_topics", "difficulty_level", "analyzed_at", "updated_at"])
+    material.save(
+        update_fields=[
+            "ai_analysis",
+            "summary",
+            "key_topics",
+            "difficulty_level",
+            "analyzed_at",
+            "updated_at",
+        ]
+    )
 
     return material
 

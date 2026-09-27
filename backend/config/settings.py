@@ -369,5 +369,6 @@ MEDIA_ROOT = BASE_DIR / "media"
 # ============================================================
 # GEMINI AI SERVICE CONFIGURATION
 # ============================================================
-GEMINI_API_KEY = env("GEMINI_API_KEY", default="")
+GEMINI_API_KEY = env("GEMINI_API_KEY", default=env("GOOGLE_API_KEY", default=""))
+
 

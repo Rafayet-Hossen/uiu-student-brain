@@ -1102,18 +1102,18 @@ export default function MaterialsPage() {
                         return (
                           <div
                             key={mat.id}
-                            className={`material-item-card mat-card-${mat.material_type} ${mat.material_type === "note" ? "material-item-card-clickable" : ""}`}
-                            onClick={
-                              mat.material_type === "note"
-                                ? () => {
-                                    setActiveNoteToOpen({
-                                      ...mat,
-                                      initialMode: "edit",
-                                    });
-                                    setMaterialFilter("note");
-                                  }
-                                : undefined
-                            }
+                            className={`material-item-card mat-card-${mat.material_type} material-item-card-clickable`}
+                            onClick={() => {
+                              if (mat.material_type === "note") {
+                                setActiveNoteToOpen({
+                                  ...mat,
+                                  initialMode: "edit",
+                                });
+                                setMaterialFilter("note");
+                              } else {
+                                setSelectedAnalysisMaterial(mat);
+                              }
+                            }}
                           >
                             <div className="mat-card-header">
                               <div className="mat-header-lead">
@@ -1133,7 +1133,7 @@ export default function MaterialsPage() {
                                 </div>
                               </div>
 
-                              {/* Top-Right Action Cluster (Download, PDF Report, Delete) */}
+                              {/* Top-Right Action Cluster (Download Original, AI PDF Report, Delete) */}
                               <div
                                 className="mat-header-actions"
                                 onClick={(e) => e.stopPropagation()}
@@ -1155,8 +1155,8 @@ export default function MaterialsPage() {
                                       downloadingFileId === mat.id
                                         ? "Downloading..."
                                         : mat.material_type === "note"
-                                          ? "Download Note (.txt)"
-                                          : "Download Document"
+                                          ? "Download Original Note (.txt)"
+                                          : "Download Original Uploaded File"
                                     }
                                     disabled={downloadingFileId === mat.id}
                                   >
@@ -1164,21 +1164,19 @@ export default function MaterialsPage() {
                                   </button>
                                 )}
 
-                                {isAnalyzed && (
-                                  <button
-                                    type="button"
-                                    className="mat-btn-top-action mat-btn-pdf"
-                                    onClick={() => handleDownloadPdfReport(mat)}
-                                    title={
-                                      exportingPdfId === mat.id
-                                        ? "Generating PDF..."
-                                        : "Download Academic PDF Report"
-                                    }
-                                    disabled={exportingPdfId === mat.id}
-                                  >
-                                    <FileDown size={14} />
-                                  </button>
-                                )}
+                                <button
+                                  type="button"
+                                  className="mat-btn-top-action mat-btn-pdf"
+                                  onClick={() => handleDownloadPdfReport(mat)}
+                                  title={
+                                    exportingPdfId === mat.id
+                                      ? "Generating PDF..."
+                                      : "Download AI Summary PDF Report"
+                                  }
+                                  disabled={exportingPdfId === mat.id}
+                                >
+                                  <FileDown size={14} />
+                                </button>
 
                                 <button
                                   type="button"
@@ -1190,6 +1188,7 @@ export default function MaterialsPage() {
                                 </button>
                               </div>
                             </div>
+
 
                             <div className="mat-card-body">
                               {/* Document Card Presentation */}

@@ -16,13 +16,16 @@ from reportlab.pdfgen import canvas
 
 
 def safe_pdf_text(text) -> str:
-    """Escapes raw ampersands and special XML characters so ReportLab Paragraph never fails to parse."""
+    """Escapes raw ampersands, XML characters, and sanitizes characters for ReportLab standard fonts."""
     if not text:
         return ""
     s = str(text)
+    # Strip emojis and unsupported Unicode symbols that cause Latin-1 encoding errors in ReportLab Helvetica
+    s = re.sub(r"[^\x00-\x7F\u00A0-\u00FF\u0100-\u017F]", " ", s)
     # Replace unescaped & with &amp;
     s = re.sub(r"&(?!(?:amp|lt|gt|quot|apos|bull|nbsp|#\d+|#x[0-9a-fA-F]+);)", "&amp;", s)
     return s
+
 
 
 class NumberedCanvas(canvas.Canvas):

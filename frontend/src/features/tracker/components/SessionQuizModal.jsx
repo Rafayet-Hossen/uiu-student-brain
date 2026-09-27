@@ -45,35 +45,34 @@ export default function SessionQuizModal({
   }, [loading]);
 
   // Load Quiz
-  useEffect(() => {
-    if (!isOpen || !session?.id) return;
-
-    let isMounted = true;
+  const fetchQuiz = (forceRefresh = false) => {
+    if (!session?.id) return;
     setLoading(true);
     setError("");
     setSelectedAnswers({});
     setCurrentIndex(0);
 
-    generateSessionQuiz(session.id)
+    generateSessionQuiz(session.id, forceRefresh)
       .then((data) => {
-        if (!isMounted) return;
         setQuizData(data);
       })
       .catch((err) => {
-        if (!isMounted) return;
         console.error("Failed to generate session quiz", err);
         setError(
-          "Failed to generate AI quiz for this study material. Please try again.",
+          "Failed to generate AI quiz for this study session. Click below to retry.",
         );
       })
       .finally(() => {
-        if (isMounted) setLoading(false);
+        setLoading(false);
       });
+  };
 
-    return () => {
-      isMounted = false;
-    };
+  useEffect(() => {
+    if (isOpen && session?.id) {
+      fetchQuiz(false);
+    }
   }, [isOpen, session?.id]);
+
 
   if (!isOpen) return null;
 
@@ -246,11 +245,21 @@ export default function SessionQuizModal({
           )}
 
           {error && !loading && (
-            <div className="alert-banner alert-banner-danger my-3">
-              <AlertCircle size={16} />
-              <span>{error}</span>
+            <div className="alert-banner alert-banner-danger my-3" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <AlertCircle size={16} className="shrink-0" />
+                <span>{error}</span>
+              </div>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => fetchQuiz(true)}
+              >
+                🔄 Retry Now
+              </Button>
             </div>
           )}
+
 
           {!loading && !error && currentQuestion && (
             <div className="session-quiz-content-wrapper">
