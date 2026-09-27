@@ -1,15 +1,99 @@
+import logging
+from django.conf import settings
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 
+from .models import User, Notification, UserNotificationState
 from .serializers import (
+    NotificationSerializer,
     ProfileSummarySerializer,
     RegisterSerializer,
     UpdateProfileSerializer,
     UserSerializer,
 )
 from .services import get_user_profile_summary, register_user, update_user_profile
+
+logger = logging.getLogger(__name__)
+
+
+class GoogleLoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        token = (
+            request.data.get("credential")
+            or request.data.get("id_token")
+            or request.data.get("token")
+        )
+        if not token:
+            return Response(
+                {"detail": "Google authentication credential token is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        client_id = getattr(
+            settings,
+            "GOOGLE_CLIENT_ID",
+            "97595115320-as37nh6t3kp0tgdgsad4o1jri6k5tmr6.apps.googleusercontent.com",
+        )
+
+        try:
+            idinfo = id_token.verify_oauth2_token(
+                token,
+                google_requests.Request(),
+                client_id,
+                clock_skew_in_seconds=10,
+            )
+
+            email = idinfo.get("email")
+            if not email:
+                return Response(
+                    {"detail": "Unable to retrieve verified email from Google account."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            name = idinfo.get("name") or idinfo.get("given_name") or email.split("@")[0]
+
+            user, created = User.objects.get_or_create(
+                email=email,
+                defaults={
+                    "full_name": name,
+                    "is_active": True,
+                },
+            )
+
+            if not user.full_name and name:
+                user.full_name = name
+                user.save(update_fields=["full_name"])
+
+            refresh = RefreshToken.for_user(user)
+            return Response(
+                {
+                    "access": str(refresh.access_token),
+                    "refresh": str(refresh),
+                    "user": UserSerializer(user).data,
+                    "created": created,
+                },
+                status=status.HTTP_200_OK,
+            )
+        except ValueError as ve:
+            logger.warning(f"Invalid Google ID token: {ve}")
+            return Response(
+                {"detail": f"Invalid Google authentication token: {str(ve)}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception as e:
+            logger.error(f"Google login unexpected error: {e}", exc_info=True)
+            return Response(
+                {"detail": f"Google authentication failed: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
 
 
 class RegisterView(APIView):

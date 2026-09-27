@@ -26,29 +26,11 @@ import {
 import ScholarAvatar from "./ScholarAvatar";
 import { useAuth } from "../useAuth";
 
-function ToggleSwitch({ checked, onChange, id, label }) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      id={id}
-      onClick={() => onChange(!checked)}
-      className={`settings-toggle-switch ${checked ? "is-checked" : ""}`}
-      title={label || (checked ? "Enabled" : "Disabled")}
-    >
-      <span className="toggle-switch-track">
-        <span className="toggle-switch-thumb" />
-      </span>
-    </button>
-  );
-}
-
 export default function ProfileModal({ initialTab = "settings", onClose }) {
   const { user, updateUser, logout } = useAuth();
   const [activeTab, setActiveTab] = useState(() => {
     if (initialTab === "performance") return "performance";
-    if (initialTab === "profile") return "profile";
+    if (initialTab === "profile") return "settings";
     return "settings";
   });
 
@@ -73,20 +55,6 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
       ? String(user.target_gpa)
       : "",
   );
-
-  const [optInLeaderboard, setOptInLeaderboard] = useState(
-    () => user?.opt_in_leaderboard ?? true
-  );
-
-  async function handleToggleLeaderboard(val) {
-    setOptInLeaderboard(val);
-    try {
-      const updated = await updateProfile({ opt_in_leaderboard: val });
-      updateUser(updated);
-    } catch (err) {
-      console.error("Failed to update leaderboard preference", err);
-    }
-  }
 
   const [notifAnnouncements, setNotifAnnouncements] = useState(() => {
     return (
@@ -843,13 +811,10 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
             {/* Visual Theme */}
             <div className="profile-setting-row-card">
               <div className="setting-text-col">
-                <span className="setting-icon-tag">🎨</span>
-                <div>
-                  <strong className="setting-title">Visual Theme</strong>
-                  <span className="setting-desc">
-                    Switch between Light and Dark visual academic modes
-                  </span>
-                </div>
+                <strong className="setting-title">🎨 Visual Theme</strong>
+                <span className="setting-desc">
+                  Switch between Light and Dark visual academic modes
+                </span>
               </div>
               <div className="setting-action-col">
                 <ThemeToggle />
@@ -859,117 +824,112 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
             {/* Community Leaderboard */}
             <div className="profile-setting-row-card">
               <div className="setting-text-col">
-                <span className="setting-icon-tag">🏆</span>
-                <div>
-                  <strong className="setting-title">
-                    Community Leaderboard
-                  </strong>
-                  <span className="setting-desc">
-                    Make your study streak and XP visible to fellow scholars
-                  </span>
-                </div>
+                <strong className="setting-title">
+                  🏆 Community Leaderboard
+                </strong>
+                <span className="setting-desc">
+                  Your rank and XP points are visible to fellow scholars
+                </span>
               </div>
               <div className="setting-action-col">
-                <ToggleSwitch
-                  checked={optInLeaderboard}
-                  onChange={handleToggleLeaderboard}
-                  label="Community Leaderboard"
-                />
+                <Badge variant="secondary">Active / Opted In</Badge>
               </div>
             </div>
 
             {/* Notification Channels Dynamic Preferences */}
             <div className="profile-notifs-box-card">
               <div className="notifs-box-header">
-                <span className="setting-icon-tag">🔔</span>
-                <div>
-                  <strong className="setting-title">
-                    Notification Channels & Alerts
-                  </strong>
-                  <span className="setting-desc">
-                    Toggle individual notification channels and sound alerts.
-                  </span>
-                </div>
+                <strong className="setting-title">
+                  🔔 Notification Channels & Dynamic Alerts
+                </strong>
+                <span className="setting-desc">
+                  Disable or enable notifications. Disabled channels will not
+                  generate or display alerts.
+                </span>
               </div>
 
               <div className="notifs-channels-list">
                 <div className="notif-channel-row">
                   <div className="setting-text-col">
-                    <div>
-                      <strong className="notif-item-title">
-                        📢 Campus Announcements & Events
-                      </strong>
-                      <span className="notif-item-desc">
-                        Exam reviews, study sessions, and university circulars
-                      </span>
-                    </div>
+                    <strong className="notif-item-title">
+                      📢 Campus Announcements & Events
+                    </strong>
+                    <span className="notif-item-desc">
+                      Faculty exam reviews, study sessions, and university
+                      circulars
+                    </span>
                   </div>
                   <div className="setting-action-col">
-                    <ToggleSwitch
-                      checked={notifAnnouncements}
-                      onChange={() => handleToggleNotif("announcements")}
-                      label="Announcements & Events"
-                    />
+                    <button
+                      type="button"
+                      onClick={() => handleToggleNotif("announcements")}
+                      className={`notif-toggle-pill ${notifAnnouncements ? "toggle-active" : "toggle-disabled"}`}
+                    >
+                      {notifAnnouncements ? "✓ Enabled" : "✕ Disabled"}
+                    </button>
                   </div>
                 </div>
 
                 <div className="notif-channel-row">
                   <div className="setting-text-col">
-                    <div>
-                      <strong className="notif-item-title">
-                        💬 Comments & Discussion Replies
-                      </strong>
-                      <span className="notif-item-desc">
-                        Comments on your posts and community solutions
-                      </span>
-                    </div>
+                    <strong className="notif-item-title">
+                      💬 Comments & Discussion Replies
+                    </strong>
+                    <span className="notif-item-desc">
+                      Classmate comments on your posts and solutions marked
+                      helpful
+                    </span>
                   </div>
                   <div className="setting-action-col">
-                    <ToggleSwitch
-                      checked={notifComments}
-                      onChange={() => handleToggleNotif("comments")}
-                      label="Comments & Discussion Replies"
-                    />
+                    <button
+                      type="button"
+                      onClick={() => handleToggleNotif("comments")}
+                      className={`notif-toggle-pill ${notifComments ? "toggle-active" : "toggle-disabled"}`}
+                    >
+                      {notifComments ? "✓ Enabled" : "✕ Disabled"}
+                    </button>
                   </div>
                 </div>
 
                 <div className="notif-channel-row">
                   <div className="setting-text-col">
-                    <div>
-                      <strong className="notif-item-title">
-                        🎓 Academic Targets & Habit Streaks
-                      </strong>
-                      <span className="notif-item-desc">
-                        Target CGPA milestones and study streak reminders
-                      </span>
-                    </div>
+                    <strong className="notif-item-title">
+                      🎓 Academic Targets & Habit Streaks
+                    </strong>
+                    <span className="notif-item-desc">
+                      Target CGPA updates and daily study streak consistency
+                      reminders
+                    </span>
                   </div>
                   <div className="setting-action-col">
-                    <ToggleSwitch
-                      checked={notifAcademic}
-                      onChange={() => handleToggleNotif("academic")}
-                      label="Academic Targets & Habit Streaks"
-                    />
+                    <button
+                      type="button"
+                      onClick={() => handleToggleNotif("academic")}
+                      className={`notif-toggle-pill ${notifAcademic ? "toggle-active" : "toggle-disabled"}`}
+                    >
+                      {notifAcademic ? "✓ Enabled" : "✕ Disabled"}
+                    </button>
                   </div>
                 </div>
 
                 <div className="notif-channel-row">
                   <div className="setting-text-col">
-                    <div>
-                      <strong className="notif-item-title">
-                        🔊 Audio & Alert Chimes
-                      </strong>
-                      <span className="notif-item-desc">
-                        Chimes when focus timers or scheduled slots complete
-                      </span>
-                    </div>
+                    <strong className="notif-item-title">
+                      🔊 Audio & Alert Chimes
+                    </strong>
+                    <span className="notif-item-desc">
+                      Sound notifications when study timers or reminders
+                      complete
+                    </span>
                   </div>
                   <div className="setting-action-col">
-                    <ToggleSwitch
-                      checked={notifSound}
-                      onChange={() => handleToggleNotif("sound")}
-                      label="Audio & Alert Chimes"
-                    />
+                    <button
+                      type="button"
+                      onClick={() => handleToggleNotif("sound")}
+                      className={`notif-toggle-pill ${notifSound ? "toggle-active" : "toggle-disabled"}`}
+                    >
+                      {notifSound ? "✓ Enabled" : "✕ Disabled"}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -978,15 +938,12 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
             {/* Account Logout */}
             <div className="profile-setting-row-card logout-card">
               <div className="setting-text-col">
-                <span className="setting-icon-tag">🚪</span>
-                <div>
-                  <strong className="setting-title text-danger">
-                    Account Logout
-                  </strong>
-                  <span className="setting-desc">
-                    Sign out of StudentBrain on this device
-                  </span>
-                </div>
+                <strong className="setting-title text-danger">
+                  🚪 Account Logout
+                </strong>
+                <span className="setting-desc">
+                  Sign out of StudentBrain on this device
+                </span>
               </div>
               <div className="setting-action-col">
                 <Button

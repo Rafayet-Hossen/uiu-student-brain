@@ -12,6 +12,13 @@ export function login({ email, password }) {
     .then((res) => res.data);
 }
 
+export function googleAuthLogin({ credential }) {
+  return api
+    .post("/accounts/google/", { credential })
+    .then((res) => res.data);
+}
+
+
 export function getMe() {
   return api.get("/accounts/me/").then((res) => res.data);
 }

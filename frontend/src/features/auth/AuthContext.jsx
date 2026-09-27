@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getMe, login as loginRequest } from "./api";
+import { getMe, login as loginRequest, googleAuthLogin } from "./api";
 import { AuthContext } from "./context";
 
 export function AuthProvider({ children }) {
@@ -29,6 +29,18 @@ export function AuthProvider({ children }) {
     return me;
   }
 
+  async function loginWithGoogle(credential) {
+    const res = await googleAuthLogin({ credential });
+    if (res?.access) {
+      localStorage.setItem("access_token", res.access);
+      localStorage.setItem("refresh_token", res.refresh);
+      const me = res.user || (await getMe());
+      setUser(me);
+      return me;
+    }
+    throw new Error("Google authentication failed. Please try again.");
+  }
+
   function updateUser(updatedUser) {
     setUser((prev) => (prev ? { ...prev, ...updatedUser } : updatedUser));
   }
@@ -40,8 +52,11 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, updateUser }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, loginWithGoogle, logout, updateUser }}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
+
