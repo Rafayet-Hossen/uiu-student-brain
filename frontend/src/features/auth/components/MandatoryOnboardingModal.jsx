@@ -48,39 +48,28 @@ const TRIMESTERS = [
 ];
 
 const DAILY_FOCUS_OPTIONS = [
-  { value: 60, label: "60 mins (1 hr / day)" },
-  { value: 90, label: "90 mins (1.5 hrs / day)" },
-  { value: 120, label: "120 mins (2 hrs / day - Standard)" },
-  { value: 180, label: "180 mins (3 hrs / day - Intensive)" },
-  { value: 240, label: "240 mins (4 hrs / day - Scholar Focus)" },
-  { value: 300, label: "300+ mins (5+ hrs / day)" },
+  { value: "60", label: "60 mins (1 hr / day)" },
+  { value: "90", label: "90 mins (1.5 hrs / day)" },
+  { value: "120", label: "120 mins (2 hrs / day - Standard)" },
+  { value: "180", label: "180 mins (3 hrs / day - Intensive)" },
+  { value: "240", label: "240 mins (4 hrs / day - Scholar Focus)" },
+  { value: "300", label: "300 mins (5 hrs / day)" },
+  { value: "custom", label: "⏱️ Custom Time (Input minutes manually)" },
 ];
 
 export default function MandatoryOnboardingModal() {
   const { user, updateUser } = useAuth();
 
-  const [fullName, setFullName] = useState(user?.full_name || "");
-  const [department, setDepartment] = useState(user?.department || "");
-  const [currentTrimester, setCurrentTrimester] = useState(
-    user?.current_trimester || "1st Trimester",
-  );
-  const [currentGpa, setCurrentGpa] = useState(() =>
-    user?.current_gpa !== null && user?.current_gpa !== undefined
-      ? String(user.current_gpa)
-      : "",
-  );
-  const [targetGpa, setTargetGpa] = useState(() =>
-    user?.target_gpa !== null && user?.target_gpa !== undefined
-      ? String(user.target_gpa)
-      : "3.80",
-  );
-  const [targetDailyMinutes, setTargetDailyMinutes] = useState(
-    user?.target_daily_minutes || 120,
-  );
-  const [bio, setBio] = useState(user?.bio || "");
-  const [optInLeaderboard, setOptInLeaderboard] = useState(
-    user?.opt_in_leaderboard !== false,
-  );
+  // All inputs default to empty strings with placeholders as requested
+  const [fullName, setFullName] = useState("");
+  const [department, setDepartment] = useState("");
+  const [currentTrimester, setCurrentTrimester] = useState("");
+  const [dailyFocusOption, setDailyFocusOption] = useState("");
+  const [customFocusMinutes, setCustomFocusMinutes] = useState("");
+  const [currentGpa, setCurrentGpa] = useState("");
+  const [targetGpa, setTargetGpa] = useState("");
+  const [bio, setBio] = useState("");
+  const [optInLeaderboard, setOptInLeaderboard] = useState(true);
 
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
@@ -99,6 +88,22 @@ export default function MandatoryOnboardingModal() {
       setFormError("Please select your current trimester level.");
       return;
     }
+    if (!dailyFocusOption) {
+      setFormError("Please select or enter your daily focus study goal.");
+      return;
+    }
+
+    let calculatedDailyMinutes = 120;
+    if (dailyFocusOption === "custom") {
+      const parsedCustom = parseInt(customFocusMinutes, 10);
+      if (isNaN(parsedCustom) || parsedCustom < 15 || parsedCustom > 1440) {
+        setFormError("Please enter valid custom daily focus minutes (between 15 and 1440 mins).");
+        return;
+      }
+      calculatedDailyMinutes = parsedCustom;
+    } else {
+      calculatedDailyMinutes = parseInt(dailyFocusOption, 10) || 120;
+    }
 
     let parsedCurrentGpa = null;
     if (currentGpa.trim() !== "") {
@@ -113,17 +118,19 @@ export default function MandatoryOnboardingModal() {
       }
     }
 
-    let parsedTargetGpa = 3.8;
-    if (targetGpa.trim() !== "") {
-      parsedTargetGpa = parseFloat(targetGpa);
-      if (
-        isNaN(parsedTargetGpa) ||
-        parsedTargetGpa < 1.0 ||
-        parsedTargetGpa > 4.0
-      ) {
-        setFormError("Target CGPA must be between 1.00 and 4.00.");
-        return;
-      }
+    if (!targetGpa.trim()) {
+      setFormError("Please enter your target CGPA goal.");
+      return;
+    }
+
+    const parsedTargetGpa = parseFloat(targetGpa);
+    if (
+      isNaN(parsedTargetGpa) ||
+      parsedTargetGpa < 1.0 ||
+      parsedTargetGpa > 4.0
+    ) {
+      setFormError("Target CGPA must be between 1.00 and 4.00.");
+      return;
     }
 
     setSubmitting(true);
@@ -136,7 +143,7 @@ export default function MandatoryOnboardingModal() {
         current_trimester: currentTrimester,
         current_gpa: parsedCurrentGpa,
         target_gpa: parsedTargetGpa,
-        target_daily_minutes: parseInt(targetDailyMinutes, 10) || 120,
+        target_daily_minutes: calculatedDailyMinutes,
         bio: bio.trim(),
         opt_in_leaderboard: optInLeaderboard,
         is_onboarded: true,
@@ -165,6 +172,10 @@ export default function MandatoryOnboardingModal() {
         backdropFilter: "blur(8px)",
         WebkitBackdropFilter: "blur(8px)",
         padding: "16px",
+        overflowY: "auto",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
       }}
     >
       <motion.div
@@ -172,9 +183,12 @@ export default function MandatoryOnboardingModal() {
         style={{
           maxWidth: "580px",
           width: "100%",
+          maxHeight: "min(92vh, 760px)",
+          overflowY: "auto",
           padding: "24px 22px",
           borderRadius: "var(--radius-xl)",
           boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.4)",
+          margin: "auto",
         }}
         initial={{ scale: 0.92, opacity: 0, y: 15 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -347,6 +361,7 @@ export default function MandatoryOnboardingModal() {
                 onChange={(e) => setCurrentTrimester(e.target.value)}
                 required
               >
+                <option value="">-- Select Current Trimester --</option>
                 {TRIMESTERS.map((tri) => (
                   <option key={tri} value={tri}>
                     {tri}
@@ -369,16 +384,31 @@ export default function MandatoryOnboardingModal() {
               </label>
               <select
                 className="form-input-control"
-                value={targetDailyMinutes}
-                onChange={(e) => setTargetDailyMinutes(e.target.value)}
+                value={dailyFocusOption}
+                onChange={(e) => setDailyFocusOption(e.target.value)}
                 required
               >
+                <option value="">-- Select Daily Focus Goal --</option>
                 {DAILY_FOCUS_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
                   </option>
                 ))}
               </select>
+              {dailyFocusOption === "custom" && (
+                <div style={{ marginTop: "6px" }}>
+                  <input
+                    type="number"
+                    min="15"
+                    max="1440"
+                    className="form-input-control"
+                    placeholder="Enter custom minutes (e.g. 150)"
+                    value={customFocusMinutes}
+                    onChange={(e) => setCustomFocusMinutes(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
             </div>
           </div>
 
@@ -408,7 +438,7 @@ export default function MandatoryOnboardingModal() {
                 min="0"
                 max="4"
                 className="form-input-control"
-                placeholder="e.g. 3.25 (or 0 for 1st tri)"
+                placeholder="e.g. 3.25 (or 0 for 1st trimester)"
                 value={currentGpa}
                 onChange={(e) => setCurrentGpa(e.target.value)}
               />
