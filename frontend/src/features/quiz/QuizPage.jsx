@@ -460,10 +460,11 @@ export default function QuizPage() {
                   variant="primary"
                   onClick={handleSubmitQuiz}
                   loading={evaluating}
-                  disabled={answeredCount === 0}
-                  icon={CheckCircle2}
+                  disabled={answeredCount === 0 || evaluating}
+                  icon={evaluating ? undefined : CheckCircle2}
+                  style={{ minWidth: "180px", justifyContent: "center" }}
                 >
-                  Submit Assessment
+                  {evaluating ? "Submitting Assessment..." : "Submit Assessment"}
                 </Button>
               )}
             </div>
@@ -490,7 +491,7 @@ export default function QuizPage() {
                 <div className="score-tier-badge">
                   <Award size={18} />
                   <span>
-                    {evaluationResult.performance_tier || "Diagnostic Score"}
+                    {evaluationResult.performance_tier || "Assessment Submitted & Evaluated"}
                   </span>
                 </div>
                 <h2 className="score-headline">
@@ -657,29 +658,41 @@ export default function QuizPage() {
                           const isUserChoice = selIdx === optIdx;
                           const isCorrectChoice =
                             optIdx === q.correct_answer_index;
+                          const letter = String.fromCharCode(65 + optIdx);
                           return (
                             <div
                               key={optIdx}
-                              className={`review-option-pill ${
+                              className={`review-option-card ${
                                 isCorrectChoice
-                                  ? "pill-correct-answer"
+                                  ? "option-is-correct"
                                   : isUserChoice
-                                    ? "pill-user-wrong"
-                                    : ""
+                                    ? "option-is-user-wrong"
+                                    : "option-is-neutral"
                               }`}
                             >
-                              <span className="review-letter">
-                                {String.fromCharCode(65 + optIdx)}
-                              </span>
-                              <span className="review-text">{opt}</span>
-                              {isCorrectChoice && (
-                                <span className="tag-correct">
-                                  ✓ Correct Answer
-                                </span>
-                              )}
-                              {isUserChoice && !isCorrectChoice && (
-                                <span className="tag-wrong">✕ Your Choice</span>
-                              )}
+                              <div className="review-letter-badge">
+                                {letter}
+                              </div>
+                              <div className="review-text-content">
+                                {opt}
+                              </div>
+                              <div className="review-status-indicator">
+                                {isCorrectChoice && isUserChoice && (
+                                  <span className="badge-solution-tag tag-success">
+                                    <Check size={13} /> Correct (Your Choice)
+                                  </span>
+                                )}
+                                {isCorrectChoice && !isUserChoice && (
+                                  <span className="badge-solution-tag tag-success">
+                                    <Check size={13} /> Correct Answer
+                                  </span>
+                                )}
+                                {isUserChoice && !isCorrectChoice && (
+                                  <span className="badge-solution-tag tag-danger">
+                                    <X size={13} /> Your Choice
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           );
                         })}
