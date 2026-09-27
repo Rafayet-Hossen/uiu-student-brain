@@ -587,7 +587,8 @@ export default function CommunityPage() {
                 </div>
                 <div className="quick-creator-bottom">
                   <div className="quick-creator-chips">
-                    <span
+                    <button
+                      type="button"
                       className="quick-chip-item"
                       onClick={() => {
                         setModalCategory("General");
@@ -596,8 +597,9 @@ export default function CommunityPage() {
                     >
                       <FileText size={14} className="text-indigo" />
                       <span>Note / Topic</span>
-                    </span>
-                    <span
+                    </button>
+                    <button
+                      type="button"
                       className="quick-chip-item"
                       onClick={() => {
                         setModalCategory("Exam Prep");
@@ -606,35 +608,19 @@ export default function CommunityPage() {
                     >
                       <Zap size={14} className="text-amber" />
                       <span>Exam Question</span>
-                    </span>
-                    <span
-                      className="quick-chip-item"
+                    </button>
+                    <button
+                      type="button"
+                      className="quick-chip-item quick-chip-code"
                       onClick={() => {
                         setModalCategory("Code Help");
                         setShowPostModal(true);
                       }}
-                      style={{
-                        background: "rgba(16, 185, 129, 0.12)",
-                        borderColor: "rgba(16, 185, 129, 0.35)",
-                        color: "#10b981",
-                        fontWeight: 600,
-                      }}
                     >
                       <Code2 size={14} className="text-emerald" />
-                      <span>💻 Code & Live Share</span>
-                    </span>
+                      <span>Code Help</span>
+                    </button>
                   </div>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={() => {
-                      setModalCategory("General");
-                      setShowPostModal(true);
-                    }}
-                    icon={Plus}
-                  >
-                    Create Post
-                  </Button>
                 </div>
               </Card>
 

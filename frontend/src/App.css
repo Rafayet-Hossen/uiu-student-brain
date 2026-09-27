@@ -6158,9 +6158,11 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  width: 100%;
   overflow-x: auto;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
+  padding: 2px 0;
 }
 
 .quick-creator-chips::-webkit-scrollbar {
@@ -6170,20 +6172,31 @@
 .quick-chip-item {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  font-size: 0.78rem;
+  gap: 6px;
+  font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-full);
+  padding: 6px 12px;
   cursor: pointer;
   white-space: nowrap;
-  padding: 4px 8px;
-  border-radius: var(--radius-md);
+  flex-shrink: 0;
   transition: all 0.15s ease;
 }
 
 .quick-chip-item:hover {
-  background: var(--color-surface-subtle);
-  color: var(--color-text);
+  background: var(--color-surface);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  transform: translateY(-1px);
+}
+
+.quick-chip-code {
+  background: rgba(16, 185, 129, 0.08) !important;
+  border-color: rgba(16, 185, 129, 0.25) !important;
+  color: #10b981 !important;
 }
 
 .community-feed-filters-bar {
@@ -6191,30 +6204,31 @@
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  flex-wrap: wrap;
 }
 
 .feed-filter-tabs {
-  display: flex;
+  display: inline-flex;
   background: var(--color-surface-subtle);
-  padding: 4px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--color-border);
-  gap: 4px;
+  padding: 3px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-subtle);
+  gap: 3px;
+  flex-shrink: 0;
 }
 
 .feed-filter-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 14px;
-  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
   border: none;
   background: transparent;
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--color-text-muted);
   cursor: pointer;
+  white-space: nowrap;
   transition: all 0.15s ease;
 }
 
@@ -6232,21 +6246,28 @@
   position: relative;
   display: flex;
   align-items: center;
-  width: 260px;
+  flex: 1;
+  max-width: 320px;
 }
 
 .feed-search-input {
-  padding-right: 32px;
+  width: 100%;
+  padding-left: 36px;
+  padding-right: 12px;
+  border-radius: var(--radius-full);
   font-size: 0.8125rem;
 }
 
 .feed-search-action-btn {
   position: absolute;
-  right: 8px;
+  left: 10px;
   background: none;
   border: none;
   color: var(--color-text-muted);
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .category-scroll-bar {
@@ -6470,19 +6491,37 @@
   .quick-post-creator-card {
     padding: 12px 14px;
   }
-  .quick-creator-bottom {
-    flex-direction: column;
-    align-items: stretch;
+  .quick-creator-top {
     gap: 10px;
+    margin-bottom: 8px;
+  }
+  .quick-creator-input-trigger {
+    padding: 8px 14px;
+    font-size: 0.8125rem;
+  }
+  .quick-creator-bottom {
+    flex-direction: row;
+    align-items: center;
+    padding-top: 8px;
+    gap: 8px;
   }
   .quick-creator-chips {
     width: 100%;
-    justify-content: flex-start;
+    gap: 6px;
+    padding: 2px 0;
+  }
+  .quick-chip-item {
+    font-size: 0.75rem;
+    padding: 5px 10px;
   }
   .community-feed-filters-bar {
     flex-direction: column;
     align-items: stretch;
-    gap: 10px;
+    gap: 8px;
+  }
+  .feed-search-wrap {
+    max-width: 100%;
+    width: 100%;
   }
   .feed-filter-tabs {
     width: 100%;
@@ -6491,9 +6530,6 @@
   }
   .feed-filter-btn {
     justify-content: center;
-  }
-  .feed-search-wrap {
-    width: 100%;
   }
 }
 
