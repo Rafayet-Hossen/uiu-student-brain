@@ -1,3 +1,5 @@
+import React from "react";
+
 export default function StudentBrainLogo({ size = 28, className = "" }) {
   return (
     <div
@@ -43,21 +45,9 @@ export default function StudentBrainLogo({ size = 28, className = "" }) {
             <stop offset="0%" stopColor="#FFFFFF" />
             <stop offset="100%" stopColor="#FED7AA" />
           </linearGradient>
-
-          <linearGradient
-            id="sbGradGlow"
-            x1="0"
-            y1="0"
-            x2="48"
-            y2="48"
-            gradientUnits="userSpaceOnUse"
-          >
-            <stop offset="0%" stopColor="#F97316" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#FB923C" stopOpacity="0.2" />
-          </linearGradient>
         </defs>
 
-        {/* Outer Rounded Container Pill / Shield */}
+        {/* Outer Rounded Container */}
         <rect
           x="3"
           y="3"
@@ -67,7 +57,7 @@ export default function StudentBrainLogo({ size = 28, className = "" }) {
           fill="url(#sbGradPrimary)"
         />
 
-        {/* Subtle Inner Glass Overlay */}
+        {/* Subtle Glass Top Highlight */}
         <rect
           x="3"
           y="3"
@@ -78,8 +68,7 @@ export default function StudentBrainLogo({ size = 28, className = "" }) {
           fillOpacity="0.15"
         />
 
-        {/* Synaptic Academic Cap Geometry */}
-        {/* Cap Top Rhombus */}
+        {/* Academic Mortarboard Top Rhombus */}
         <path
           d="M24 13L37 19.5L24 26L11 19.5L24 13Z"
           fill="url(#sbGradAccent)"
@@ -88,7 +77,7 @@ export default function StudentBrainLogo({ size = 28, className = "" }) {
           strokeLinejoin="round"
         />
 
-        {/* Cap Bottom Skullcap Curve */}
+        {/* Cap Bottom Skullcap Arc */}
         <path
           d="M15.5 22.5V28C15.5 31 19.3 33.5 24 33.5C28.7 33.5 32.5 31 32.5 28V22.5"
           stroke="url(#sbGradAccent)"
@@ -97,7 +86,7 @@ export default function StudentBrainLogo({ size = 28, className = "" }) {
           strokeLinejoin="round"
         />
 
-        {/* Neural Synapse Nodes on Lower Hull */}
+        {/* Neural Synapse Nodes on Lower Arc */}
         <circle cx="24" cy="30" r="1.8" fill="#F26522" />
         <circle cx="19" cy="27" r="1.4" fill="#FED7AA" />
         <circle cx="29" cy="27" r="1.4" fill="#FED7AA" />
@@ -110,7 +99,7 @@ export default function StudentBrainLogo({ size = 28, className = "" }) {
           strokeLinecap="round"
         />
 
-        {/* Graduation Cap Tassel with Golden Drop */}
+        {/* Graduation Cap Tassel */}
         <path
           d="M33 20V27.5L34.5 30"
           stroke="#FEF3C7"

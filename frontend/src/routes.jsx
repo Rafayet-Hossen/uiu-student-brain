@@ -10,7 +10,6 @@ import Spinner from "./components/Spinner";
 import { useAuth } from "./features/auth/useAuth";
 import LoginPage from "./features/auth/pages/LoginPage";
 import RegisterPage from "./features/auth/pages/RegisterPage";
-import OnboardingPage from "./features/auth/pages/OnboardingPage";
 import DashboardPage from "./features/dashboard/DashboardPage";
 import GradePlannerPage from "./features/grades/GradePlannerPage";
 import CommunityPage from "./features/community/CommunityPage";
@@ -32,15 +31,6 @@ function ProtectedRoute({ children }) {
   if (loading) return <PageLoading />;
   if (!user)
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
-
-  if (!user.is_onboarded && location.pathname !== "/onboarding") {
-    return <Navigate to="/onboarding" replace />;
-  }
-
-  if (user.is_onboarded && location.pathname === "/onboarding") {
-    return <Navigate to="/dashboard" replace />;
-  }
-
   return children;
 }
 
@@ -48,9 +38,7 @@ function PublicOnlyRoute({ children }) {
   const { user, loading } = useAuth();
 
   if (loading) return <PageLoading />;
-  if (user) {
-    return <Navigate to={user.is_onboarded ? "/dashboard" : "/onboarding"} replace />;
-  }
+  if (user) return <Navigate to="/dashboard" replace />;
   return children;
 }
 
@@ -58,8 +46,7 @@ function RootRedirect() {
   const { user, loading } = useAuth();
 
   if (loading) return <PageLoading />;
-  if (!user) return <Navigate to="/login" replace />;
-  return <Navigate to={user.is_onboarded ? "/dashboard" : "/onboarding"} replace />;
+  return <Navigate to={user ? "/dashboard" : "/login"} replace />;
 }
 
 export default function AppRoutes() {
@@ -81,14 +68,6 @@ export default function AppRoutes() {
             <PublicOnlyRoute>
               <RegisterPage />
             </PublicOnlyRoute>
-          }
-        />
-        <Route
-          path="/onboarding"
-          element={
-            <ProtectedRoute>
-              <OnboardingPage />
-            </ProtectedRoute>
           }
         />
         <Route

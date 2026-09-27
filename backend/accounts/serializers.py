@@ -26,11 +26,6 @@ class UserSerializer(serializers.ModelSerializer):
             "target_daily_minutes",
             "current_gpa",
             "target_gpa",
-            "completed_credits",
-            "total_credits",
-            "current_trimester",
-            "opt_in_leaderboard",
-            "is_onboarded",
             "date_joined",
         ]
         read_only_fields = ["id", "email", "date_joined"]
@@ -39,8 +34,6 @@ class UserSerializer(serializers.ModelSerializer):
 class UpdateProfileSerializer(serializers.ModelSerializer):
     target_gpa = serializers.FloatField(required=False, allow_null=True)
     current_gpa = serializers.FloatField(required=False, allow_null=True)
-    completed_credits = serializers.FloatField(required=False, allow_null=True)
-    total_credits = serializers.FloatField(required=False, allow_null=True)
 
     class Meta:
         model = User
@@ -51,33 +44,6 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
             "target_daily_minutes",
             "target_gpa",
             "current_gpa",
-            "completed_credits",
-            "total_credits",
-            "current_trimester",
-            "opt_in_leaderboard",
-            "is_onboarded",
-        ]
-
-
-class OnboardingSerializer(serializers.ModelSerializer):
-    current_gpa = serializers.DecimalField(max_digits=4, decimal_places=2, required=True)
-    target_gpa = serializers.DecimalField(max_digits=4, decimal_places=2, required=True)
-    completed_credits = serializers.DecimalField(max_digits=6, decimal_places=2, required=True)
-    total_credits = serializers.DecimalField(max_digits=6, decimal_places=2, required=False, default=140)
-    current_trimester = serializers.CharField(max_length=50, required=False, allow_blank=True, default="")
-    department = serializers.CharField(max_length=255, required=False, allow_blank=True, default="")
-    opt_in_leaderboard = serializers.BooleanField(required=False, default=True)
-
-    class Meta:
-        model = User
-        fields = [
-            "current_gpa",
-            "target_gpa",
-            "completed_credits",
-            "total_credits",
-            "current_trimester",
-            "department",
-            "opt_in_leaderboard",
         ]
 
 

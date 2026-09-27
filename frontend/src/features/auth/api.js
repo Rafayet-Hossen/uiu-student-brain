@@ -20,10 +20,6 @@ export function updateProfile(payload) {
   return api.patch("/accounts/me/", payload).then((res) => res.data);
 }
 
-export function completeOnboarding(payload) {
-  return api.post("/accounts/onboarding/", payload).then((res) => res.data);
-}
-
 export function getProfileSummary() {
   return api.get("/accounts/profile-summary/").then((res) => res.data);
 }

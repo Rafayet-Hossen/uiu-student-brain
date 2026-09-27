@@ -4,7 +4,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .serializers import (
-    OnboardingSerializer,
     ProfileSummarySerializer,
     RegisterSerializer,
     UpdateProfileSerializer,
@@ -25,47 +24,6 @@ class RegisterView(APIView):
             full_name=serializer.validated_data.get("full_name", ""),
         )
         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
-
-
-class OnboardingView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        serializer = OnboardingSerializer(data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        user = request.user
-        for attr, value in serializer.validated_data.items():
-            setattr(user, attr, value)
-        user.is_onboarded = True
-        user.save()
-
-        # Automatically create or update GradePlan for this user so GPA tracker works instantly!
-        try:
-            from grades.models import GradePlan
-            current_gpa = serializer.validated_data.get("current_gpa", user.current_gpa or 0)
-            target_gpa = serializer.validated_data.get("target_gpa", user.target_gpa or 0)
-            completed_cr = serializer.validated_data.get("completed_credits", user.completed_credits or 0)
-            total_cr = serializer.validated_data.get("total_credits", user.total_credits or 140)
-
-            gp, created = GradePlan.objects.get_or_create(
-                user=user,
-                defaults={
-                    "target_gpa": target_gpa,
-                    "current_gpa": current_gpa,
-                    "completed_credits": completed_cr,
-                    "total_credits": total_cr,
-                }
-            )
-            if not created:
-                gp.target_gpa = target_gpa
-                gp.current_gpa = current_gpa
-                gp.completed_credits = completed_cr
-                gp.total_credits = total_cr
-                gp.save()
-        except Exception as e:
-            print("Auto grade plan update:", e)
-
-        return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
 
 
 class MeView(generics.RetrieveUpdateAPIView):
