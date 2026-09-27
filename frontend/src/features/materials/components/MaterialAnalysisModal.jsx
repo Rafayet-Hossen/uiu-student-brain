@@ -32,7 +32,9 @@ export default function MaterialAnalysisModal({
   if (!isOpen || !material) return null;
 
   const isBusy = Boolean(analyzing || localAnalyzing);
-  const isAnalyzed = Boolean(material.analyzed_at || material.ai_analysis?.summary);
+  const isAnalyzed = Boolean(
+    material.analyzed_at || material.ai_analysis?.summary,
+  );
 
   const handleExportPdf = async () => {
     try {
@@ -138,7 +140,9 @@ export default function MaterialAnalysisModal({
                 {isAnalyzed ? "AI Study Analysis Report" : "Material Details"}
               </span>
               {isAnalyzed && (
-                <span className={`badge ${getDifficultyBadgeClass(difficulty)}`}>
+                <span
+                  className={`badge ${getDifficultyBadgeClass(difficulty)}`}
+                >
                   {difficulty} Level
                 </span>
               )}
@@ -152,7 +156,9 @@ export default function MaterialAnalysisModal({
             <p className="modal-subtitle">
               Course:{" "}
               <span className="font-semibold">
-                {material.subject || material.course?.title || "Academic Coursework"}
+                {material.subject ||
+                  material.course?.title ||
+                  "Academic Coursework"}
               </span>
               {material.formatted_file_size && (
                 <span> • {material.formatted_file_size}</span>
@@ -189,7 +195,8 @@ export default function MaterialAnalysisModal({
           {!isAnalyzed && (
             <div
               style={{
-                background: "linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(16, 185, 129, 0.08))",
+                background:
+                  "linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(16, 185, 129, 0.08))",
                 border: "1px dashed var(--color-primary)",
                 borderRadius: "var(--radius-xl)",
                 padding: "20px",
@@ -197,12 +204,30 @@ export default function MaterialAnalysisModal({
                 textAlign: "center",
               }}
             >
-              <div style={{ display: "inline-flex", padding: "10px", borderRadius: "50%", background: "var(--color-primary-subtle)", color: "var(--color-primary)", marginBottom: "10px" }}>
+              <div
+                style={{
+                  display: "inline-flex",
+                  padding: "10px",
+                  borderRadius: "50%",
+                  background: "var(--color-primary-subtle)",
+                  color: "var(--color-primary)",
+                  marginBottom: "10px",
+                }}
+              >
                 <Sparkles size={24} />
               </div>
-              <h4 style={{ margin: "0 0 6px 0", fontSize: "1.05rem" }}>Ready for Gemini AI Analysis</h4>
-              <p style={{ margin: "0 0 14px 0", fontSize: "0.85rem", color: "var(--color-text-muted)" }}>
-                Extract core curriculum topics, generate an executive summary, and detect key formulas or definitions from this material.
+              <h4 style={{ margin: "0 0 6px 0", fontSize: "1.05rem" }}>
+                Ready for Gemini AI Analysis
+              </h4>
+              <p
+                style={{
+                  margin: "0 0 14px 0",
+                  fontSize: "0.85rem",
+                  color: "var(--color-text-muted)",
+                }}
+              >
+                Extract core curriculum topics, generate an executive summary,
+                and detect key formulas or definitions from this material.
               </p>
               <Button
                 type="button"
@@ -212,7 +237,9 @@ export default function MaterialAnalysisModal({
                 loading={isBusy}
                 disabled={isBusy}
               >
-                {isBusy ? "Analyzing Material with AI..." : "⚡ Analyze with AI Now"}
+                {isBusy
+                  ? "Analyzing Material with AI..."
+                  : "⚡ Analyze with AI Now"}
               </Button>
             </div>
           )}
@@ -234,14 +261,19 @@ export default function MaterialAnalysisModal({
           </section>
 
           {/* Extracted Key Topics */}
-          {(key_topics.length > 0 || (material.key_topics && material.key_topics.length > 0)) && (
+          {(key_topics.length > 0 ||
+            (material.key_topics && material.key_topics.length > 0)) && (
             <section className="analysis-section">
               <h4 className="analysis-section-title">
                 <span className="section-title-icon">🎯</span>
-                Extracted Core Topics & Concepts ({(key_topics.length || material.key_topics?.length || 0)})
+                Extracted Core Topics & Concepts (
+                {key_topics.length || material.key_topics?.length || 0})
               </h4>
               <div className="topics-chip-grid">
-                {(key_topics.length > 0 ? key_topics : material.key_topics || []).map((topic, idx) => (
+                {(key_topics.length > 0
+                  ? key_topics
+                  : material.key_topics || []
+                ).map((topic, idx) => (
                   <div key={idx} className="topic-badge-card">
                     <span className="topic-bullet">◈</span>
                     <span className="topic-text">{topic}</span>
@@ -311,7 +343,11 @@ export default function MaterialAnalysisModal({
               icon={RotateCcw}
               className="mat-footer-btn"
             >
-              {isBusy ? "Analyzing..." : isAnalyzed ? "Re-run AI Analysis" : "Analyze with AI"}
+              {isBusy
+                ? "Analyzing..."
+                : isAnalyzed
+                  ? "Re-run AI Analysis"
+                  : "Analyze with AI"}
             </Button>
 
             {/* Download 1: AI Generated Summary PDF */}
