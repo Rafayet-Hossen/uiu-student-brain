@@ -296,6 +296,20 @@ def toggle_follow_student(*, follower, target_user_id: int) -> dict:
     else:
         Follow.objects.create(follower=follower, following=target_user)
         following = True
+        try:
+            from accounts.models import create_user_notification
+            follower_name = follower.full_name or follower.email.split("@")[0]
+            create_user_notification(
+                recipient=target_user,
+                sender=follower,
+                category="system",
+                title="New Scholar Following You",
+                message=f"{follower_name} started following your academic journey on StudentBrain.",
+                link="/community",
+                metadata={"follower_id": follower.id, "type": "student_follow"},
+            )
+        except Exception:
+            pass
 
     followers_count = Follow.objects.filter(following=target_user).count()
     return {"following": following, "followers_count": followers_count}

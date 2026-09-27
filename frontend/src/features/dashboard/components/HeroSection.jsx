@@ -25,7 +25,8 @@ export default function HeroSection({
 }) {
   const navigate = useNavigate();
 
-  const nextClass = todayClasses && todayClasses.length > 0 ? todayClasses[0] : null;
+  const nextClass =
+    todayClasses && todayClasses.length > 0 ? todayClasses[0] : null;
 
   return (
     <motion.section
@@ -59,15 +60,27 @@ export default function HeroSection({
             </div>
 
             <nav className="dash-workflow-pills" aria-label="Academic Workflow">
-              <Link to="/planner" className="dash-wf-step active" title="Plan weekly routines">
+              <Link
+                to="/planner"
+                className="dash-wf-step active"
+                title="Plan weekly routines"
+              >
                 <span className="num">1</span> Plan
               </Link>
               <span className="dash-wf-arrow">→</span>
-              <Link to="/study-center" className="dash-wf-step" title="Study coursework">
+              <Link
+                to="/study-center"
+                className="dash-wf-step"
+                title="Study coursework"
+              >
                 <span className="num">2</span> Study
               </Link>
               <span className="dash-wf-arrow">→</span>
-              <Link to="/study-center?tab=tracker" className="dash-wf-step" title="Analyze consistency">
+              <Link
+                to="/study-center?tab=tracker"
+                className="dash-wf-step"
+                title="Analyze consistency"
+              >
                 <span className="num">3</span> Analyze
               </Link>
               <span className="dash-wf-arrow">→</span>
@@ -80,7 +93,8 @@ export default function HeroSection({
           {/* Emotional Theme Headline */}
           <div className="dash-hero-title-group">
             <span className="dash-hero-eyebrow">
-              Hello, {user?.full_name ? user.full_name.split(" ")[0] : "Scholar"} 👋
+              Hello,{" "}
+              {user?.full_name ? user.full_name.split(" ")[0] : "Scholar"} 👋
             </span>
             <h1 className="dash-hero-main-heading">
               Learn Better. <br />
@@ -89,8 +103,9 @@ export default function HeroSection({
           </div>
 
           <p className="dash-hero-support-copy">
-            Welcome to your intelligent academic command center. Build structured weekly routines,
-            study with distraction-free focus, and forecast cumulative graduation honors with serene clarity.
+            Welcome to your intelligent academic command center. Build
+            structured weekly routines, study with distraction-free focus, and
+            forecast cumulative graduation honors with serene clarity.
           </p>
 
           {/* Action CTAs */}
@@ -131,7 +146,9 @@ export default function HeroSection({
             <div className="dash-trust-divider" />
             <div className="dash-trust-badge">
               <span className="dash-trust-num text-orange">
-                {topGradePlan ? `${topGradePlan.target_gpa} GPA` : "Honors Degree"}
+                {topGradePlan
+                  ? `${topGradePlan.target_gpa} GPA`
+                  : "Honors Degree"}
               </span>
               <span className="dash-trust-lbl">Degree Guided</span>
             </div>
@@ -156,11 +173,23 @@ export default function HeroSection({
             >
               <defs>
                 {/* Desk Wood Gradient */}
-                <linearGradient id="deskGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <linearGradient
+                  id="deskGrad"
+                  x1="0%"
+                  y1="0%"
+                  x2="100%"
+                  y2="100%"
+                >
                   <stop offset="0%" stopColor="#e2e8f0" />
                   <stop offset="100%" stopColor="#cbd5e1" />
                 </linearGradient>
-                <linearGradient id="laptopScreen" x1="0%" y1="0%" x2="0%" y2="100%">
+                <linearGradient
+                  id="laptopScreen"
+                  x1="0%"
+                  y1="0%"
+                  x2="0%"
+                  y2="100%"
+                >
                   <stop offset="0%" stopColor="#1e1b4b" />
                   <stop offset="100%" stopColor="#312e81" />
                 </linearGradient>
@@ -168,7 +197,13 @@ export default function HeroSection({
                   <stop offset="0%" stopColor="#fbbf24" stopOpacity="0.45" />
                   <stop offset="100%" stopColor="#fbbf24" stopOpacity="0" />
                 </radialGradient>
-                <linearGradient id="aiOrbGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <linearGradient
+                  id="aiOrbGrad"
+                  x1="0%"
+                  y1="0%"
+                  x2="100%"
+                  y2="100%"
+                >
                   <stop offset="0%" stopColor="#f26522" />
                   <stop offset="100%" stopColor="#ea580c" />
                 </linearGradient>
@@ -186,67 +221,287 @@ export default function HeroSection({
               <circle cx="130" cy="170" r="140" fill="url(#lampGlow)" />
 
               {/* Wall Study Board / Calendar sheet in background */}
-              <rect x="290" y="50" width="110" height="90" rx="8" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
-              <rect x="290" y="50" width="110" height="22" rx="8" fill="#f26522" />
-              <text x="345" y="66" fill="#ffffff" fontSize="9" fontWeight="bold" textAnchor="middle">SCHEDULE</text>
+              <rect
+                x="290"
+                y="50"
+                width="110"
+                height="90"
+                rx="8"
+                fill="#f8fafc"
+                stroke="#cbd5e1"
+                strokeWidth="1.5"
+              />
+              <rect
+                x="290"
+                y="50"
+                width="110"
+                height="22"
+                rx="8"
+                fill="#f26522"
+              />
+              <text
+                x="345"
+                y="66"
+                fill="#ffffff"
+                fontSize="9"
+                fontWeight="bold"
+                textAnchor="middle"
+              >
+                SCHEDULE
+              </text>
               <circle cx="310" cy="85" r="4" fill="#10b981" />
-              <rect x="320" y="83" width="60" height="4" rx="2" fill="#94a3b8" />
+              <rect
+                x="320"
+                y="83"
+                width="60"
+                height="4"
+                rx="2"
+                fill="#94a3b8"
+              />
               <circle cx="310" cy="100" r="4" fill="#f59e0b" />
-              <rect x="320" y="98" width="50" height="4" rx="2" fill="#94a3b8" />
+              <rect
+                x="320"
+                y="98"
+                width="50"
+                height="4"
+                rx="2"
+                fill="#94a3b8"
+              />
               <circle cx="310" cy="115" r="4" fill="#f97316" />
-              <rect x="320" y="113" width="68" height="4" rx="2" fill="#94a3b8" />
+              <rect
+                x="320"
+                y="113"
+                width="68"
+                height="4"
+                rx="2"
+                fill="#94a3b8"
+              />
 
               {/* Desk Lamp */}
-              <path d="M 120 280 L 120 180 Q 120 130 150 130 L 170 145" stroke="#64748b" strokeWidth="5" strokeLinecap="round" fill="none" />
+              <path
+                d="M 120 280 L 120 180 Q 120 130 150 130 L 170 145"
+                stroke="#64748b"
+                strokeWidth="5"
+                strokeLinecap="round"
+                fill="none"
+              />
               <path d="M 155 135 L 180 155 L 165 170 Z" fill="#475569" />
               <ellipse cx="120" cy="285" rx="22" ry="6" fill="#94a3b8" />
 
               {/* The Desk Surface */}
-              <path d="M 40 285 L 480 285 L 460 350 L 60 350 Z" fill="url(#deskGrad)" />
-              <rect x="40" y="285" width="440" height="8" rx="3" fill="#94a3b8" />
+              <path
+                d="M 40 285 L 480 285 L 460 350 L 60 350 Z"
+                fill="url(#deskGrad)"
+              />
+              <rect
+                x="40"
+                y="285"
+                width="440"
+                height="8"
+                rx="3"
+                fill="#94a3b8"
+              />
 
               {/* Desk Legs */}
-              <rect x="75" y="293" width="12" height="95" rx="3" fill="#64748b" />
-              <rect x="430" y="293" width="12" height="95" rx="3" fill="#64748b" />
+              <rect
+                x="75"
+                y="293"
+                width="12"
+                height="95"
+                rx="3"
+                fill="#64748b"
+              />
+              <rect
+                x="430"
+                y="293"
+                width="12"
+                height="95"
+                rx="3"
+                fill="#64748b"
+              />
 
               {/* Books Stack on Desk */}
-              <rect x="80" y="258" width="60" height="12" rx="2" fill="url(#book1)" />
-              <rect x="85" y="244" width="52" height="14" rx="2" fill="url(#book2)" />
-              <rect x="90" y="233" width="45" height="11" rx="2" fill="#f59e0b" />
-              <path d="M 115 233 L 115 250 L 120 246 L 125 250 L 125 233 Z" fill="#ef4444" />
+              <rect
+                x="80"
+                y="258"
+                width="60"
+                height="12"
+                rx="2"
+                fill="url(#book1)"
+              />
+              <rect
+                x="85"
+                y="244"
+                width="52"
+                height="14"
+                rx="2"
+                fill="url(#book2)"
+              />
+              <rect
+                x="90"
+                y="233"
+                width="45"
+                height="11"
+                rx="2"
+                fill="#f59e0b"
+              />
+              <path
+                d="M 115 233 L 115 250 L 120 246 L 125 250 L 125 233 Z"
+                fill="#ef4444"
+              />
 
               {/* Ceramic Coffee Mug with rising animated steam */}
-              <rect x="160" y="260" width="20" height="24" rx="4" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1.5" />
-              <path d="M 180 266 Q 188 272 180 278" stroke="#cbd5e1" strokeWidth="2.5" fill="none" />
-              <path d="M 166 254 Q 164 246 168 240" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.6" className="dash-steam-anim-1" />
-              <path d="M 172 253 Q 175 245 171 238" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.6" className="dash-steam-anim-2" />
+              <rect
+                x="160"
+                y="260"
+                width="20"
+                height="24"
+                rx="4"
+                fill="#ffffff"
+                stroke="#cbd5e1"
+                strokeWidth="1.5"
+              />
+              <path
+                d="M 180 266 Q 188 272 180 278"
+                stroke="#cbd5e1"
+                strokeWidth="2.5"
+                fill="none"
+              />
+              <path
+                d="M 166 254 Q 164 246 168 240"
+                stroke="#94a3b8"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                fill="none"
+                opacity="0.6"
+                className="dash-steam-anim-1"
+              />
+              <path
+                d="M 172 253 Q 175 245 171 238"
+                stroke="#94a3b8"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                fill="none"
+                opacity="0.6"
+                className="dash-steam-anim-2"
+              />
 
               {/* Student Laptop */}
-              <rect x="220" y="200" width="120" height="78" rx="6" fill="url(#laptopScreen)" stroke="#475569" strokeWidth="2" />
-              <path d="M 205 278 L 355 278 L 345 284 L 215 284 Z" fill="#cbd5e1" stroke="#94a3b8" strokeWidth="1" />
+              <rect
+                x="220"
+                y="200"
+                width="120"
+                height="78"
+                rx="6"
+                fill="url(#laptopScreen)"
+                stroke="#475569"
+                strokeWidth="2"
+              />
+              <path
+                d="M 205 278 L 355 278 L 345 284 L 215 284 Z"
+                fill="#cbd5e1"
+                stroke="#94a3b8"
+                strokeWidth="1"
+              />
               {/* Laptop Screen Content (Graphs & Code lines) */}
-              <line x1="235" y1="218" x2="275" y2="218" stroke="#818cf8" strokeWidth="2" strokeLinecap="round" />
-              <line x1="235" y1="226" x2="260" y2="226" stroke="#c7d2fe" strokeWidth="1.5" strokeLinecap="round" />
-              <path d="M 235 255 Q 255 235 275 245 T 315 230" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" />
+              <line
+                x1="235"
+                y1="218"
+                x2="275"
+                y2="218"
+                stroke="#818cf8"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+              <line
+                x1="235"
+                y1="226"
+                x2="260"
+                y2="226"
+                stroke="#c7d2fe"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+              <path
+                d="M 235 255 Q 255 235 275 245 T 315 230"
+                fill="none"
+                stroke="#10b981"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
               <circle cx="315" cy="230" r="3" fill="#34d399" />
-              <rect x="290" y="214" width="40" height="28" rx="4" fill="#312e81" opacity="0.8" />
-              <line x1="296" y1="222" x2="322" y2="222" stroke="#60a5fa" strokeWidth="1.5" strokeLinecap="round" />
-              <line x1="296" y1="228" x2="318" y2="228" stroke="#a78bfa" strokeWidth="1.5" strokeLinecap="round" />
+              <rect
+                x="290"
+                y="214"
+                width="40"
+                height="28"
+                rx="4"
+                fill="#312e81"
+                opacity="0.8"
+              />
+              <line
+                x1="296"
+                y1="222"
+                x2="322"
+                y2="222"
+                stroke="#60a5fa"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+              <line
+                x1="296"
+                y1="228"
+                x2="318"
+                y2="228"
+                stroke="#a78bfa"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
 
               {/* Floating AI Scholar Companion Orb */}
               <g className="dash-ai-companion-orb">
-                <circle cx="390" cy="180" r="26" fill="url(#aiOrbGrad)" filter="drop-shadow(0 4px 14px rgba(99,102,241,0.4))" />
+                <circle
+                  cx="390"
+                  cy="180"
+                  r="26"
+                  fill="url(#aiOrbGrad)"
+                  filter="drop-shadow(0 4px 14px rgba(99,102,241,0.4))"
+                />
                 <ellipse cx="383" cy="176" rx="3" ry="4" fill="#ffffff" />
                 <ellipse cx="397" cy="176" rx="3" ry="4" fill="#ffffff" />
-                <path d="M 386 186 Q 390 190 394 186" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" fill="none" />
+                <path
+                  d="M 386 186 Q 390 190 394 186"
+                  stroke="#ffffff"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  fill="none"
+                />
                 <circle cx="390" cy="150" r="3.5" fill="#f59e0b" />
-                <line x1="390" y1="154" x2="390" y2="160" stroke="#f59e0b" strokeWidth="1.5" />
+                <line
+                  x1="390"
+                  y1="154"
+                  x2="390"
+                  y2="160"
+                  stroke="#f59e0b"
+                  strokeWidth="1.5"
+                />
               </g>
 
               {/* Plant Pot on the Right of Desk */}
-              <path d="M 430 258 L 446 258 L 442 284 L 434 284 Z" fill="#e2e8f0" stroke="#cbd5e1" strokeWidth="1" />
-              <path d="M 438 258 Q 432 242 426 244 Q 432 254 438 258 Z" fill="#10b981" />
-              <path d="M 438 258 Q 444 240 452 246 Q 444 254 438 258 Z" fill="#059669" />
+              <path
+                d="M 430 258 L 446 258 L 442 284 L 434 284 Z"
+                fill="#e2e8f0"
+                stroke="#cbd5e1"
+                strokeWidth="1"
+              />
+              <path
+                d="M 438 258 Q 432 242 426 244 Q 432 254 438 258 Z"
+                fill="#10b981"
+              />
+              <path
+                d="M 438 258 Q 444 240 452 246 Q 444 254 438 258 Z"
+                fill="#059669"
+              />
             </svg>
           </div>
 
@@ -286,15 +541,21 @@ export default function HeroSection({
             <div className="dash-float-weekly-body">
               <div className="dash-float-header-row">
                 <span className="dash-float-label">Weekly Focus</span>
-                <span className="dash-float-badge-pill primary">{weeklyPercent}%</span>
+                <span className="dash-float-badge-pill primary">
+                  {weeklyPercent}%
+                </span>
               </div>
               <div className="dash-float-progress-track">
                 <div
                   className="dash-float-progress-fill"
-                  style={{ width: `${Math.min(100, Math.max(0, weeklyPercent))}%` }}
+                  style={{
+                    width: `${Math.min(100, Math.max(0, weeklyPercent))}%`,
+                  }}
                 />
               </div>
-              <span className="dash-float-subtext">Goal: {targetWeeklyHours} hrs / week</span>
+              <span className="dash-float-subtext">
+                Goal: {targetWeeklyHours} hrs / week
+              </span>
             </div>
           </motion.div>
 
@@ -315,13 +576,16 @@ export default function HeroSection({
                 <>
                   <div className="dash-float-header-row">
                     <span className="dash-float-label">Next Class</span>
-                    <span className="dash-float-badge-pill orange">Upcoming</span>
+                    <span className="dash-float-badge-pill orange">
+                      Upcoming
+                    </span>
                   </div>
                   <strong className="dash-float-value-compact">
                     {nextClass.subject || "Course Lecture"}
                   </strong>
                   <span className="dash-float-subtext">
-                    {nextClass.start_time?.slice(0, 5)} - {nextClass.end_time?.slice(0, 5)}
+                    {nextClass.start_time?.slice(0, 5)} -{" "}
+                    {nextClass.end_time?.slice(0, 5)}
                   </span>
                 </>
               ) : (
@@ -333,9 +597,7 @@ export default function HeroSection({
                   <strong className="dash-float-value-compact">
                     No Lectures Today
                   </strong>
-                  <span className="dash-float-subtext">
-                    Schedule is open
-                  </span>
+                  <span className="dash-float-subtext">Schedule is open</span>
                 </>
               )}
             </div>

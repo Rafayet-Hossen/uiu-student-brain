@@ -7795,134 +7795,25 @@
   display: none;
 }
 
-/* Mobile Phone Responsiveness for Community Post Cards */
-@media (max-width: 640px) {
-  .premium-social-post-card {
-    padding: 16px 14px;
-    border-radius: var(--radius-xl);
-  }
-
-  .social-card-accent-bar {
-    margin: -16px -14px 12px -14px;
-    border-top-left-radius: var(--radius-xl);
-    border-top-right-radius: var(--radius-xl);
-  }
-
-  .social-post-title {
-    font-size: 1.05rem;
-    line-height: 1.35;
-    margin-bottom: 8px;
-    word-break: break-word;
-  }
-
-  .social-post-header {
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 10px;
-  }
-
-  .social-header-right {
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-
-  .study-meeting-action-banner {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 10px 12px;
-    gap: 10px;
-  }
-
-  .meeting-direct-join-btn {
-    width: 100%;
-    justify-content: center;
-    box-sizing: border-box;
-  }
-
-  .resource-access-banner {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 10px 12px;
-    gap: 10px;
-  }
-
-  .resource-open-pill {
-    width: 100%;
-    justify-content: center;
-    box-sizing: border-box;
-  }
-
-  .study-purpose-box {
-    flex-direction: column;
-    gap: 3px;
-  }
-}
-
-@media (max-width: 640px) {
-  .desktop-action-label {
-    display: none !important;
-  }
-
-  .mobile-action-label {
-    display: inline !important;
-  }
-
-  .social-action-buttons {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-wrap: wrap;
-    width: 100%;
-  }
-
-  .social-action-pill {
-    padding: 6px 10px;
-    font-size: 0.75rem;
-    min-height: 32px;
-    border-radius: var(--radius-full);
-    box-sizing: border-box;
-  }
-
-  .social-action-pill.social-share-btn,
-  .social-action-pill.social-bookmark-btn {
-    padding: 6px 8px;
-  }
-
-  .premium-social-post-card {
-    padding: 14px 12px;
-    border-radius: var(--radius-xl);
-    overflow: hidden;
-    box-sizing: border-box;
-  }
-
-  .social-card-accent-bar {
-    margin: -14px -12px 12px -12px;
-  }
-}
-
-@media (max-width: 380px) {
-  .social-action-pill {
-    padding: 5px 6px;
-    font-size: 0.7rem;
-    gap: 4px;
-  }
-}
-
 .social-post-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 14px;
+  gap: 12px;
 }
 
 .social-post-author-row {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .author-avatar-container {
   position: relative;
+  flex-shrink: 0;
 }
 
 .author-online-indicator {
@@ -7940,6 +7831,8 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
+  flex: 1;
 }
 
 .author-name-line {
@@ -7947,12 +7840,15 @@
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
+  min-width: 0;
 }
 
 .author-name {
   font-size: 0.9375rem;
   font-weight: 700;
   color: var(--color-text);
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .scholar-verified-badge {
@@ -7966,6 +7862,7 @@
   color: #ffffff;
   font-size: 0.625rem;
   font-weight: 800;
+  flex-shrink: 0;
 }
 
 .author-dept-chip {
@@ -7976,6 +7873,10 @@
   background: var(--color-surface-subtle);
   border: 1px solid var(--color-border);
   color: var(--color-text-muted);
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .author-sub-line {
@@ -7990,6 +7891,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
 .social-options-btn {
@@ -8000,6 +7903,9 @@
   padding: 6px;
   border-radius: var(--radius-md);
   transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .social-options-btn:hover {
@@ -8052,6 +7958,8 @@
 
 .social-post-body {
   margin-bottom: 16px;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .social-post-title {
@@ -8061,10 +7969,14 @@
   color: var(--color-text);
   margin: 0 0 10px;
   line-height: 1.35;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .social-post-markdown-content {
   margin-bottom: 6px;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .social-post-footer {
@@ -8077,6 +7989,7 @@
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  width: 100%;
 }
 
 .social-action-pill {
@@ -8092,6 +8005,8 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.18s ease;
+  white-space: nowrap;
+  box-sizing: border-box;
 }
 
 .social-action-pill:hover {
@@ -8120,6 +8035,113 @@
 .pill-count-badge {
   font-weight: 700;
   font-size: 0.75rem;
+}
+
+/* Responsive Media Queries for Post Cards */
+@media (max-width: 640px) {
+  .desktop-action-label {
+    display: none !important;
+  }
+
+  .mobile-action-label {
+    display: inline !important;
+  }
+
+  .premium-social-post-card {
+    padding: 14px 12px;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  .social-card-accent-bar {
+    margin: -14px -12px 10px -12px;
+    width: calc(100% + 24px);
+    border-top-left-radius: var(--radius-xl);
+    border-top-right-radius: var(--radius-xl);
+  }
+
+  .social-post-header {
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .social-post-author-row {
+    gap: 10px;
+  }
+
+  .author-name {
+    font-size: 0.875rem;
+  }
+
+  .social-header-right {
+    gap: 6px;
+  }
+
+  .social-post-title {
+    font-size: 1.05rem;
+    line-height: 1.35;
+    margin-bottom: 8px;
+  }
+
+  .social-action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .social-action-pill {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    min-height: 32px;
+  }
+
+  .social-action-pill.social-share-btn,
+  .social-action-pill.social-bookmark-btn {
+    padding: 6px 8px;
+  }
+
+  .study-meeting-action-banner {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .meeting-direct-join-btn {
+    width: 100%;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+
+  .resource-access-banner {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .resource-open-pill {
+    width: 100%;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+
+  .study-purpose-box {
+    flex-direction: column;
+    gap: 3px;
+  }
+}
+
+@media (max-width: 380px) {
+  .social-action-pill {
+    padding: 5px 6px;
+    font-size: 0.7rem;
+    gap: 4px;
+  }
 }
 
 /* Threaded Comments */
