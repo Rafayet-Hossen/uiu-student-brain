@@ -13,7 +13,7 @@ import AuthOrbitalShowcase from "../components/AuthOrbitalShowcase";
 import AuthAmbientBackground from "../components/AuthAmbientBackground";
 import AuthPillInput from "../components/AuthPillInput";
 import FormError from "../../../components/FormError";
-import StudentBrainLogo from "../../../components/StudentBrainLogo";
+import ThemeToggle from "../../../components/ThemeToggle";
 
 export default function RegisterPage() {
   const { login } = useAuth();
@@ -63,11 +63,8 @@ export default function RegisterPage() {
         password,
         full_name: fullName.trim(),
       });
-      const loggedUser = await login({ email, password });
-      navigate(
-        loggedUser?.is_onboarded ? "/dashboard" : "/onboarding",
-        { replace: true },
-      );
+      await login({ email, password });
+      navigate("/dashboard", { replace: true });
     } catch (error) {
       setFormError(extractErrorMessage(error));
     } finally {
@@ -82,7 +79,9 @@ export default function RegisterPage() {
       {/* Top Header Bar */}
       <header className="auth-sb-topbar">
         <Link to="/" className="auth-sb-brand">
-          <StudentBrainLogo size={28} />
+          <div className="auth-sb-brand-icon-box">
+            <GraduationCap size={20} />
+          </div>
           <span className="auth-sb-brand-name">
             Student<span className="auth-sb-brand-accent">Brain</span>
           </span>

@@ -4286,12 +4286,8 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
   box-shadow: var(--shadow-sm);
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
 }
 
 .leaderboard-table-header {
@@ -4306,13 +4302,11 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--color-text-muted);
-  min-width: 600px;
 }
 
 .leaderboard-rows-list {
   display: flex;
   flex-direction: column;
-  min-width: 600px;
 }
 
 .leaderboard-row {
@@ -4323,7 +4317,6 @@
   align-items: center;
   border-bottom: 1px solid var(--color-border-subtle);
   transition: background 0.15s ease;
-  min-width: 600px;
 }
 
 .leaderboard-row:last-child {
@@ -5915,36 +5908,23 @@
    ========================================================================== */
 .community-layout-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-columns: 1fr 320px;
   gap: 24px;
   align-items: flex-start;
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
 }
 
 .community-feed-column {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  min-width: 0;
-  max-width: 100%;
-  width: 100%;
-  box-sizing: border-box;
-  overflow-x: clip;
 }
 
 .quick-post-creator-card {
-  padding: clamp(12px, 2vw, 18px);
+  padding: 16px 20px;
   border-radius: var(--radius-xl);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-sm);
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-  overflow: hidden;
 }
 
 .quick-creator-top {
@@ -5952,26 +5932,20 @@
   align-items: center;
   gap: 12px;
   margin-bottom: 12px;
-  width: 100%;
-  min-width: 0;
 }
 
 .quick-creator-input-trigger {
   flex: 1;
-  min-width: 0;
   background: var(--color-surface-subtle);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-full);
   padding: 10px 18px;
   text-align: left;
   color: var(--color-text-muted);
-  font-size: clamp(0.78rem, 2vw, 0.875rem);
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .quick-creator-input-trigger:hover {
@@ -5987,9 +5961,6 @@
   border-top: 1px solid var(--color-border-subtle);
   padding-top: 10px;
   gap: 8px;
-  width: 100%;
-  min-width: 0;
-  flex-wrap: wrap;
 }
 
 .quick-creator-chips {
@@ -5999,9 +5970,6 @@
   overflow-x: auto;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
-  max-width: 100%;
-  min-width: 0;
-  flex: 1;
 }
 
 .quick-creator-chips::-webkit-scrollbar {
@@ -6297,20 +6265,20 @@
   color: var(--color-primary);
 }
 
-/* On Phone and Tablet: Hide Course Topics & Channels sidebar completely and collapse grid */
+/* On Phone and Tablet: Hide Course Topics & Channels sidebar completely */
 @media (max-width: 1024px) {
   .community-layout-grid {
-    grid-template-columns: minmax(0, 1fr) !important;
-    gap: 16px;
-    width: 100%;
-    max-width: 100%;
+    grid-template-columns: 1fr !important;
   }
   .community-sidebar-column {
     display: none !important;
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
+  .quick-post-creator-card {
+    padding: 12px 14px;
+  }
   .quick-creator-bottom {
     flex-direction: column;
     align-items: stretch;
@@ -6319,17 +6287,6 @@
   .quick-creator-chips {
     width: 100%;
     justify-content: flex-start;
-    padding-bottom: 4px;
-  }
-  .quick-creator-bottom > button {
-    width: 100%;
-    justify-content: center;
-  }
-}
-
-@media (max-width: 640px) {
-  .quick-post-creator-card {
-    padding: 12px 14px;
   }
   .community-feed-filters-bar {
     flex-direction: column;
@@ -6346,54 +6303,6 @@
   }
   .feed-search-wrap {
     width: 100%;
-  }
-}
-
-/* Responsive Form Rows for PostForm & Modals */
-.post-form-row-2col {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-}
-
-.post-form-row-2col-asym {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 12px;
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-}
-
-.post-form-row-format {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 10px;
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-}
-
-.post-form-row-online {
-  display: grid;
-  grid-template-columns: 1.2fr 1.8fr;
-  gap: 10px;
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-}
-
-@media (max-width: 640px) {
-  .post-form-row-2col,
-  .post-form-row-2col-asym,
-  .post-form-row-format,
-  .post-form-row-online {
-    grid-template-columns: 1fr !important;
-    gap: 10px;
   }
 }
 
@@ -8432,10 +8341,6 @@
   margin: 12px 0;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
 }
 
 .code-snippet-header {
@@ -8445,18 +8350,12 @@
   padding: 7px 12px;
   background: #f1f5f9;
   border-bottom: 1px solid #e2e8f0;
-  flex-wrap: wrap;
-  gap: 6px;
-  width: 100%;
-  box-sizing: border-box;
 }
 
 .code-header-left {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
-  min-width: 0;
 }
 
 .code-lang-tag {
@@ -8490,7 +8389,6 @@
   cursor: pointer;
   transition: all 0.15s ease;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-  flex-shrink: 0;
 }
 
 .code-copy-btn:hover {
@@ -8503,13 +8401,10 @@
   margin: 0;
   padding: 12px 14px;
   overflow-x: auto;
-  max-width: 100%;
-  box-sizing: border-box;
   font-family: "Fira Code", "Consolas", "Courier New", monospace;
-  font-size: clamp(0.75rem, 2vw, 0.83rem);
+  font-size: 0.83rem;
   line-height: 1.6;
   color: #0f172a;
-  -webkit-overflow-scrolling: touch;
 }
 
 .code-snippet-pre code {
