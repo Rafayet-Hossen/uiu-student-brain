@@ -54,18 +54,6 @@ def update_user_profile(user, validated_data: Dict[str, Any]):
         if hasattr(user, field):
             setattr(user, field, value)
     user.save()
-
-    if "opt_in_leaderboard" in validated_data:
-        try:
-            from community.models import LeaderboardProfile
-            opt_val = bool(validated_data["opt_in_leaderboard"])
-            LeaderboardProfile.objects.update_or_create(
-                user=user,
-                defaults={"is_opted_in": opt_val}
-            )
-        except Exception:
-            pass
-
     return user
 
 

@@ -647,7 +647,7 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
                         <strong>
                           {summaryData?.performance?.rsvps_count || 0}
                         </strong>{" "}
-                        study events joined.
+                        study event RSVPs.
                       </p>
                     </div>
 

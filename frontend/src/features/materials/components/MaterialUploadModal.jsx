@@ -22,7 +22,6 @@ export default function MaterialUploadModal({ onClose, onCreated }) {
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState([]);
   const [submitting, setSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
 
   function handleAddTag(e) {
@@ -85,12 +84,8 @@ export default function MaterialUploadModal({ onClose, onCreated }) {
       }
 
       const created = await createMaterial(payload);
-      setIsSuccess(true);
       if (onCreated) onCreated(created);
-      setTimeout(() => {
-        setIsSuccess(false);
-        onClose();
-      }, 700);
+      onClose();
     } catch (err) {
       setError(extractMaterialErrorMessage(err));
     } finally {
@@ -328,30 +323,14 @@ export default function MaterialUploadModal({ onClose, onCreated }) {
               type="button"
               variant="secondary"
               onClick={onClose}
-              disabled={submitting || isSuccess}
+              disabled={submitting}
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              loading={submitting}
-              disabled={submitting || isSuccess}
-              variant={isSuccess ? "success" : "primary"}
-              style={
-                isSuccess
-                  ? {
-                      background: "linear-gradient(135deg, #10b981, #059669)",
-                      borderColor: "#10b981",
-                      color: "#fff",
-                    }
-                  : {}
-              }
-            >
+            <Button type="submit" loading={submitting} disabled={submitting}>
               {submitting
-                ? "Uploading & Analyzing..."
-                : isSuccess
-                  ? "✓ Material Added!"
-                  : "🚀 Upload & Extract Topics"}
+                ? "Analyzing Content..."
+                : "🚀 Upload & Extract Topics"}
             </Button>
           </div>
         </form>

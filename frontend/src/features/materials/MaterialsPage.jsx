@@ -291,12 +291,11 @@ export default function MaterialsPage() {
       setErrorMsg("");
       const newMat = await createMaterial(selectedCourseId, formData);
       setSuccessMsg(`Material "${newMat.title}" added.`);
+      setIsAddMaterialOpen(false);
       await fetchMaterials(selectedCourseId);
       await fetchCourses(selectedSemesterId, selectedCourseId);
-      return newMat;
     } catch (err) {
       setErrorMsg(extractMaterialsErrorMessage(err));
-      throw err;
     } finally {
       setSubmittingMaterial(false);
     }
