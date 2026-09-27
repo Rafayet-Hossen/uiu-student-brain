@@ -309,8 +309,11 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
           </button>
         </div>
 
-        {/* TAB 1: EDIT PROFILE & PHOTO */}
-        {activeTab === "profile" && (
+        {/* Scrollable Body Content */}
+        <div className="profile-modal-body-scroll">
+          {/* TAB 1: EDIT PROFILE & PHOTO */}
+          {activeTab === "profile" && (
+
           <form
             onSubmit={handleSaveProfile}
             noValidate
@@ -824,7 +827,9 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );
 }
+

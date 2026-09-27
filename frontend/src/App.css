@@ -23189,7 +23189,9 @@ html[data-theme="dark"] .btn-celebration-extend:hover {
   width: 100% !important;
   max-width: 680px !important;
   max-height: 90vh !important;
-  overflow-y: auto !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  gap: 0 !important;
   border-radius: var(--radius-xl, 20px) !important;
   background: var(--color-surface, #ffffff) !important;
   border: 1px solid var(--color-border, rgba(255, 255, 255, 0.1)) !important;
@@ -23197,6 +23199,7 @@ html[data-theme="dark"] .btn-celebration-extend:hover {
   display: flex !important;
   flex-direction: column !important;
   box-sizing: border-box !important;
+  margin: auto !important;
 }
 
 .profile-modal-header {
@@ -23205,6 +23208,9 @@ html[data-theme="dark"] .btn-celebration-extend:hover {
   justify-content: space-between !important;
   padding: 18px 24px !important;
   border-bottom: 1px solid var(--color-border) !important;
+  background: var(--color-surface) !important;
+  flex-shrink: 0 !important;
+  margin: 0 !important;
 }
 
 .profile-header-user-row {
@@ -23257,12 +23263,17 @@ html[data-theme="dark"] .btn-celebration-extend:hover {
 
 .profile-modal-tabs-bar {
   display: flex !important;
-  gap: 6px !important;
-  padding: 10px 24px !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 12px 24px !important;
+  margin: 0 !important;
+  min-height: 52px !important;
   background: var(--color-surface-subtle) !important;
   border-bottom: 1px solid var(--color-border) !important;
+  flex-shrink: 0 !important;
   overflow-x: auto !important;
   scrollbar-width: none !important;
+  box-sizing: border-box !important;
 }
 
 .profile-modal-tabs-bar::-webkit-scrollbar {
@@ -23270,19 +23281,21 @@ html[data-theme="dark"] .btn-celebration-extend:hover {
 }
 
 .profile-modal-tab-btn {
-  display: flex !important;
+  display: inline-flex !important;
   align-items: center !important;
   gap: 6px !important;
   padding: 8px 14px !important;
+  min-height: 36px !important;
   border-radius: var(--radius-md, 10px) !important;
   border: 1px solid transparent !important;
   background: transparent !important;
   color: var(--color-text-muted) !important;
-  font-size: 0.83rem !important;
+  font-size: 0.84rem !important;
   font-weight: 600 !important;
   cursor: pointer !important;
   white-space: nowrap !important;
   transition: all 0.15s ease !important;
+  line-height: 1.2 !important;
 }
 
 .profile-modal-tab-btn:hover {
@@ -23292,17 +23305,28 @@ html[data-theme="dark"] .btn-celebration-extend:hover {
 
 .profile-modal-tab-btn.tab-active {
   background: var(--color-surface) !important;
-  color: var(--color-primary) !important;
+  color: var(--color-primary, #f26522) !important;
   border-color: var(--color-border) !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+}
+
+.profile-modal-body-scroll {
+  flex: 1 1 auto !important;
+  overflow-y: auto !important;
+  padding: 20px 24px !important;
+  max-height: calc(90vh - 130px) !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
 }
 
 /* Tab 1: Profile & Photo */
 .profile-tab-form {
-  padding: 20px 24px !important;
   display: flex !important;
   flex-direction: column !important;
   gap: 14px !important;
+  padding: 0 !important;
 }
 
 .profile-success-alert {
@@ -23395,7 +23419,7 @@ html[data-theme="dark"] .btn-celebration-extend:hover {
 
 /* Tab 2: Performance */
 .profile-performance-container {
-  padding: 20px 24px !important;
+  padding: 0 !important;
 }
 
 .profile-loading-box {
@@ -23479,7 +23503,7 @@ html[data-theme="dark"] .btn-celebration-extend:hover {
 
 /* Tab 3: Settings & Preferences */
 .profile-settings-container {
-  padding: 20px 24px !important;
+  padding: 0 !important;
   display: flex !important;
   flex-direction: column !important;
   gap: 14px !important;
@@ -23657,6 +23681,11 @@ html[data-theme="dark"] .btn-celebration-extend:hover {
     border-radius: var(--radius-lg, 16px) !important;
   }
 
+  .profile-modal-tabs-bar {
+    padding: 10px 16px !important;
+    min-height: 48px !important;
+  }
+
   .profile-metrics-grid {
     grid-template-columns: repeat(2, 1fr) !important;
   }
@@ -23687,6 +23716,7 @@ html[data-theme="dark"] .btn-celebration-extend:hover {
   .profile-modal-tabs-bar {
     padding: 8px 12px !important;
     gap: 4px !important;
+    min-height: 46px !important;
   }
 
   .profile-modal-tab-btn {
@@ -23694,9 +23724,7 @@ html[data-theme="dark"] .btn-celebration-extend:hover {
     font-size: 0.78rem !important;
   }
 
-  .profile-tab-form,
-  .profile-performance-container,
-  .profile-settings-container {
+  .profile-modal-body-scroll {
     padding: 14px 16px !important;
     gap: 12px !important;
   }
