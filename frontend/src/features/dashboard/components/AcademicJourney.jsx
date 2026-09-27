@@ -3,6 +3,7 @@ import { Clock, Flame, GraduationCap, BookOpen, ArrowRight, Sparkles } from "luc
 import { Link } from "react-router-dom";
 
 export default function AcademicJourney({
+  user,
   totalHours = "0.0",
   sessionsCount = 0,
   currentStreak = 0,
@@ -10,15 +11,29 @@ export default function AcademicJourney({
   materialsCount = 0,
   totalExtractedTopics = 0,
 }) {
-  const hasPlan = Boolean(topGradePlan);
   const targetGpa =
-    hasPlan && Number(topGradePlan.target_gpa) > 0
+    topGradePlan && Number(topGradePlan.target_gpa) > 0
       ? Number(topGradePlan.target_gpa).toFixed(2)
-      : "0.00";
+      : user?.target_gpa && Number(user.target_gpa) > 0
+        ? Number(user.target_gpa).toFixed(2)
+        : "4.00";
+
   const currentGpa =
-    hasPlan && Number(topGradePlan.current_gpa) > 0
+    topGradePlan && Number(topGradePlan.current_gpa) > 0
       ? Number(topGradePlan.current_gpa).toFixed(2)
-      : "0.00";
+      : user?.current_gpa !== null && user?.current_gpa !== undefined
+        ? Number(user.current_gpa).toFixed(2)
+        : "0.00";
+
+  const completedCredits =
+    topGradePlan && Number(topGradePlan.completed_credits) >= 0
+      ? Number(topGradePlan.completed_credits)
+      : Number(user?.completed_credits) || 0;
+
+  const totalCredits =
+    topGradePlan && Number(topGradePlan.total_credits) > 0
+      ? Number(topGradePlan.total_credits)
+      : Number(user?.total_credits) || 140;
 
   const milestones = [
     {
@@ -43,10 +58,10 @@ export default function AcademicJourney({
     },
     {
       id: "gpa",
-      title: "Honors Projection",
+      title: "Degree Honors",
       stat: `${targetGpa} GPA`,
-      sub: hasPlan ? `Current: ${currentGpa} GPA` : "No degree plan configured",
-      badge: hasPlan ? "Target Degree" : "Set Target",
+      sub: `${completedCredits} / ${totalCredits} cr • ${currentGpa} GPA`,
+      badge: user?.current_trimester || "Honors Target",
       icon: GraduationCap,
       color: "emerald",
       link: "/grades",

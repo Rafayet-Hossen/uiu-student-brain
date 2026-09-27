@@ -2,17 +2,17 @@ import { useState } from "react";
 import Button from "../../../components/Button";
 import Input from "../../../components/Input";
 import FormError from "../../../components/FormError";
-
-const initialForm = {
-  name: "Undergraduate Degree Plan",
-  target_gpa: "3.50",
-  total_credits: "120",
-  completed_credits: "0",
-  current_gpa: "3.00",
-};
+import { useAuth } from "../../auth/useAuth";
 
 export default function GradePlanForm({ onSubmit, submitting, onCancel }) {
-  const [form, setForm] = useState(initialForm);
+  const { user } = useAuth();
+  const [form, setForm] = useState(() => ({
+    name: user?.department ? `${user.department} Academic Plan` : "Academic Degree Plan",
+    target_gpa: user?.target_gpa ? String(user.target_gpa) : "3.80",
+    total_credits: user?.total_credits ? String(user.total_credits) : "140",
+    completed_credits: user?.completed_credits !== null && user?.completed_credits !== undefined ? String(user.completed_credits) : "0",
+    current_gpa: user?.current_gpa !== null && user?.current_gpa !== undefined ? String(user.current_gpa) : "3.00",
+  }));
   const [error, setError] = useState("");
 
   function handleChange(event) {

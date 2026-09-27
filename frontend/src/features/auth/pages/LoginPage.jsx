@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Info } from "lucide-react";
+import { GraduationCap, Info } from "lucide-react";
 import { extractErrorMessage } from "../api";
 import { useAuth } from "../useAuth";
 import { validateEmail, validatePassword } from "../validators";
@@ -9,7 +9,6 @@ import AuthAmbientBackground from "../components/AuthAmbientBackground";
 import AuthPillInput from "../components/AuthPillInput";
 import FormError from "../../../components/FormError";
 import ThemeToggle from "../../../components/ThemeToggle";
-import StudentBrainLogo from "../../../components/StudentBrainLogo";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -42,19 +41,8 @@ export default function LoginPage() {
     setFormError("");
     setNotice("");
     try {
-      const loggedUser = await login({ email, password });
-      const requestedFrom = location.state?.from;
-      let redirectTo = "/dashboard";
-      if (!loggedUser?.is_onboarded) {
-        redirectTo = "/onboarding";
-      } else if (
-        requestedFrom &&
-        requestedFrom !== "/login" &&
-        requestedFrom !== "/register" &&
-        requestedFrom !== "/onboarding"
-      ) {
-        redirectTo = requestedFrom;
-      }
+      await login({ email, password });
+      const redirectTo = location.state?.from || "/dashboard";
       navigate(redirectTo, { replace: true });
     } catch (error) {
       setFormError(extractErrorMessage(error));
@@ -70,7 +58,9 @@ export default function LoginPage() {
       {/* Top Header Bar */}
       <header className="auth-sb-topbar">
         <Link to="/" className="auth-sb-brand">
-          <StudentBrainLogo size={32} />
+          <div className="auth-sb-brand-icon-box">
+            <GraduationCap size={20} />
+          </div>
           <span className="auth-sb-brand-name">
             Student<span className="auth-sb-brand-accent">Brain</span>
           </span>

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Info } from "lucide-react";
+import { GraduationCap, Info } from "lucide-react";
 import { extractErrorMessage, register as registerRequest } from "../api";
 import { useAuth } from "../useAuth";
 import {
@@ -14,7 +14,6 @@ import AuthAmbientBackground from "../components/AuthAmbientBackground";
 import AuthPillInput from "../components/AuthPillInput";
 import FormError from "../../../components/FormError";
 import ThemeToggle from "../../../components/ThemeToggle";
-import StudentBrainLogo from "../../../components/StudentBrainLogo";
 
 export default function RegisterPage() {
   const { login } = useAuth();
@@ -64,12 +63,8 @@ export default function RegisterPage() {
         password,
         full_name: fullName.trim(),
       });
-      const loggedUser = await login({ email, password });
-      if (!loggedUser?.is_onboarded) {
-        navigate("/onboarding", { replace: true });
-      } else {
-        navigate("/dashboard", { replace: true });
-      }
+      await login({ email, password });
+      navigate("/dashboard", { replace: true });
     } catch (error) {
       setFormError(extractErrorMessage(error));
     } finally {
@@ -84,7 +79,9 @@ export default function RegisterPage() {
       {/* Top Header Bar */}
       <header className="auth-sb-topbar">
         <Link to="/" className="auth-sb-brand">
-          <StudentBrainLogo size={32} />
+          <div className="auth-sb-brand-icon-box">
+            <GraduationCap size={20} />
+          </div>
           <span className="auth-sb-brand-name">
             Student<span className="auth-sb-brand-accent">Brain</span>
           </span>

@@ -444,6 +444,7 @@ export default function DashboardPage() {
 
           {/* Section 2 — Your Academic Journey: Interconnected Milestone Highway */}
           <AcademicJourney
+            user={user}
             totalHours={totalHours}
             sessionsCount={sessions.length}
             currentStreak={currentStreak}
@@ -480,6 +481,7 @@ export default function DashboardPage() {
 
           {/* Section 4 — Smart Learning Tools: Magazine Masonry Architecture */}
           <SmartLearningTools
+            user={user}
             schedules={schedules}
             todayClasses={todayClasses}
             todayWeekdayName={todayWeekdayName}
