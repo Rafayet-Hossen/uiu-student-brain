@@ -80,12 +80,13 @@ export default function RegisterPage() {
       <header className="auth-sb-topbar">
         <Link to="/" className="auth-sb-brand">
           <div className="auth-sb-brand-icon-box">
-            <GraduationCap size={20} />
+            <img src="/logo.jpg" alt="StudentBrain Logo" className="navbar-brand-img" />
           </div>
           <span className="auth-sb-brand-name">
             Student<span className="auth-sb-brand-accent">Brain</span>
           </span>
         </Link>
+
 
         <div className="auth-sb-top-actions">
           <ThemeToggle />

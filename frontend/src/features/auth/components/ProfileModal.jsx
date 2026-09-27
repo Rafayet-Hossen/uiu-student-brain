@@ -1,10 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  Calendar,
-  Camera,
-  Trash2,
-  X,
-} from "lucide-react";
+import { Calendar, Camera, Trash2, X } from "lucide-react";
 import Button from "../../../components/Button";
 import FormError from "../../../components/FormError";
 import Spinner from "../../../components/Spinner";
@@ -325,9 +320,7 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
               <FormError message={error} className="form-error-block" />
             )}
             {successMessage && (
-              <div className="profile-success-alert">
-                {successMessage}
-              </div>
+              <div className="profile-success-alert">{successMessage}</div>
             )}
 
             {/* Profile Photo Uploader & Avatar Presets */}
@@ -432,7 +425,9 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Academic Bio / Research Interests</label>
+              <label className="form-label">
+                Academic Bio / Research Interests
+              </label>
               <textarea
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
@@ -445,7 +440,9 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
 
             <div className="modal-grid-2col">
               <div className="form-group">
-                <label className="form-label">🎓 Current CGPA (out of 4.00)</label>
+                <label className="form-label">
+                  🎓 Current CGPA (out of 4.00)
+                </label>
                 <input
                   type="number"
                   step="0.01"

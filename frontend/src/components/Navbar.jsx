@@ -164,12 +164,13 @@ export default function Navbar() {
           {/* Left: Brand Logo */}
           <Link to="/dashboard" className="navbar-brand-logo">
             <div className="navbar-brand-icon-box">
-              <GraduationCap size={20} className="brand-logo-svg" />
+              <img src="/logo.jpg" alt="StudentBrain Logo" className="navbar-brand-img" />
             </div>
             <span className="navbar-brand-name">
               Student<span className="brand-accent-text">Brain</span>
             </span>
           </Link>
+
 
           {/* Center: Desktop Navigation Links with subtle pill animations */}
           <nav
@@ -335,12 +336,13 @@ export default function Navbar() {
               <div className="drawer-header-row">
                 <div className="drawer-brand-wrap">
                   <div className="navbar-brand-icon-box">
-                    <GraduationCap size={18} className="brand-logo-svg" />
+                    <img src="/logo.jpg" alt="StudentBrain Logo" className="navbar-brand-img" />
                   </div>
                   <span className="drawer-brand-title">
                     Student<span className="brand-accent-text">Brain</span>
                   </span>
                 </div>
+
                 <button
                   type="button"
                   className="drawer-close-btn"
