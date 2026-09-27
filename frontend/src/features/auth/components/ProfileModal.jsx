@@ -313,523 +313,529 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
         <div className="profile-modal-body-scroll">
           {/* TAB 1: EDIT PROFILE & PHOTO */}
           {activeTab === "profile" && (
+            <form
+              onSubmit={handleSaveProfile}
+              noValidate
+              className="academic-form profile-tab-form"
+            >
+              {error && (
+                <FormError message={error} className="form-error-block" />
+              )}
+              {successMessage && (
+                <div className="profile-success-alert">{successMessage}</div>
+              )}
 
-          <form
-            onSubmit={handleSaveProfile}
-            noValidate
-            className="academic-form profile-tab-form"
-          >
-            {error && (
-              <FormError message={error} className="form-error-block" />
-            )}
-            {successMessage && (
-              <div className="profile-success-alert">{successMessage}</div>
-            )}
+              {/* Profile Photo Uploader & Avatar Presets */}
+              <div className="profile-photo-section-card">
+                <label className="form-label profile-section-lbl">
+                  📸 Profile Picture & Avatar
+                </label>
 
-            {/* Profile Photo Uploader & Avatar Presets */}
-            <div className="profile-photo-section-card">
-              <label className="form-label profile-section-lbl">
-                📸 Profile Picture & Avatar
-              </label>
-
-              <div className="profile-avatar-action-row">
-                <ScholarAvatar
-                  user={user}
-                  size={64}
-                  avatarOverride={currentAvatar}
-                />
-
-                <div className="profile-avatar-buttons">
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    style={{ display: "none" }}
+                <div className="profile-avatar-action-row">
+                  <ScholarAvatar
+                    user={user}
+                    size={64}
+                    avatarOverride={currentAvatar}
                   />
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    icon={Camera}
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    Upload Custom Photo
-                  </Button>
-                  {currentAvatar && (
+
+                  <div className="profile-avatar-buttons">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      style={{ display: "none" }}
+                    />
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant="secondary"
                       size="sm"
-                      icon={Trash2}
-                      onClick={handleRemoveAvatar}
+                      icon={Camera}
+                      onClick={() => fileInputRef.current?.click()}
                     >
-                      Reset Photo
+                      Upload Custom Photo
                     </Button>
-                  )}
-                </div>
-              </div>
-
-              {/* Avatar Presets */}
-              <div className="profile-presets-container">
-                <span className="profile-presets-title">
-                  Or choose an academic preset avatar:
-                </span>
-                <div className="profile-presets-flex">
-                  {AVATAR_PRESETS.map((preset) => {
-                    const isSelected = currentAvatar === preset.id;
-                    return (
-                      <button
-                        key={preset.id}
+                    {currentAvatar && (
+                      <Button
                         type="button"
-                        onClick={() => handleSelectPreset(preset.id)}
-                        className={`avatar-preset-btn ${isSelected ? "preset-selected" : ""}`}
-                        title={preset.name}
+                        variant="ghost"
+                        size="sm"
+                        icon={Trash2}
+                        onClick={handleRemoveAvatar}
                       >
-                        <span className="avatar-preset-emoji">
-                          {preset.emoji}
-                        </span>
-                        <span className="avatar-preset-name">
-                          {preset.name}
-                        </span>
-                      </button>
-                    );
-                  })}
+                        Reset Photo
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Avatar Presets */}
+                <div className="profile-presets-container">
+                  <span className="profile-presets-title">
+                    Or choose an academic preset avatar:
+                  </span>
+                  <div className="profile-presets-flex">
+                    {AVATAR_PRESETS.map((preset) => {
+                      const isSelected = currentAvatar === preset.id;
+                      return (
+                        <button
+                          key={preset.id}
+                          type="button"
+                          onClick={() => handleSelectPreset(preset.id)}
+                          className={`avatar-preset-btn ${isSelected ? "preset-selected" : ""}`}
+                          title={preset.name}
+                        >
+                          <span className="avatar-preset-emoji">
+                            {preset.emoji}
+                          </span>
+                          <span className="avatar-preset-name">
+                            {preset.name}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Form Fields Grid */}
-            <div className="modal-grid-2col">
-              <div className="form-group">
-                <label className="form-label">Full Name</label>
-                <input
-                  type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="e.g. John Doe"
-                  className="form-input-control"
-                  disabled={saving}
-                  required
-                />
-              </div>
+              {/* Form Fields Grid */}
+              <div className="modal-grid-2col">
+                <div className="form-group">
+                  <label className="form-label">Full Name</label>
+                  <input
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="e.g. John Doe"
+                    className="form-input-control"
+                    disabled={saving}
+                    required
+                  />
+                </div>
 
-              <div className="form-group">
-                <label className="form-label">Department / Major</label>
-                <input
-                  type="text"
-                  value={department}
-                  onChange={(e) => setDepartment(e.target.value)}
-                  placeholder="e.g. Computer Science & Engineering"
-                  className="form-input-control"
-                  disabled={saving}
-                />
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">
-                Academic Bio / Research Interests
-              </label>
-              <textarea
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                rows={2}
-                placeholder="Briefly state your academic focus, research goals, or study habits..."
-                className="form-input-control"
-                disabled={saving}
-              />
-            </div>
-
-            <div className="modal-grid-2col">
-              <div className="form-group">
-                <label className="form-label">
-                  🎓 Current CGPA (out of 4.00)
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0.00"
-                  max="4.00"
-                  value={currentGpa}
-                  onChange={(e) => setCurrentGpa(e.target.value)}
-                  placeholder="e.g. 3.75"
-                  className="form-input-control"
-                  disabled={saving}
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">🎯 Target Graduation CGPA</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0.00"
-                  max="4.00"
-                  value={targetGpa}
-                  onChange={(e) => setTargetGpa(e.target.value)}
-                  placeholder="e.g. 3.90"
-                  className="form-input-control"
-                  disabled={saving}
-                />
-              </div>
-            </div>
-
-            <div className="modal-grid-2col">
-              <div className="form-group">
-                <label className="form-label">
-                  ⏱️ Target Daily Study Goal (Minutes)
-                </label>
-                <select
-                  value={targetDailyMinutes}
-                  onChange={(e) =>
-                    setTargetDailyMinutes(Number(e.target.value))
-                  }
-                  className="form-input-control"
-                  disabled={saving}
-                >
-                  <option value={60}>60 minutes (1 hour / day)</option>
-                  <option value={90}>90 minutes (1.5 hours / day)</option>
-                  <option value={120}>120 minutes (2 hours / day)</option>
-                  <option value={180}>180 minutes (3 hours / day)</option>
-                  <option value={240}>240 minutes (4 hours / day)</option>
-                </select>
+                <div className="form-group">
+                  <label className="form-label">Department / Major</label>
+                  <input
+                    type="text"
+                    value={department}
+                    onChange={(e) => setDepartment(e.target.value)}
+                    placeholder="e.g. Computer Science & Engineering"
+                    className="form-input-control"
+                    disabled={saving}
+                  />
+                </div>
               </div>
 
               <div className="form-group">
                 <label className="form-label">
-                  📧 Account Email (Verified)
+                  Academic Bio / Research Interests
                 </label>
-                <input
-                  type="email"
-                  value={user?.email || ""}
-                  disabled
+                <textarea
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  rows={2}
+                  placeholder="Briefly state your academic focus, research goals, or study habits..."
                   className="form-input-control"
-                  style={{
-                    background: "var(--color-surface-subtle)",
-                    color: "var(--color-text-muted)",
-                  }}
+                  disabled={saving}
                 />
               </div>
-            </div>
 
-            <div className="modal-footer-row" style={{ marginTop: "18px" }}>
-              <Button type="button" variant="secondary" onClick={onClose}>
-                Close
-              </Button>
-              <Button type="submit" loading={saving} disabled={saving}>
-                {saving ? "Saving..." : "Save Profile Changes"}
-              </Button>
-            </div>
-          </form>
-        )}
+              <div className="modal-grid-2col">
+                <div className="form-group">
+                  <label className="form-label">
+                    🎓 Current CGPA (out of 4.00)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0.00"
+                    max="4.00"
+                    value={currentGpa}
+                    onChange={(e) => setCurrentGpa(e.target.value)}
+                    placeholder="e.g. 3.75"
+                    className="form-input-control"
+                    disabled={saving}
+                  />
+                </div>
 
-        {/* TAB 2: OVERALL PERFORMANCE & RANK */}
-        {activeTab === "performance" && (
-          <div className="profile-performance-container">
-            {loadingSummary ? (
-              <div className="profile-loading-box">
-                <Spinner standalone />
-                <p className="profile-loading-text">
-                  Aggregating your academic performance metrics...
-                </p>
+                <div className="form-group">
+                  <label className="form-label">
+                    🎯 Target Graduation CGPA
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0.00"
+                    max="4.00"
+                    value={targetGpa}
+                    onChange={(e) => setTargetGpa(e.target.value)}
+                    placeholder="e.g. 3.90"
+                    className="form-input-control"
+                    disabled={saving}
+                  />
+                </div>
               </div>
-            ) : (
-              <div className="profile-performance-content">
-                {/* 4 Highlight Metric Cards */}
-                <div className="profile-metrics-grid">
-                  <div className="profile-metric-item">
-                    <span className="metric-item-lbl">Community Rank</span>
-                    <strong
-                      className="metric-item-val"
-                      style={{ color: "var(--color-primary)" }}
-                    >
-                      🏆 #{summaryData?.performance?.community_rank || 1}
-                    </strong>
-                    <span className="metric-item-sub">
-                      {summaryData?.performance?.total_xp || 0} XP
-                    </span>
-                  </div>
 
-                  <div className="profile-metric-item">
-                    <span className="metric-item-lbl">Academic CGPA</span>
-                    <strong
-                      className="metric-item-val"
-                      style={{ color: "var(--color-text)" }}
-                    >
-                      🎓{" "}
-                      {typeof summaryData?.performance?.current_cgpa ===
-                      "number"
-                        ? summaryData.performance.current_cgpa.toFixed(2)
-                        : currentGpa
-                          ? Number(currentGpa).toFixed(2)
-                          : "N/A"}
-                    </strong>
-                    <span className="metric-item-sub">
-                      Target:{" "}
-                      {typeof summaryData?.performance?.target_gpa === "number"
-                        ? summaryData.performance.target_gpa.toFixed(2)
-                        : targetGpa
-                          ? Number(targetGpa).toFixed(2)
-                          : "3.50"}
-                    </span>
-                  </div>
-
-                  <div className="profile-metric-item">
-                    <span className="metric-item-lbl">Study Time</span>
-                    <strong
-                      className="metric-item-val"
-                      style={{ color: "var(--color-text)" }}
-                    >
-                      ⏱️ {summaryData?.performance?.total_study_hours || 0}h
-                    </strong>
-                    <span className="metric-item-sub">
-                      {summaryData?.performance?.total_sessions || 0} sessions
-                    </span>
-                  </div>
-
-                  <div className="profile-metric-item">
-                    <span className="metric-item-lbl">Active Streak</span>
-                    <strong
-                      className="metric-item-val"
-                      style={{ color: "var(--color-accent)" }}
-                    >
-                      🔥 {summaryData?.performance?.current_streak_days || 0}{" "}
-                      Days
-                    </strong>
-                    <span className="metric-item-sub">Consecutive habits</span>
-                  </div>
+              <div className="modal-grid-2col">
+                <div className="form-group">
+                  <label className="form-label">
+                    ⏱️ Target Daily Study Goal (Minutes)
+                  </label>
+                  <select
+                    value={targetDailyMinutes}
+                    onChange={(e) =>
+                      setTargetDailyMinutes(Number(e.target.value))
+                    }
+                    className="form-input-control"
+                    disabled={saving}
+                  >
+                    <option value={60}>60 minutes (1 hour / day)</option>
+                    <option value={90}>90 minutes (1.5 hours / day)</option>
+                    <option value={120}>120 minutes (2 hours / day)</option>
+                    <option value={180}>180 minutes (3 hours / day)</option>
+                    <option value={240}>240 minutes (4 hours / day)</option>
+                  </select>
                 </div>
 
-                {/* Module Highlights Row */}
-                <div className="profile-modules-grid">
-                  <div className="profile-module-card">
-                    <strong className="profile-module-title">
-                      📅 Study Routines
-                    </strong>
-                    <p className="profile-module-desc">
-                      <strong>
-                        {summaryData?.performance?.routines_count || 0}
-                      </strong>{" "}
-                      active routines scheduled in your weekly calendar.
-                    </p>
+                <div className="form-group">
+                  <label className="form-label">
+                    📧 Account Email (Verified)
+                  </label>
+                  <input
+                    type="email"
+                    value={user?.email || ""}
+                    disabled
+                    className="form-input-control"
+                    style={{
+                      background: "var(--color-surface-subtle)",
+                      color: "var(--color-text-muted)",
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="modal-footer-row" style={{ marginTop: "18px" }}>
+                <Button type="button" variant="secondary" onClick={onClose}>
+                  Close
+                </Button>
+                <Button type="submit" loading={saving} disabled={saving}>
+                  {saving ? "Saving..." : "Save Profile Changes"}
+                </Button>
+              </div>
+            </form>
+          )}
+
+          {/* TAB 2: OVERALL PERFORMANCE & RANK */}
+          {activeTab === "performance" && (
+            <div className="profile-performance-container">
+              {loadingSummary ? (
+                <div className="profile-loading-box">
+                  <Spinner standalone />
+                  <p className="profile-loading-text">
+                    Aggregating your academic performance metrics...
+                  </p>
+                </div>
+              ) : (
+                <div className="profile-performance-content">
+                  {/* 4 Highlight Metric Cards */}
+                  <div className="profile-metrics-grid">
+                    <div className="profile-metric-item">
+                      <span className="metric-item-lbl">Community Rank</span>
+                      <strong
+                        className="metric-item-val"
+                        style={{ color: "var(--color-primary)" }}
+                      >
+                        🏆 #{summaryData?.performance?.community_rank || 1}
+                      </strong>
+                      <span className="metric-item-sub">
+                        {summaryData?.performance?.total_xp || 0} XP
+                      </span>
+                    </div>
+
+                    <div className="profile-metric-item">
+                      <span className="metric-item-lbl">Academic CGPA</span>
+                      <strong
+                        className="metric-item-val"
+                        style={{ color: "var(--color-text)" }}
+                      >
+                        🎓{" "}
+                        {typeof summaryData?.performance?.current_cgpa ===
+                        "number"
+                          ? summaryData.performance.current_cgpa.toFixed(2)
+                          : currentGpa
+                            ? Number(currentGpa).toFixed(2)
+                            : "N/A"}
+                      </strong>
+                      <span className="metric-item-sub">
+                        Target:{" "}
+                        {typeof summaryData?.performance?.target_gpa ===
+                        "number"
+                          ? summaryData.performance.target_gpa.toFixed(2)
+                          : targetGpa
+                            ? Number(targetGpa).toFixed(2)
+                            : "3.50"}
+                      </span>
+                    </div>
+
+                    <div className="profile-metric-item">
+                      <span className="metric-item-lbl">Study Time</span>
+                      <strong
+                        className="metric-item-val"
+                        style={{ color: "var(--color-text)" }}
+                      >
+                        ⏱️ {summaryData?.performance?.total_study_hours || 0}h
+                      </strong>
+                      <span className="metric-item-sub">
+                        {summaryData?.performance?.total_sessions || 0} sessions
+                      </span>
+                    </div>
+
+                    <div className="profile-metric-item">
+                      <span className="metric-item-lbl">Active Streak</span>
+                      <strong
+                        className="metric-item-val"
+                        style={{ color: "var(--color-accent)" }}
+                      >
+                        🔥 {summaryData?.performance?.current_streak_days || 0}{" "}
+                        Days
+                      </strong>
+                      <span className="metric-item-sub">
+                        Consecutive habits
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="profile-module-card">
-                    <strong className="profile-module-title">
-                      📚 Study Materials
-                    </strong>
-                    <p className="profile-module-desc">
-                      <strong>
-                        {summaryData?.performance?.materials_count || 0}
-                      </strong>{" "}
-                      documents uploaded with{" "}
-                      <strong>
-                        {summaryData?.performance?.topics_count || 0}
-                      </strong>{" "}
-                      extracted syllabus topics.
-                    </p>
+                  {/* Module Highlights Row */}
+                  <div className="profile-modules-grid">
+                    <div className="profile-module-card">
+                      <strong className="profile-module-title">
+                        📅 Study Routines
+                      </strong>
+                      <p className="profile-module-desc">
+                        <strong>
+                          {summaryData?.performance?.routines_count || 0}
+                        </strong>{" "}
+                        active routines scheduled in your weekly calendar.
+                      </p>
+                    </div>
+
+                    <div className="profile-module-card">
+                      <strong className="profile-module-title">
+                        📚 Study Materials
+                      </strong>
+                      <p className="profile-module-desc">
+                        <strong>
+                          {summaryData?.performance?.materials_count || 0}
+                        </strong>{" "}
+                        documents uploaded with{" "}
+                        <strong>
+                          {summaryData?.performance?.topics_count || 0}
+                        </strong>{" "}
+                        extracted syllabus topics.
+                      </p>
+                    </div>
+
+                    <div className="profile-module-card">
+                      <strong className="profile-module-title">
+                        💬 Community Engagement
+                      </strong>
+                      <p className="profile-module-desc">
+                        <strong>
+                          {summaryData?.performance?.posts_count || 0}
+                        </strong>{" "}
+                        discussions started &{" "}
+                        <strong>
+                          {summaryData?.performance?.rsvps_count || 0}
+                        </strong>{" "}
+                        study events joined.
+                      </p>
+                    </div>
+
+                    <div className="profile-module-card">
+                      <strong className="profile-module-title">
+                        🎖️ Milestone Badges
+                      </strong>
+                      <p className="profile-module-desc">
+                        <strong>
+                          {summaryData?.performance?.badges_earned || 0}
+                        </strong>{" "}
+                        academic achievement rewards unlocked.
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="profile-module-card">
-                    <strong className="profile-module-title">
-                      💬 Community Engagement
-                    </strong>
-                    <p className="profile-module-desc">
-                      <strong>
-                        {summaryData?.performance?.posts_count || 0}
-                      </strong>{" "}
-                      discussions started &{" "}
-                      <strong>
-                        {summaryData?.performance?.rsvps_count || 0}
-                      </strong>{" "}
-                      study event RSVPs.
-                    </p>
-                  </div>
-
-                  <div className="profile-module-card">
-                    <strong className="profile-module-title">
-                      🎖️ Milestone Badges
-                    </strong>
-                    <p className="profile-module-desc">
-                      <strong>
-                        {summaryData?.performance?.badges_earned || 0}
-                      </strong>{" "}
-                      academic achievement rewards unlocked.
-                    </p>
+                  <div
+                    className="modal-footer-row"
+                    style={{ marginTop: "12px" }}
+                  >
+                    <Button variant="secondary" onClick={onClose}>
+                      Close
+                    </Button>
                   </div>
                 </div>
+              )}
+            </div>
+          )}
 
-                <div className="modal-footer-row" style={{ marginTop: "12px" }}>
-                  <Button variant="secondary" onClick={onClose}>
-                    Close
+          {/* TAB 3: PREFERENCES & ACCOUNT SETTINGS */}
+          {activeTab === "settings" && (
+            <div className="profile-settings-container">
+              {/* Visual Theme */}
+              <div className="profile-setting-row-card">
+                <div className="setting-text-col">
+                  <strong className="setting-title">🎨 Visual Theme</strong>
+                  <span className="setting-desc">
+                    Switch between Light and Dark visual academic modes
+                  </span>
+                </div>
+                <div className="setting-action-col">
+                  <ThemeToggle />
+                </div>
+              </div>
+
+              {/* Community Leaderboard */}
+              <div className="profile-setting-row-card">
+                <div className="setting-text-col">
+                  <strong className="setting-title">
+                    🏆 Community Leaderboard
+                  </strong>
+                  <span className="setting-desc">
+                    Your rank and XP points are visible to fellow scholars
+                  </span>
+                </div>
+                <div className="setting-action-col">
+                  <ToggleSwitch
+                    checked={optInLeaderboard}
+                    onChange={handleToggleLeaderboard}
+                    ariaLabel="Toggle community leaderboard visibility"
+                  />
+                </div>
+              </div>
+
+              {/* Notification Channels Dynamic Preferences */}
+              <div className="profile-notifs-box-card">
+                <div className="notifs-box-header">
+                  <strong className="setting-title">
+                    🔔 Notification Channels & Dynamic Alerts
+                  </strong>
+                  <span className="setting-desc">
+                    Disable or enable notifications. Disabled channels will not
+                    generate or display alerts.
+                  </span>
+                </div>
+
+                <div className="notifs-channels-list">
+                  <div className="notif-channel-row">
+                    <div className="setting-text-col">
+                      <strong className="notif-item-title">
+                        📢 Campus Announcements & Events
+                      </strong>
+                      <span className="notif-item-desc">
+                        Faculty exam reviews, study sessions, and university
+                        circulars
+                      </span>
+                    </div>
+                    <div className="setting-action-col">
+                      <ToggleSwitch
+                        checked={notifAnnouncements}
+                        onChange={() => handleToggleNotif("announcements")}
+                        ariaLabel="Toggle Campus Announcements notifications"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="notif-channel-row">
+                    <div className="setting-text-col">
+                      <strong className="notif-item-title">
+                        💬 Comments & Discussion Replies
+                      </strong>
+                      <span className="notif-item-desc">
+                        Classmate comments on your posts and solutions marked
+                        helpful
+                      </span>
+                    </div>
+                    <div className="setting-action-col">
+                      <ToggleSwitch
+                        checked={notifComments}
+                        onChange={() => handleToggleNotif("comments")}
+                        ariaLabel="Toggle Comments and Replies notifications"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="notif-channel-row">
+                    <div className="setting-text-col">
+                      <strong className="notif-item-title">
+                        🎓 Academic Targets & Habit Streaks
+                      </strong>
+                      <span className="notif-item-desc">
+                        Target CGPA updates and daily study streak consistency
+                        reminders
+                      </span>
+                    </div>
+                    <div className="setting-action-col">
+                      <ToggleSwitch
+                        checked={notifAcademic}
+                        onChange={() => handleToggleNotif("academic")}
+                        ariaLabel="Toggle Academic targets and streak notifications"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="notif-channel-row">
+                    <div className="setting-text-col">
+                      <strong className="notif-item-title">
+                        🔊 Audio & Alert Chimes
+                      </strong>
+                      <span className="notif-item-desc">
+                        Sound notifications when study timers or reminders
+                        complete
+                      </span>
+                    </div>
+                    <div className="setting-action-col">
+                      <ToggleSwitch
+                        checked={notifSound}
+                        onChange={() => handleToggleNotif("sound")}
+                        ariaLabel="Toggle audio chimes and sound effects"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Account Logout */}
+              <div className="profile-setting-row-card logout-card">
+                <div className="setting-text-col">
+                  <strong className="setting-title text-danger">
+                    🚪 Account Logout
+                  </strong>
+                  <span className="setting-desc">
+                    Sign out of StudentBrain on this device
+                  </span>
+                </div>
+                <div className="setting-action-col">
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => {
+                      onClose();
+                      logout();
+                    }}
+                  >
+                    Sign Out
                   </Button>
                 </div>
               </div>
-            )}
-          </div>
-        )}
 
-        {/* TAB 3: PREFERENCES & ACCOUNT SETTINGS */}
-        {activeTab === "settings" && (
-          <div className="profile-settings-container">
-            {/* Visual Theme */}
-            <div className="profile-setting-row-card">
-              <div className="setting-text-col">
-                <strong className="setting-title">🎨 Visual Theme</strong>
-                <span className="setting-desc">
-                  Switch between Light and Dark visual academic modes
-                </span>
-              </div>
-              <div className="setting-action-col">
-                <ThemeToggle />
-              </div>
-            </div>
-
-            {/* Community Leaderboard */}
-            <div className="profile-setting-row-card">
-              <div className="setting-text-col">
-                <strong className="setting-title">
-                  🏆 Community Leaderboard
-                </strong>
-                <span className="setting-desc">
-                  Your rank and XP points are visible to fellow scholars
-                </span>
-              </div>
-              <div className="setting-action-col">
-                <ToggleSwitch
-                  checked={optInLeaderboard}
-                  onChange={handleToggleLeaderboard}
-                  ariaLabel="Toggle community leaderboard visibility"
-                />
-              </div>
-            </div>
-
-            {/* Notification Channels Dynamic Preferences */}
-            <div className="profile-notifs-box-card">
-              <div className="notifs-box-header">
-                <strong className="setting-title">
-                  🔔 Notification Channels & Dynamic Alerts
-                </strong>
-                <span className="setting-desc">
-                  Disable or enable notifications. Disabled channels will not
-                  generate or display alerts.
-                </span>
-              </div>
-
-              <div className="notifs-channels-list">
-                <div className="notif-channel-row">
-                  <div className="setting-text-col">
-                    <strong className="notif-item-title">
-                      📢 Campus Announcements & Events
-                    </strong>
-                    <span className="notif-item-desc">
-                      Faculty exam reviews, study sessions, and university
-                      circulars
-                    </span>
-                  </div>
-                  <div className="setting-action-col">
-                    <ToggleSwitch
-                      checked={notifAnnouncements}
-                      onChange={() => handleToggleNotif("announcements")}
-                      ariaLabel="Toggle Campus Announcements notifications"
-                    />
-                  </div>
-                </div>
-
-                <div className="notif-channel-row">
-                  <div className="setting-text-col">
-                    <strong className="notif-item-title">
-                      💬 Comments & Discussion Replies
-                    </strong>
-                    <span className="notif-item-desc">
-                      Classmate comments on your posts and solutions marked
-                      helpful
-                    </span>
-                  </div>
-                  <div className="setting-action-col">
-                    <ToggleSwitch
-                      checked={notifComments}
-                      onChange={() => handleToggleNotif("comments")}
-                      ariaLabel="Toggle Comments and Replies notifications"
-                    />
-                  </div>
-                </div>
-
-                <div className="notif-channel-row">
-                  <div className="setting-text-col">
-                    <strong className="notif-item-title">
-                      🎓 Academic Targets & Habit Streaks
-                    </strong>
-                    <span className="notif-item-desc">
-                      Target CGPA updates and daily study streak consistency
-                      reminders
-                    </span>
-                  </div>
-                  <div className="setting-action-col">
-                    <ToggleSwitch
-                      checked={notifAcademic}
-                      onChange={() => handleToggleNotif("academic")}
-                      ariaLabel="Toggle Academic targets and streak notifications"
-                    />
-                  </div>
-                </div>
-
-                <div className="notif-channel-row">
-                  <div className="setting-text-col">
-                    <strong className="notif-item-title">
-                      🔊 Audio & Alert Chimes
-                    </strong>
-                    <span className="notif-item-desc">
-                      Sound notifications when study timers or reminders
-                      complete
-                    </span>
-                  </div>
-                  <div className="setting-action-col">
-                    <ToggleSwitch
-                      checked={notifSound}
-                      onChange={() => handleToggleNotif("sound")}
-                      ariaLabel="Toggle audio chimes and sound effects"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Account Logout */}
-            <div className="profile-setting-row-card logout-card">
-              <div className="setting-text-col">
-                <strong className="setting-title text-danger">
-                  🚪 Account Logout
-                </strong>
-                <span className="setting-desc">
-                  Sign out of StudentBrain on this device
-                </span>
-              </div>
-              <div className="setting-action-col">
-                <Button
-                  variant="danger"
-                  size="sm"
-                  onClick={() => {
-                    onClose();
-                    logout();
-                  }}
-                >
-                  Sign Out
+              <div className="modal-footer-row" style={{ marginTop: "10px" }}>
+                <Button variant="secondary" onClick={onClose}>
+                  Close
                 </Button>
               </div>
             </div>
-
-            <div className="modal-footer-row" style={{ marginTop: "10px" }}>
-              <Button variant="secondary" onClick={onClose}>
-                Close
-              </Button>
-            </div>
-          </div>
-        )}
+          )}
         </div>
       </div>
     </div>
   );
 }
-
