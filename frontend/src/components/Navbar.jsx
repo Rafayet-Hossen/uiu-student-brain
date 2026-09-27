@@ -164,7 +164,7 @@ export default function Navbar() {
         <div className="navbar-inner-wrapper">
           {/* Left: Brand Logo */}
           <Link to="/dashboard" className="navbar-brand-logo">
-            <StudentBrainLogo size={32} />
+            <StudentBrainLogo size={28} />
             <span className="navbar-brand-name">
               Student<span className="brand-accent-text">Brain</span>
             </span>
@@ -333,7 +333,7 @@ export default function Navbar() {
             >
               <div className="drawer-header-row">
                 <div className="drawer-brand-wrap">
-                  <StudentBrainLogo size={28} />
+                  <StudentBrainLogo size={26} />
                   <span className="drawer-brand-title">
                     Student<span className="brand-accent-text">Brain</span>
                   </span>

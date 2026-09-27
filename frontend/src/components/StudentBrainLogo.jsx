@@ -1,108 +1,128 @@
-export default function StudentBrainLogo({ size = 28, className = "", style = {} }) {
+export default function StudentBrainLogo({ size = 28, className = "" }) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 48 48"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-      style={{ display: "inline-block", verticalAlign: "middle", flexShrink: 0, ...style }}
-      aria-label="Student Brain Logo"
+    <div
+      className={`student-brain-brand-logo ${className}`}
+      style={{
+        width: size,
+        height: size,
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+      }}
     >
-      <defs>
-        {/* Primary Warm Vibrant UIU Gradient */}
-        <linearGradient id="sbLogoGradPrimary" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#ff782e" />
-          <stop offset="50%" stopColor="#f26522" />
-          <stop offset="100%" stopColor="#e11d48" />
-        </linearGradient>
-
-        {/* Brain Node & Intellect Glow Gradient */}
-        <linearGradient id="sbLogoGradNeural" x1="12" y1="8" x2="36" y2="38" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
-          <stop offset="100%" stopColor="#fed7aa" stopOpacity="0.85" />
-        </linearGradient>
-
-        {/* Soft Shadow Filter for Premium Depth */}
-        <filter id="sbLogoShadow" x="-10%" y="-10%" width="130%" height="130%" filterUnits="userSpaceOnUse">
-          <feDropShadow dx="0" dy="2" stdDeviation="2.5" floodColor="#ea580c" floodOpacity="0.25" />
-        </filter>
-      </defs>
-
-      {/* Rounded Hexagonal / Squircle Emblem Background */}
-      <rect
-        x="2"
-        y="2"
-        width="44"
-        height="44"
-        rx="13"
-        fill="url(#sbLogoGradPrimary)"
-        filter="url(#sbLogoShadow)"
-      />
-
-      {/* Subtle Inner Glow Rim */}
-      <rect
-        x="3"
-        y="3"
-        width="42"
-        height="42"
-        rx="12"
-        stroke="rgba(255, 255, 255, 0.35)"
-        strokeWidth="1.5"
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 48 48"
         fill="none"
-      />
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          <linearGradient
+            id="sbGradPrimary"
+            x1="4"
+            y1="4"
+            x2="44"
+            y2="44"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop offset="0%" stopColor="#F26522" />
+            <stop offset="50%" stopColor="#EA580C" />
+            <stop offset="100%" stopColor="#D97706" />
+          </linearGradient>
 
-      {/* Modern Humanized Brain-Integrated Graduation Cap & Academic Crest */}
-      <g fill="none" stroke="url(#sbLogoGradNeural)" strokeLinecap="round" strokeLinejoin="round">
-        {/* Mortarboard Diamond Top */}
-        <path
-          d="M24 10.5L37.5 17L24 23.5L10.5 17L24 10.5Z"
-          fill="rgba(255, 255, 255, 0.95)"
-          stroke="#ffffff"
-          strokeWidth="1.5"
+          <linearGradient
+            id="sbGradAccent"
+            x1="12"
+            y1="10"
+            x2="36"
+            y2="38"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop offset="0%" stopColor="#FFFFFF" />
+            <stop offset="100%" stopColor="#FED7AA" />
+          </linearGradient>
+
+          <linearGradient
+            id="sbGradGlow"
+            x1="0"
+            y1="0"
+            x2="48"
+            y2="48"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop offset="0%" stopColor="#F97316" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="#FB923C" stopOpacity="0.2" />
+          </linearGradient>
+        </defs>
+
+        {/* Outer Rounded Container Pill / Shield */}
+        <rect
+          x="3"
+          y="3"
+          width="42"
+          height="42"
+          rx="12"
+          fill="url(#sbGradPrimary)"
         />
 
-        {/* Mortarboard Tassel & Ribbon */}
+        {/* Subtle Inner Glass Overlay */}
+        <rect
+          x="3"
+          y="3"
+          width="42"
+          height="21"
+          rx="12"
+          fill="white"
+          fillOpacity="0.15"
+        />
+
+        {/* Synaptic Academic Cap Geometry */}
+        {/* Cap Top Rhombus */}
         <path
-          d="M34 18.5V25.5C34 26.5 35 27.5 36 27.5"
-          stroke="#ffffff"
+          d="M24 13L37 19.5L24 26L11 19.5L24 13Z"
+          fill="url(#sbGradAccent)"
+          stroke="#FFFFFF"
+          strokeWidth="1.2"
+          strokeLinejoin="round"
+        />
+
+        {/* Cap Bottom Skullcap Curve */}
+        <path
+          d="M15.5 22.5V28C15.5 31 19.3 33.5 24 33.5C28.7 33.5 32.5 31 32.5 28V22.5"
+          stroke="url(#sbGradAccent)"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+
+        {/* Neural Synapse Nodes on Lower Hull */}
+        <circle cx="24" cy="30" r="1.8" fill="#F26522" />
+        <circle cx="19" cy="27" r="1.4" fill="#FED7AA" />
+        <circle cx="29" cy="27" r="1.4" fill="#FED7AA" />
+
+        {/* Neural Connective Arc Lines */}
+        <path
+          d="M19 27C21 29 27 29 29 27"
+          stroke="#F26522"
+          strokeWidth="1.2"
+          strokeLinecap="round"
+        />
+
+        {/* Graduation Cap Tassel with Golden Drop */}
+        <path
+          d="M33 20V27.5L34.5 30"
+          stroke="#FEF3C7"
           strokeWidth="1.6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         />
+        <circle cx="34.5" cy="31" r="1.5" fill="#FEF08A" />
 
-        {/* Human Neural Hemisphere Left (Curved Synapse Pathways) */}
-        <path
-          d="M17 26.5C14.5 28 13.5 30.5 14 33C14.5 35.2 16.8 37 19.5 37C21.5 37 23.2 35.8 24 34"
-          stroke="#ffffff"
-          strokeWidth="2.2"
-        />
-
-        {/* Human Neural Hemisphere Right (Curved Synapse Pathways) */}
-        <path
-          d="M31 26.5C33.5 28 34.5 30.5 34 33C33.5 35.2 31.2 37 28.5 37C26.5 37 24.8 35.8 24 34"
-          stroke="#ffffff"
-          strokeWidth="2.2"
-        />
-
-        {/* Central Intellect Core & Knowledge Spark Pillar */}
-        <path
-          d="M24 24.5V37.5"
-          stroke="#ffffff"
-          strokeWidth="2.2"
-        />
-
-        {/* Open Book Wings at Base */}
-        <path
-          d="M16 38.5C18.5 37.5 21.5 37.8 24 39.5C26.5 37.8 29.5 37.5 32 38.5"
-          stroke="#ffffff"
-          strokeWidth="2"
-        />
-      </g>
-
-      {/* Sparkle of Wisdom / Active Synapse Dots */}
-      <circle cx="24" cy="28.5" r="1.5" fill="#ffffff" />
-      <circle cx="18.5" cy="31" r="1.2" fill="#ffffff" />
-      <circle cx="29.5" cy="31" r="1.2" fill="#ffffff" />
-    </svg>
+        {/* Top Synapse Sparkle */}
+        <circle cx="24" cy="19.5" r="1.2" fill="#F26522" />
+      </svg>
+    </div>
   );
 }

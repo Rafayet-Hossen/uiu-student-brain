@@ -1,35 +1,33 @@
-<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
   <defs>
-    <linearGradient id="sbFaviconGrad" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#ff782e" />
-      <stop offset="50%" stop-color="#f26522" />
-      <stop offset="100%" stop-color="#e11d48" />
+    <linearGradient id="sbFavGrad" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#F26522"/>
+      <stop offset="50%" stopColor="#EA580C"/>
+      <stop offset="100%" stopColor="#D97706"/>
+    </linearGradient>
+    <linearGradient id="sbFavAccent" x1="12" y1="10" x2="36" y2="38" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#FFFFFF"/>
+      <stop offset="100%" stopColor="#FED7AA"/>
     </linearGradient>
   </defs>
 
-  <rect x="2" y="2" width="44" height="44" rx="13" fill="url(#sbFaviconGrad)" />
-  <rect x="3" y="3" width="42" height="42" rx="12" stroke="rgba(255, 255, 255, 0.35)" stroke-width="1.5" fill="none" />
+  <rect x="2" y="2" width="44" height="44" rx="12" fill="url(#sbFavGrad)" />
+  <rect x="2" y="2" width="44" height="22" rx="12" fill="white" fill-opacity="0.15" />
 
-  <!-- Mortarboard Diamond Top -->
-  <path d="M24 10.5L37.5 17L24 23.5L10.5 17L24 10.5Z" fill="#ffffff" stroke="#ffffff" stroke-width="1.5" stroke-linejoin="round" />
+  <!-- Cap Rhombus -->
+  <path d="M24 13L37 19.5L24 26L11 19.5L24 13Z" fill="url(#sbFavAccent)" stroke="#FFFFFF" stroke-width="1.2" stroke-linejoin="round" />
 
-  <!-- Mortarboard Tassel -->
-  <path d="M34 18.5V25.5C34 26.5 35 27.5 36 27.5" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" />
+  <!-- Cap Hull -->
+  <path d="M15.5 22.5V28C15.5 31 19.3 33.5 24 33.5C28.7 33.5 32.5 31 32.5 28V22.5" stroke="url(#sbFavAccent)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
 
-  <!-- Neural Hemisphere Left -->
-  <path d="M17 26.5C14.5 28 13.5 30.5 14 33C14.5 35.2 16.8 37 19.5 37C21.5 37 23.2 35.8 24 34" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" fill="none" />
+  <!-- Synapse Nodes -->
+  <circle cx="24" cy="30" r="1.8" fill="#F26522" />
+  <circle cx="19" cy="27" r="1.4" fill="#FED7AA" />
+  <circle cx="29" cy="27" r="1.4" fill="#FED7AA" />
+  <path d="M19 27C21 29 27 29 29 27" stroke="#F26522" stroke-width="1.2" stroke-linecap="round" />
 
-  <!-- Neural Hemisphere Right -->
-  <path d="M31 26.5C33.5 28 34.5 30.5 34 33C33.5 35.2 31.2 37 28.5 37C26.5 37 24.8 35.8 24 34" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" fill="none" />
-
-  <!-- Central Core -->
-  <path d="M24 24.5V37.5" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" />
-
-  <!-- Open Book Base -->
-  <path d="M16 38.5C18.5 37.5 21.5 37.8 24 39.5C26.5 37.8 29.5 37.5 32 38.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" fill="none" />
-
-  <!-- Synapse Spark Nodes -->
-  <circle cx="24" cy="28.5" r="1.5" fill="#ffffff" />
-  <circle cx="18.5" cy="31" r="1.2" fill="#ffffff" />
-  <circle cx="29.5" cy="31" r="1.2" fill="#ffffff" />
+  <!-- Tassel -->
+  <path d="M33 20V27.5L34.5 30" stroke="#FEF3C7" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="34.5" cy="31" r="1.5" fill="#FEF08A" />
+  <circle cx="24" cy="19.5" r="1.2" fill="#F26522" />
 </svg>
