@@ -4443,7 +4443,7 @@
 }
 
 .planner-header-lead {
-  flex: 1 1 300px;
+  flex: 1 1 auto;
   min-width: 0;
 }
 
@@ -5334,17 +5334,29 @@
 
   /* Planner Mobile Header Controls */
   .planner-header-row {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+
+  .planner-header-lead {
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    margin-bottom: 0 !important;
+  }
+
+  .planner-page-desc {
+    margin: 0 !important;
+    line-height: 1.35 !important;
   }
 
   .planner-header-actions {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    margin-top: 2px !important;
   }
 
   .planner-view-toggle {
@@ -6278,79 +6290,31 @@
 @media (max-width: 640px) {
   .quick-post-creator-card {
     padding: 12px 14px;
-    border-radius: var(--radius-xl);
-  }
-  .quick-creator-top {
-    gap: 10px;
-    margin-bottom: 10px;
-  }
-  .quick-creator-input-trigger {
-    padding: 8px 14px;
-    font-size: 0.8125rem;
   }
   .quick-creator-bottom {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    gap: 6px !important;
-    padding-top: 8px !important;
-    border-top: 1px solid var(--color-border-subtle) !important;
-  }
-  .quick-creator-bottom .btn,
-  .quick-creator-bottom button {
-    display: none !important;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
   }
   .quick-creator-chips {
-    width: 100% !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 6px !important;
-    overflow-x: auto !important;
-    white-space: nowrap !important;
-    padding-bottom: 2px !important;
-    scrollbar-width: none !important;
-  }
-  .quick-chip-item {
-    font-size: 0.74rem !important;
-    padding: 4px 8px !important;
-    border-radius: 8px !important;
-    background: var(--color-surface-subtle) !important;
-    flex-shrink: 0 !important;
+    width: 100%;
+    justify-content: flex-start;
   }
   .community-feed-filters-bar {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 8px !important;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
   }
   .feed-filter-tabs {
-    width: 100% !important;
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    box-sizing: border-box !important;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
   }
   .feed-filter-btn {
-    justify-content: center !important;
-    padding: 6px 10px !important;
-    font-size: 0.78rem !important;
+    justify-content: center;
   }
   .feed-search-wrap {
-    width: 100% !important;
-    box-sizing: border-box !important;
-  }
-  .feed-search-input {
-    width: 100% !important;
-    font-size: 0.8rem !important;
-    height: 38px !important;
-    box-sizing: border-box !important;
-  }
-  .category-scroll-bar {
-    gap: 6px !important;
-    padding-bottom: 2px !important;
-  }
-  .category-tag-pill {
-    padding: 5px 12px !important;
-    font-size: 0.76rem !important;
+    width: 100%;
   }
 }
 
@@ -7844,62 +7808,69 @@
 }
 
 /* Mobile Phone Responsiveness for Community Post Cards */
-/* Mobile Phone & Tablet Responsiveness for Community Post Cards */
 @media (max-width: 640px) {
   .premium-social-post-card {
-    padding: 12px 14px !important;
-    border-radius: 16px !important;
-    margin-bottom: 14px !important;
-    box-sizing: border-box !important;
+    padding: 16px 14px;
+    border-radius: var(--radius-xl);
   }
 
   .social-card-accent-bar {
-    margin: -12px -14px 10px -14px !important;
-    border-top-left-radius: 16px !important;
-    border-top-right-radius: 16px !important;
-    height: 3.5px !important;
+    margin: -16px -14px 12px -14px;
+    border-top-left-radius: var(--radius-xl);
+    border-top-right-radius: var(--radius-xl);
   }
 
   .social-post-title {
-    font-size: 1rem !important;
-    line-height: 1.35 !important;
-    margin-bottom: 6px !important;
-    word-break: break-word !important;
-    font-weight: 750 !important;
+    font-size: 1.05rem;
+    line-height: 1.35;
+    margin-bottom: 8px;
+    word-break: break-word;
   }
 
   .social-post-header {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: flex-start !important;
-    justify-content: space-between !important;
-    gap: 8px !important;
-    margin-bottom: 10px !important;
-  }
-
-  .social-post-author-row {
-    display: flex !important;
-    align-items: center !important;
-    gap: 8px !important;
-    min-width: 0 !important;
-    flex: 1 !important;
-  }
-
-  .author-name {
-    font-size: 0.85rem !important;
-  }
-
-  .author-sub-line {
-    font-size: 0.7rem !important;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
   }
 
   .social-header-right {
-    display: flex !important;
-    align-items: center !important;
-    gap: 4px !important;
-    flex-shrink: 0 !important;
+    flex-wrap: wrap;
+    gap: 6px;
   }
 
+  .study-meeting-action-banner {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .meeting-direct-join-btn {
+    width: 100%;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+
+  .resource-access-banner {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .resource-open-pill {
+    width: 100%;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+
+  .study-purpose-box {
+    flex-direction: column;
+    gap: 3px;
+  }
+}
+
+@media (max-width: 640px) {
   .desktop-action-label {
     display: none !important;
   }
@@ -7908,87 +7879,44 @@
     display: inline !important;
   }
 
-  .social-post-footer {
-    padding-top: 10px !important;
-    margin-top: 8px !important;
-  }
-
   .social-action-buttons {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    gap: 4px !important;
-    width: 100% !important;
-    flex-wrap: nowrap !important;
-    overflow-x: auto !important;
-    scrollbar-width: none !important;
-    -webkit-overflow-scrolling: touch !important;
-  }
-
-  .social-action-buttons::-webkit-scrollbar {
-    display: none !important;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    width: 100%;
   }
 
   .social-action-pill {
-    padding: 5px 8px !important;
-    font-size: 0.72rem !important;
-    min-height: 30px !important;
-    border-radius: 9999px !important;
-    gap: 4px !important;
-    flex: 1 1 auto !important;
-    justify-content: center !important;
-    box-sizing: border-box !important;
-    white-space: nowrap !important;
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    min-height: 32px;
+    border-radius: var(--radius-full);
+    box-sizing: border-box;
   }
 
   .social-action-pill.social-share-btn,
   .social-action-pill.social-bookmark-btn {
-    flex: 0 0 auto !important;
-    padding: 5px 8px !important;
+    padding: 6px 8px;
   }
 
-  .pill-count-badge {
-    font-size: 0.68rem !important;
-    padding: 1px 5px !important;
+  .premium-social-post-card {
+    padding: 14px 12px;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-sizing: border-box;
   }
 
-  .study-meeting-action-banner {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    padding: 10px 12px !important;
-    gap: 10px !important;
-  }
-
-  .meeting-direct-join-btn {
-    width: 100% !important;
-    justify-content: center !important;
-    box-sizing: border-box !important;
-  }
-
-  .resource-access-banner {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    padding: 10px 12px !important;
-    gap: 10px !important;
-  }
-
-  .resource-open-pill {
-    width: 100% !important;
-    justify-content: center !important;
-    box-sizing: border-box !important;
-  }
-
-  .study-purpose-box {
-    flex-direction: column !important;
-    gap: 3px !important;
+  .social-card-accent-bar {
+    margin: -14px -12px 12px -12px;
   }
 }
 
 @media (max-width: 380px) {
   .social-action-pill {
-    padding: 4px 6px !important;
-    font-size: 0.68rem !important;
-    gap: 3px !important;
+    padding: 5px 6px;
+    font-size: 0.7rem;
+    gap: 4px;
   }
 }
 
