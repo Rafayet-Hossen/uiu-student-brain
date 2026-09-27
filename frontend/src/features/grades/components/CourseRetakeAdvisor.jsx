@@ -144,7 +144,9 @@ export default function CourseRetakeAdvisor({
 
     const isImage =
       file.type.startsWith("image/") ||
-      /\.(png|jpe?g|webp|heic|heif|heuc)$/i.test(file.name || "");
+      /\.(png|jpe?g|webp|heic|heif|heuc|bmp|tiff?|gif|svg)$/i.test(
+        file.name || "",
+      );
     if (isImage) {
       try {
         setPreviewUrl(URL.createObjectURL(file));
@@ -1569,7 +1571,7 @@ export default function CourseRetakeAdvisor({
                     <input
                       type="file"
                       id="transcript-file-input"
-                      accept=".pdf,.csv,.txt,.png,.jpg,.jpeg,.webp,.heic,.heif,.heuc,image/*"
+                      accept=".pdf,.csv,.tsv,.txt,.png,.jpg,.jpeg,.webp,.heic,.heif,.heuc,.bmp,.tiff,.tif,image/*,text/csv,text/plain,application/pdf"
                       style={{ display: "none" }}
                       onChange={(e) => {
                         if (e.target.files && e.target.files[0]) {

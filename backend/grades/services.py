@@ -142,12 +142,17 @@ def parse_and_import_transcript(user, file_obj=None, raw_text: str = "") -> List
                 except Exception:
                     pass
 
-        # 2. Standard screenshot/image formats (PNG, JPG, JPEG, WEBP)
-        elif fname.endswith((".png", ".jpg", ".jpeg", ".webp")):
+        # 2. Standard and extended image formats (PNG, JPG, JPEG, WEBP, BMP, TIFF, GIF)
+        elif fname.endswith((".png", ".jpg", ".jpeg", ".webp", ".bmp", ".tiff", ".tif", ".gif")):
             try:
                 file_bytes = file_obj.read()
                 ext = fname.split(".")[-1]
-                mime_type = f"image/{ext if ext != 'jpg' else 'jpeg'}"
+                if ext in ["jpg", "jpeg"]:
+                    mime_type = "image/jpeg"
+                elif ext in ["tiff", "tif"]:
+                    mime_type = "image/tiff"
+                else:
+                    mime_type = f"image/{ext}"
                 is_multimodal = True
             except Exception as e:
                 logger.warning(f"Image read error: {e}")
@@ -161,25 +166,33 @@ def parse_and_import_transcript(user, file_obj=None, raw_text: str = "") -> List
             except Exception as e:
                 logger.warning(f"PDF extraction error in transcript: {e}")
 
-            # If PDF text extraction returned empty or very short text (scanned PDF / image-based PDF)
-            if len((extracted_text or "").strip()) < 50:
-                try:
-                    file_obj.seek(0)
-                    file_bytes = file_obj.read()
-                    mime_type = "application/pdf"
-                    is_multimodal = True
-                except Exception as e:
-                    logger.warning(f"PDF bytes fallback failed: {e}")
+            try:
+                file_obj.seek(0)
+                file_bytes = file_obj.read()
+                mime_type = "application/pdf"
+                is_multimodal = True
+            except Exception as e:
+                logger.warning(f"PDF bytes read failed: {e}")
 
         # 4. CSV spreadsheet
-        elif fname.endswith(".csv"):
+        elif fname.endswith((".csv", ".tsv")):
             try:
-                content = file_obj.read()
-                extracted_text = content.decode("utf-8", errors="ignore") if isinstance(content, bytes) else str(content)
+                raw_bytes = file_obj.read()
+                if isinstance(raw_bytes, bytes):
+                    for enc in ["utf-8-sig", "utf-8", "cp1252", "latin-1", "iso-8859-1"]:
+                        try:
+                            extracted_text = raw_bytes.decode(enc)
+                            break
+                        except (UnicodeDecodeError, LookupError):
+                            continue
+                    if not extracted_text:
+                        extracted_text = raw_bytes.decode("utf-8", errors="ignore")
+                else:
+                    extracted_text = str(raw_bytes)
             except Exception as e:
                 logger.warning(f"CSV read error in transcript: {e}")
 
-        # 5. TXT or other MIME
+        # 5. TXT or generic MIME fallback
         else:
             content_type = getattr(file_obj, "content_type", "").lower()
             if content_type.startswith("image/"):
@@ -189,10 +202,34 @@ def parse_and_import_transcript(user, file_obj=None, raw_text: str = "") -> List
                     is_multimodal = True
                 except Exception:
                     pass
+            elif "pdf" in content_type:
+                try:
+                    import pypdf
+                    reader = pypdf.PdfReader(file_obj)
+                    extracted_text = "\n".join(page.extract_text() or "" for page in reader.pages)
+                except Exception:
+                    pass
+                try:
+                    file_obj.seek(0)
+                    file_bytes = file_obj.read()
+                    mime_type = "application/pdf"
+                    is_multimodal = True
+                except Exception:
+                    pass
             else:
                 try:
-                    content = file_obj.read()
-                    extracted_text = content.decode("utf-8", errors="ignore") if isinstance(content, bytes) else str(content)
+                    raw_content = file_obj.read()
+                    if isinstance(raw_content, bytes):
+                        for enc in ["utf-8-sig", "utf-8", "cp1252", "latin-1"]:
+                            try:
+                                extracted_text = raw_content.decode(enc)
+                                break
+                            except (UnicodeDecodeError, LookupError):
+                                continue
+                        if not extracted_text:
+                            extracted_text = raw_content.decode("utf-8", errors="ignore")
+                    else:
+                        extracted_text = str(raw_content)
                 except Exception:
                     extracted_text = ""
 
@@ -257,41 +294,95 @@ def parse_and_import_transcript(user, file_obj=None, raw_text: str = "") -> List
     except Exception as e:
         logger.warning(f"AI transcript extraction fallback: {e}")
 
-    # 2. Regex and delimiter fallback parsing for text/CSV
+    # 2. Smart CSV & Delimiter fallback parsing for text/CSV
     if not parsed_items and extracted_text:
-        course_pattern = re.compile(
-            r'([A-Za-z]{2,5}\s*\d{2,4}[A-Za-z]?)[,\t\s]+'
-            r'([A-Za-z0-9\s&/\-:\.\(\)]+?)[,\t\s]+'
-            r'(\d(?:\.\d+)?)[,\t\s]+'
-            r'([A-D][\+\-]?|F|\d\.\d{1,2})'
-            r'(?:[,\t\s]+([A-D][\+\-]?|F|\d\.\d{1,2}))?'
-            r'(?:[,\t\s]+([A-Za-z0-9\s]+))?$',
-            re.MULTILINE,
-        )
+        # 2a. Attempt structured CSV parsing (handles quotes, commas, header rows)
+        try:
+            import csv
+            import io
+            csv_reader = csv.reader(io.StringIO(extracted_text))
+            header_map = {}
+            for row in csv_reader:
+                if not row:
+                    continue
+                cleaned = [c.strip() for c in row if c.strip()]
+                if not cleaned:
+                    continue
+                row_lower = [c.lower() for c in cleaned]
+                row_str = " ".join(row_lower)
+                # Check if this row is a header
+                if ("code" in row_str or "course" in row_str) and ("grade" in row_str or "gpa" in row_str or "credit" in row_str or "point" in row_str):
+                    for idx, col in enumerate(row_lower):
+                        if "code" in col or (col == "course" and "name" not in col and "title" not in col):
+                            header_map["code"] = idx
+                        elif "title" in col or "name" in col or "course name" in col:
+                            header_map["name"] = idx
+                        elif "credit" in col or "cr" in col or "unit" in col:
+                            header_map["credits"] = idx
+                        elif "grade point" in col or "gpa" in col or "point" in col:
+                            header_map["gp"] = idx
+                        elif "grade" in col or "letter" in col or "letter grade" in col:
+                            header_map["gl"] = idx
+                        elif "sem" in col or "trimester" in col or "term" in col:
+                            header_map["sem"] = idx
+                    continue
 
-        for line in lines:
-            parts = [p.strip() for p in re.split(r'[,;\t|]', line) if p.strip()]
-            if len(parts) >= 3:
-                code = parts[0].upper()
-                if re.match(r'^[A-Z]{2,5}\s*\d{2,4}', code):
-                    name = parts[1]
-                    try:
-                        cr = float(parts[2])
-                    except ValueError:
-                        cr = 3.0
-                    gp = 2.50
-                    gl = "B-"
-                    sem = ""
-                    if len(parts) >= 4:
-                        val = parts[3]
+                code = ""
+                name = ""
+                cr = 3.0
+                gp = 2.50
+                gl = "B-"
+                sem = ""
+
+                if header_map and "code" in header_map:
+                    if header_map["code"] < len(cleaned):
+                        code = cleaned[header_map["code"]].upper()
+                    if "name" in header_map and header_map["name"] < len(cleaned):
+                        name = cleaned[header_map["name"]]
+                    if "credits" in header_map and header_map["credits"] < len(cleaned):
                         try:
-                            gp = float(val)
+                            cr = float(cleaned[header_map["credits"]])
+                        except ValueError:
+                            cr = 3.0
+                    if "gp" in header_map and header_map["gp"] < len(cleaned):
+                        try:
+                            gp = float(cleaned[header_map["gp"]])
                             gl = point_to_letter(gp)
                         except ValueError:
-                            gl = val.upper()
-                            gp = float(letter_to_point(gl))
-                    if len(parts) >= 5:
-                        sem = parts[4]
+                            pass
+                    if "gl" in header_map and header_map["gl"] < len(cleaned):
+                        raw_gl = cleaned[header_map["gl"]]
+                        try:
+                            gp = float(raw_gl)
+                            gl = point_to_letter(gp)
+                        except ValueError:
+                            gl = raw_gl.upper()
+                            if "gp" not in header_map:
+                                gp = float(letter_to_point(gl))
+                    if "sem" in header_map and header_map["sem"] < len(cleaned):
+                        sem = cleaned[header_map["sem"]]
+
+                if not code and len(cleaned) >= 3:
+                    potential_code = cleaned[0].upper()
+                    if re.match(r'^[A-Z]{2,5}\s*\d{2,4}', potential_code):
+                        code = potential_code
+                        name = cleaned[1]
+                        try:
+                            cr = float(cleaned[2])
+                        except ValueError:
+                            cr = 3.0
+                        if len(cleaned) >= 4:
+                            val = cleaned[3]
+                            try:
+                                gp = float(val)
+                                gl = point_to_letter(gp)
+                            except ValueError:
+                                gl = val.upper()
+                                gp = float(letter_to_point(gl))
+                        if len(cleaned) >= 5:
+                            sem = cleaned[4]
+
+                if code and name and re.match(r'^[A-Z]{2,5}\s*\d{2,4}', code):
                     parsed_items.append({
                         "course_code": code,
                         "course_name": name,
@@ -301,33 +392,80 @@ def parse_and_import_transcript(user, file_obj=None, raw_text: str = "") -> List
                         "semester": sem,
                         "is_retake": gp < 3.0 or gl in ["F", "D", "D+", "C-", "C", "C+", "B-"],
                     })
-                    continue
+        except Exception as csv_err:
+            logger.warning(f"CSV reader fallback exception: {csv_err}")
 
-            m = course_pattern.search(line)
-            if m:
-                code = m.group(1).upper()
-                name = m.group(2).strip()
-                try:
-                    cr = float(m.group(3))
-                except ValueError:
-                    cr = 3.0
-                g_raw = m.group(4)
-                try:
-                    gp = float(g_raw)
-                    gl = point_to_letter(gp)
-                except ValueError:
-                    gl = g_raw.upper()
-                    gp = float(letter_to_point(gl))
-                sem = (m.group(6) or "").strip()
-                parsed_items.append({
-                    "course_code": code,
-                    "course_name": name,
-                    "credits": cr,
-                    "grade_point": gp,
-                    "grade_letter": gl,
-                    "semester": sem,
-                    "is_retake": gp < 3.0 or gl in ["F", "D", "D+", "C-", "C", "C+", "B-"],
-                })
+        # 2b. Regex and line split fallback parsing for raw unformatted text
+        if not parsed_items:
+            course_pattern = re.compile(
+                r'([A-Za-z]{2,5}\s*\d{2,4}[A-Za-z]?)[,\t\s]+'
+                r'([A-Za-z0-9\s&/\-:\.\(\)]+?)[,\t\s]+'
+                r'(\d(?:\.\d+)?)[,\t\s]+'
+                r'([A-D][\+\-]?|F|\d\.\d{1,2})'
+                r'(?:[,\t\s]+([A-D][\+\-]?|F|\d\.\d{1,2}))?'
+                r'(?:[,\t\s]+([A-Za-z0-9\s]+))?$',
+                re.MULTILINE,
+            )
+
+            for line in lines:
+                parts = [p.strip() for p in re.split(r'[,;\t|]', line) if p.strip()]
+                if len(parts) >= 3:
+                    code = parts[0].upper()
+                    if re.match(r'^[A-Z]{2,5}\s*\d{2,4}', code):
+                        name = parts[1]
+                        try:
+                            cr = float(parts[2])
+                        except ValueError:
+                            cr = 3.0
+                        gp = 2.50
+                        gl = "B-"
+                        sem = ""
+                        if len(parts) >= 4:
+                            val = parts[3]
+                            try:
+                                gp = float(val)
+                                gl = point_to_letter(gp)
+                            except ValueError:
+                                gl = val.upper()
+                                gp = float(letter_to_point(gl))
+                        if len(parts) >= 5:
+                            sem = parts[4]
+                        parsed_items.append({
+                            "course_code": code,
+                            "course_name": name,
+                            "credits": cr,
+                            "grade_point": gp,
+                            "grade_letter": gl,
+                            "semester": sem,
+                            "is_retake": gp < 3.0 or gl in ["F", "D", "D+", "C-", "C", "C+", "B-"],
+                        })
+                        continue
+
+                m = course_pattern.search(line)
+                if m:
+                    code = m.group(1).upper()
+                    name = m.group(2).strip()
+                    try:
+                        cr = float(m.group(3))
+                    except ValueError:
+                        cr = 3.0
+                    g_raw = m.group(4)
+                    try:
+                        gp = float(g_raw)
+                        gl = point_to_letter(gp)
+                    except ValueError:
+                        gl = g_raw.upper()
+                        gp = float(letter_to_point(gl))
+                    sem = (m.group(6) or "").strip()
+                    parsed_items.append({
+                        "course_code": code,
+                        "course_name": name,
+                        "credits": cr,
+                        "grade_point": gp,
+                        "grade_letter": gl,
+                        "semester": sem,
+                        "is_retake": gp < 3.0 or gl in ["F", "D", "D+", "C-", "C", "C+", "B-"],
+                    })
 
     if not parsed_items:
         return []
