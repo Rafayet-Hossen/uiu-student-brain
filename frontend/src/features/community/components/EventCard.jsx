@@ -6,21 +6,23 @@ import {
   Clock,
   Download,
   ExternalLink,
-  GraduationCap,
   MapPin,
   Sparkles,
   Trash2,
-  UserCheck,
   Users,
   Video,
+  AlertCircle,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Badge from "../../../components/Badge";
-import Button from "../../../components/Button";
 import Card from "../../../components/Card";
 import ScholarAvatar from "../../auth/components/ScholarAvatar";
 import { useAuth } from "../../auth/useAuth";
-import { deleteEvent, toggleEventRSVP } from "../api";
+import {
+  deleteEvent,
+  toggleEventRSVP,
+  extractCommunityErrorMessage,
+} from "../api";
 
 export default function EventCard({ event, onToggleRSVP, onDeleted }) {
   if (!event) return null;
@@ -39,6 +41,12 @@ export default function EventCard({ event, onToggleRSVP, onDeleted }) {
     event.interested_count || 0,
   );
   const [loading, setLoading] = useState(false);
+  const [rsvpError, setRsvpError] = useState("");
+
+  const maxSlots = event.max_participants || 0;
+  const isCapped = maxSlots > 0;
+  const isFull = isCapped && goingCount >= maxSlots;
+  const spotsLeft = isCapped ? Math.max(0, maxSlots - goingCount) : null;
 
   useEffect(() => {
     if (!event) return;
@@ -57,11 +65,18 @@ export default function EventCard({ event, onToggleRSVP, onDeleted }) {
 
   const isCreator = user?.id === event.creator?.id;
 
-  // Max capacity for university study sessions
-  const maxCapacity = 30;
-
   async function handleToggleStatus(targetStatus) {
     if (loading) return;
+    setRsvpError("");
+
+    // If attempting to mark going when slots are full and user is not already going
+    if (targetStatus === "going" && isFull && userStatus !== "going") {
+      setRsvpError(
+        `All ${maxSlots} Going spots are currently booked! You can still mark as 'Interested' to stay updated.`,
+      );
+      return;
+    }
+
     setLoading(true);
     try {
       if (onToggleRSVP) {
@@ -94,7 +109,7 @@ export default function EventCard({ event, onToggleRSVP, onDeleted }) {
         setInterestedCount(res.interested_count);
       }
     } catch (err) {
-      console.error("Error toggling event response:", err);
+      setRsvpError(extractCommunityErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -214,6 +229,18 @@ export default function EventCard({ event, onToggleRSVP, onDeleted }) {
                     <span>Virtual Meet</span>
                   </Badge>
                 )}
+                {isCapped && isFull && (
+                  <Badge variant="danger" size="sm">
+                    <span>⛔ Slots Full</span>
+                  </Badge>
+                )}
+                {isCapped && !isFull && spotsLeft <= 3 && spotsLeft > 0 && (
+                  <Badge variant="warning" size="sm">
+                    <span>
+                      🔥 {spotsLeft} Spot{spotsLeft > 1 ? "s" : ""} Left
+                    </span>
+                  </Badge>
+                )}
               </div>
 
               {isCreator && (
@@ -281,19 +308,53 @@ export default function EventCard({ event, onToggleRSVP, onDeleted }) {
                   <Sparkles size={13} className="text-amber" />
                   <strong>{interestedCount}</strong> Interested
                 </span>
-                <span className="capacity-seats-label">
-                  ({goingCount} / {maxCapacity} seats)
-                </span>
+
+                {isCapped ? (
+                  <span className="capacity-seats-label">
+                    ({goingCount} / {maxSlots} seats {isFull ? "• Full" : ""})
+                  </span>
+                ) : (
+                  <span className="capacity-seats-label">
+                    ({goingCount} Going • Open capacity)
+                  </span>
+                )}
               </div>
-              <div className="capacity-bar-track">
-                <div
-                  className="capacity-bar-fill"
-                  style={{
-                    width: `${Math.min(100, Math.round((goingCount / maxCapacity) * 100))}%`,
-                  }}
-                />
-              </div>
+
+              {isCapped && (
+                <div className="capacity-bar-track">
+                  <div
+                    className="capacity-bar-fill"
+                    style={{
+                      width: `${Math.min(100, Math.round((goingCount / maxSlots) * 100))}%`,
+                      backgroundColor: isFull
+                        ? "var(--color-danger, #ef4444)"
+                        : spotsLeft <= 3
+                          ? "var(--color-warning, #f59e0b)"
+                          : "var(--color-primary, #f26522)",
+                    }}
+                  />
+                </div>
+              )}
             </div>
+
+            {rsvpError && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  fontSize: "0.76rem",
+                  color: "var(--color-danger, #ef4444)",
+                  background: "rgba(239, 68, 68, 0.08)",
+                  padding: "6px 10px",
+                  borderRadius: "var(--radius-sm)",
+                  marginTop: "8px",
+                }}
+              >
+                <AlertCircle size={13} />
+                <span>{rsvpError}</span>
+              </div>
+            )}
 
             {/* Bottom Facebook-Style Action Buttons */}
             <div className="event-booking-footer-action">
@@ -307,11 +368,24 @@ export default function EventCard({ event, onToggleRSVP, onDeleted }) {
                   title={
                     userStatus === "going"
                       ? "You are going (Click to remove)"
-                      : "Mark as Going"
+                      : isFull
+                        ? "Going slots are full"
+                        : "Mark as Going"
+                  }
+                  style={
+                    isFull && userStatus !== "going"
+                      ? { opacity: 0.7, cursor: "not-allowed" }
+                      : {}
                   }
                 >
                   <CheckCircle2 size={15} />
-                  <span>{userStatus === "going" ? "Going ✓" : "Going"}</span>
+                  <span>
+                    {userStatus === "going"
+                      ? "Going ✓"
+                      : isFull
+                        ? "Slots Full"
+                        : "Going"}
+                  </span>
                 </motion.button>
 
                 <motion.button
@@ -323,7 +397,7 @@ export default function EventCard({ event, onToggleRSVP, onDeleted }) {
                   title={
                     userStatus === "interested"
                       ? "You are interested (Click to remove)"
-                      : "Mark as Interested"
+                      : "Mark as Interested (Unlimited)"
                   }
                 >
                   <Sparkles size={15} />

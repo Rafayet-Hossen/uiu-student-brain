@@ -161,7 +161,7 @@ def list_upcoming_events(*, user) -> QuerySet[StudyEvent]:
     return StudyEvent.objects.select_related("creator").annotate(
         rsvp_count=Count("rsvps", distinct=True),
         going_count=Count("rsvps", filter=Q(rsvps__status="going"), distinct=True),
-        interested_count=Count("rsvps", filter=Q(rsvps__status__in=["interested", "going"]), distinct=True),
+        interested_count=Count("rsvps", filter=Q(rsvps__status="interested"), distinct=True),
         is_rsvped=Exists(
             EventRSVP.objects.filter(event=OuterRef("pk"), user=user)
         ),
@@ -250,14 +250,15 @@ def toggle_event_rsvp(*, user, event_id: int, status: str = "going") -> dict:
             pass
 
     going_count = EventRSVP.objects.filter(event=event, status="going").count()
-    interested_count = EventRSVP.objects.filter(event=event, status__in=["interested", "going"]).count()
+    interested_count = EventRSVP.objects.filter(event=event, status="interested").count()
+    total_rsvps = EventRSVP.objects.filter(event=event).count()
     return {
         "rsvped": user_rsvp_status is not None,
         "user_rsvp_status": user_rsvp_status,
         "going_count": going_count,
         "interested_count": interested_count,
-        "rsvp_count": going_count + interested_count,
-        "rsvps_count": going_count + interested_count,
+        "rsvp_count": total_rsvps,
+        "rsvps_count": total_rsvps,
     }
 
 

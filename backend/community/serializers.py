@@ -138,7 +138,7 @@ class StudyEventSerializer(serializers.ModelSerializer):
     def get_interested_count(self, obj) -> int:
         if hasattr(obj, "interested_count"):
             return obj.interested_count
-        return obj.rsvps.filter(status__in=["interested", "going"]).count()
+        return obj.rsvps.filter(status="interested").count()
 
     def get_is_attending(self, obj) -> bool:
         request = self.context.get("request")
