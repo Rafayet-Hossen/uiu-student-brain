@@ -12,20 +12,13 @@ def register_user(email, password, full_name):
 def update_user_profile(user, validated_data: Dict[str, Any]):
     current_gpa = validated_data.pop("current_gpa", None)
     target_gpa = validated_data.pop("target_gpa", None)
-    completed_credits = validated_data.pop("completed_credits", None)
-    total_credits = validated_data.pop("total_credits", None)
-    opt_in_leaderboard = validated_data.pop("opt_in_leaderboard", None)
 
     if current_gpa is not None:
         user.current_gpa = current_gpa
     if target_gpa is not None:
         user.target_gpa = target_gpa
-    if completed_credits is not None:
-        user.completed_credits = completed_credits
-    if total_credits is not None:
-        user.total_credits = total_credits
 
-    if current_gpa is not None or target_gpa is not None or completed_credits is not None or total_credits is not None:
+    if current_gpa is not None or target_gpa is not None:
         try:
             from grades.models import GradePlan
             plan = GradePlan.objects.filter(user=user).first()
@@ -34,8 +27,7 @@ def update_user_profile(user, validated_data: Dict[str, Any]):
                     user=user,
                     name="My Academic Plan",
                     target_gpa=float(target_gpa) if target_gpa is not None else 4.0,
-                    total_credits=float(total_credits) if total_credits is not None else 140.0,
-                    completed_credits=float(completed_credits) if completed_credits is not None else 0.0,
+                    total_credits=140,
                     current_gpa=float(current_gpa) if current_gpa is not None else 0.0,
                 )
             else:
@@ -43,111 +35,14 @@ def update_user_profile(user, validated_data: Dict[str, Any]):
                     plan.current_gpa = float(current_gpa)
                 if target_gpa is not None:
                     plan.target_gpa = float(target_gpa)
-                if completed_credits is not None:
-                    plan.completed_credits = float(completed_credits)
-                if total_credits is not None:
-                    plan.total_credits = float(total_credits)
                 plan.save()
         except Exception as e:
-            print("GPA / Credit sync error in update_user_profile:", e)
-
-    if opt_in_leaderboard is not None:
-        try:
-            from community.services import get_or_create_leaderboard_profile
-            profile = get_or_create_leaderboard_profile(user=user)
-            profile.is_opted_in = bool(opt_in_leaderboard)
-            profile.save()
-        except Exception as e:
-            print("Leaderboard profile sync error:", e)
+            print("GPA sync error in update_user_profile:", e)
 
     for field, value in validated_data.items():
         if hasattr(user, field):
             setattr(user, field, value)
     user.save()
-    return user
-
-
-def setup_user_onboarding(user, data: Dict[str, Any]):
-    current_gpa = data.get("current_gpa")
-    target_gpa = data.get("target_gpa")
-    completed_credits = data.get("completed_credits")
-    total_credits = data.get("total_credits", 140.0)
-    opt_in_leaderboard = data.get("opt_in_leaderboard", True)
-    department = data.get("department", "")
-    bio = data.get("bio", "")
-    target_daily_minutes = data.get("target_daily_minutes", 120)
-
-    if current_gpa is not None:
-        user.current_gpa = current_gpa
-    if target_gpa is not None:
-        user.target_gpa = target_gpa
-    if completed_credits is not None:
-        user.completed_credits = completed_credits
-    if total_credits is not None:
-        user.total_credits = total_credits
-    if department:
-        user.department = department
-    if bio:
-        user.bio = bio
-    if target_daily_minutes:
-        user.target_daily_minutes = target_daily_minutes
-    user.is_onboarded = True
-    user.save()
-
-    # 1. Sync / Create GradePlan
-    try:
-        from grades.models import GradePlan
-        plan = GradePlan.objects.filter(user=user).first()
-        cgpa_val = float(current_gpa) if current_gpa is not None else 0.0
-        tgpa_val = float(target_gpa) if target_gpa is not None else 4.0
-        comp_cr_val = float(completed_credits) if completed_credits is not None else 0.0
-        tot_cr_val = float(total_credits) if total_credits is not None else 140.0
-
-        if not plan:
-            GradePlan.objects.create(
-                user=user,
-                name="My Academic Degree Plan",
-                current_gpa=cgpa_val,
-                target_gpa=tgpa_val,
-                completed_credits=comp_cr_val,
-                total_credits=tot_cr_val,
-            )
-        else:
-            if current_gpa is not None:
-                plan.current_gpa = cgpa_val
-            if target_gpa is not None:
-                plan.target_gpa = tgpa_val
-            if completed_credits is not None:
-                plan.completed_credits = comp_cr_val
-            if total_credits is not None:
-                plan.total_credits = tot_cr_val
-            plan.save()
-    except Exception as e:
-        print("GradePlan onboarding sync error:", e)
-
-    # 2. Sync Leaderboard Profile Opt-in
-    try:
-        from community.services import get_or_create_leaderboard_profile
-        profile = get_or_create_leaderboard_profile(user=user)
-        profile.is_opted_in = bool(opt_in_leaderboard)
-        profile.save()
-    except Exception as e:
-        print("Leaderboard profile onboarding sync error:", e)
-
-    # 3. Create initial welcome notification
-    try:
-        from .models import create_user_notification
-        create_user_notification(
-            recipient=user,
-            category="academic",
-            title="🚀 Academic Profile Configured!",
-            message=f"Welcome aboard! Target CGPA set to {target_gpa or '3.80'}. Your study habits and course roadmap are now active.",
-            link="/dashboard",
-            metadata={"dedup_key": f"onboarded_{user.id}"},
-        )
-    except Exception as e:
-        print("Onboarding notification error:", e)
-
     return user
 
 

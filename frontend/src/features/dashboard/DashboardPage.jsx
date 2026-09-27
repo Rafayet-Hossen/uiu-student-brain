@@ -17,7 +17,6 @@ import SmartLearningTools from "./components/SmartLearningTools";
 import StudyInsights from "./components/StudyInsights";
 import CommunityMomentum from "./components/CommunityMomentum";
 import ActiveSessionBanner from "./components/ActiveSessionBanner";
-import AcademicOnboardingModal from "../auth/components/AcademicOnboardingModal";
 
 import "./dashboard.css";
 
@@ -95,13 +94,6 @@ export default function DashboardPage() {
   const [flowDayOffset, setFlowDayOffset] = useState(0); // 0 = Today, 1 = Yesterday, 2 = 2 days ago, 3 = 3 days ago
   const [selectedScheduleModal, setSelectedScheduleModal] = useState(null);
   const [currentTick, setCurrentTick] = useState(() => new Date());
-  const [showOnboardingModal, setShowOnboardingModal] = useState(false);
-
-  useEffect(() => {
-    if (user && user.is_onboarded === false && (user.completed_credits === null || user.completed_credits === undefined)) {
-      setShowOnboardingModal(true);
-    }
-  }, [user]);
 
   // Second-by-second ticker for live alert countdowns
   useEffect(() => {
@@ -118,49 +110,49 @@ export default function DashboardPage() {
   }, []);
 
   // Load All Core Dashboard Data
-  async function loadDashboardData() {
-    setLoading(true);
-    try {
-      const [
-        schedulesRes,
-        gradesRes,
-        sessionsRes,
-        streakRes,
-        materialsRes,
-        leaderboardRes,
-        postsRes,
-      ] = await Promise.allSettled([
-        getSchedules(),
-        getGradePlans(),
-        getStudySessions(),
-        getStreakSummary(),
-        getMaterials(),
-        getLeaderboard("weekly"),
-        getPosts(),
-      ]);
-
-      if (schedulesRes.status === "fulfilled")
-        setSchedules(schedulesRes.value || []);
-      if (gradesRes.status === "fulfilled")
-        setGradePlans(gradesRes.value || []);
-      if (sessionsRes.status === "fulfilled")
-        setSessions(sessionsRes.value || []);
-      if (streakRes.status === "fulfilled")
-        setStreakData(streakRes.value || null);
-      if (materialsRes.status === "fulfilled")
-        setMaterials(materialsRes.value || []);
-      if (leaderboardRes.status === "fulfilled")
-        setLeaderboard(leaderboardRes.value || []);
-      if (postsRes.status === "fulfilled")
-        setCommunityPosts(postsRes.value || []);
-    } catch (err) {
-      console.error("Error loading dashboard data:", err);
-    } finally {
-      setLoading(false);
-    }
-  }
-
   useEffect(() => {
+    async function loadDashboardData() {
+      setLoading(true);
+      try {
+        const [
+          schedulesRes,
+          gradesRes,
+          sessionsRes,
+          streakRes,
+          materialsRes,
+          leaderboardRes,
+          postsRes,
+        ] = await Promise.allSettled([
+          getSchedules(),
+          getGradePlans(),
+          getStudySessions(),
+          getStreakSummary(),
+          getMaterials(),
+          getLeaderboard("weekly"),
+          getPosts(),
+        ]);
+
+        if (schedulesRes.status === "fulfilled")
+          setSchedules(schedulesRes.value || []);
+        if (gradesRes.status === "fulfilled")
+          setGradePlans(gradesRes.value || []);
+        if (sessionsRes.status === "fulfilled")
+          setSessions(sessionsRes.value || []);
+        if (streakRes.status === "fulfilled")
+          setStreakData(streakRes.value || null);
+        if (materialsRes.status === "fulfilled")
+          setMaterials(materialsRes.value || []);
+        if (leaderboardRes.status === "fulfilled")
+          setLeaderboard(leaderboardRes.value || []);
+        if (postsRes.status === "fulfilled")
+          setCommunityPosts(postsRes.value || []);
+      } catch (err) {
+        console.error("Error loading dashboard data:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
     loadDashboardData();
   }, []);
 
@@ -524,18 +516,6 @@ export default function DashboardPage() {
                 state: { highlightId: schedule.id },
               });
             }}
-          />
-        )}
-
-        {/* Academic Onboarding Modal (if first time or incomplete) */}
-        {showOnboardingModal && (
-          <AcademicOnboardingModal
-            isOpen={showOnboardingModal}
-            onComplete={() => {
-              setShowOnboardingModal(false);
-              loadDashboardData();
-            }}
-            onClose={() => setShowOnboardingModal(false)}
           />
         )}
       </main>

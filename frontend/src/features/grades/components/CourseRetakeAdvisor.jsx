@@ -558,7 +558,22 @@ export default function CourseRetakeAdvisor({
           )}
 
           {/* 2. THREE-PILLAR CGPA RECOVERY HERO BANNER */}
-          {!data?.has_courses || all_courses.length === 0 ? (
+          {loading ? (
+            <div
+              style={{
+                padding: "50px 24px",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                minHeight: "220px",
+                background: "var(--color-surface)",
+                borderRadius: "var(--radius-xl)",
+                border: "1px solid var(--color-border)",
+              }}
+            >
+              <Spinner size="lg" message="Loading AI course retake advisor & GPA metrics..." />
+            </div>
+          ) : !data?.has_courses || all_courses.length === 0 ? (
             <div className="advisor-empty-setup-card">
               <div className="advisor-empty-setup-header">
                 <div className="advisor-empty-icon-box">

@@ -54,11 +54,11 @@ export default function MaterialsPage() {
   // Courses state
   const [courses, setCourses] = useState([]);
   const [selectedCourseId, setSelectedCourseId] = useState(null);
-  const [loadingCourses, setLoadingCourses] = useState(false);
+  const [loadingCourses, setLoadingCourses] = useState(true);
 
   // Materials state
   const [materials, setMaterials] = useState([]);
-  const [loadingMaterials, setLoadingMaterials] = useState(false);
+  const [loadingMaterials, setLoadingMaterials] = useState(true);
   const [analyzingId, setAnalyzingId] = useState(null);
   const [exportingPdfId, setExportingPdfId] = useState(null);
   const [downloadingFileId, setDownloadingFileId] = useState(null);
@@ -111,9 +111,13 @@ export default function MaterialsPage() {
         setSelectedSemesterId(null);
         setCourses([]);
         setSelectedCourseId(null);
+        setLoadingCourses(false);
+        setLoadingMaterials(false);
       }
     } catch (err) {
       setErrorMsg(extractMaterialsErrorMessage(err));
+      setLoadingCourses(false);
+      setLoadingMaterials(false);
     } finally {
       setLoadingSemesters(false);
     }
@@ -123,6 +127,8 @@ export default function MaterialsPage() {
     if (!semId) {
       setCourses([]);
       setSelectedCourseId(null);
+      setLoadingCourses(false);
+      setLoadingMaterials(false);
       return;
     }
     try {
@@ -142,9 +148,11 @@ export default function MaterialsPage() {
       } else {
         setSelectedCourseId(null);
         setMaterials([]);
+        setLoadingMaterials(false);
       }
     } catch (err) {
       setErrorMsg(extractMaterialsErrorMessage(err));
+      setLoadingMaterials(false);
     } finally {
       setLoadingCourses(false);
     }
@@ -642,7 +650,7 @@ export default function MaterialsPage() {
             />
           </div>
 
-          {loadingCourses ? (
+          {loadingCourses || loadingSemesters ? (
             <div className="sidebar-loading">
               <Spinner standalone />
             </div>
@@ -771,7 +779,7 @@ export default function MaterialsPage() {
 
         {/* Right Column: Active Course Workspace */}
         <section className="materials-active-workspace">
-          {loadingCourses ? (
+          {loadingCourses || loadingSemesters ? (
             <div className="workspace-loading-box">
               <Spinner standalone />
             </div>

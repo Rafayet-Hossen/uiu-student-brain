@@ -118,7 +118,7 @@ export default function CommunityPage() {
 
   // Posts state
   const [posts, setPosts] = useState([]);
-  const [postsLoading, setPostsLoading] = useState(false);
+  const [postsLoading, setPostsLoading] = useState(true);
   const [postsError, setPostsError] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [postSearch, setPostSearch] = useState("");
@@ -128,7 +128,7 @@ export default function CommunityPage() {
 
   // Events state
   const [events, setEvents] = useState([]);
-  const [eventsLoading, setEventsLoading] = useState(false);
+  const [eventsLoading, setEventsLoading] = useState(true);
   const [eventsError, setEventsError] = useState("");
   const [eventSearch, setEventSearch] = useState("");
   const [showEventForm, setShowEventForm] = useState(false);
@@ -136,13 +136,13 @@ export default function CommunityPage() {
 
   // Students state
   const [students, setStudents] = useState([]);
-  const [studentsLoading, setStudentsLoading] = useState(false);
+  const [studentsLoading, setStudentsLoading] = useState(true);
   const [studentsError, setStudentsError] = useState("");
   const [studentSearch, setStudentSearch] = useState("");
 
   // Leaderboard state
   const [leaderboardData, setLeaderboardData] = useState(null);
-  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(true);
   const [leaderboardError, setLeaderboardError] = useState("");
   const [leaderboardTimeframe, setLeaderboardTimeframe] = useState("weekly");
 
