@@ -12,7 +12,6 @@ import {
   Users,
   Video,
   AlertCircle,
-  ArrowRight,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Badge from "../../../components/Badge";
@@ -412,12 +411,12 @@ export default function EventCard({ event, onToggleRSVP, onDeleted }) {
 
               {/* Added to Calendar & Planner Actions */}
               {(userStatus === "going" || userStatus === "interested") && (
-                <div className="event-planner-sync-wrapper">
+                <div style={{ marginTop: "10px" }}>
                   <div className="event-planner-sync-banner">
                     <div className="sync-banner-text">
-                      <CheckCircle2 size={13} className="sync-banner-icon text-emerald" />
+                      <CheckCircle2 size={13} className="text-emerald" />
                       <span>
-                        Added to your <strong>Study Planner</strong>
+                        Added to your <strong>Study Planner Calendar</strong>
                       </span>
                     </div>
                     <Link
@@ -425,8 +424,7 @@ export default function EventCard({ event, onToggleRSVP, onDeleted }) {
                       className="sync-banner-link"
                       title="Open Study Planner"
                     >
-                      <span>Planner</span>
-                      <ArrowRight size={11} />
+                      Planner →
                     </Link>
                   </div>
 
@@ -438,9 +436,9 @@ export default function EventCard({ event, onToggleRSVP, onDeleted }) {
                       className="event-cal-btn-outline"
                       title="Add this event to Google Calendar"
                     >
-                      <Calendar size={13} className="text-primary" />
+                      <Calendar size={12} className="text-primary" />
                       <span>Google Calendar</span>
-                      <ExternalLink size={10} className="event-cal-ext-icon" />
+                      <ExternalLink size={10} style={{ opacity: 0.7 }} />
                     </a>
 
                     <button
@@ -449,7 +447,7 @@ export default function EventCard({ event, onToggleRSVP, onDeleted }) {
                       className="event-cal-btn-outline"
                       title="Download iCal file for Apple Calendar or Microsoft Outlook"
                     >
-                      <Download size={13} className="text-amber" />
+                      <Download size={12} className="text-amber" />
                       <span>Apple / Outlook (.ics)</span>
                     </button>
                   </div>

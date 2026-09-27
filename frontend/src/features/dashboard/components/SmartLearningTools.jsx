@@ -15,7 +15,6 @@ import { Link, useNavigate } from "react-router-dom";
 import Badge from "../../../components/Badge";
 
 export default function SmartLearningTools({
-  user,
   schedules = [],
   todayClasses = [],
   todayWeekdayName,
@@ -27,39 +26,28 @@ export default function SmartLearningTools({
 }) {
   const navigate = useNavigate();
 
+  const hasPlan = Boolean(topGradePlan);
   const currentGpa =
-    topGradePlan && Number(topGradePlan.current_gpa) > 0
+    hasPlan && Number(topGradePlan.current_gpa) > 0
       ? Number(topGradePlan.current_gpa).toFixed(2)
-      : user?.current_gpa !== null && user?.current_gpa !== undefined
-        ? Number(user.current_gpa).toFixed(2)
-        : "0.00";
-
+      : "0.00";
   const targetGpa =
-    topGradePlan && Number(topGradePlan.target_gpa) > 0
+    hasPlan && Number(topGradePlan.target_gpa) > 0
       ? Number(topGradePlan.target_gpa).toFixed(2)
-      : user?.target_gpa && Number(user.target_gpa) > 0
-        ? Number(user.target_gpa).toFixed(2)
-        : "4.00";
-
-  const totalCredits =
-    topGradePlan && Number(topGradePlan.total_credits) > 0
-      ? Number(topGradePlan.total_credits)
-      : Number(user?.total_credits) || 140;
-
-  const completedCredits =
-    topGradePlan && Number(topGradePlan.completed_credits) >= 0
-      ? Number(topGradePlan.completed_credits)
-      : Number(user?.completed_credits) || 0;
-
+      : "0.00";
+  const totalCredits = hasPlan ? Number(topGradePlan.total_credits || 0) : 0;
+  const completedCredits = hasPlan
+    ? Number(topGradePlan.completed_credits || 0)
+    : 0;
   const remainingCredits = Math.max(0, totalCredits - completedCredits);
 
   const gpaAchievedPct =
-    Number(targetGpa) > 0
+    hasPlan && Number(topGradePlan.target_gpa) > 0
       ? Math.min(
           100,
           Math.round(
-            (Number(currentGpa) /
-              Number(targetGpa)) *
+            (Number(topGradePlan.current_gpa) /
+              Number(topGradePlan.target_gpa)) *
               100,
           ),
         )
