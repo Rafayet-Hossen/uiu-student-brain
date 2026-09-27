@@ -71,6 +71,7 @@ INSTALLED_APPS = [
 # ============================================================
 
 MIDDLEWARE = [
+    "django.middleware.gzip.GZipMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -318,6 +319,26 @@ else:
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
+
+# Enable persistent connection reuse and health checks
+if "default" in DATABASES and DATABASES["default"].get("ENGINE") != "django.db.backends.sqlite3":
+    DATABASES["default"]["CONN_MAX_AGE"] = env.int("CONN_MAX_AGE", default=60)
+    DATABASES["default"]["CONN_HEALTH_CHECKS"] = True
+
+# ============================================================
+# FAST CACHING ENGINE
+# ============================================================
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "student-brain-fast-cache",
+        "TIMEOUT": 300,
+        "OPTIONS": {
+            "MAX_ENTRIES": 2000,
+        },
+    }
+}
 
 
 # ============================================================

@@ -362,6 +362,8 @@ def get_leaderboard(
     if reference_date is None:
         reference_date = date.today()
 
+    from django.core.cache import cache
+
     user_profile = get_or_create_leaderboard_profile(user=user)
 
     opted_in_profiles = LeaderboardProfile.objects.filter(is_opted_in=True).select_related("user")
@@ -378,76 +380,94 @@ def get_leaderboard(
     if user_profile.is_opted_in:
         quotes_map[user.id] = user_profile.custom_quote
 
-    week_start = reference_date - timedelta(days=6)
-    users = User.objects.filter(id__in=opted_in_user_ids)
+    cache_key = f"lb_entries_{timeframe}_{reference_date}_{len(opted_in_user_ids)}"
+    raw_entries = cache.get(cache_key)
 
-    entries: List[Dict[str, Any]] = []
-    for u in users:
-        sessions = StudySession.objects.filter(user=u, status="completed")
-        total_sessions = sessions.count()
-        total_mins = (
-            sessions.aggregate(total=Sum(F("duration_minutes") + F("extended_minutes")))["total"]
-            or 0
-        )
+    if raw_entries is None:
+        week_start = reference_date - timedelta(days=6)
+        users = User.objects.filter(id__in=opted_in_user_ids)
 
-        weekly_mins = (
-            sessions.filter(session_date__gte=week_start, session_date__lte=reference_date)
-            .aggregate(total=Sum(F("duration_minutes") + F("extended_minutes")))["total"]
-            or 0
-        )
-
-        streaks = calculate_user_streaks(user=u, reference_date=reference_date)
-        current_streak = streaks["current_streak"]
-        longest_streak = streaks["longest_streak"]
-
-        rewards = get_user_rewards(user=u, reference_date=reference_date)
-        trophies_count = sum(1 for r in rewards if r.get("unlocked", False))
-
-        d_name = u.full_name.strip() if u.full_name else u.email.split("@")[0]
-
-        entry = {
-            "user_id": u.id,
-            "full_name": u.full_name or "",
-            "email": u.email,
-            "display_name": d_name,
-            "custom_quote": quotes_map.get(u.id, ""),
-            "weekly_minutes": weekly_mins,
-            "total_minutes": total_mins,
-            "study_minutes": weekly_mins if timeframe == "weekly" else total_mins,
-            "study_hours": round((weekly_mins if timeframe == "weekly" else total_mins) / 60, 1),
-            "current_streak": current_streak,
-            "longest_streak": longest_streak,
-            "total_sessions": total_sessions,
-            "trophies_count": trophies_count,
-            "is_following": u.id in following_ids,
-            "is_current_user": u.id == user.id,
-        }
-        entries.append(entry)
-
-    # Sort based on selected timeframe
-    if timeframe == "streak":
-        entries.sort(
-            key=lambda x: (
-                -x["current_streak"],
-                -x["longest_streak"],
-                -x["weekly_minutes"],
-                x["display_name"].lower(),
+        raw_entries = []
+        for u in users:
+            sessions = StudySession.objects.filter(user=u, status="completed")
+            total_sessions = sessions.count()
+            total_mins = (
+                sessions.aggregate(total=Sum(F("duration_minutes") + F("extended_minutes")))["total"]
+                or 0
             )
-        )
-    elif timeframe == "all_time":
-        entries.sort(
-            key=lambda x: (
-                -x["total_minutes"],
-                -x["total_sessions"],
-                -x["current_streak"],
-                x["display_name"].lower(),
+
+            weekly_mins = (
+                sessions.filter(session_date__gte=week_start, session_date__lte=reference_date)
+                .aggregate(total=Sum(F("duration_minutes") + F("extended_minutes")))["total"]
+                or 0
             )
-        )
-    else:
-        timeframe = "weekly"
-        entries.sort(
-            key=lambda x: (
-                -x["weekly_minutes"],
+
+            streaks = calculate_user_streaks(user=u, reference_date=reference_date)
+            current_streak = streaks["current_streak"]
+            longest_streak = streaks["longest_streak"]
+
+            rewards = get_user_rewards(user=u, reference_date=reference_date)
+            trophies_count = sum(1 for r in rewards if r.get("unlocked", False))
+
+            d_name = u.full_name.strip() if u.full_name else u.email.split("@")[0]
+
+            entry = {
+                "user_id": u.id,
+                "full_name": u.full_name or "",
+                "email": u.email,
+                "display_name": d_name,
+                "custom_quote": quotes_map.get(u.id, ""),
+                "weekly_minutes": weekly_mins,
+                "total_minutes": total_mins,
+                "study_minutes": weekly_mins if timeframe == "weekly" else total_mins,
+                "study_hours": round((weekly_mins if timeframe == "weekly" else total_mins) / 60, 1),
+                "current_streak": current_streak,
+                "longest_streak": longest_streak,
+                "total_sessions": total_sessions,
+                "trophies_count": trophies_count,
+            }
+            raw_entries.append(entry)
+
+        # Sort based on selected timeframe
+        if timeframe == "streak":
+            raw_entries.sort(
+                key=lambda x: (
+                    -x["current_streak"],
+                    -x["longest_streak"],
+                    -x["weekly_minutes"],
+                    x["display_name"].lower(),
+                )
+            )
+        elif timeframe == "all_time":
+            raw_entries.sort(
+                key=lambda x: (
+                    -x["total_minutes"],
+                    -x["total_sessions"],
+                    -x["current_streak"],
+                    x["display_name"].lower(),
+                )
+            )
+        else:
+            timeframe = "weekly"
+            raw_entries.sort(
+                key=lambda x: (
+                    -x["weekly_minutes"],
+                    -x["total_minutes"],
+                    -x["current_streak"],
+                    x["display_name"].lower(),
+                )
+            )
+
+        cache.set(cache_key, raw_entries, timeout=45)
+
+    # Attach dynamic user flags
+    entries = []
+    for rank, item in enumerate(raw_entries, start=1):
+        e_copy = dict(item)
+        e_copy["rank"] = rank
+        e_copy["is_following"] = item["user_id"] in following_ids
+        e_copy["is_current_user"] = item["user_id"] == user.id
+        entries.append(e_copy)
                 -x["current_streak"],
                 -x["total_minutes"],
                 x["display_name"].lower(),
