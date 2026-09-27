@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import Badge from "../../../components/Badge";
 import Button from "../../../components/Button";
 import ScholarAvatar from "../../auth/components/ScholarAvatar";
@@ -22,7 +23,13 @@ export default function LeaderboardPodium({
         : `${entry.study_hours} hrs studied`;
 
     return (
-      <div className={`podium-card ${className}`}>
+      <motion.div
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        whileHover={{ y: -4 }}
+        transition={{ duration: 0.22 }}
+        className={`podium-card ${className}`}
+      >
         <div className="podium-medal-badge">{medal}</div>
 
         <div className="podium-avatar-wrap">
@@ -33,7 +40,7 @@ export default function LeaderboardPodium({
               email: entry.email,
               profile_image: entry.profile_image || entry.avatar,
             }}
-            size={56}
+            size={place === 1 ? 58 : 48}
           />
           <span className="podium-rank-pill">#{place}</span>
         </div>
@@ -82,26 +89,38 @@ export default function LeaderboardPodium({
         )}
 
         {entry.is_current_user && <span className="podium-you-badge">You</span>}
-      </div>
+      </motion.div>
     );
   };
 
+  const hasThree = Boolean(first && second && third);
+
   return (
-    <div className="leaderboard-podium-container">
+    <div
+      className={`leaderboard-podium-container ${
+        hasThree ? "podium-three-cols" : "podium-dynamic-cols"
+      }`}
+    >
       {/* 2nd Place */}
-      <div className="podium-col col-second">
-        {renderPodiumCard(second, 2, "🥈 2nd Place", "card-second")}
-      </div>
+      {second && (
+        <div className="podium-col col-second">
+          {renderPodiumCard(second, 2, "🥈 2nd Place", "card-second")}
+        </div>
+      )}
 
       {/* 1st Place (Center / Taller) */}
-      <div className="podium-col col-first">
-        {renderPodiumCard(first, 1, "🥇 1st Place", "card-first")}
-      </div>
+      {first && (
+        <div className="podium-col col-first">
+          {renderPodiumCard(first, 1, "🥇 1st Place", "card-first")}
+        </div>
+      )}
 
       {/* 3rd Place */}
-      <div className="podium-col col-third">
-        {renderPodiumCard(third, 3, "🥉 3rd Place", "card-third")}
-      </div>
+      {third && (
+        <div className="podium-col col-third">
+          {renderPodiumCard(third, 3, "🥉 3rd Place", "card-third")}
+        </div>
+      )}
     </div>
   );
 }
