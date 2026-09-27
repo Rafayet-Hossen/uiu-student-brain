@@ -26,6 +26,11 @@ class UserSerializer(serializers.ModelSerializer):
             "target_daily_minutes",
             "current_gpa",
             "target_gpa",
+            "completed_credits",
+            "total_credits",
+            "current_trimester",
+            "opt_in_leaderboard",
+            "is_onboarded",
             "date_joined",
         ]
         read_only_fields = ["id", "email", "date_joined"]
@@ -34,6 +39,10 @@ class UserSerializer(serializers.ModelSerializer):
 class UpdateProfileSerializer(serializers.ModelSerializer):
     target_gpa = serializers.FloatField(required=False, allow_null=True)
     current_gpa = serializers.FloatField(required=False, allow_null=True)
+    completed_credits = serializers.FloatField(required=False, allow_null=True)
+    total_credits = serializers.FloatField(required=False, allow_null=True)
+    is_onboarded = serializers.BooleanField(required=False)
+    opt_in_leaderboard = serializers.BooleanField(required=False)
 
     class Meta:
         model = User
@@ -44,6 +53,11 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
             "target_daily_minutes",
             "target_gpa",
             "current_gpa",
+            "completed_credits",
+            "total_credits",
+            "current_trimester",
+            "opt_in_leaderboard",
+            "is_onboarded",
         ]
 
 

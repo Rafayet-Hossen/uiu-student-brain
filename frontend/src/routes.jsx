@@ -16,6 +16,8 @@ import CommunityPage from "./features/community/CommunityPage";
 import StudyCenterPage from "./features/studycenter/StudyCenterPage";
 import QuizPage from "./features/quiz/QuizPage";
 
+import MandatoryOnboardingModal from "./features/auth/components/MandatoryOnboardingModal";
+
 function PageLoading() {
   return (
     <div className="page-loading">
@@ -31,7 +33,15 @@ function ProtectedRoute({ children }) {
   if (loading) return <PageLoading />;
   if (!user)
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
-  return children;
+
+  const needsOnboarding = user && (user.is_onboarded === false || !user.department);
+
+  return (
+    <>
+      {needsOnboarding && <MandatoryOnboardingModal />}
+      {children}
+    </>
+  );
 }
 
 function PublicOnlyRoute({ children }) {
