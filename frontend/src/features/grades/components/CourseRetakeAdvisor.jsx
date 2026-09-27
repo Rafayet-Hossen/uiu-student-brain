@@ -51,9 +51,25 @@ const GRADE_OPTIONS = [
   { letter: "B-", gpa: "2.67", label: "B- (2.67 - Satisfactory)" },
   { letter: "C+", gpa: "2.33", label: "C+ (2.33 - Above Average)" },
   { letter: "C", gpa: "2.00", label: "C (2.00 - Average / Retake Candidate)" },
-  { letter: "D+", gpa: "1.67", label: "D+ (1.67 - Pass / High Retake Priority)" },
-  { letter: "D", gpa: "1.00", label: "D (1.00 - Minimum Pass / High Retake Priority)" },
+  {
+    letter: "D+",
+    gpa: "1.67",
+    label: "D+ (1.67 - Pass / High Retake Priority)",
+  },
+  {
+    letter: "D",
+    gpa: "1.00",
+    label: "D (1.00 - Minimum Pass / High Retake Priority)",
+  },
   { letter: "F", gpa: "0.00", label: "F (0.00 - Failed / Mandatory Retake)" },
+];
+
+const CREDIT_OPTIONS = [
+  { value: "3.0", label: "3.0 Credits (Standard Theory)" },
+  { value: "1.5", label: "1.5 Credits (Lab / Practical)" },
+  { value: "1.0", label: "1.0 Credit (Lab / Workshop)" },
+  { value: "2.0", label: "2.0 Credits (Minor / Elective)" },
+  { value: "4.0", label: "4.0 Credits (Capstone / Intensive)" },
 ];
 
 export default function CourseRetakeAdvisor({
@@ -277,7 +293,11 @@ export default function CourseRetakeAdvisor({
     setEditingCourse(course);
     setNewCode(course.course_code || "");
     setNewName(course.course_name || "");
-    setNewCredits(String(course.credits || "3.0"));
+    setNewCredits(
+      course.credits != null
+        ? String(Number(course.credits).toFixed(1))
+        : "3.0",
+    );
     setNewGradePoint(
       course.current_grade_point != null
         ? String(Number(course.current_grade_point).toFixed(2))
@@ -300,8 +320,8 @@ export default function CourseRetakeAdvisor({
     }
     const cr = parseFloat(newCredits);
     const gp = parseFloat(newGradePoint);
-    if (isNaN(cr) || cr <= 0) {
-      setFormError("Valid credit hours required (e.g. 3.0).");
+    if (isNaN(cr) || cr < 1.0 || cr > 4.0) {
+      setFormError("Please select valid credit hours (1.0 to 4.0).");
       return;
     }
     if (isNaN(gp) || gp < 0 || gp > 4.0) {
@@ -591,10 +611,11 @@ export default function CourseRetakeAdvisor({
                     No Course Grades Recorded Yet
                   </h3>
                   <p className="advisor-empty-desc">
-                    Upload your university transcript using the button above or click &quot;Add Course Grade&quot; to activate the AI Retake Optimizer.
-                    StudentBrain AI will analyze your course credit weights,
-                    cross-reference your tracked focus hours, and project the
-                    highest CGPA boost with minimum study burnout.
+                    Upload your university transcript using the button above or
+                    click &quot;Add Course Grade&quot; to activate the AI Retake
+                    Optimizer. StudentBrain AI will analyze your course credit
+                    weights, cross-reference your tracked focus hours, and
+                    project the highest CGPA boost with minimum study burnout.
                   </p>
                 </div>
               </div>
@@ -1246,18 +1267,21 @@ export default function CourseRetakeAdvisor({
                         color: "var(--color-text-secondary)",
                       }}
                     >
-                      Credit Hours *
+                      Credit Hours (1.0 - 4.0) *
                     </label>
-                    <input
-                      type="number"
-                      step="0.5"
-                      min="1.0"
-                      max="6.0"
+                    <select
                       className="form-input-control"
                       value={newCredits}
                       onChange={(e) => setNewCredits(e.target.value)}
                       required
-                    />
+                    >
+                      <option value="">-- Select Credits --</option>
+                      {CREDIT_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
