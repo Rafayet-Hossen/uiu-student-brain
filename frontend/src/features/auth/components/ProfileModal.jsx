@@ -1,20 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  Award,
   Calendar,
   Camera,
-  CheckCircle2,
-  Image as ImageIcon,
-  Sparkles,
   Trash2,
-  Upload,
-  User as UserIcon,
   X,
 } from "lucide-react";
-import Badge from "../../../components/Badge";
 import Button from "../../../components/Button";
 import FormError from "../../../components/FormError";
-import Input from "../../../components/Input";
 import Spinner from "../../../components/Spinner";
 import ThemeToggle from "../../../components/ThemeToggle";
 import { extractErrorMessage, getProfileSummary, updateProfile } from "../api";
@@ -26,11 +18,34 @@ import {
 import ScholarAvatar from "./ScholarAvatar";
 import { useAuth } from "../useAuth";
 
+function ToggleSwitch({
+  checked,
+  onChange,
+  disabled = false,
+  ariaLabel = "Toggle setting",
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={ariaLabel}
+      disabled={disabled}
+      onClick={onChange}
+      className={`settings-toggle-switch ${checked ? "is-checked" : ""}`}
+    >
+      <span className="toggle-switch-track">
+        <span className="toggle-switch-thumb" />
+      </span>
+    </button>
+  );
+}
+
 export default function ProfileModal({ initialTab = "settings", onClose }) {
   const { user, updateUser, logout } = useAuth();
   const [activeTab, setActiveTab] = useState(() => {
     if (initialTab === "performance") return "performance";
-    if (initialTab === "profile") return "settings";
+    if (initialTab === "profile") return "profile";
     return "settings";
   });
 
@@ -56,6 +71,10 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
       : "",
   );
 
+  const [optInLeaderboard, setOptInLeaderboard] = useState(() => {
+    return user?.opt_in_leaderboard !== false;
+  });
+
   const [notifAnnouncements, setNotifAnnouncements] = useState(() => {
     return (
       localStorage.getItem("student_brain_notif_announcements") !== "false"
@@ -70,6 +89,17 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
   const [notifSound, setNotifSound] = useState(() => {
     return localStorage.getItem("student_brain_notif_sound") !== "false";
   });
+
+  async function handleToggleLeaderboard() {
+    const nextVal = !optInLeaderboard;
+    setOptInLeaderboard(nextVal);
+    try {
+      const updated = await updateProfile({ opt_in_leaderboard: nextVal });
+      updateUser(updated);
+    } catch (e) {
+      console.error("Failed to update leaderboard preference", e);
+    }
+  }
 
   function handleToggleNotif(type) {
     if (type === "announcements") {
@@ -197,8 +227,8 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
       try {
         const freshSummary = await getProfileSummary();
         setSummaryData(freshSummary);
-      } catch (e) {
-        console.error("Failed to refresh profile summary", e);
+      } catch (err) {
+        console.error("Failed to refresh profile summary", err);
       }
       setSuccessMessage("Profile details updated successfully.");
       setTimeout(() => {
@@ -246,7 +276,7 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
             onClick={onClose}
             aria-label="Close"
           >
-            ✕
+            <X size={18} />
           </button>
         </div>
 
@@ -280,7 +310,7 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
             className={`profile-modal-tab-btn ${activeTab === "settings" ? "tab-active" : ""}`}
             onClick={() => setActiveTab("settings")}
           >
-            <span>⚙️ Preferences & Account</span>
+            <span>⚙️ Preferences & Settings</span>
           </button>
         </div>
 
@@ -289,65 +319,31 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
           <form
             onSubmit={handleSaveProfile}
             noValidate
-            className="academic-form"
+            className="academic-form profile-tab-form"
           >
             {error && (
               <FormError message={error} className="form-error-block" />
             )}
             {successMessage && (
-              <div
-                style={{
-                  padding: "10px 14px",
-                  borderRadius: "var(--radius-md)",
-                  background: "rgba(16, 185, 129, 0.12)",
-                  border: "1px solid #10b981",
-                  color: "#10b981",
-                  fontSize: "0.875rem",
-                  fontWeight: 600,
-                  marginBottom: "14px",
-                }}
-              >
+              <div className="profile-success-alert">
                 {successMessage}
               </div>
             )}
 
             {/* Profile Photo Uploader & Avatar Presets */}
-            <div
-              style={{
-                background: "var(--color-surface-subtle)",
-                border: "1px solid var(--color-border)",
-                borderRadius: "var(--radius-lg)",
-                padding: "16px",
-                marginBottom: "18px",
-              }}
-            >
-              <label
-                className="form-label"
-                style={{
-                  display: "block",
-                  marginBottom: "10px",
-                  fontWeight: 700,
-                }}
-              >
+            <div className="profile-photo-section-card">
+              <label className="form-label profile-section-lbl">
                 📸 Profile Picture & Avatar
               </label>
 
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "16px",
-                  flexWrap: "wrap",
-                  marginBottom: "14px",
-                }}
-              >
+              <div className="profile-avatar-action-row">
                 <ScholarAvatar
                   user={user}
                   size={64}
                   avatarOverride={currentAvatar}
                 />
 
-                <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                <div className="profile-avatar-buttons">
                   <input
                     type="file"
                     ref={fileInputRef}
@@ -379,19 +375,11 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
               </div>
 
               {/* Avatar Presets */}
-              <div>
-                <span
-                  style={{
-                    fontSize: "0.75rem",
-                    fontWeight: 600,
-                    color: "var(--color-text-muted)",
-                    display: "block",
-                    marginBottom: "8px",
-                  }}
-                >
+              <div className="profile-presets-container">
+                <span className="profile-presets-title">
                   Or choose an academic preset avatar:
                 </span>
-                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                <div className="profile-presets-flex">
                   {AVATAR_PRESETS.map((preset) => {
                     const isSelected = currentAvatar === preset.id;
                     return (
@@ -399,25 +387,15 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
                         key={preset.id}
                         type="button"
                         onClick={() => handleSelectPreset(preset.id)}
-                        style={{
-                          width: "38px",
-                          height: "38px",
-                          borderRadius: "50%",
-                          background: preset.gradient,
-                          border: isSelected
-                            ? "3px solid var(--color-text)"
-                            : "2px solid transparent",
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: "1.125rem",
-                          transition: "transform 0.15s ease",
-                          transform: isSelected ? "scale(1.1)" : "scale(1)",
-                        }}
-                        title={preset.label}
+                        className={`avatar-preset-btn ${isSelected ? "preset-selected" : ""}`}
+                        title={preset.name}
                       >
-                        {preset.emoji}
+                        <span className="avatar-preset-emoji">
+                          {preset.emoji}
+                        </span>
+                        <span className="avatar-preset-name">
+                          {preset.name}
+                        </span>
                       </button>
                     );
                   })}
@@ -425,58 +403,49 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
               </div>
             </div>
 
+            {/* Form Fields Grid */}
             <div className="modal-grid-2col">
-              <Input
-                id="prof_name"
-                label="Full Name"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder="e.g. Alex Rivera"
-                disabled={saving}
-                required
-              />
+              <div className="form-group">
+                <label className="form-label">Full Name</label>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="e.g. John Doe"
+                  className="form-input-control"
+                  disabled={saving}
+                  required
+                />
+              </div>
 
-              <Input
-                id="prof_dept"
-                label="Department / Major"
-                value={department}
-                onChange={(e) => setDepartment(e.target.value)}
-                placeholder="e.g. Computer Science & Engineering"
-                disabled={saving}
-              />
+              <div className="form-group">
+                <label className="form-label">Department / Major</label>
+                <input
+                  type="text"
+                  value={department}
+                  onChange={(e) => setDepartment(e.target.value)}
+                  placeholder="e.g. Computer Science & Engineering"
+                  className="form-input-control"
+                  disabled={saving}
+                />
+              </div>
             </div>
 
-            <div className="form-group" style={{ marginBottom: "16px" }}>
-              <label
-                className="form-label"
-                style={{ fontWeight: 600, fontSize: "0.8125rem" }}
-              >
-                🎯 Academic Bio & Goals
-              </label>
+            <div className="form-group">
+              <label className="form-label">Academic Bio / Research Interests</label>
               <textarea
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                placeholder="Share your academic interests, research goals, or study focus..."
-                rows={3}
+                rows={2}
+                placeholder="Briefly state your academic focus, research goals, or study habits..."
                 className="form-input-control"
                 disabled={saving}
-                style={{
-                  width: "100%",
-                  padding: "10px 14px",
-                  borderRadius: "var(--radius-md)",
-                  resize: "vertical",
-                }}
               />
             </div>
 
-            <div className="modal-grid-2col" style={{ marginBottom: "16px" }}>
+            <div className="modal-grid-2col">
               <div className="form-group">
-                <label
-                  className="form-label"
-                  style={{ fontWeight: 600, fontSize: "0.8125rem" }}
-                >
-                  🎓 Current CGPA (out of 4.00)
-                </label>
+                <label className="form-label">🎓 Current CGPA (out of 4.00)</label>
                 <input
                   type="number"
                   step="0.01"
@@ -491,12 +460,7 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
               </div>
 
               <div className="form-group">
-                <label
-                  className="form-label"
-                  style={{ fontWeight: 600, fontSize: "0.8125rem" }}
-                >
-                  🎯 Target CGPA Goal (out of 4.00)
-                </label>
+                <label className="form-label">🎯 Target Graduation CGPA</label>
                 <input
                   type="number"
                   step="0.01"
@@ -513,10 +477,7 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
 
             <div className="modal-grid-2col">
               <div className="form-group">
-                <label
-                  className="form-label"
-                  style={{ fontWeight: 600, fontSize: "0.8125rem" }}
-                >
+                <label className="form-label">
                   ⏱️ Target Daily Study Goal (Minutes)
                 </label>
                 <select
@@ -536,10 +497,7 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
               </div>
 
               <div className="form-group">
-                <label
-                  className="form-label"
-                  style={{ fontWeight: 600, fontSize: "0.8125rem" }}
-                >
+                <label className="form-label">
                   📧 Account Email (Verified)
                 </label>
                 <input
@@ -568,27 +526,16 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
 
         {/* TAB 2: OVERALL PERFORMANCE & RANK */}
         {activeTab === "performance" && (
-          <div>
+          <div className="profile-performance-container">
             {loadingSummary ? (
-              <div style={{ textAlign: "center", padding: "30px" }}>
+              <div className="profile-loading-box">
                 <Spinner standalone />
-                <p
-                  style={{
-                    marginTop: "10px",
-                    color: "var(--color-text-muted)",
-                  }}
-                >
+                <p className="profile-loading-text">
                   Aggregating your academic performance metrics...
                 </p>
               </div>
             ) : (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "16px",
-                }}
-              >
+              <div className="profile-performance-content">
                 {/* 4 Highlight Metric Cards */}
                 <div className="profile-metrics-grid">
                   <div className="profile-metric-item">
@@ -655,37 +602,12 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
                 </div>
 
                 {/* Module Highlights Row */}
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-                    gap: "12px",
-                  }}
-                >
-                  <div
-                    style={{
-                      background: "var(--color-surface)",
-                      border: "1px solid var(--color-border)",
-                      borderRadius: "var(--radius-md)",
-                      padding: "14px",
-                    }}
-                  >
-                    <strong
-                      style={{
-                        fontSize: "0.9375rem",
-                        display: "block",
-                        marginBottom: "4px",
-                      }}
-                    >
+                <div className="profile-modules-grid">
+                  <div className="profile-module-card">
+                    <strong className="profile-module-title">
                       📅 Study Routines
                     </strong>
-                    <p
-                      style={{
-                        margin: 0,
-                        fontSize: "0.875rem",
-                        color: "var(--color-text-muted)",
-                      }}
-                    >
+                    <p className="profile-module-desc">
                       <strong>
                         {summaryData?.performance?.routines_count || 0}
                       </strong>{" "}
@@ -693,30 +615,11 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
                     </p>
                   </div>
 
-                  <div
-                    style={{
-                      background: "var(--color-surface)",
-                      border: "1px solid var(--color-border)",
-                      borderRadius: "var(--radius-md)",
-                      padding: "14px",
-                    }}
-                  >
-                    <strong
-                      style={{
-                        fontSize: "0.9375rem",
-                        display: "block",
-                        marginBottom: "4px",
-                      }}
-                    >
+                  <div className="profile-module-card">
+                    <strong className="profile-module-title">
                       📚 Study Materials
                     </strong>
-                    <p
-                      style={{
-                        margin: 0,
-                        fontSize: "0.875rem",
-                        color: "var(--color-text-muted)",
-                      }}
-                    >
+                    <p className="profile-module-desc">
                       <strong>
                         {summaryData?.performance?.materials_count || 0}
                       </strong>{" "}
@@ -728,30 +631,11 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
                     </p>
                   </div>
 
-                  <div
-                    style={{
-                      background: "var(--color-surface)",
-                      border: "1px solid var(--color-border)",
-                      borderRadius: "var(--radius-md)",
-                      padding: "14px",
-                    }}
-                  >
-                    <strong
-                      style={{
-                        fontSize: "0.9375rem",
-                        display: "block",
-                        marginBottom: "4px",
-                      }}
-                    >
+                  <div className="profile-module-card">
+                    <strong className="profile-module-title">
                       💬 Community Engagement
                     </strong>
-                    <p
-                      style={{
-                        margin: 0,
-                        fontSize: "0.875rem",
-                        color: "var(--color-text-muted)",
-                      }}
-                    >
+                    <p className="profile-module-desc">
                       <strong>
                         {summaryData?.performance?.posts_count || 0}
                       </strong>{" "}
@@ -763,30 +647,11 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
                     </p>
                   </div>
 
-                  <div
-                    style={{
-                      background: "var(--color-surface)",
-                      border: "1px solid var(--color-border)",
-                      borderRadius: "var(--radius-md)",
-                      padding: "14px",
-                    }}
-                  >
-                    <strong
-                      style={{
-                        fontSize: "0.9375rem",
-                        display: "block",
-                        marginBottom: "4px",
-                      }}
-                    >
+                  <div className="profile-module-card">
+                    <strong className="profile-module-title">
                       🎖️ Milestone Badges
                     </strong>
-                    <p
-                      style={{
-                        margin: 0,
-                        fontSize: "0.875rem",
-                        color: "var(--color-text-muted)",
-                      }}
-                    >
+                    <p className="profile-module-desc">
                       <strong>
                         {summaryData?.performance?.badges_earned || 0}
                       </strong>{" "}
@@ -832,7 +697,11 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
                 </span>
               </div>
               <div className="setting-action-col">
-                <Badge variant="secondary">Active / Opted In</Badge>
+                <ToggleSwitch
+                  checked={optInLeaderboard}
+                  onChange={handleToggleLeaderboard}
+                  ariaLabel="Toggle community leaderboard visibility"
+                />
               </div>
             </div>
 
@@ -860,13 +729,11 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
                     </span>
                   </div>
                   <div className="setting-action-col">
-                    <button
-                      type="button"
-                      onClick={() => handleToggleNotif("announcements")}
-                      className={`notif-toggle-pill ${notifAnnouncements ? "toggle-active" : "toggle-disabled"}`}
-                    >
-                      {notifAnnouncements ? "✓ Enabled" : "✕ Disabled"}
-                    </button>
+                    <ToggleSwitch
+                      checked={notifAnnouncements}
+                      onChange={() => handleToggleNotif("announcements")}
+                      ariaLabel="Toggle Campus Announcements notifications"
+                    />
                   </div>
                 </div>
 
@@ -881,13 +748,11 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
                     </span>
                   </div>
                   <div className="setting-action-col">
-                    <button
-                      type="button"
-                      onClick={() => handleToggleNotif("comments")}
-                      className={`notif-toggle-pill ${notifComments ? "toggle-active" : "toggle-disabled"}`}
-                    >
-                      {notifComments ? "✓ Enabled" : "✕ Disabled"}
-                    </button>
+                    <ToggleSwitch
+                      checked={notifComments}
+                      onChange={() => handleToggleNotif("comments")}
+                      ariaLabel="Toggle Comments and Replies notifications"
+                    />
                   </div>
                 </div>
 
@@ -902,13 +767,11 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
                     </span>
                   </div>
                   <div className="setting-action-col">
-                    <button
-                      type="button"
-                      onClick={() => handleToggleNotif("academic")}
-                      className={`notif-toggle-pill ${notifAcademic ? "toggle-active" : "toggle-disabled"}`}
-                    >
-                      {notifAcademic ? "✓ Enabled" : "✕ Disabled"}
-                    </button>
+                    <ToggleSwitch
+                      checked={notifAcademic}
+                      onChange={() => handleToggleNotif("academic")}
+                      ariaLabel="Toggle Academic targets and streak notifications"
+                    />
                   </div>
                 </div>
 
@@ -923,13 +786,11 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
                     </span>
                   </div>
                   <div className="setting-action-col">
-                    <button
-                      type="button"
-                      onClick={() => handleToggleNotif("sound")}
-                      className={`notif-toggle-pill ${notifSound ? "toggle-active" : "toggle-disabled"}`}
-                    >
-                      {notifSound ? "✓ Enabled" : "✕ Disabled"}
-                    </button>
+                    <ToggleSwitch
+                      checked={notifSound}
+                      onChange={() => handleToggleNotif("sound")}
+                      ariaLabel="Toggle audio chimes and sound effects"
+                    />
                   </div>
                 </div>
               </div>

@@ -39,12 +39,6 @@ ALLOWED_HOSTS = env.list(
     default=["*"],
 )
 
-GOOGLE_CLIENT_ID = env(
-    "GOOGLE_CLIENT_ID",
-    default="97595115320-as37nh6t3kp0tgdgsad4o1jri6k5tmr6.apps.googleusercontent.com",
-)
-
-
 
 # ============================================================
 # APPLICATIONS

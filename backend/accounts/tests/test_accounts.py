@@ -37,26 +37,3 @@ class AccountsTests(APITestCase):
         response = self.client.get(self.me_url, HTTP_AUTHORIZATION=f"Bearer {access}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["email"], user.email)
-
-    def test_google_login_missing_token(self):
-        google_url = reverse("google_login")
-        response = self.client.post(google_url, {})
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-    def test_google_login_mocked_success(self):
-        from unittest.mock import patch
-        google_url = reverse("google_login")
-        fake_idinfo = {
-            "email": "googlestudent@university.edu",
-            "name": "Google Student Scholar",
-            "sub": "1234567890",
-        }
-        with patch("google.oauth2.id_token.verify_oauth2_token", return_value=fake_idinfo):
-            response = self.client.post(google_url, {"credential": "fake-google-id-token"})
-            self.assertEqual(response.status_code, status.HTTP_200_OK)
-            self.assertIn("access", response.data)
-            self.assertIn("refresh", response.data)
-            self.assertEqual(response.data["user"]["email"], "googlestudent@university.edu")
-            self.assertEqual(response.data["user"]["full_name"], "Google Student Scholar")
-            self.assertTrue(User.objects.filter(email="googlestudent@university.edu").exists())
-
