@@ -159,40 +159,14 @@ export default function MaterialAnalysisModal({
               )}
             </p>
           </div>
-          <div
-            className="modal-header-actions"
-            style={{ display: "flex", alignItems: "center", gap: "8px" }}
-          >
-            <button
-              type="button"
-              className="modal-pdf-download-btn"
-              onClick={handleExportPdf}
-              disabled={exportingPdf}
-              title="Download AI Generated Summary as PDF"
-            >
-              <FileDown size={13} />
-              <span>{exportingPdf ? "Generating PDF..." : "AI Summary PDF"}</span>
-            </button>
-            {(material.file || material.file_url || material.content_text) && (
-              <button
-                type="button"
-                className="modal-pdf-download-btn"
-                onClick={handleDownloadOriginalFile}
-                disabled={downloadingOriginal}
-                style={{ background: "var(--color-surface-subtle)", color: "var(--color-text)" }}
-                title="Download the exact file or note uploaded"
-              >
-                <Download size={13} />
-                <span>{downloadingOriginal ? "Downloading..." : "Original File"}</span>
-              </button>
-            )}
+          <div className="modal-header-actions">
             <button
               type="button"
               className="modal-close-btn"
               onClick={onClose}
               aria-label="Close modal"
             >
-              ✕
+              <X size={18} />
             </button>
           </div>
         </div>
@@ -326,50 +300,55 @@ export default function MaterialAnalysisModal({
           </div>
         </div>
 
-        <div className="modal-footer-row" style={{ flexWrap: "wrap", gap: "10px" }}>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleLocalReanalyze}
-            loading={isBusy}
-            disabled={isBusy || exportingPdf || downloadingOriginal}
-            icon={RotateCcw}
-          >
-            {isBusy ? "Analyzing..." : isAnalyzed ? "Re-run AI Analysis" : "Analyze with AI"}
-          </Button>
+        <div className="modal-footer-row material-modal-footer">
+          <div className="material-modal-footer-actions">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleLocalReanalyze}
+              loading={isBusy}
+              disabled={isBusy || exportingPdf || downloadingOriginal}
+              icon={RotateCcw}
+              className="mat-footer-btn"
+            >
+              {isBusy ? "Analyzing..." : isAnalyzed ? "Re-run AI Analysis" : "Analyze with AI"}
+            </Button>
 
-          {/* Download 1: AI Generated Summary PDF */}
-          <Button
-            type="button"
-            variant="secondary"
-            icon={FileDown}
-            onClick={handleExportPdf}
-            loading={exportingPdf}
-            disabled={isBusy || exportingPdf}
-            title="Download AI-generated summary as publication-grade PDF"
-          >
-            {exportingPdf ? "Generating PDF..." : "📥 AI Summary PDF"}
-          </Button>
+            {/* Download 1: AI Generated Summary PDF */}
+            <Button
+              type="button"
+              variant="secondary"
+              icon={FileDown}
+              onClick={handleExportPdf}
+              loading={exportingPdf}
+              disabled={isBusy || exportingPdf}
+              title="Download AI-generated summary as publication-grade PDF"
+              className="mat-footer-btn"
+            >
+              {exportingPdf ? "Generating PDF..." : "AI Summary PDF"}
+            </Button>
 
-          {/* Download 2: Original Uploaded File */}
-          <Button
-            type="button"
-            variant="secondary"
-            icon={Download}
-            onClick={handleDownloadOriginalFile}
-            loading={downloadingOriginal}
-            disabled={isBusy || downloadingOriginal}
-            title="Download original file uploaded by student"
-          >
-            {downloadingOriginal ? "Downloading..." : "📁 Original Uploaded File"}
-          </Button>
+            {/* Download 2: Original Uploaded File */}
+            <Button
+              type="button"
+              variant="secondary"
+              icon={Download}
+              onClick={handleDownloadOriginalFile}
+              loading={downloadingOriginal}
+              disabled={isBusy || downloadingOriginal}
+              title="Download original file uploaded by student"
+              className="mat-footer-btn"
+            >
+              {downloadingOriginal ? "Downloading..." : "Original File"}
+            </Button>
+          </div>
 
           <Button
             type="button"
             variant="primary"
             onClick={onClose}
             disabled={isBusy || exportingPdf}
-            style={{ marginLeft: "auto" }}
+            className="mat-footer-close-btn"
           >
             Close
           </Button>
