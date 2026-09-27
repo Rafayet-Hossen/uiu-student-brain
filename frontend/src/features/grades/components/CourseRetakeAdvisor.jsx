@@ -43,6 +43,19 @@ import {
   uploadTranscript,
 } from "../api";
 
+const GRADE_OPTIONS = [
+  { letter: "A", gpa: "4.00", label: "A (4.00 - Outstanding)" },
+  { letter: "A-", gpa: "3.67", label: "A- (3.67 - Excellent)" },
+  { letter: "B+", gpa: "3.33", label: "B+ (3.33 - Very Good)" },
+  { letter: "B", gpa: "3.00", label: "B (3.00 - Good)" },
+  { letter: "B-", gpa: "2.67", label: "B- (2.67 - Satisfactory)" },
+  { letter: "C+", gpa: "2.33", label: "C+ (2.33 - Above Average)" },
+  { letter: "C", gpa: "2.00", label: "C (2.00 - Average / Retake Candidate)" },
+  { letter: "D+", gpa: "1.67", label: "D+ (1.67 - Pass / High Retake Priority)" },
+  { letter: "D", gpa: "1.00", label: "D (1.00 - Minimum Pass / High Retake Priority)" },
+  { letter: "F", gpa: "0.00", label: "F (0.00 - Failed / Mandatory Retake)" },
+];
+
 export default function CourseRetakeAdvisor({
   showUploadModal: externalShowUploadModal,
   setShowUploadModal: externalSetShowUploadModal,
@@ -79,8 +92,8 @@ export default function CourseRetakeAdvisor({
   const [newCode, setNewCode] = useState("");
   const [newName, setNewName] = useState("");
   const [newCredits, setNewCredits] = useState("3.0");
-  const [newGradePoint, setNewGradePoint] = useState("2.33");
-  const [newSemester, setNewSemester] = useState("Spring 2026");
+  const [newGradePoint, setNewGradePoint] = useState("");
+  const [newSemester, setNewSemester] = useState("");
   const [formError, setFormError] = useState("");
 
   // Clipboard paste listener: paste screenshots directly with Ctrl+V
@@ -253,8 +266,8 @@ export default function CourseRetakeAdvisor({
     setNewCode("");
     setNewName("");
     setNewCredits("3.0");
-    setNewGradePoint("2.33");
-    setNewSemester("Spring 2026");
+    setNewGradePoint("");
+    setNewSemester("");
     setFormError("");
     setShowAddModal(true);
   }
@@ -265,8 +278,12 @@ export default function CourseRetakeAdvisor({
     setNewCode(course.course_code || "");
     setNewName(course.course_name || "");
     setNewCredits(String(course.credits || "3.0"));
-    setNewGradePoint(String(course.current_grade_point ?? "2.33"));
-    setNewSemester(course.semester || "Spring 2026");
+    setNewGradePoint(
+      course.current_grade_point != null
+        ? String(Number(course.current_grade_point).toFixed(2))
+        : "",
+    );
+    setNewSemester(course.semester || "");
     setFormError("");
     setShowAddModal(true);
   }
@@ -274,7 +291,11 @@ export default function CourseRetakeAdvisor({
   async function handleAddOrEditCourse(e) {
     e.preventDefault();
     if (!newCode.trim() || !newName.trim()) {
-      setFormError("Please fill in course code and name.");
+      setFormError("Please fill in course code and course title.");
+      return;
+    }
+    if (!newGradePoint || isNaN(parseFloat(newGradePoint))) {
+      setFormError("Please select a course grade / grade point.");
       return;
     }
     const cr = parseFloat(newCredits);
@@ -308,7 +329,7 @@ export default function CourseRetakeAdvisor({
         credits: cr,
         grade_point: gp,
         grade_letter: closestLetter,
-        semester: newSemester.trim() || "Spring 2026",
+        semester: newSemester.trim() || "",
       };
 
       if (editingCourse) {
@@ -322,7 +343,8 @@ export default function CourseRetakeAdvisor({
       setNewCode("");
       setNewName("");
       setNewCredits("3.0");
-      setNewGradePoint("2.33");
+      setNewGradePoint("");
+      setNewSemester("");
       await loadAdvisorData(true);
       setReanalyzeSuccessMsg(
         editingCourse
@@ -1264,7 +1286,7 @@ export default function CourseRetakeAdvisor({
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
+                    gridTemplateColumns: "1.2fr 1fr",
                     gap: "12px",
                   }}
                 >
@@ -1278,19 +1300,21 @@ export default function CourseRetakeAdvisor({
                         color: "var(--color-text-secondary)",
                       }}
                     >
-                      Grade Point (0.00 - 4.00) *
+                      Course Grade / GPA *
                     </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0.00"
-                      max="4.00"
+                    <select
                       className="form-input-control"
-                      placeholder="e.g. 2.33"
                       value={newGradePoint}
                       onChange={(e) => setNewGradePoint(e.target.value)}
                       required
-                    />
+                    >
+                      <option value="">-- Select Grade --</option>
+                      {GRADE_OPTIONS.map((opt) => (
+                        <option key={opt.gpa} value={opt.gpa}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div>
                     <label
@@ -1302,12 +1326,12 @@ export default function CourseRetakeAdvisor({
                         color: "var(--color-text-secondary)",
                       }}
                     >
-                      Semester Taken
+                      Semester Taken (Optional)
                     </label>
                     <input
                       type="text"
                       className="form-input-control"
-                      placeholder="e.g. Spring 2026"
+                      placeholder="e.g. Spring 2026, Fall 2025"
                       value={newSemester}
                       onChange={(e) => setNewSemester(e.target.value)}
                     />

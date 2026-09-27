@@ -210,7 +210,9 @@ export default function Navbar() {
           {/* Right: Notifications, Theme Toggle & Profile Dropdown */}
           <div className="navbar-right-actions">
             <NotificationCenter />
-            <ThemeToggle />
+            <div className="desktop-only">
+              <ThemeToggle />
+            </div>
 
             {user ? (
               <div className="user-profile-dropdown-wrapper" ref={dropdownRef}>

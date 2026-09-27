@@ -5523,8 +5523,6 @@
     box-sizing: border-box;
   }
 
-
-
   /* Planner Mobile Header Controls */
   .planner-header-row {
     flex-direction: column;
@@ -16413,7 +16411,11 @@ html[data-theme="dark"] .native-reader-main-viewport {
 }
 
 [data-theme="dark"] .card-second {
-  background: linear-gradient(180deg, #141e33 0%, rgba(148, 163, 184, 0.08) 100%);
+  background: linear-gradient(
+    180deg,
+    #141e33 0%,
+    rgba(148, 163, 184, 0.08) 100%
+  );
   border-color: rgba(148, 163, 184, 0.35);
 }
 
@@ -23488,8 +23490,9 @@ html[data-theme="dark"] .btn-celebration-extend:hover {
   background-color: var(--color-surface-subtle);
   border: 1.5px solid var(--color-border);
   border-radius: 9999px;
-  transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-              border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
@@ -23506,7 +23509,9 @@ html[data-theme="dark"] .btn-celebration-extend:hover {
   height: 17px;
   background-color: #ffffff;
   border-radius: 50%;
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s;
+  transition:
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.25s;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
 }
 
@@ -23948,4 +23953,3 @@ html[data-theme="dark"] .btn-celebration-extend:hover {
     gap: 8px !important;
   }
 }
-
