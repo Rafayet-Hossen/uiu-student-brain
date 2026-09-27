@@ -47,24 +47,9 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
   const [fullName, setFullName] = useState(user?.full_name || "");
   const [department, setDepartment] = useState(user?.department || "");
   const [bio, setBio] = useState(user?.bio || "");
-  const [dailyFocusMode, setDailyFocusMode] = useState(() => {
-    const mins = user?.target_daily_minutes
-      ? String(user.target_daily_minutes)
-      : "120";
-    if (["60", "90", "120", "180", "240", "300"].includes(mins)) {
-      return mins;
-    }
-    return "custom";
-  });
-  const [customDailyMinutes, setCustomDailyMinutes] = useState(() => {
-    const mins = user?.target_daily_minutes
-      ? String(user.target_daily_minutes)
-      : "120";
-    if (["60", "90", "120", "180", "240", "300"].includes(mins)) {
-      return "";
-    }
-    return mins;
-  });
+  const [targetDailyMinutes, setTargetDailyMinutes] = useState(
+    user?.target_daily_minutes || 120,
+  );
 
   const [currentAvatar, setCurrentAvatar] = useState(() =>
     getScholarAvatar(user),
@@ -148,16 +133,7 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
           setFullName(data.user.full_name || "");
           setDepartment(data.user.department || "");
           setBio(data.user.bio || "");
-          const minsStr = data.user.target_daily_minutes
-            ? String(data.user.target_daily_minutes)
-            : "120";
-          if (["60", "90", "120", "180", "240", "300"].includes(minsStr)) {
-            setDailyFocusMode(minsStr);
-            setCustomDailyMinutes("");
-          } else {
-            setDailyFocusMode("custom");
-            setCustomDailyMinutes(minsStr);
-          }
+          setTargetDailyMinutes(data.user.target_daily_minutes || 120);
         }
         if (data.performance) {
           if (
@@ -232,27 +208,12 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
     setSuccessMessage("");
     setSaving(true);
 
-    let finalDailyMinutes = 120;
-    if (dailyFocusMode === "custom") {
-      const parsed = parseInt(customDailyMinutes, 10);
-      if (isNaN(parsed) || parsed < 15 || parsed > 1440) {
-        setError(
-          "Please enter valid custom daily focus minutes (between 15 and 1440 mins).",
-        );
-        setSaving(false);
-        return;
-      }
-      finalDailyMinutes = parsed;
-    } else {
-      finalDailyMinutes = parseInt(dailyFocusMode, 10) || 120;
-    }
-
     try {
       const payload = {
         full_name: fullName.trim(),
         department: department.trim(),
         bio: bio.trim(),
-        target_daily_minutes: finalDailyMinutes,
+        target_daily_minutes: Number(targetDailyMinutes) || 120,
         current_gpa: currentGpa === "" ? null : parseFloat(currentGpa),
         target_gpa: targetGpa === "" ? null : parseFloat(targetGpa),
       };
@@ -521,40 +482,19 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
                     ⏱️ Target Daily Study Goal (Minutes)
                   </label>
                   <select
-                    value={dailyFocusMode}
-                    onChange={(e) => {
-                      setDailyFocusMode(e.target.value);
-                      if (e.target.value !== "custom") {
-                        setCustomDailyMinutes("");
-                      }
-                    }}
+                    value={targetDailyMinutes}
+                    onChange={(e) =>
+                      setTargetDailyMinutes(Number(e.target.value))
+                    }
                     className="form-input-control"
                     disabled={saving}
                   >
-                    <option value="60">60 minutes (1 hour / day)</option>
-                    <option value="90">90 minutes (1.5 hours / day)</option>
-                    <option value="120">120 minutes (2 hours / day - Standard)</option>
-                    <option value="180">180 minutes (3 hours / day - Intensive)</option>
-                    <option value="240">240 minutes (4 hours / day - Scholar Focus)</option>
-                    <option value="300">300 minutes (5 hours / day)</option>
-                    <option value="custom">⏱️ Custom Time (Input minutes manually)</option>
+                    <option value={60}>60 minutes (1 hour / day)</option>
+                    <option value={90}>90 minutes (1.5 hours / day)</option>
+                    <option value={120}>120 minutes (2 hours / day)</option>
+                    <option value={180}>180 minutes (3 hours / day)</option>
+                    <option value={240}>240 minutes (4 hours / day)</option>
                   </select>
-
-                  {dailyFocusMode === "custom" && (
-                    <div style={{ marginTop: "6px" }}>
-                      <input
-                        type="number"
-                        min="15"
-                        max="1440"
-                        className="form-input-control"
-                        placeholder="Enter custom minutes (e.g. 150)"
-                        value={customDailyMinutes}
-                        onChange={(e) => setCustomDailyMinutes(e.target.value)}
-                        disabled={saving}
-                        required
-                      />
-                    </div>
-                  )}
                 </div>
 
                 <div className="form-group">
