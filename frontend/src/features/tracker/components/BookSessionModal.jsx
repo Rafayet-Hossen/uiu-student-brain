@@ -1085,29 +1085,6 @@ export default function BookSessionModal({
             </div>
           </div>
 
-          {/* Enhanced AI Diagnostic & Consistency Card */}
-          <div className="tracker-ai-guarantee-card mb-4">
-            <div className="tracker-ai-badge-header">
-              <div className="tracker-ai-sparkle-pill">
-                <Sparkles size={14} className="text-primary flex-shrink-0" />
-                <span>AI Diagnostic Engine</span>
-              </div>
-              <span className="tracker-ai-model-tag">Gemini AI</span>
-            </div>
-            <p className="tracker-ai-desc">
-              When your session concludes, Gemini AI generates a 5-question
-              diagnostic quiz directly based on your attached material to test
-              conceptual recall and identify weak areas.
-            </p>
-            <div className="tracker-consistency-rule-chip">
-              <span className="text-amber">⚡</span>
-              <span>
-                <strong>Strict Consistency:</strong> Must be attended during its
-                booked window to qualify for daily goals & streak progress.
-              </span>
-            </div>
-          </div>
-
           {/* Footer Actions */}
           <div className="tracker-modal-footer-actions">
             <Button

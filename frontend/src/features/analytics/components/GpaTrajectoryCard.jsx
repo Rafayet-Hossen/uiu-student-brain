@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { GraduationCap } from "lucide-react";
 import Badge from "../../../components/Badge";
 
 export default function GpaTrajectoryCard({ gpaSummary }) {
@@ -6,9 +7,11 @@ export default function GpaTrajectoryCard({ gpaSummary }) {
     return (
       <div className="analytics-card">
         <div className="analytics-card-header">
-          <div>
+          <div className="analytics-card-header-left">
             <h3 className="analytics-card-title">
-              <span>🎓</span>
+              <span className="analytics-card-icon-pill icon-amber">
+                <GraduationCap size={17} />
+              </span>
               <span>Academic GPA Forecast</span>
             </h3>
             <p className="analytics-card-desc">
@@ -41,9 +44,11 @@ export default function GpaTrajectoryCard({ gpaSummary }) {
   return (
     <div className="analytics-card">
       <div className="analytics-card-header">
-        <div>
+        <div className="analytics-card-header-left">
           <h3 className="analytics-card-title">
-            <span>🎓</span>
+            <span className="analytics-card-icon-pill icon-amber">
+              <GraduationCap size={17} />
+            </span>
             <span>Academic GPA Forecast</span>
           </h3>
           <p className="analytics-card-desc">

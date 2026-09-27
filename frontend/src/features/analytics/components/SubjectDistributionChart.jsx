@@ -1,11 +1,12 @@
+import { BookOpen } from "lucide-react";
 import Badge from "../../../components/Badge";
 
 const COLOR_PALETTE = [
-  "#4f46e5", // indigo
   "#f26522", // UIU orange
   "#10b981", // emerald
   "#f59e0b", // amber
   "#8b5cf6", // purple
+  "#4f46e5", // indigo
   "#ea580c", // terracotta
   "#ec4899", // pink
   "#06b6d4", // cyan
@@ -20,9 +21,11 @@ export default function SubjectDistributionChart({ distribution = [] }) {
     return (
       <div className="analytics-card">
         <div className="analytics-card-header">
-          <div>
+          <div className="analytics-card-header-left">
             <h3 className="analytics-card-title">
-              <span>📚</span>
+              <span className="analytics-card-icon-pill icon-emerald">
+                <BookOpen size={17} />
+              </span>
               <span>Subject Time Distribution</span>
             </h3>
             <p className="analytics-card-desc">
@@ -41,9 +44,11 @@ export default function SubjectDistributionChart({ distribution = [] }) {
   return (
     <div className="analytics-card">
       <div className="analytics-card-header">
-        <div>
+        <div className="analytics-card-header-left">
           <h3 className="analytics-card-title">
-            <span>📚</span>
+            <span className="analytics-card-icon-pill icon-emerald">
+              <BookOpen size={17} />
+            </span>
             <span>Subject Time Distribution</span>
           </h3>
           <p className="analytics-card-desc">

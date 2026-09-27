@@ -89,21 +89,19 @@ export default function ScheduleAdherenceCard({ adherence }) {
     <div className="analytics-card adherence-card-enhanced">
       {/* Top Header Row */}
       <div className="analytics-card-header">
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span className="adherence-icon-pill">
-              <Calendar size={18} className="text-primary" />
+        <div className="analytics-card-header-left">
+          <h3 className="analytics-card-title">
+            <span className="analytics-card-icon-pill icon-rose">
+              <Calendar size={17} />
             </span>
-            <h3 className="analytics-card-title" style={{ margin: 0 }}>
-              Routine Adherence
-            </h3>
-          </div>
-          <p className="analytics-card-desc" style={{ marginTop: "4px" }}>
+            <span>Routine Adherence</span>
+          </h3>
+          <p className="analytics-card-desc">
             Coverage and execution fidelity of your weekly study routines.
           </p>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <div className="analytics-card-header-right" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <Badge variant={variantColor} className="adherence-rate-badge">
             <span className="adherence-pulse-dot" />
             {adherence_rate}% Coverage

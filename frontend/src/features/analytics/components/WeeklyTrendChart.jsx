@@ -1,3 +1,4 @@
+import { BarChart3 } from "lucide-react";
 import Badge from "../../../components/Badge";
 
 export default function WeeklyTrendChart({ trend = [] }) {
@@ -10,16 +11,18 @@ export default function WeeklyTrendChart({ trend = [] }) {
     return (
       <div className="analytics-card">
         <div className="analytics-card-header">
-          <div>
+          <div className="analytics-card-header-left">
             <h3 className="analytics-card-title">
-              <span>📊</span>
+              <span className="analytics-card-icon-pill icon-primary">
+                <BarChart3 size={17} />
+              </span>
               <span>Weekly Focus Trend</span>
             </h3>
             <p className="analytics-card-desc">
               Daily focus hours recorded across the past 7 days.
             </p>
           </div>
-          <Badge variant="default">0 hrs</Badge>
+          <Badge variant="default">0.0 hrs</Badge>
         </div>
         <div className="empty-chart-placeholder">
           <p className="text-muted text-sm">No study sessions logged in the last 7 days.</p>
@@ -31,9 +34,11 @@ export default function WeeklyTrendChart({ trend = [] }) {
   return (
     <div className="analytics-card">
       <div className="analytics-card-header">
-        <div>
+        <div className="analytics-card-header-left">
           <h3 className="analytics-card-title">
-            <span>📊</span>
+            <span className="analytics-card-icon-pill icon-primary">
+              <BarChart3 size={17} />
+            </span>
             <span>Weekly Focus Trend</span>
           </h3>
           <p className="analytics-card-desc">
