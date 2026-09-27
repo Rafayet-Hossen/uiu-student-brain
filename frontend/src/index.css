@@ -56,7 +56,7 @@
   --color-surface-subtle: #f1f5f9; /* Slate 100 */
   --color-surface-elevated: #ffffff;
   --color-surface-card: #ffffff;
-  --color-surface-glass: rgba(255, 255, 255, 0.92);
+  --color-surface-glass: #ffffff;
 
   /* 3. Typography Colors (High Contrast WCAG AAA Slate Hierarchy) */
   --color-text: #0f172a;
@@ -155,7 +155,7 @@
   --color-surface-subtle: #1a2232;
   --color-surface-elevated: #1f283a;
   --color-surface-card: #151d2a;
-  --color-surface-glass: rgba(19, 26, 38, 0.92);
+  --color-surface-glass: #131a26;
 
   --color-text: #f8fafc;
   --color-text-secondary: #cbd5e1;

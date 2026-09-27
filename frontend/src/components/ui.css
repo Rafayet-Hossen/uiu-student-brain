@@ -662,17 +662,16 @@
   right: 0;
   width: 100%;
   z-index: 1000;
-  background: var(--color-surface-glass);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
   transition:
     padding 0.2s ease,
-    box-shadow 0.2s ease;
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
 }
 
 .navbar-scrolled {
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.08);
   border-bottom-color: var(--color-border);
 }
 

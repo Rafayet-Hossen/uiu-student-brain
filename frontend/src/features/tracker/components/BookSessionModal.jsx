@@ -437,24 +437,14 @@ export default function BookSessionModal({
         exit={{ opacity: 0, scale: 0.96, y: 16 }}
         transition={{ duration: 0.2 }}
         onClick={(e) => e.stopPropagation()}
-        style={{ maxWidth: "620px", maxHeight: "90vh", overflowY: "auto" }}
       >
-        {/* Modal Header */}
+        {/* Fixed / Sticky Modal Header (Nav bar inside modal) */}
         <div className="tracker-modal-header">
           <div className="tracker-modal-title-box">
-            <span
-              className="tracker-modal-icon"
-              style={{
-                background:
-                  "var(--color-primary-subtle, rgba(242, 101, 34, 0.15))",
-                color: "var(--color-primary, #f26522)",
-                padding: "8px",
-                borderRadius: "12px",
-              }}
-            >
-              📅
+            <span className="tracker-modal-icon">
+              <Calendar size={18} />
             </span>
-            <div>
+            <div className="tracker-modal-text-wrap">
               <h3 className="tracker-modal-heading">
                 Book Scheduled Study Session
               </h3>
@@ -469,6 +459,7 @@ export default function BookSessionModal({
             className="tracker-modal-close-btn"
             onClick={onClose}
             title="Close modal"
+            aria-label="Close modal"
           >
             <X size={18} />
           </button>

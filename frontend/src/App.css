@@ -17820,134 +17820,177 @@ html[data-theme="dark"] .native-reader-main-viewport {
 }
 
 /* ============================================================
-   STUDY TRACKER LOG SESSION MODAL OVERLAY
+   STUDY TRACKER LOG & BOOK SESSION MODAL (DYNAMIC RESPONSIVE)
    ============================================================ */
 .tracker-session-modal-overlay {
   position: fixed;
   inset: 0;
   z-index: 1050;
-  background: rgba(0, 0, 0, 0.68);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 18px;
-  overflow-y: auto;
+  padding: clamp(10px, 2.5vw, 24px);
+  overflow: hidden;
 }
 
 .tracker-session-modal-dialog {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-2xl);
+  border-radius: clamp(16px, 3vw, 22px);
   width: 100%;
-  max-width: 580px;
+  max-width: min(94vw, 560px);
+  max-height: min(90vh, 840px);
+  max-height: min(90dvh, 840px);
   box-shadow: var(--shadow-xl);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   margin: auto;
+  position: relative;
 }
 
+/* Fixed / Sticky Modal Header (Acts as Top Navigation in Modal) */
 .tracker-modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 24px;
+  gap: 12px;
+  padding: 12px clamp(14px, 2.5vw, 20px);
   border-bottom: 1px solid var(--color-border);
-  background: linear-gradient(
-    180deg,
-    var(--color-surface) 0%,
-    var(--color-surface-subtle) 100%
-  );
+  background: var(--color-surface);
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 30;
 }
 
 .tracker-modal-title-box {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
 }
 
 .tracker-modal-icon {
-  font-size: 1.6rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: var(--color-primary-subtle);
+  color: var(--color-primary);
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+}
+
+.tracker-modal-text-wrap {
+  min-width: 0;
+  flex: 1;
 }
 
 .tracker-modal-heading {
-  font-size: 1.15rem;
+  font-size: clamp(0.92rem, 2.2vw, 1.05rem);
   font-weight: 700;
   color: var(--color-text);
   margin: 0;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tracker-modal-subheading {
-  font-size: 0.8125rem;
+  font-size: clamp(0.6875rem, 1.8vw, 0.75rem);
   color: var(--color-text-muted);
   margin: 2px 0 0 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .tracker-modal-close-btn {
-  background: none;
-  border: none;
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-border-subtle);
   color: var(--color-text-muted);
   cursor: pointer;
-  padding: 6px;
-  border-radius: var(--radius-md);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   transition: all 0.15s ease;
 }
 
 .tracker-modal-close-btn:hover {
   background: var(--color-surface-hover);
   color: var(--color-text);
+  transform: scale(1.05);
 }
 
 .tracker-modal-body {
-  padding: 22px 24px;
+  padding: clamp(12px, 2.5vw, 20px);
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+  overscroll-behavior: contain;
 }
 
 /* Enhanced Book Session Modal Components */
 .tracker-modal-card-section {
-  background: var(--color-surface-subtle, rgba(255, 255, 255, 0.03));
+  background: var(--color-surface-subtle);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl, 14px);
-  padding: 16px 18px;
-  margin-bottom: 16px;
-  transition: all 0.2s ease;
+  border-radius: clamp(10px, 2vw, 14px);
+  padding: clamp(12px, 2vw, 16px);
+  margin-bottom: 0;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .tracker-modal-card-section:focus-within {
-  border-color: rgba(99, 102, 241, 0.4);
-  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.15);
+  border-color: var(--color-primary-border);
+  box-shadow: 0 0 0 1px var(--color-primary-border);
 }
 
 .tracker-modal-step-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  gap: 8px;
+  margin-bottom: 10px;
 }
 
 .tracker-modal-step-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  background: var(--color-primary-light, rgba(99, 102, 241, 0.15));
-  color: var(--color-primary, #6366f1);
-  font-size: 0.72rem;
+  background: var(--color-primary-subtle);
+  color: var(--color-primary);
+  font-size: 0.7rem;
   font-weight: 700;
-  margin-right: 8px;
+  margin-right: 6px;
+  flex-shrink: 0;
 }
 
 .tracker-modal-section-title {
-  font-size: 0.85rem;
+  font-size: clamp(0.8rem, 2vw, 0.875rem);
   font-weight: 700;
   color: var(--color-text);
   display: flex;
@@ -17956,17 +17999,17 @@ html[data-theme="dark"] .native-reader-main-viewport {
 
 .tracker-inline-upload-box {
   background: var(--color-surface);
-  border: 1px dashed rgba(99, 102, 241, 0.45);
+  border: 1px dashed var(--color-primary-border);
   border-radius: var(--radius-lg, 12px);
-  padding: 16px;
-  margin-top: 12px;
+  padding: clamp(10px, 2vw, 14px);
+  margin-top: 10px;
   animation: fadeInDown 0.2s ease-out;
 }
 
 @keyframes fadeInDown {
   from {
     opacity: 0;
-    transform: translateY(-8px);
+    transform: translateY(-6px);
   }
   to {
     opacity: 1;
@@ -17976,50 +18019,50 @@ html[data-theme="dark"] .native-reader-main-viewport {
 
 .tracker-upload-tab-bar {
   display: flex;
-  gap: 8px;
-  margin-bottom: 14px;
-  background: var(--color-surface-subtle, rgba(0, 0, 0, 0.15));
-  padding: 4px;
-  border-radius: 10px;
+  gap: 6px;
+  margin-bottom: 12px;
+  background: var(--color-surface-subtle);
+  padding: 3px;
+  border-radius: 8px;
 }
 
 .tracker-upload-tab-btn {
   flex: 1;
-  padding: 6px 12px;
-  font-size: 0.78rem;
+  padding: 6px 10px;
+  font-size: clamp(0.72rem, 1.8vw, 0.78rem);
   font-weight: 600;
   border: none;
   background: transparent;
   color: var(--color-text-muted);
-  border-radius: 7px;
+  border-radius: 6px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 5px;
   transition: all 0.15s ease;
 }
 
 .tracker-upload-tab-btn.active {
   background: var(--color-surface);
   color: var(--color-text);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .tracker-upload-dropzone {
   border: 2px dashed var(--color-border);
-  border-radius: 10px;
-  padding: 20px 16px;
+  border-radius: 8px;
+  padding: clamp(14px, 2.5vw, 18px) 12px;
   text-align: center;
-  background: rgba(99, 102, 241, 0.02);
+  background: var(--color-primary-subtle);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .tracker-upload-dropzone:hover,
 .tracker-upload-dropzone.drag-active {
-  border-color: var(--color-primary, #6366f1);
-  background: rgba(99, 102, 241, 0.06);
+  border-color: var(--color-primary);
+  background: rgba(242, 101, 34, 0.12);
 }
 
 .tracker-upload-file-preview {
@@ -18029,20 +18072,22 @@ html[data-theme="dark"] .native-reader-main-viewport {
   background: var(--color-surface-subtle);
   border: 1px solid var(--color-border);
   border-radius: 8px;
-  padding: 8px 12px;
-  margin-top: 8px;
+  padding: 6px 10px;
+  margin-top: 6px;
 }
 
 .tracker-preset-pills {
   display: flex;
-  gap: 6px;
+  gap: clamp(4px, 1vw, 6px);
   flex-wrap: wrap;
+  align-items: center;
+  width: 100%;
 }
 
 .tracker-preset-pill {
-  padding: 5px 11px;
-  border-radius: 20px;
-  font-size: 0.75rem;
+  padding: clamp(4px, 1.2vw, 6px) clamp(8px, 1.8vw, 12px);
+  border-radius: 9999px;
+  font-size: clamp(0.7rem, 1.6vw, 0.76rem);
   font-weight: 600;
   cursor: pointer;
   border: 1px solid var(--color-border);
@@ -18052,19 +18097,21 @@ html[data-theme="dark"] .native-reader-main-viewport {
   user-select: none;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  text-align: center;
 }
 
 .tracker-preset-pill:hover {
-  border-color: var(--color-primary, #6366f1);
+  border-color: var(--color-primary);
   color: var(--color-text);
 }
 
 .tracker-preset-pill.active {
-  border-color: var(--color-primary, #6366f1);
-  background: var(--color-primary-light, rgba(99, 102, 241, 0.14));
-  color: var(--color-primary, #6366f1);
-  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.25);
+  border-color: var(--color-primary);
+  background: var(--color-primary-subtle);
+  color: var(--color-primary);
+  font-weight: 700;
+  box-shadow: 0 0 0 1px var(--color-primary-border);
 }
 
 .tracker-material-attached-badge {
@@ -18078,30 +18125,31 @@ html[data-theme="dark"] .native-reader-main-viewport {
   font-size: 0.78rem;
   color: #10b981;
   font-weight: 500;
-  margin-top: 8px;
 }
 
 /* AI Guarantee & Diagnostic Engine Card in BookSessionModal */
 .tracker-ai-guarantee-card {
   background: linear-gradient(
     135deg,
-    rgba(99, 102, 241, 0.09) 0%,
-    rgba(168, 85, 247, 0.09) 50%,
-    rgba(59, 130, 246, 0.06) 100%
+    rgba(242, 101, 34, 0.08) 0%,
+    rgba(245, 158, 11, 0.08) 50%,
+    rgba(16, 185, 129, 0.05) 100%
   );
-  border: 1px solid rgba(99, 102, 241, 0.28);
-  border-radius: var(--radius-xl, 14px);
-  padding: 14px 16px;
+  border: 1px solid rgba(242, 101, 34, 0.22);
+  border-radius: clamp(10px, 2vw, 14px);
+  padding: clamp(10px, 2vw, 14px);
   position: relative;
   overflow: hidden;
-  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.08);
+  box-shadow: 0 2px 10px rgba(242, 101, 34, 0.05);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .tracker-ai-badge-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   gap: 8px;
   flex-wrap: wrap;
 }
@@ -18109,15 +18157,15 @@ html[data-theme="dark"] .native-reader-main-viewport {
 .tracker-ai-sparkle-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: var(--color-primary-light, rgba(99, 102, 241, 0.15));
-  color: var(--color-primary, #6366f1);
-  padding: 3px 10px;
-  border-radius: 20px;
-  font-size: 0.72rem;
+  gap: 5px;
+  background: var(--color-primary-subtle);
+  color: var(--color-primary);
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
 }
 
 .tracker-ai-model-tag {
@@ -18127,38 +18175,40 @@ html[data-theme="dark"] .native-reader-main-viewport {
 }
 
 .tracker-ai-desc {
-  font-size: 0.78rem;
+  font-size: clamp(0.72rem, 1.8vw, 0.76rem);
   line-height: 1.45;
   color: var(--color-text);
-  margin: 0 0 10px 0;
+  margin: 0 0 8px 0;
 }
 
 .tracker-consistency-rule-chip {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
+  gap: 6px;
   background: rgba(245, 158, 11, 0.1);
   border: 1px solid rgba(245, 158, 11, 0.25);
-  border-radius: 8px;
-  padding: 7px 10px;
-  font-size: 0.72rem;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 0.7rem;
   color: var(--color-text);
-  line-height: 1.4;
+  line-height: 1.35;
 }
 
 .tracker-datetime-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  margin-bottom: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: clamp(8px, 2vw, 12px);
+  margin-bottom: 12px;
+  width: 100%;
 }
 
 .tracker-modal-footer-actions {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 10px;
-  margin-top: 8px;
+  gap: 8px;
+  margin-top: 4px;
+  width: 100%;
 }
 
 /* ============================================================
@@ -21055,7 +21105,7 @@ html[data-theme="dark"] .btn-celebration-extend:hover {
 @media (max-width: 640px) {
   /* Book Session Modal Mobile Layout */
   .tracker-session-modal-overlay {
-    padding: 10px;
+    padding: 0;
     align-items: flex-end;
   }
 
@@ -21063,30 +21113,52 @@ html[data-theme="dark"] .btn-celebration-extend:hover {
     width: 100% !important;
     max-width: 100% !important;
     border-radius: 20px 20px 0 0 !important;
-    max-height: 92vh !important;
+    max-height: 93dvh !important;
+    max-height: 93vh !important;
     margin: 0 !important;
+    border-bottom: none !important;
   }
 
   .tracker-modal-header {
-    padding: 14px 16px !important;
+    padding: 10px 14px !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 30 !important;
+    background: var(--color-surface) !important;
   }
 
   .tracker-modal-heading {
-    font-size: 1.05rem !important;
+    font-size: 0.92rem !important;
   }
 
   .tracker-modal-subheading {
-    font-size: 0.75rem !important;
+    display: none !important; /* Keep mobile modal navbar ultra compact */
+  }
+
+  .tracker-modal-icon {
+    width: 26px !important;
+    height: 26px !important;
+    border-radius: 7px !important;
+  }
+
+  .tracker-modal-icon svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+
+  .tracker-modal-close-btn {
+    width: 26px !important;
+    height: 26px !important;
   }
 
   .tracker-modal-body {
-    padding: 16px 14px !important;
+    padding: 12px 12px 24px 12px !important;
+    gap: 10px !important;
   }
 
   .tracker-modal-card-section {
-    padding: 12px 14px !important;
+    padding: 10px 12px !important;
     border-radius: 12px !important;
-    margin-bottom: 12px !important;
   }
 
   .tracker-datetime-grid {
@@ -21098,6 +21170,7 @@ html[data-theme="dark"] .btn-celebration-extend:hover {
     flex-direction: column-reverse !important;
     gap: 8px !important;
     width: 100% !important;
+    margin-top: 6px !important;
   }
 
   .tracker-modal-footer-actions button,
@@ -21105,19 +21178,20 @@ html[data-theme="dark"] .btn-celebration-extend:hover {
   .tracker-btn-confirm {
     width: 100% !important;
     justify-content: center !important;
+    padding: 10px !important;
   }
 
   .tracker-preset-pills {
-    gap: 5px !important;
+    gap: 4px !important;
   }
 
   .tracker-preset-pill {
-    padding: 4px 9px !important;
-    font-size: 0.72rem !important;
+    padding: 4px 8px !important;
+    font-size: 0.7rem !important;
   }
 
   .tracker-inline-upload-box {
-    padding: 12px !important;
+    padding: 10px !important;
   }
 
   .tracker-upload-tab-bar {
@@ -21127,7 +21201,7 @@ html[data-theme="dark"] .btn-celebration-extend:hover {
 
   .tracker-upload-tab-btn {
     width: 100% !important;
-    padding: 8px !important;
+    padding: 7px !important;
   }
 
   /* Scheduled Card Responsive Layout */
