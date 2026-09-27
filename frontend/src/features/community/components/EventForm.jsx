@@ -107,13 +107,7 @@ export default function EventForm({ onSubmit, onCreated, onCancel }) {
         >
           Event Format / Venue Type *
         </label>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "12px",
-          }}
-        >
+        <div className="post-form-row-format">
           <button
             type="button"
             className={`event-type-toggle-btn ${eventType === "offline" ? "active" : ""}`}
