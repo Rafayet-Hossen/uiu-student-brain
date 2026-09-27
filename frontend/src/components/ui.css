@@ -709,7 +709,8 @@
 }
 
 @keyframes capFloat {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px) rotate(0deg);
   }
   50% {
@@ -718,7 +719,8 @@
 }
 
 @keyframes sparklePulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.55;
     transform: scale(0.85) rotate(0deg);
   }
@@ -752,7 +754,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 14px rgba(242, 101, 34, 0.38), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  box-shadow:
+    0 4px 14px rgba(242, 101, 34, 0.38),
+    inset 0 1px 1px rgba(255, 255, 255, 0.4);
   position: relative;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -762,7 +766,14 @@
   position: absolute;
   inset: -2px;
   border-radius: 13px;
-  background: linear-gradient(45deg, #f26522, #f59e0b, #ec4899, #8b5cf6, #f26522);
+  background: linear-gradient(
+    45deg,
+    #f26522,
+    #f59e0b,
+    #ec4899,
+    #8b5cf6,
+    #f26522
+  );
   background-size: 300% 300%;
   animation: brandBorderGlow 4s linear infinite;
   z-index: -1;
@@ -802,7 +813,14 @@
 }
 
 .brand-name-brain {
-  background: linear-gradient(90deg, #f26522 0%, #f59e0b 25%, #ec4899 50%, #8b5cf6 75%, #f26522 100%);
+  background: linear-gradient(
+    90deg,
+    #f26522 0%,
+    #f59e0b 25%,
+    #ec4899 50%,
+    #8b5cf6 75%,
+    #f26522 100%
+  );
   background-size: 300% 100%;
   animation: brainRainbowWave 5s linear infinite;
   -webkit-background-clip: text;

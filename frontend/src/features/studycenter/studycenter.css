@@ -1813,3 +1813,615 @@
   }
 }
 
+/* ==========================================================================
+   STUDY TRACKER & FOCUS HABITS FULLY DYNAMIC RESPONSIVE SYSTEM
+   (Mobile Phones, Small Tablets, iPad & Large Desktops)
+   ========================================================================== */
+
+.tracker-page-container {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(14px, 2.5vw, 24px);
+}
+
+.tracker-page-container .page-header {
+  margin-bottom: 0 !important;
+}
+
+.tracker-page-container .page-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(12px, 2.5vw, 20px);
+  flex-wrap: wrap;
+}
+
+.tracker-page-container .page-title {
+  font-size: clamp(1.2rem, 3vw, 1.6rem);
+  font-weight: 800;
+  color: var(--color-text);
+  margin: 0 0 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: -0.02em;
+}
+
+.tracker-page-container .page-description {
+  font-size: clamp(0.78rem, 1.8vw, 0.875rem);
+  color: var(--color-text-muted);
+  margin: 0;
+  max-width: 680px;
+  line-height: 1.45;
+}
+
+/* Streak Hero Card & Inner Grid */
+.streak-hero-card {
+  background: linear-gradient(
+    135deg,
+    var(--color-surface) 0%,
+    var(--color-surface-subtle) 100%
+  );
+  border: 1px solid var(--color-border);
+  border-radius: clamp(14px, 2.5vw, 20px);
+  padding: clamp(14px, 2.5vw, 24px);
+  box-shadow: var(--shadow-sm);
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(14px, 2.5vw, 20px);
+  margin-bottom: 0 !important;
+}
+
+.streak-main-row {
+  display: grid;
+  grid-template-columns: minmax(200px, auto) 1fr;
+  align-items: center;
+  gap: clamp(14px, 2.5vw, 24px);
+  width: 100%;
+}
+
+.streak-flame-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.streak-flame-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.streak-flame-icon {
+  font-size: clamp(2rem, 4.5vw, 2.75rem);
+  line-height: 1;
+}
+
+.streak-flame-number {
+  font-size: clamp(1.65rem, 4vw, 2.25rem);
+  font-weight: 850;
+  letter-spacing: -0.03em;
+  color: var(--color-text);
+  line-height: 1;
+}
+
+.streak-flame-label {
+  font-size: clamp(0.72rem, 1.6vw, 0.85rem);
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-primary);
+}
+
+.streak-status-text {
+  font-size: clamp(0.75rem, 1.6vw, 0.84rem);
+  color: var(--color-text-muted);
+  margin: 0;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.daily-goal-section {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: clamp(10px, 2vw, 14px);
+  padding: clamp(10px, 2vw, 16px);
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.daily-goal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.daily-goal-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.daily-goal-label {
+  font-size: clamp(0.8rem, 1.8vw, 0.9rem);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.goal-edit-toggle {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: clamp(0.7rem, 1.6vw, 0.78rem);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.goal-edit-toggle:hover {
+  color: var(--color-primary);
+  background: var(--color-primary-subtle);
+}
+
+.goal-progress-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.goal-progress-bar-track {
+  height: 8px;
+  background: var(--color-surface-subtle);
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid var(--color-border-subtle);
+}
+
+.goal-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f26522 0%, #10b981 100%);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.goal-progress-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: clamp(0.68rem, 1.5vw, 0.75rem);
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+/* Gamified 7-Day Consistency Strip */
+.weekly-streak-strip {
+  border-top: 1px solid var(--color-border);
+  padding-top: clamp(12px, 2vw, 18px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 2vw, 14px);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.weekly-strip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.weekly-strip-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.weekly-strip-title {
+  font-size: clamp(0.85rem, 2vw, 0.95rem);
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+}
+
+.weekly-strip-subtitle {
+  font-size: clamp(0.68rem, 1.5vw, 0.75rem);
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.weekly-strip-metrics {
+  display: flex;
+  align-items: center;
+  gap: clamp(4px, 1vw, 8px);
+  flex-wrap: wrap;
+}
+
+.weekly-metric-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: clamp(0.68rem, 1.6vw, 0.75rem);
+  font-weight: 700;
+  padding: 3px clamp(6px, 1.2vw, 9px);
+  border-radius: 9999px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+/* 7 Days Grid: 100% full responsive 7-col layout on all screen sizes */
+.weekly-days-grid {
+  display: grid !important;
+  grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+  gap: clamp(3px, 1vw, 8px) !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+.weekly-day-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: clamp(6px, 1.2vw, 10px) clamp(2px, 0.8vw, 6px);
+  border-radius: clamp(8px, 1.5vw, 12px);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  min-height: clamp(118px, 18vw, 150px);
+  min-width: 0 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  text-align: center;
+}
+
+.weekly-day-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+  border-color: var(--color-primary-border);
+}
+
+.weekly-day-card.day-today {
+  border-color: var(--color-primary);
+  box-shadow:
+    0 0 0 1px var(--color-primary),
+    0 2px 8px rgba(242, 101, 34, 0.15);
+}
+
+.day-card-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-height: clamp(24px, 4vw, 30px);
+  width: 100%;
+}
+
+.day-card-name {
+  font-size: clamp(0.6rem, 1.4vw, 0.75rem);
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--color-text);
+  line-height: 1.1;
+}
+
+.day-card-date {
+  font-size: clamp(0.52rem, 1.2vw, 0.65rem);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.day-card-today-badge {
+  font-size: clamp(0.5rem, 1.1vw, 0.6rem);
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #ffffff;
+  background: var(--color-primary);
+  padding: 1px 4px;
+  border-radius: 3px;
+  line-height: 1.1;
+}
+
+.cylinder-gauge-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  margin: 3px 0;
+}
+
+.cylinder-gauge-track {
+  width: clamp(12px, 2vw, 18px);
+  height: clamp(38px, 7vw, 54px);
+  background: var(--color-surface-subtle);
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  position: relative;
+}
+
+.cylinder-gauge-fill {
+  width: 100%;
+  border-radius: 999px;
+  transition: height 0.4s ease;
+}
+
+.cylinder-gauge-fill.fill-goal-met {
+  background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+}
+
+.cylinder-gauge-fill.fill-studied {
+  background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+}
+
+.cylinder-gauge-fill.fill-empty {
+  background: transparent;
+}
+
+.cylinder-badge-icon {
+  font-size: clamp(0.6rem, 1.4vw, 0.75rem);
+  line-height: 1;
+}
+
+.day-card-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  width: 100%;
+}
+
+.day-card-mins {
+  font-size: clamp(0.6rem, 1.4vw, 0.75rem);
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.1;
+}
+
+.day-card-pct {
+  font-size: clamp(0.52rem, 1.2vw, 0.65rem);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  line-height: 1.1;
+}
+
+/* Sub-Tabs Navigation Bar */
+.tracker-sub-tabs-bar {
+  display: flex;
+  align-items: center;
+  gap: clamp(4px, 1vw, 8px);
+  overflow-x: auto;
+  padding: 4px;
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: clamp(10px, 2vw, 14px);
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.tracker-sub-tabs-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.tracker-sub-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: clamp(6px, 1.5vw, 8px) clamp(10px, 2vw, 14px);
+  border-radius: clamp(8px, 1.5vw, 10px);
+  font-size: clamp(0.74rem, 1.8vw, 0.82rem);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.tracker-sub-tab-btn:hover {
+  color: var(--color-text);
+  background: var(--color-primary-subtle);
+}
+
+.tracker-sub-tab-btn.tab-active {
+  background: var(--color-surface);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  box-shadow: 0 2px 8px rgba(242, 101, 34, 0.15);
+  font-weight: 750;
+}
+
+/* Strict Time-Gate Callout Banner */
+.tracker-timegate-callout {
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(8px, 2vw, 12px);
+  padding: clamp(10px, 2vw, 14px);
+  border-radius: clamp(10px, 2vw, 12px);
+  background: var(--color-primary-subtle);
+  border: 1px solid var(--color-primary-border);
+  margin-bottom: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.tracker-timegate-callout .callout-icon-box {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: rgba(242, 101, 34, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--color-primary);
+}
+
+.tracker-timegate-callout .callout-text-content {
+  font-size: clamp(0.74rem, 1.8vw, 0.82rem);
+  line-height: 1.45;
+  color: var(--color-text);
+  min-width: 0;
+}
+
+.tracker-timegate-callout .callout-title {
+  color: var(--color-primary-text);
+  font-weight: 750;
+}
+
+/* Scheduled Sessions Grid & Dynamic Cards */
+.scheduled-sessions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr));
+  gap: clamp(12px, 2.5vw, 18px);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.scheduled-session-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: clamp(12px, 2.5vw, 16px);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.scheduled-session-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-primary-border);
+}
+
+.scheduled-card-body {
+  padding: clamp(12px, 2.5vw, 16px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.scheduled-card-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.scheduled-session-title {
+  font-size: clamp(0.88rem, 2vw, 1rem);
+  font-weight: 750;
+  color: var(--color-text);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.scheduled-time-window-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-border);
+  font-size: clamp(0.72rem, 1.8vw, 0.8rem);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.scheduled-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border-subtle);
+  flex-wrap: wrap;
+}
+
+.scheduled-card-actions button {
+  flex: 1;
+  min-width: 110px;
+  justify-content: center;
+}
+
+/* Mobile & Tablet Overrides for Study Tracker */
+@media (max-width: 768px) {
+  .tracker-page-container .page-header-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .tracker-page-container .page-header-row button,
+  .tracker-page-container .page-header-row .btn {
+    width: 100% !important;
+    justify-content: center;
+  }
+
+  .streak-main-row {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .scheduled-sessions-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .weekly-strip-metrics {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .weekly-metric-chip {
+    flex: 1 1 auto;
+    justify-content: center;
+    font-size: 0.68rem !important;
+    padding: 3px 6px !important;
+  }
+
+  .scheduled-card-actions {
+    flex-direction: column;
+  }
+
+  .scheduled-card-actions button {
+    width: 100% !important;
+  }
+}
+
+
