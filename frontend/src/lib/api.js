@@ -1,52 +1,44 @@
 import axios from "axios";
 
 const getApiBaseUrl = () => {
-  const envUrl = (import.meta.env.VITE_API_URL || "").trim();
-  const isBrowser = typeof window !== "undefined";
-  const hostname = isBrowser ? window.location.hostname : "";
-  const isLocalHost =
-    hostname === "localhost" ||
-    hostname === "127.0.0.1" ||
-    hostname.startsWith("192.168.") ||
-    hostname.startsWith("10.") ||
-    hostname.startsWith("172.");
-
-  // If running on Vercel or any cloud public domain:
-  if (isBrowser && !isLocalHost) {
-    // If envUrl is a valid remote HTTPS URL, use it; otherwise ALWAYS point to Render backend
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl && envUrl.trim() !== "") {
+    if (envUrl.startsWith("/")) return envUrl;
     if (
-      envUrl &&
-      !envUrl.includes("localhost") &&
-      !envUrl.includes("127.0.0.1") &&
-      envUrl.startsWith("http")
+      typeof window !== "undefined" &&
+      (window.location.hostname.startsWith("192.168.") ||
+        window.location.hostname.startsWith("10.") ||
+        window.location.hostname.startsWith("172."))
     ) {
-      return envUrl;
+      try {
+        const parsed = new URL(envUrl);
+        if (
+          parsed.hostname === "localhost" ||
+          parsed.hostname === "127.0.0.1"
+        ) {
+          return `${window.location.protocol}//${window.location.hostname}:${parsed.port || "8000"}/api`;
+        }
+      } catch {
+        // ignore
+      }
     }
-    return "https://uiu-student-brain.onrender.com/api";
-  }
-
-  // Local development on LAN / WiFi IP
-  if (
-    isBrowser &&
-    (hostname.startsWith("192.168.") ||
-      hostname.startsWith("10.") ||
-      hostname.startsWith("172."))
-  ) {
-    return `${window.location.protocol}//${hostname}:8000/api`;
-  }
-
-  // Local dev with explicit envUrl
-  if (envUrl && envUrl !== "") {
     return envUrl;
   }
-
-  if (isBrowser) {
+  if (typeof window !== "undefined") {
+    if (
+      window.location.hostname !== "localhost" &&
+      window.location.hostname !== "127.0.0.1" &&
+      !window.location.hostname.startsWith("192.168.") &&
+      !window.location.hostname.startsWith("10.") &&
+      !window.location.hostname.startsWith("172.")
+    ) {
+      return "https://uiu-student-brain.onrender.com/api";
+    }
     if (window.location.port !== "8000" && window.location.port !== "") {
       return `${window.location.protocol}//${window.location.hostname}:8000/api`;
     }
     return "/api";
   }
-
   return "https://uiu-student-brain.onrender.com/api";
 };
 
@@ -54,7 +46,6 @@ const API_BASE_URL = getApiBaseUrl();
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 60000, // 60s timeout to allow Render free tier backend to spin up from sleep
 });
 
 api.interceptors.request.use((config) => {

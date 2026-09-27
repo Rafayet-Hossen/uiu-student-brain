@@ -573,7 +573,7 @@ export default function CommunityPage() {
               {/* 1. Quick Post Creator Bar */}
               <Card className="quick-post-creator-card">
                 <div className="quick-creator-top">
-                  <ScholarAvatar user={user} size={42} />
+                  <ScholarAvatar user={user} size={38} />
                   <button
                     type="button"
                     className="quick-creator-input-trigger"
