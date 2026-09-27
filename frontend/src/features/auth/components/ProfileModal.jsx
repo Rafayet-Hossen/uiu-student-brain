@@ -650,9 +650,7 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
                       🔥 {summaryData?.performance?.current_streak_days || 0}{" "}
                       Days
                     </strong>
-                    <span className="metric-item-sub">
-                      Consecutive habits
-                    </span>
+                    <span className="metric-item-sub">Consecutive habits</span>
                   </div>
                 </div>
 
@@ -826,7 +824,9 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
             {/* Community Leaderboard */}
             <div className="profile-setting-row-card">
               <div className="setting-text-col">
-                <strong className="setting-title">🏆 Community Leaderboard</strong>
+                <strong className="setting-title">
+                  🏆 Community Leaderboard
+                </strong>
                 <span className="setting-desc">
                   Your rank and XP points are visible to fellow scholars
                 </span>

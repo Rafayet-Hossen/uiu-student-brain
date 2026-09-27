@@ -275,6 +275,73 @@ class MaterialStatsView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+class MaterialsBundleView(APIView):
+    """
+    High-performance unified bundle endpoint for Study Center Materials.
+    Returns semesters, active courses, active materials, and stats in a single fast query.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        requested_sem_id = request.query_params.get("semester_id")
+        requested_course_id = request.query_params.get("course_id")
+
+        # 1. Fetch user semesters with prefetched courses & materials
+        semesters_qs = (
+            Semester.objects.filter(user=request.user)
+            .prefetch_related("courses__materials")
+            .order_by("-is_current", "-created_at")
+        )
+        semesters_list = list(semesters_qs)
+        sem_data = SemesterSerializer(semesters_list, many=True, context={"request": request}).data
+
+        # 2. Determine active semester
+        selected_sem = None
+        if requested_sem_id:
+            try:
+                selected_sem = next((s for s in semesters_list if str(s.id) == str(requested_sem_id)), None)
+            except Exception:
+                selected_sem = None
+
+        if not selected_sem and semesters_list:
+            selected_sem = next((s for s in semesters_list if s.is_current), semesters_list[0])
+
+        # 3. Get courses for active semester
+        courses_list = list(selected_sem.courses.all()) if selected_sem else []
+        courses_data = CourseSerializer(courses_list, many=True, context={"request": request}).data
+
+        # 4. Determine active course
+        selected_course = None
+        if requested_course_id:
+            try:
+                selected_course = next((c for c in courses_list if str(c.id) == str(requested_course_id)), None)
+            except Exception:
+                selected_course = None
+
+        if not selected_course and courses_list:
+            selected_course = courses_list[0]
+
+        # 5. Get materials for active course
+        materials_list = list(selected_course.materials.all().order_by("-created_at")) if selected_course else []
+        materials_data = StudyMaterialSerializer(materials_list, many=True, context={"request": request}).data
+
+        # 6. Material stats
+        stats_data = services.get_materials_stats(user=request.user)
+        stats_serializer = MaterialStatsSerializer(stats_data)
+
+        return Response(
+            {
+                "semesters": sem_data,
+                "selected_semester_id": selected_sem.id if selected_sem else None,
+                "courses": courses_data,
+                "selected_course_id": selected_course.id if selected_course else None,
+                "materials": materials_data,
+                "stats": stats_serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
 # ============================================================
 # COURSE AI CHAT VIEW
 # ============================================================

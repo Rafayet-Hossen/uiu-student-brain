@@ -1,7 +1,12 @@
 import api from "../../lib/api";
+import queryCache from "../../lib/queryCache";
 
-export function getAnalyticsDashboard() {
-  return api.get("/analytics/dashboard/").then((res) => res.data);
+export function getAnalyticsDashboard(forceRefresh = false) {
+  return queryCache.fetchWithSWR(
+    "analytics_dashboard",
+    () => api.get("/analytics/dashboard/").then((res) => res.data),
+    { forceRefresh, ttl: 90000, staleTtl: 600000 },
+  );
 }
 
 export function extractAnalyticsErrorMessage(error) {

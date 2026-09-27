@@ -14,17 +14,17 @@ def get_analytics_dashboard_data(*, user, reference_date: date = None) -> Dict[s
         reference_date = date.today()
 
     # 1. Tracker Data Aggregations
-    sessions = StudySession.objects.filter(user=user)
-    total_sessions = sessions.count()
-    total_minutes = sessions.aggregate(total=Sum("duration_minutes"))["total"] or 0
+    sessions_qs = StudySession.objects.filter(user=user)
+    total_sessions = sessions_qs.count()
+    total_minutes = sessions_qs.aggregate(total=Sum("duration_minutes"))["total"] or 0
     avg_session_minutes = round(total_minutes / total_sessions, 1) if total_sessions > 0 else 0
 
     # Distinct subjects studied
-    distinct_subjects = list(sessions.order_by().values_list("subject", flat=True).distinct())
+    distinct_subjects = list(sessions_qs.order_by().values_list("subject", flat=True).distinct())
 
-    # Subject Distribution
+    # Subject Distribution (Single Aggregation)
     subject_stats = (
-        sessions.values("subject")
+        sessions_qs.values("subject")
         .annotate(total_mins=Sum("duration_minutes"), session_count=Count("id"))
         .order_by("-total_mins")
     )
@@ -42,21 +42,38 @@ def get_analytics_dashboard_data(*, user, reference_date: date = None) -> Dict[s
             }
         )
 
-    # Weekly Focus Trend (Past 7 Days)
-    weekly_trend: List[Dict[str, Any]] = []
+    # Weekly Focus Trend (Past 7 Days) - Single Query & In-Memory Grouping
     week_start_date = reference_date - timedelta(days=6)
-    week_sessions = sessions.filter(session_date__gte=week_start_date, session_date__lte=reference_date)
+    week_sessions_records = list(
+        sessions_qs.filter(session_date__gte=week_start_date, session_date__lte=reference_date)
+        .values("session_date", "subject", "duration_minutes")
+    )
 
+    mins_by_date: Dict[date, int] = {}
+    count_by_date: Dict[date, int] = {}
+    studied_subjects_this_week = set()
+    studied_mins_by_subj: Dict[str, int] = {}
+
+    for record in week_sessions_records:
+        s_date = record["session_date"]
+        mins = record["duration_minutes"] or 0
+        subj = record["subject"] or ""
+        mins_by_date[s_date] = mins_by_date.get(s_date, 0) + mins
+        count_by_date[s_date] = count_by_date.get(s_date, 0) + 1
+        if subj:
+            studied_subjects_this_week.add(subj)
+            s_clean = subj.strip().lower()
+            studied_mins_by_subj[s_clean] = studied_mins_by_subj.get(s_clean, 0) + mins
+
+    weekly_trend: List[Dict[str, Any]] = []
     for i in range(6, -1, -1):
         day_date = reference_date - timedelta(days=i)
-        day_sessions = week_sessions.filter(session_date=day_date)
-        day_minutes = day_sessions.aggregate(total=Sum("duration_minutes"))["total"] or 0
         weekly_trend.append(
             {
                 "date": day_date.isoformat(),
                 "day_name": day_date.strftime("%a"),
-                "minutes": day_minutes,
-                "sessions": day_sessions.count(),
+                "minutes": mins_by_date.get(day_date, 0),
+                "sessions": count_by_date.get(day_date, 0),
             }
         )
 
@@ -95,24 +112,23 @@ def get_analytics_dashboard_data(*, user, reference_date: date = None) -> Dict[s
         }
 
     # 3. Schedule Adherence Analytics
-    schedules = Schedule.objects.filter(user=user)
-    active_schedules_count = schedules.count()
-    scheduled_subjects = set(schedules.values_list("subject", flat=True))
+    schedules = list(Schedule.objects.filter(user=user))
+    active_schedules_count = len(schedules)
+    scheduled_subjects = set(s.subject for s in schedules if s.subject)
 
-    studied_subjects_this_week = set(week_sessions.values_list("subject", flat=True))
     covered_scheduled_subjects = scheduled_subjects.intersection(studied_subjects_this_week)
 
     adherence_rate = 0.0
     if scheduled_subjects:
         adherence_rate = round((len(covered_scheduled_subjects) / len(scheduled_subjects)) * 100, 1)
 
-    # Detailed per-course adherence breakdown
+    # Detailed per-course adherence breakdown (Computed in-memory, 0 DB queries)
     subject_details = []
     total_sched_mins = 0
     total_covered_mins = 0
 
     for subj in sorted(scheduled_subjects):
-        subj_schedules = schedules.filter(subject=subj)
+        subj_schedules = [s for s in schedules if s.subject == subj]
         subj_sched_mins = 0
         slot_days_count = 0
         for s in subj_schedules:
@@ -127,7 +143,7 @@ def get_analytics_dashboard_data(*, user, reference_date: date = None) -> Dict[s
             else:
                 slot_days_count += 1
 
-        studied_mins = week_sessions.filter(subject__iexact=subj).aggregate(total=Sum("duration_minutes"))["total"] or 0
+        studied_mins = studied_mins_by_subj.get(subj.strip().lower(), 0)
         total_sched_mins += subj_sched_mins
         total_covered_mins += studied_mins
         is_covered = studied_mins > 0 or subj in studied_subjects_this_week
@@ -182,7 +198,7 @@ def get_analytics_dashboard_data(*, user, reference_date: date = None) -> Dict[s
     if total_sessions == 0:
         insights.append("🌱 Log your first study session to unlock subject analytics and focus charts.")
     else:
-        week_minutes = week_sessions.aggregate(total=Sum("duration_minutes"))["total"] or 0
+        week_minutes = sum(mins_by_date.values())
         insights.append(f"⏱️ You logged {round(week_minutes / 60, 1)} hours of focus time across the past 7 days.")
 
         if subject_distribution:

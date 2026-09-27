@@ -1,7 +1,8 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Button from "../../components/Button";
 import Spinner from "../../components/Spinner";
 import {
+  getMaterialsBundle,
   getSemesters,
   createSemester,
   deleteSemester,
@@ -89,9 +90,34 @@ export default function MaterialsPage() {
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
 
+  const initializedRef = useRef(false);
+
   // ============================================================
   // DATA LOADERS
   // ============================================================
+
+  const loadInitialBundle = async (semId = null, courseId = null, force = false) => {
+    try {
+      setLoadingSemesters(true);
+      setErrorMsg("");
+      const bundle = await getMaterialsBundle(semId, courseId, force);
+      if (bundle) {
+        setSemesters(bundle.semesters || []);
+        setSelectedSemesterId(bundle.selected_semester_id || null);
+        setCourses(bundle.courses || []);
+        setSelectedCourseId(bundle.selected_course_id || null);
+        setMaterials(bundle.materials || []);
+      }
+    } catch (err) {
+      console.warn("Bundle fetch fallback to individual loaders:", err);
+      fetchSemesters(semId);
+    } finally {
+      setLoadingSemesters(false);
+      setLoadingCourses(false);
+      setLoadingMaterials(false);
+      initializedRef.current = true;
+    }
+  };
 
   const fetchSemesters = async (keepSemesterId = null) => {
     try {
@@ -169,28 +195,28 @@ export default function MaterialsPage() {
     }
   };
 
-  // Initial load
+  // Initial load via fast bundle
   useEffect(() => {
-    fetchSemesters();
+    loadInitialBundle();
   }, []);
 
   // When selected semester changes, load its courses
   useEffect(() => {
-    if (selectedSemesterId) {
+    if (initializedRef.current && selectedSemesterId) {
       fetchCourses(selectedSemesterId);
     }
   }, [selectedSemesterId]);
 
   // When selected course changes or filter changes, load materials
   useEffect(() => {
-    if (selectedCourseId) {
+    if (initializedRef.current && selectedCourseId) {
       setSelectedTopicFilter(null);
       fetchMaterials(selectedCourseId);
     }
   }, [selectedCourseId]);
 
   useEffect(() => {
-    if (selectedCourseId) {
+    if (initializedRef.current && selectedCourseId) {
       fetchMaterials(selectedCourseId);
     }
   }, [materialFilter, materialSearch]);

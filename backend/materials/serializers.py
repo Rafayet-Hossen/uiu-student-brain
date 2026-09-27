@@ -39,10 +39,10 @@ class CourseSerializer(serializers.ModelSerializer):
         ]
 
     def get_materials_count(self, obj) -> int:
-        return obj.materials.count()
+        return len(obj.materials.all())
 
     def get_analyzed_materials_count(self, obj) -> int:
-        return obj.materials.filter(analyzed_at__isnull=False).count()
+        return sum(1 for m in obj.materials.all() if getattr(m, "analyzed_at", None) is not None)
 
     def get_extracted_topics(self, obj) -> list[str]:
         topics = set()
@@ -86,7 +86,7 @@ class SemesterSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "user", "courses", "courses_count", "created_at", "updated_at"]
 
     def get_courses_count(self, obj) -> int:
-        return obj.courses.count()
+        return len(obj.courses.all())
 
 
 class StudyMaterialSerializer(serializers.ModelSerializer):
