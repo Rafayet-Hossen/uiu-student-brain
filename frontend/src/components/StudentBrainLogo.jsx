@@ -3,11 +3,10 @@ import logoImg from "../assets/logo.jpg";
 
 /**
  * StudentBrainLogo
- * Official brand emblem for StudentBrain matching UIU university color theme
- * (UIU Signature Glowing Orange #f26522, Warm Gold #f59e0b, and Emerald #10b981).
+ * Official brand logo mark for StudentBrain matching UIU theme colors.
  */
 export default function StudentBrainLogo({
-  size = 32,
+  size = 36,
   className = "",
   showText = false,
   rounded = true,
@@ -30,13 +29,15 @@ export default function StudentBrainLogo({
         style={{
           width: `${size}px`,
           height: `${size}px`,
+          minWidth: `${size}px`,
+          minHeight: `${size}px`,
           borderRadius: `${borderRadius}px`,
           overflow: "hidden",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          boxShadow: "0 2px 8px rgba(242, 101, 34, 0.25)",
-          border: "1.5px solid rgba(242, 101, 34, 0.35)",
+          boxShadow: "0 2px 8px rgba(242, 101, 34, 0.35)",
+          border: "1.5px solid rgba(242, 101, 34, 0.45)",
           background: "#0c1017",
           flexShrink: 0,
         }}

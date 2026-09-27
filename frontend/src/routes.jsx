@@ -16,6 +16,8 @@ import CommunityPage from "./features/community/CommunityPage";
 import StudyCenterPage from "./features/studycenter/StudyCenterPage";
 import QuizPage from "./features/quiz/QuizPage";
 
+import OnboardingPage from "./features/auth/pages/OnboardingPage";
+
 function PageLoading() {
   return (
     <div className="page-loading">
@@ -31,6 +33,9 @@ function ProtectedRoute({ children }) {
   if (loading) return <PageLoading />;
   if (!user)
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+  if (!user.is_onboarded && location.pathname !== "/onboarding") {
+    return <Navigate to="/onboarding" replace />;
+  }
   return children;
 }
 
@@ -38,7 +43,9 @@ function PublicOnlyRoute({ children }) {
   const { user, loading } = useAuth();
 
   if (loading) return <PageLoading />;
-  if (user) return <Navigate to="/dashboard" replace />;
+  if (user) {
+    return <Navigate to={user.is_onboarded ? "/dashboard" : "/onboarding"} replace />;
+  }
   return children;
 }
 
@@ -46,7 +53,8 @@ function RootRedirect() {
   const { user, loading } = useAuth();
 
   if (loading) return <PageLoading />;
-  return <Navigate to={user ? "/dashboard" : "/login"} replace />;
+  if (!user) return <Navigate to="/login" replace />;
+  return <Navigate to={user.is_onboarded ? "/dashboard" : "/onboarding"} replace />;
 }
 
 export default function AppRoutes() {
@@ -68,6 +76,14 @@ export default function AppRoutes() {
             <PublicOnlyRoute>
               <RegisterPage />
             </PublicOnlyRoute>
+          }
+        />
+        <Route
+          path="/onboarding"
+          element={
+            <ProtectedRoute>
+              <OnboardingPage />
+            </ProtectedRoute>
           }
         />
         <Route
