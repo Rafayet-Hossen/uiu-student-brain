@@ -23179,3 +23179,543 @@ html[data-theme="dark"] .btn-celebration-extend:hover {
     font-size: 0.7rem !important;
   }
 }
+
+
+/* ============================================================
+   SCHOLAR PROFILE MODAL, SETTINGS & TOGGLE SWITCH STYLING
+   ============================================================ */
+
+.profile-modal-content {
+  width: 100% !important;
+  max-width: 680px !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+  border-radius: var(--radius-xl, 20px) !important;
+  background: var(--color-surface, #ffffff) !important;
+  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.1)) !important;
+  box-shadow: 0 20px 48px -10px rgba(0, 0, 0, 0.45) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  box-sizing: border-box !important;
+}
+
+.profile-modal-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 18px 24px !important;
+  border-bottom: 1px solid var(--color-border) !important;
+}
+
+.profile-header-user-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  min-width: 0 !important;
+}
+
+.profile-header-text-meta {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  min-width: 0 !important;
+}
+
+.profile-modal-title {
+  margin: 0 !important;
+  font-size: 1.15rem !important;
+  font-weight: 700 !important;
+  color: var(--color-text) !important;
+  letter-spacing: -0.01em !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.profile-header-sub-meta {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-size: 0.78rem !important;
+  color: var(--color-text-muted) !important;
+  flex-wrap: wrap !important;
+}
+
+.profile-email-text {
+  font-weight: 500 !important;
+}
+
+.profile-meta-dot {
+  opacity: 0.6 !important;
+}
+
+.profile-joined-tag {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+.profile-modal-tabs-bar {
+  display: flex !important;
+  gap: 6px !important;
+  padding: 10px 24px !important;
+  background: var(--color-surface-subtle) !important;
+  border-bottom: 1px solid var(--color-border) !important;
+  overflow-x: auto !important;
+  scrollbar-width: none !important;
+}
+
+.profile-modal-tabs-bar::-webkit-scrollbar {
+  display: none !important;
+}
+
+.profile-modal-tab-btn {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 8px 14px !important;
+  border-radius: var(--radius-md, 10px) !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  color: var(--color-text-muted) !important;
+  font-size: 0.83rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  transition: all 0.15s ease !important;
+}
+
+.profile-modal-tab-btn:hover {
+  background: var(--color-surface) !important;
+  color: var(--color-text) !important;
+}
+
+.profile-modal-tab-btn.tab-active {
+  background: var(--color-surface) !important;
+  color: var(--color-primary) !important;
+  border-color: var(--color-border) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Tab 1: Profile & Photo */
+.profile-tab-form {
+  padding: 20px 24px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+}
+
+.profile-success-alert {
+  padding: 10px 14px !important;
+  border-radius: var(--radius-md) !important;
+  background: rgba(16, 185, 129, 0.12) !important;
+  border: 1px solid #10b981 !important;
+  color: #10b981 !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+}
+
+.profile-photo-section-card {
+  background: var(--color-surface-subtle) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-lg) !important;
+  padding: 16px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+.profile-section-lbl {
+  font-weight: 700 !important;
+  font-size: 0.88rem !important;
+  margin: 0 !important;
+}
+
+.profile-avatar-action-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+  flex-wrap: wrap !important;
+}
+
+.profile-avatar-buttons {
+  display: flex !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+}
+
+.profile-presets-container {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  margin-top: 4px !important;
+}
+
+.profile-presets-title {
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  color: var(--color-text-muted) !important;
+}
+
+.profile-presets-flex {
+  display: flex !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+}
+
+.avatar-preset-btn {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 6px 12px !important;
+  border-radius: 9999px !important;
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  color: var(--color-text) !important;
+  font-size: 0.8rem !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.avatar-preset-btn:hover {
+  border-color: var(--color-primary) !important;
+  transform: translateY(-1px) !important;
+}
+
+.avatar-preset-btn.preset-selected {
+  background: var(--color-primary-subtle, rgba(59, 130, 246, 0.12)) !important;
+  border-color: var(--color-primary) !important;
+  color: var(--color-primary) !important;
+  font-weight: 600 !important;
+}
+
+.avatar-preset-emoji {
+  font-size: 1rem !important;
+}
+
+/* Tab 2: Performance */
+.profile-performance-container {
+  padding: 20px 24px !important;
+}
+
+.profile-loading-box {
+  text-align: center !important;
+  padding: 30px !important;
+}
+
+.profile-loading-text {
+  margin-top: 10px !important;
+  color: var(--color-text-muted) !important;
+  font-size: 0.88rem !important;
+}
+
+.profile-performance-content {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+}
+
+.profile-metrics-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 10px !important;
+}
+
+.profile-metric-item {
+  background: var(--color-surface-subtle) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-md) !important;
+  padding: 12px 14px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+}
+
+.metric-item-lbl {
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+  color: var(--color-text-muted) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.02em !important;
+}
+
+.metric-item-val {
+  font-size: 1.15rem !important;
+  font-weight: 800 !important;
+}
+
+.metric-item-sub {
+  font-size: 0.72rem !important;
+  color: var(--color-text-muted) !important;
+}
+
+.profile-modules-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 12px !important;
+}
+
+.profile-module-card {
+  background: var(--color-surface-subtle) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-md) !important;
+  padding: 14px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+}
+
+.profile-module-title {
+  font-size: 0.92rem !important;
+  color: var(--color-text) !important;
+}
+
+.profile-module-desc {
+  margin: 0 !important;
+  font-size: 0.83rem !important;
+  color: var(--color-text-muted) !important;
+  line-height: 1.45 !important;
+}
+
+/* Tab 3: Settings & Preferences */
+.profile-settings-container {
+  padding: 20px 24px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+}
+
+.profile-setting-row-card {
+  background: var(--color-surface-subtle) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-lg) !important;
+  padding: 14px 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  transition: border-color 0.15s ease !important;
+}
+
+.profile-setting-row-card:hover {
+  border-color: var(--color-primary-border, rgba(59, 130, 246, 0.3)) !important;
+}
+
+.profile-setting-row-card.logout-card {
+  background: rgba(239, 68, 68, 0.04) !important;
+  border-color: rgba(239, 68, 68, 0.2) !important;
+}
+
+.profile-setting-row-card.logout-card:hover {
+  border-color: rgba(239, 68, 68, 0.4) !important;
+}
+
+.setting-text-col {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+  min-width: 0 !important;
+  flex: 1 !important;
+}
+
+.setting-title {
+  font-size: 0.92rem !important;
+  font-weight: 700 !important;
+  color: var(--color-text) !important;
+}
+
+.setting-desc {
+  font-size: 0.8rem !important;
+  color: var(--color-text-muted) !important;
+  line-height: 1.4 !important;
+}
+
+.setting-action-col {
+  display: flex !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+}
+
+.profile-notifs-box-card {
+  background: var(--color-surface-subtle) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-lg) !important;
+  padding: 16px 18px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+}
+
+.notifs-box-header {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+  padding-bottom: 10px !important;
+  border-bottom: 1px solid var(--color-border) !important;
+}
+
+.notifs-channels-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+.notif-channel-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  padding: 8px 0 !important;
+  border-bottom: 1px dashed var(--color-border) !important;
+}
+
+.notif-channel-row:last-child {
+  border-bottom: none !important;
+  padding-bottom: 0 !important;
+}
+
+.notif-item-title {
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+  color: var(--color-text) !important;
+}
+
+.notif-item-desc {
+  font-size: 0.78rem !important;
+  color: var(--color-text-muted) !important;
+}
+
+/* Modern Animated Toggle Switch Component */
+.settings-toggle-switch {
+  position: relative !important;
+  width: 46px !important;
+  height: 26px !important;
+  min-width: 46px !important;
+  max-width: 46px !important;
+  min-height: 26px !important;
+  max-height: 26px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  cursor: pointer !important;
+  outline: none !important;
+  border-radius: 9999px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  transition: opacity 0.2s ease !important;
+}
+
+.settings-toggle-switch:focus-visible {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.35) !important;
+}
+
+.settings-toggle-switch:disabled {
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
+}
+
+.toggle-switch-track {
+  position: relative !important;
+  display: block !important;
+  width: 46px !important;
+  height: 26px !important;
+  border-radius: 9999px !important;
+  background-color: var(--color-border, #cbd5e1) !important;
+  transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.settings-toggle-switch.is-checked .toggle-switch-track {
+  background-color: var(--color-primary, #f26522) !important;
+}
+
+.toggle-switch-thumb {
+  position: absolute !important;
+  top: 3px !important;
+  left: 3px !important;
+  width: 20px !important;
+  height: 20px !important;
+  border-radius: 50% !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25) !important;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.settings-toggle-switch.is-checked .toggle-switch-thumb {
+  transform: translateX(20px) !important;
+}
+
+/* ============================================================
+   RESPONSIVE MODAL MEDIA QUERIES (TABLET & MOBILE)
+   ============================================================ */
+
+@media (max-width: 768px) {
+  .profile-modal-content {
+    max-width: 94vw !important;
+    max-height: 88vh !important;
+    border-radius: var(--radius-lg, 16px) !important;
+  }
+
+  .profile-metrics-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .profile-modules-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .modal-backdrop {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+
+  .profile-modal-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 92vh !important;
+    border-radius: 20px 20px 0 0 !important;
+    border-bottom: none !important;
+  }
+
+  .profile-modal-header {
+    padding: 14px 16px !important;
+  }
+
+  .profile-modal-tabs-bar {
+    padding: 8px 12px !important;
+    gap: 4px !important;
+  }
+
+  .profile-modal-tab-btn {
+    padding: 7px 10px !important;
+    font-size: 0.78rem !important;
+  }
+
+  .profile-tab-form,
+  .profile-performance-container,
+  .profile-settings-container {
+    padding: 14px 16px !important;
+    gap: 12px !important;
+  }
+
+  .profile-setting-row-card {
+    padding: 12px 14px !important;
+    gap: 12px !important;
+  }
+
+  .notif-channel-row {
+    padding: 6px 0 !important;
+  }
+
+  .profile-metrics-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .metric-item-val {
+    font-size: 1.05rem !important;
+  }
+}

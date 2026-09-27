@@ -166,7 +166,13 @@ export default function Navbar() {
           {/* Left: Brand Logo */}
           <Link to="/dashboard" className="navbar-brand-logo">
             <div className="navbar-brand-icon-box">
-              <img src={logoImg} alt="StudentBrain Logo" className="navbar-brand-img" />
+              <img
+                src={logoImg}
+                alt="StudentBrain"
+                className="navbar-brand-img"
+                width="36"
+                height="36"
+              />
             </div>
             <span className="navbar-brand-name">
               Student<span className="brand-accent-text">Brain</span>
@@ -338,7 +344,13 @@ export default function Navbar() {
               <div className="drawer-header-row">
                 <div className="drawer-brand-wrap">
                   <div className="navbar-brand-icon-box">
-                    <img src={logoImg} alt="StudentBrain Logo" className="navbar-brand-img" />
+                    <img
+                      src={logoImg}
+                      alt="StudentBrain"
+                      className="navbar-brand-img"
+                      width="36"
+                      height="36"
+                    />
                   </div>
                   <span className="drawer-brand-title">
                     Student<span className="brand-accent-text">Brain</span>

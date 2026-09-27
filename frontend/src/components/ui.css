@@ -746,20 +746,35 @@
 }
 
 .navbar-brand-icon-box {
-  width: 36px;
-  height: 36px;
-  border-radius: 11px;
-  background: linear-gradient(135deg, #f26522 0%, #ea580c 50%, #f59e0b 100%);
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  max-width: 36px !important;
+  min-height: 36px !important;
+  max-height: 36px !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   box-shadow:
     0 4px 14px rgba(242, 101, 34, 0.38),
     inset 0 1px 1px rgba(255, 255, 255, 0.4);
-  position: relative;
+  position: relative !important;
+  flex-shrink: 0 !important;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+.navbar-brand-img {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 36px !important;
+  max-height: 36px !important;
+  object-fit: cover !important;
+  display: block !important;
+  border-radius: inherit !important;
+}
+
 
 .navbar-brand-icon-box::before {
   content: "";
