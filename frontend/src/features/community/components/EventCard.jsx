@@ -411,10 +411,15 @@ export default function EventCard({ event, onToggleRSVP, onDeleted }) {
 
               {/* Added to Calendar & Planner Actions */}
               {(userStatus === "going" || userStatus === "interested") && (
-                <div style={{ marginTop: "10px" }}>
+                <motion.div
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.25 }}
+                  className="event-planner-sync-container"
+                >
                   <div className="event-planner-sync-banner">
                     <div className="sync-banner-text">
-                      <CheckCircle2 size={13} className="text-emerald" />
+                      <CheckCircle2 size={15} className="text-emerald shrink-0" />
                       <span>
                         Added to your <strong>Study Planner Calendar</strong>
                       </span>
@@ -422,9 +427,10 @@ export default function EventCard({ event, onToggleRSVP, onDeleted }) {
                     <Link
                       to="/planner"
                       className="sync-banner-link"
-                      title="Open Study Planner"
+                      title="Open Study Planner Calendar"
                     >
-                      Planner →
+                      <span>Planner</span>
+                      <span className="sync-arrow">→</span>
                     </Link>
                   </div>
 
@@ -436,9 +442,9 @@ export default function EventCard({ event, onToggleRSVP, onDeleted }) {
                       className="event-cal-btn-outline"
                       title="Add this event to Google Calendar"
                     >
-                      <Calendar size={12} className="text-primary" />
+                      <Calendar size={13} className="text-primary shrink-0" />
                       <span>Google Calendar</span>
-                      <ExternalLink size={10} style={{ opacity: 0.7 }} />
+                      <ExternalLink size={11} className="cal-ext-icon" />
                     </a>
 
                     <button
@@ -447,11 +453,11 @@ export default function EventCard({ event, onToggleRSVP, onDeleted }) {
                       className="event-cal-btn-outline"
                       title="Download iCal file for Apple Calendar or Microsoft Outlook"
                     >
-                      <Download size={12} className="text-amber" />
+                      <Download size={13} className="text-amber shrink-0" />
                       <span>Apple / Outlook (.ics)</span>
                     </button>
                   </div>
-                </div>
+                </motion.div>
               )}
             </div>
           </div>

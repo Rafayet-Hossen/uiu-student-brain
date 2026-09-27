@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { Calendar, Camera, Trash2, X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import Button from "../../../components/Button";
 import FormError from "../../../components/FormError";
 import Spinner from "../../../components/Spinner";
@@ -30,12 +29,8 @@ function ToggleSwitch({
       onClick={onChange}
       className={`settings-toggle-switch ${checked ? "is-checked" : ""}`}
     >
-      <span className={`toggle-switch-track ${checked ? "track-checked" : ""}`}>
-        <motion.span
-          className={`toggle-switch-thumb ${checked ? "thumb-checked" : ""}`}
-          animate={{ x: checked ? 20 : 0 }}
-          transition={{ type: "spring", stiffness: 500, damping: 30 }}
-        />
+      <span className="toggle-switch-track">
+        <span className="toggle-switch-thumb" />
       </span>
     </button>
   );
@@ -280,51 +275,45 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
           </button>
         </div>
 
-        {/* Modal Navigation Tabs: Horizontal Study Center Style Segmented Switcher */}
-        <div className="profile-tabs-header-wrap">
-          <div className="material-tab-switchers profile-horizontal-tabs">
-            <button
-              type="button"
-              className={`mat-tab-btn ${activeTab === "profile" ? "mat-tab-active" : ""}`}
-              onClick={() => setActiveTab("profile")}
-            >
-              <span>👤 Edit Profile <span className="tab-label-extra">& Photo</span></span>
-            </button>
-            <button
-              type="button"
-              className={`mat-tab-btn ${activeTab === "performance" ? "mat-tab-active" : ""}`}
-              onClick={() => {
-                setActiveTab("performance");
-                setLoadingSummary(true);
-                getProfileSummary()
-                  .then((data) => setSummaryData(data))
-                  .catch((err) =>
-                    console.error("Failed to refresh profile summary", err),
-                  )
-                  .finally(() => setLoadingSummary(false));
-              }}
-            >
-              <span>📊 <span className="tab-label-extra">Overall </span>Performance</span>
-            </button>
-            <button
-              type="button"
-              className={`mat-tab-btn ${activeTab === "settings" ? "mat-tab-active" : ""}`}
-              onClick={() => setActiveTab("settings")}
-            >
-              <span>⚙️ Preferences <span className="tab-label-extra">& Settings</span></span>
-            </button>
-          </div>
+        {/* Modal Navigation Tabs */}
+        <div className="profile-modal-tabs-bar">
+          <button
+            type="button"
+            className={`profile-modal-tab-btn ${activeTab === "profile" ? "tab-active" : ""}`}
+            onClick={() => setActiveTab("profile")}
+          >
+            <span>👤 Edit Profile & Photo</span>
+          </button>
+          <button
+            type="button"
+            className={`profile-modal-tab-btn ${activeTab === "performance" ? "tab-active" : ""}`}
+            onClick={() => {
+              setActiveTab("performance");
+              setLoadingSummary(true);
+              getProfileSummary()
+                .then((data) => setSummaryData(data))
+                .catch((err) =>
+                  console.error("Failed to refresh profile summary", err),
+                )
+                .finally(() => setLoadingSummary(false));
+            }}
+          >
+            <span>📊 Overall Performance</span>
+          </button>
+          <button
+            type="button"
+            className={`profile-modal-tab-btn ${activeTab === "settings" ? "tab-active" : ""}`}
+            onClick={() => setActiveTab("settings")}
+          >
+            <span>⚙️ Preferences & Settings</span>
+          </button>
         </div>
 
         {/* Scrollable Body Content */}
         <div className="profile-modal-body-scroll">
           {/* TAB 1: EDIT PROFILE & PHOTO */}
           {activeTab === "profile" && (
-            <motion.form
-              key="profile"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2 }}
+            <form
               onSubmit={handleSaveProfile}
               noValidate
               className="academic-form profile-tab-form"
@@ -525,26 +514,20 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
                 </div>
               </div>
 
-              <div className="modal-footer-row profile-footer-actions" style={{ marginTop: "18px" }}>
-                <Button type="button" variant="secondary" onClick={onClose} className="profile-footer-btn">
+              <div className="modal-footer-row" style={{ marginTop: "18px" }}>
+                <Button type="button" variant="secondary" onClick={onClose}>
                   Close
                 </Button>
-                <Button type="submit" loading={saving} disabled={saving} className="profile-footer-btn">
+                <Button type="submit" loading={saving} disabled={saving}>
                   {saving ? "Saving..." : "Save Profile Changes"}
                 </Button>
               </div>
-            </motion.form>
+            </form>
           )}
 
           {/* TAB 2: OVERALL PERFORMANCE & RANK */}
           {activeTab === "performance" && (
-            <motion.div
-              key="performance"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2 }}
-              className="profile-performance-container"
-            >
+            <div className="profile-performance-container">
               {loadingSummary ? (
                 <div className="profile-loading-box">
                   <Spinner standalone />
@@ -682,27 +665,21 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
                   </div>
 
                   <div
-                    className="modal-footer-row profile-footer-actions"
+                    className="modal-footer-row"
                     style={{ marginTop: "12px" }}
                   >
-                    <Button variant="secondary" onClick={onClose} className="profile-footer-btn">
+                    <Button variant="secondary" onClick={onClose}>
                       Close
                     </Button>
                   </div>
                 </div>
               )}
-            </motion.div>
+            </div>
           )}
 
           {/* TAB 3: PREFERENCES & ACCOUNT SETTINGS */}
           {activeTab === "settings" && (
-            <motion.div
-              key="settings"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2 }}
-              className="profile-settings-container"
-            >
+            <div className="profile-settings-container">
               {/* Visual Theme */}
               <div className="profile-setting-row-card">
                 <div className="setting-text-col">
@@ -850,12 +827,12 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
                 </div>
               </div>
 
-              <div className="modal-footer-row profile-footer-actions" style={{ marginTop: "10px" }}>
-                <Button variant="secondary" onClick={onClose} className="profile-footer-btn">
+              <div className="modal-footer-row" style={{ marginTop: "10px" }}>
+                <Button variant="secondary" onClick={onClose}>
                   Close
                 </Button>
               </div>
-            </motion.div>
+            </div>
           )}
         </div>
       </div>
