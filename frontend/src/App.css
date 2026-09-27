@@ -3205,101 +3205,43 @@
    FEATURE #11: STUDY & ACADEMIC ANALYTICS STYLES
    ========================================================================== */
 
-.analytics-layout-grid,
-.analytics-charts-grid {
+.analytics-layout-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 480px), 1fr));
-  gap: clamp(16px, 2.5vw, 24px);
-  width: 100%;
-  box-sizing: border-box;
+  gap: 24px;
 }
 
 .analytics-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
-  padding: clamp(16px, 2.5vw, 24px);
+  padding: 24px;
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
-  gap: clamp(14px, 2vw, 20px);
-  box-sizing: border-box;
-  width: 100%;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-}
-
-.analytics-card:hover {
-  border-color: rgba(59, 130, 246, 0.3);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  gap: 20px;
 }
 
 .analytics-card-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.analytics-card-header-left {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-  flex: 1;
+  gap: 16px;
 }
 
 .analytics-card-title {
-  font-size: clamp(0.95rem, 2vw, 1.15rem);
-  font-weight: 750;
-  line-height: 1.3;
-  margin: 0;
+  font-size: 1.1875rem;
+  font-weight: 700;
+  margin: 0 0 4px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  color: var(--color-text);
+  gap: 8px;
 }
 
 .analytics-card-desc {
-  font-size: clamp(0.75rem, 1.5vw, 0.84rem);
+  font-size: 0.875rem;
   color: var(--color-text-muted);
-  line-height: 1.4;
   margin: 0;
-}
-
-.analytics-card-icon-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  min-width: 32px;
-  border-radius: 9px;
-  flex-shrink: 0;
-}
-
-.analytics-card-icon-pill.icon-primary {
-  background: rgba(59, 130, 246, 0.12);
-  color: #3b82f6;
-  border: 1px solid rgba(59, 130, 246, 0.25);
-}
-
-.analytics-card-icon-pill.icon-emerald {
-  background: rgba(16, 185, 129, 0.12);
-  color: #10b981;
-  border: 1px solid rgba(16, 185, 129, 0.25);
-}
-
-.analytics-card-icon-pill.icon-amber {
-  background: rgba(245, 158, 11, 0.12);
-  color: #f59e0b;
-  border: 1px solid rgba(245, 158, 11, 0.25);
-}
-
-.analytics-card-icon-pill.icon-rose {
-  background: rgba(244, 63, 94, 0.12);
-  color: #f43f5e;
-  border: 1px solid rgba(244, 63, 94, 0.25);
 }
 
 /* Weekly Trend Histogram */
@@ -17890,8 +17832,9 @@ html[data-theme="dark"] .native-reader-main-viewport {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 18px;
+  padding: clamp(12px, 3vh, 24px) 16px;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .tracker-session-modal-dialog {
@@ -17900,50 +17843,63 @@ html[data-theme="dark"] .native-reader-main-viewport {
   border-radius: var(--radius-2xl);
   width: 100%;
   max-width: 580px;
+  max-height: min(88vh, 780px);
   box-shadow: var(--shadow-xl);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   margin: auto;
+  position: relative;
 }
 
 .tracker-modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 24px;
+  padding: 12px 18px;
   border-bottom: 1px solid var(--color-border);
-  background: linear-gradient(
-    180deg,
-    var(--color-surface) 0%,
-    var(--color-surface-subtle) 100%
-  );
+  background: var(--color-surface);
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .tracker-modal-title-box {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
 }
 
 .tracker-modal-icon {
-  font-size: 1.6rem;
+  font-size: 1.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.tracker-modal-text-wrap {
+  min-width: 0;
+  flex: 1;
 }
 
 .tracker-modal-heading {
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--color-text);
   margin: 0;
+  line-height: 1.3;
 }
 
 .tracker-modal-subheading {
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   color: var(--color-text-muted);
   margin: 2px 0 0 0;
+  line-height: 1.35;
 }
 
 .tracker-modal-close-btn {
@@ -17957,6 +17913,7 @@ html[data-theme="dark"] .native-reader-main-viewport {
   align-items: center;
   justify-content: center;
   transition: all 0.15s ease;
+  flex-shrink: 0;
 }
 
 .tracker-modal-close-btn:hover {
@@ -17965,7 +17922,14 @@ html[data-theme="dark"] .native-reader-main-viewport {
 }
 
 .tracker-modal-body {
-  padding: 22px 24px;
+  padding: 18px 20px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Enhanced Book Session Modal Components */
@@ -21113,36 +21077,49 @@ html[data-theme="dark"] .btn-celebration-extend:hover {
 @media (max-width: 640px) {
   /* Book Session Modal Mobile Layout */
   .tracker-session-modal-overlay {
-    padding: 10px;
-    align-items: flex-end;
+    padding: 0 !important;
+    align-items: flex-end !important;
   }
 
   .tracker-session-modal-dialog {
     width: 100% !important;
     max-width: 100% !important;
     border-radius: 20px 20px 0 0 !important;
-    max-height: 92vh !important;
+    max-height: 90vh !important;
+    max-height: 90dvh !important;
     margin: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
   }
 
   .tracker-modal-header {
-    padding: 14px 16px !important;
+    padding: 10px 14px !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
   }
 
   .tracker-modal-heading {
-    font-size: 1.05rem !important;
+    font-size: 0.95rem !important;
   }
 
   .tracker-modal-subheading {
-    font-size: 0.75rem !important;
+    font-size: 0.72rem !important;
+    line-height: 1.3 !important;
   }
 
   .tracker-modal-body {
-    padding: 16px 14px !important;
+    padding: 14px 14px calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior-y: contain !important;
   }
 
   .tracker-modal-card-section {
-    padding: 12px 14px !important;
+    padding: 12px 12px !important;
     border-radius: 12px !important;
     margin-bottom: 12px !important;
   }
@@ -21156,6 +21133,8 @@ html[data-theme="dark"] .btn-celebration-extend:hover {
     flex-direction: column-reverse !important;
     gap: 8px !important;
     width: 100% !important;
+    padding-top: 10px !important;
+    margin-bottom: 8px !important;
   }
 
   .tracker-modal-footer-actions button,
@@ -21163,6 +21142,8 @@ html[data-theme="dark"] .btn-celebration-extend:hover {
   .tracker-btn-confirm {
     width: 100% !important;
     justify-content: center !important;
+    min-height: 42px !important;
+    font-size: 0.85rem !important;
   }
 
   .tracker-preset-pills {
