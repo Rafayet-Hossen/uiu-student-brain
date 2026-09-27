@@ -95,7 +95,7 @@ export default function StudyCenterPage() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <h1 className="study-center-main-title">Study Center</h1>
                     <span className="study-center-micro-pill">
-                      Academic Workspace
+                      Academic Resource Hub
                     </span>
                   </div>
                   <p className="study-center-tagline">{activeTabMeta.desc}</p>

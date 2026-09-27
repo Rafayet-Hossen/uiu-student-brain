@@ -64,6 +64,7 @@ export default function AddMaterialModal({
 
   // Note specific states
   const [selectedTags, setSelectedTags] = useState(["Lecture"]);
+  const [actionStatus, setActionStatus] = useState("idle"); // 'idle' | 'adding' | 'added'
 
   if (!isOpen) return null;
 
@@ -122,7 +123,7 @@ export default function AddMaterialModal({
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim()) {
       setError("Please provide a title for this material.");
@@ -175,7 +176,17 @@ export default function AddMaterialModal({
       }
     }
 
-    onSubmit(formData);
+    try {
+      setActionStatus("adding");
+      await onSubmit(formData);
+      setActionStatus("added");
+      setTimeout(() => {
+        setActionStatus("idle");
+        onClose();
+      }, 700);
+    } catch {
+      setActionStatus("idle");
+    }
   };
 
   return (
@@ -514,12 +525,30 @@ export default function AddMaterialModal({
               type="button"
               variant="outline"
               onClick={onClose}
-              disabled={submitting}
+              disabled={submitting || actionStatus === "adding" || actionStatus === "added"}
             >
               Cancel
             </Button>
-            <Button type="submit" variant="primary" loading={submitting}>
-              {activeTab === "note" ? "Save Course Note" : "Add Material"}
+            <Button
+              type="submit"
+              variant={actionStatus === "added" ? "success" : "primary"}
+              loading={actionStatus === "adding" || submitting}
+              disabled={actionStatus === "adding" || actionStatus === "added" || submitting}
+              style={
+                actionStatus === "added"
+                  ? {
+                      background: "linear-gradient(135deg, #10b981, #059669)",
+                      borderColor: "#10b981",
+                      color: "#fff",
+                    }
+                  : {}
+              }
+            >
+              {actionStatus === "adding" || submitting
+                ? (activeTab === "note" ? "Saving Note..." : "Adding Material...")
+                : actionStatus === "added"
+                  ? (activeTab === "note" ? "✓ Note Saved!" : "✓ Material Added!")
+                  : (activeTab === "note" ? "Save Course Note" : "Add Material")}
             </Button>
           </div>
         </form>

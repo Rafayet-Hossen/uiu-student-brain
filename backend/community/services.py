@@ -241,8 +241,8 @@ def toggle_event_rsvp(*, user, event_id: int, status: str = "going") -> dict:
                 recipient=event.creator,
                 sender=user,
                 category="event",
-                title=f"📅 New RSVP for '{event.title[:35]}'",
-                message=f"{user.full_name or 'A student'} RSVP'd 'Going' to your study event scheduled for {event.event_date}.",
+                title=f"🗓️ New Attendee for '{event.title[:35]}'",
+                message=f"{user.full_name or 'A student'} marked 'Going' for your study event scheduled for {event.event_date}.",
                 link="/community",
                 metadata={"event_id": event.id, "dedup_key": f"rsvp_{event.id}_{user.id}"},
             )
@@ -319,6 +319,13 @@ def toggle_leaderboard_opt_in(*, user, is_opted_in: bool, custom_quote: str = No
     if custom_quote is not None:
         profile.custom_quote = custom_quote.strip()
     profile.save()
+
+    try:
+        user.opt_in_leaderboard = is_opted_in
+        user.save(update_fields=["opt_in_leaderboard"])
+    except Exception:
+        pass
+
     return profile
 
 
