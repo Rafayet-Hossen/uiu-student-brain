@@ -637,62 +637,31 @@
   color: var(--color-text-subtle);
 }
 
-/* Google Action Button */
-.auth-sb-google-btn {
+/* Secondary Action Button */
+.auth-sb-secondary-btn {
   width: 100%;
-  height: 44px;
+  height: 38px;
   border-radius: 9999px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   color: var(--color-text);
-  font-size: 0.9rem;
-  font-weight: 700;
+  font-size: 0.83rem;
+  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   cursor: pointer;
-  box-shadow: var(--shadow-sm);
   transition:
-    background-color 0.18s ease,
-    border-color 0.18s ease,
-    box-shadow 0.18s ease,
+    background 0.15s ease,
+    border-color 0.15s ease,
     transform 0.15s ease;
-  user-select: none;
 }
 
-.auth-sb-google-btn:hover:not(:disabled) {
+.auth-sb-secondary-btn:hover {
   background: var(--color-surface-subtle);
-  border-color: rgba(66, 133, 244, 0.4);
-  box-shadow: 0 4px 12px rgba(66, 133, 244, 0.12);
+  border-color: var(--color-primary-border);
   transform: translateY(-1px);
-}
-
-.auth-sb-google-btn:active:not(:disabled) {
-  transform: scale(0.985);
-}
-
-.auth-sb-google-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.google-icon-svg {
-  flex-shrink: 0;
-}
-
-.auth-mobile-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 10px;
-  border-radius: 9999px;
-  background: rgba(242, 101, 34, 0.1);
-  border: 1px solid rgba(242, 101, 34, 0.2);
-  color: var(--color-primary, #f26522);
-  font-size: 0.72rem;
-  font-weight: 700;
-  margin-bottom: 8px;
 }
 
 /* Bottom Information Note */
@@ -723,9 +692,8 @@
 /* Switch Footer */
 .auth-sb-switch {
   text-align: center;
-  font-size: 0.84rem;
+  font-size: 0.82rem;
   color: var(--color-text-muted);
-  margin-top: 14px;
 }
 
 .auth-sb-switch-link {
@@ -741,96 +709,58 @@
 }
 
 /* ==========================================================================
-   AUTH RESPONSIVE BREAKPOINTS (Mobile & Tablet Clean Focus)
+   AUTH RESPONSIVE BREAKPOINTS (Zero Horizontal Spillage)
    ========================================================================== */
 
 @media (max-width: 1024px) {
   .auth-sb-screen {
     height: auto;
     min-height: 100vh;
-    min-height: 100dvh;
     overflow-y: auto;
     overflow-x: hidden;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
   }
 
   .auth-sb-main {
     grid-template-columns: 1fr;
-    gap: 0;
-    padding: clamp(16px, 3.5vw, 36px) clamp(16px, 4vw, 32px) clamp(24px, 5vw, 48px);
+    gap: 28px;
+    padding: 16px clamp(16px, 4vw, 32px) 40px;
     height: auto;
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    overflow-x: hidden;
   }
 
-  /* Hide the heavy orbital background/canvas on tablet and phone to remove clutter */
-  .auth-sb-left-col {
-    display: none !important;
-  }
-
-  .auth-sb-right-col {
-    width: 100%;
+  .auth-orbital-showcase {
+    text-align: center;
     max-width: 480px;
+  }
+
+  .auth-orbital-subtitle {
     margin: 0 auto;
-  }
-
-  .auth-sb-card {
-    border-radius: clamp(16px, 2.5vw, 22px);
-    padding: clamp(20px, 4vw, 32px);
-    box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.14), 0 4px 12px rgba(0, 0, 0, 0.05);
-  }
-
-  .auth-sb-register-card {
-    max-width: 500px;
-    padding: clamp(20px, 4vw, 32px);
   }
 }
 
 @media (max-width: 640px) {
-  .auth-sb-topbar {
-    padding: 0 16px;
-    height: 52px;
+  .auth-orbital-title {
+    font-size: 1.65rem;
   }
 
-  .auth-sb-title {
-    font-size: 1.35rem;
-  }
-
-  .auth-sb-subtitle {
-    font-size: 0.8rem;
+  .auth-orbit-system-canvas {
+    max-width: 100%;
+    height: 270px;
+    transform: scale(0.88);
   }
 
   .auth-sb-card {
-    padding: 20px 16px 18px;
-    border-radius: 18px;
+    border-radius: 16px;
+    padding: 18px 16px 16px;
   }
 
   .auth-sb-register-card {
-    padding: 18px 14px 16px;
+    padding: 16px 14px 14px;
   }
 
   .auth-sb-passwords-row {
     grid-template-columns: 1fr;
     gap: 0;
-  }
-
-  .auth-pill-control {
-    height: 44px;
-    font-size: 0.92rem;
-  }
-
-  .auth-sb-primary-btn {
-    height: 46px;
-    font-size: 0.94rem;
-  }
-
-  .auth-sb-google-btn {
-    height: 44px;
-    font-size: 0.88rem;
   }
 }
 
