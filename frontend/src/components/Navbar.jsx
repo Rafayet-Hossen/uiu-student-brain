@@ -27,6 +27,8 @@ import ScholarAvatar from "../features/auth/components/ScholarAvatar";
 import { useAuth } from "../features/auth/useAuth";
 import NotificationCenter from "./NotificationCenter";
 import ThemeToggle from "./ThemeToggle";
+import logoImg from "../assets/logo.jpg";
+
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -164,7 +166,7 @@ export default function Navbar() {
           {/* Left: Brand Logo */}
           <Link to="/dashboard" className="navbar-brand-logo">
             <div className="navbar-brand-icon-box">
-              <img src="/logo.jpg" alt="StudentBrain Logo" className="navbar-brand-img" />
+              <img src={logoImg} alt="StudentBrain Logo" className="navbar-brand-img" />
             </div>
             <span className="navbar-brand-name">
               Student<span className="brand-accent-text">Brain</span>
@@ -336,7 +338,7 @@ export default function Navbar() {
               <div className="drawer-header-row">
                 <div className="drawer-brand-wrap">
                   <div className="navbar-brand-icon-box">
-                    <img src="/logo.jpg" alt="StudentBrain Logo" className="navbar-brand-img" />
+                    <img src={logoImg} alt="StudentBrain Logo" className="navbar-brand-img" />
                   </div>
                   <span className="drawer-brand-title">
                     Student<span className="brand-accent-text">Brain</span>
