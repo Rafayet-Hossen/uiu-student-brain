@@ -537,7 +537,13 @@ export default function PostForm({
       {/* 3. COURSE HELP SPECIFIC FORM */}
       {category === "Course Help" && (
         <>
-          <div className="post-form-row-2col">
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "12px",
+            }}
+          >
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label">Course Code & Name *</label>
               <input
@@ -590,7 +596,13 @@ export default function PostForm({
       {/* 4. EXAM PREP SPECIFIC FORM */}
       {category === "Exam Prep" && (
         <>
-          <div className="post-form-row-2col-asym">
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1.2fr 1fr",
+              gap: "12px",
+            }}
+          >
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label">Course / Subject *</label>
               <input
@@ -660,7 +672,13 @@ export default function PostForm({
       {/* 5. STUDY GROUP SPECIFIC FORM */}
       {category === "Study Group" && (
         <>
-          <div className="post-form-row-2col-asym">
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1.4fr 1fr",
+              gap: "12px",
+            }}
+          >
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label">Study Group Goal / Course *</label>
               <input
@@ -690,7 +708,14 @@ export default function PostForm({
           {/* Study Group Mode Selector: Offline vs Online */}
           <div className="form-group" style={{ marginBottom: 0 }}>
             <label className="form-label">Study Session Format *</label>
-            <div className="post-form-row-format">
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "10px",
+                marginBottom: "10px",
+              }}
+            >
               <button
                 type="button"
                 className={`category-selector-card ${
@@ -817,7 +842,13 @@ export default function PostForm({
 
             {/* Online-specific options */}
             {groupMode === "online" && (
-              <div className="post-form-row-online">
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1.2fr 1.8fr",
+                  gap: "10px",
+                }}
+              >
                 <div>
                   <label
                     className="form-label"
@@ -886,7 +917,13 @@ export default function PostForm({
       {/* 6. RESOURCES SPECIFIC FORM */}
       {category === "Resources" && (
         <>
-          <div className="post-form-row-2col-asym">
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1.2fr 1fr",
+              gap: "12px",
+            }}
+          >
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label">Resource Title *</label>
               <input
@@ -912,7 +949,13 @@ export default function PostForm({
             </div>
           </div>
 
-          <div className="post-form-row-2col">
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "12px",
+            }}
+          >
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label">Resource Type *</label>
               <select

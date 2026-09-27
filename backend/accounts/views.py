@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .serializers import (
+    OnboardingSerializer,
     ProfileSummarySerializer,
     RegisterSerializer,
     UpdateProfileSerializer,
@@ -228,6 +229,48 @@ class NotificationStateView(APIView):
             "read_notification_ids": state.read_notification_ids,
             "preferences": state.preferences or {},
         }, status=status.HTTP_200_OK)
+
+
+class OnboardingView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = OnboardingSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        user = request.user
+        user.current_gpa = data["current_gpa"]
+        user.target_gpa = data["target_gpa"]
+        user.completed_credits = data["completed_credits"]
+        user.total_credits = data["total_credits"]
+        user.current_trimester = data["current_trimester"]
+        user.opt_in_leaderboard = data.get("opt_in_leaderboard", True)
+
+        dept = data.get("department")
+        if dept:
+            user.department = dept.strip()
+
+        user.is_onboarded = True
+        user.save()
+
+        # Optional sync with GradePlan
+        try:
+            from grades.models import GradePlan
+
+            GradePlan.objects.update_or_create(
+                user=user,
+                defaults={
+                    "target_cgpa": user.target_gpa,
+                    "total_degree_credits": user.total_credits,
+                    "completed_credits": user.completed_credits,
+                    "current_cgpa": user.current_gpa,
+                },
+            )
+        except Exception:
+            pass
+
+        return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
 
 
 
