@@ -250,59 +250,34 @@ export default function HeroSection({
             </svg>
           </div>
 
-          {/* 5 Interconnected Floating Orbiting Widgets */}
-          {/* Widget 1: Target GPA (Top-Left) */}
+          {/* 3 Balanced Floating Widgets Orbiting Desk Scene */}
+          {/* Widget 1: Daily Streak Status (Top-Left) */}
           <motion.div
-            animate={{ y: [-6, 7, -6], rotate: [-1, 1.2, -1] }}
-            transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
-            whileHover={{ scale: 1.08, y: -9 }}
-            className="dash-float-widget dash-hero-float-gpa"
-            onClick={() => navigate("/grades")}
-            title="Open GPA Planner"
-          >
-            <div className="dash-float-icon-box bg-orange-subtle text-orange">
-              <GraduationCap size={20} />
-            </div>
-            <div className="dash-float-info">
-              <div className="dash-float-header-row">
-                <span className="dash-float-label">Target Honors</span>
-                <span className="dash-float-badge-pill orange">🎯 Goal</span>
-              </div>
-              <strong className="dash-float-value">
-                {topGradePlan && Number(topGradePlan.target_gpa) > 0
-                  ? `${Number(topGradePlan.target_gpa).toFixed(2)} GPA`
-                  : "0.00 GPA"}
-              </strong>
-            </div>
-          </motion.div>
-
-          {/* Widget 2: AI Ready Topics (Top-Right) */}
-          <motion.div
-            animate={{ y: [7, -7, 7], rotate: [1, -1.2, 1] }}
-            transition={{ repeat: Infinity, duration: 6.8, ease: "easeInOut" }}
-            whileHover={{ scale: 1.08, y: -9 }}
-            className="dash-float-widget dash-hero-float-ai"
-            onClick={() => navigate("/materials")}
-            title="Open Materials Hub"
-          >
-            <div className="dash-float-icon-box bg-emerald-subtle text-emerald">
-              <BookOpen size={20} />
-            </div>
-            <div className="dash-float-info">
-              <div className="dash-float-header-row">
-                <span className="dash-float-label">AI Ready</span>
-                <span className="dash-float-badge-pill emerald">✨ Synced</span>
-              </div>
-              <strong className="dash-float-value text-emerald">
-                {totalExtractedTopics > 0 ? `${totalExtractedTopics} Topics` : "0 Topics"}
-              </strong>
-            </div>
-          </motion.div>
-
-          {/* Widget 3: Weekly Focus Progress (Bottom-Right) */}
-          <motion.div
-            animate={{ y: [5, -6, 5] }}
+            animate={{ y: [-5, 6, -5], rotate: [-0.8, 1, -0.8] }}
             transition={{ repeat: Infinity, duration: 5.6, ease: "easeInOut" }}
+            whileHover={{ scale: 1.08, y: -8 }}
+            className="dash-float-widget dash-hero-float-streak"
+            onClick={() => navigate("/study-center?tab=tracker")}
+            title="Open Study Tracker"
+          >
+            <div className="dash-float-icon-box bg-amber-subtle text-amber">
+              <Flame size={20} className="animate-pulse" />
+            </div>
+            <div className="dash-float-info">
+              <div className="dash-float-header-row">
+                <span className="dash-float-label">Streak Status</span>
+                <span className="dash-float-badge-pill amber">🔥 Habit</span>
+              </div>
+              <strong className="dash-float-value text-amber">
+                {currentStreak > 0 ? `${currentStreak} Days` : "0 Days"}
+              </strong>
+            </div>
+          </motion.div>
+
+          {/* Widget 2: Weekly Focus Progress (Top-Right) */}
+          <motion.div
+            animate={{ y: [6, -6, 6], rotate: [0.8, -1, 0.8] }}
+            transition={{ repeat: Infinity, duration: 6.2, ease: "easeInOut" }}
             whileHover={{ scale: 1.08, y: -8 }}
             className="dash-float-widget dash-hero-float-weekly"
             onClick={() => navigate("/study-center?tab=tracker")}
@@ -323,33 +298,10 @@ export default function HeroSection({
             </div>
           </motion.div>
 
-          {/* Widget 4: Daily Streak (Bottom-Left) */}
-          <motion.div
-            animate={{ y: [-5, 6, -5] }}
-            transition={{ repeat: Infinity, duration: 5.2, ease: "easeInOut" }}
-            whileHover={{ scale: 1.08, y: -8 }}
-            className="dash-float-widget dash-hero-float-streak"
-            onClick={() => navigate("/study-center?tab=tracker")}
-            title="Open Study Tracker"
-          >
-            <div className="dash-float-icon-box bg-amber-subtle text-amber">
-              <Flame size={20} className="animate-pulse" />
-            </div>
-            <div className="dash-float-info">
-              <div className="dash-float-header-row">
-                <span className="dash-float-label">Streak Status</span>
-                <span className="dash-float-badge-pill amber">🔥 Habit</span>
-              </div>
-              <strong className="dash-float-value text-amber">
-                {currentStreak > 0 ? `${currentStreak} Days` : "0 Days"}
-              </strong>
-            </div>
-          </motion.div>
-
-          {/* Widget 5: Upcoming Next Lecture (Bottom-Center) */}
+          {/* Widget 3: Upcoming Next Lecture / Classes Today (Bottom-Center) */}
           <motion.div
             animate={{ y: [4, -5, 4] }}
-            transition={{ repeat: Infinity, duration: 6.2, ease: "easeInOut" }}
+            transition={{ repeat: Infinity, duration: 5.8, ease: "easeInOut" }}
             whileHover={{ scale: 1.08, y: -7 }}
             className="dash-float-widget dash-hero-float-class"
             onClick={() => navigate("/planner")}
