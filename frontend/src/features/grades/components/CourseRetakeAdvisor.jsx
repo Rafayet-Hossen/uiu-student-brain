@@ -107,7 +107,7 @@ export default function CourseRetakeAdvisor({
   // Course form state (for Add or Edit)
   const [newCode, setNewCode] = useState("");
   const [newName, setNewName] = useState("");
-  const [newCredits, setNewCredits] = useState("3.0");
+  const [newCredits, setNewCredits] = useState("");
   const [newGradePoint, setNewGradePoint] = useState("");
   const [newSemester, setNewSemester] = useState("");
   const [formError, setFormError] = useState("");
@@ -283,7 +283,7 @@ export default function CourseRetakeAdvisor({
     setEditingCourse(null);
     setNewCode("");
     setNewName("");
-    setNewCredits("3.0");
+    setNewCredits("");
     setNewGradePoint("");
     setNewSemester("");
     setFormError("");
