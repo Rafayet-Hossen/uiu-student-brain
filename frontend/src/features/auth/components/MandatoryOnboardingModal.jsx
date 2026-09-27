@@ -103,7 +103,11 @@ export default function MandatoryOnboardingModal() {
     let parsedCurrentGpa = null;
     if (currentGpa.trim() !== "") {
       parsedCurrentGpa = parseFloat(currentGpa);
-      if (isNaN(parsedCurrentGpa) || parsedCurrentGpa < 0 || parsedCurrentGpa > 4.0) {
+      if (
+        isNaN(parsedCurrentGpa) ||
+        parsedCurrentGpa < 0 ||
+        parsedCurrentGpa > 4.0
+      ) {
         setFormError("Current CGPA must be between 0.00 and 4.00.");
         return;
       }
@@ -112,7 +116,11 @@ export default function MandatoryOnboardingModal() {
     let parsedTargetGpa = 3.8;
     if (targetGpa.trim() !== "") {
       parsedTargetGpa = parseFloat(targetGpa);
-      if (isNaN(parsedTargetGpa) || parsedTargetGpa < 1.0 || parsedTargetGpa > 4.0) {
+      if (
+        isNaN(parsedTargetGpa) ||
+        parsedTargetGpa < 1.0 ||
+        parsedTargetGpa > 4.0
+      ) {
         setFormError("Target CGPA must be between 1.00 and 4.00.");
         return;
       }
@@ -239,7 +247,8 @@ export default function MandatoryOnboardingModal() {
                 color: "var(--color-text-muted)",
               }}
             >
-              Please enter your department and academic targets to activate AI Study Brain.
+              Please enter your department and academic targets to activate AI
+              Study Brain.
             </p>
           </div>
         </div>
@@ -488,8 +497,8 @@ export default function MandatoryOnboardingModal() {
                 lineHeight: 1.4,
               }}
             >
-              <strong>Join Scholar Leaderboard & Student Directory</strong> (Show
-              study streak and progress to fellow university peers)
+              <strong>Join Scholar Leaderboard & Student Directory</strong>{" "}
+              (Show study streak and progress to fellow university peers)
             </label>
           </div>
 

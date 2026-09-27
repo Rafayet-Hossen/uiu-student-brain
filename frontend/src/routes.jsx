@@ -34,7 +34,8 @@ function ProtectedRoute({ children }) {
   if (!user)
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
 
-  const needsOnboarding = user && (user.is_onboarded === false || !user.department);
+  const needsOnboarding =
+    user && (user.is_onboarded === false || !user.department);
 
   return (
     <>
