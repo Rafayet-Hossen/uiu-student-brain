@@ -36,6 +36,9 @@ function ProtectedRoute({ children }) {
   if (!user.is_onboarded && location.pathname !== "/onboarding") {
     return <Navigate to="/onboarding" replace />;
   }
+  if (user.is_onboarded && location.pathname === "/onboarding") {
+    return <Navigate to="/dashboard" replace />;
+  }
   return children;
 }
 

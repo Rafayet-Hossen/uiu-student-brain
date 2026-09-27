@@ -12,13 +12,19 @@ def register_user(email, password, full_name):
 def update_user_profile(user, validated_data: Dict[str, Any]):
     current_gpa = validated_data.pop("current_gpa", None)
     target_gpa = validated_data.pop("target_gpa", None)
+    completed_credits = validated_data.pop("completed_credits", None)
+    total_credits = validated_data.pop("total_credits", None)
 
     if current_gpa is not None:
         user.current_gpa = current_gpa
     if target_gpa is not None:
         user.target_gpa = target_gpa
+    if completed_credits is not None:
+        user.completed_credits = completed_credits
+    if total_credits is not None:
+        user.total_credits = total_credits
 
-    if current_gpa is not None or target_gpa is not None:
+    if any(x is not None for x in [current_gpa, target_gpa, completed_credits, total_credits]):
         try:
             from grades.models import GradePlan
             plan = GradePlan.objects.filter(user=user).first()
@@ -26,18 +32,23 @@ def update_user_profile(user, validated_data: Dict[str, Any]):
                 plan = GradePlan.objects.create(
                     user=user,
                     name="My Academic Plan",
-                    target_gpa=float(target_gpa) if target_gpa is not None else 4.0,
-                    total_credits=140,
-                    current_gpa=float(current_gpa) if current_gpa is not None else 0.0,
+                    target_gpa=float(user.target_gpa) if user.target_gpa is not None else 4.0,
+                    total_credits=float(user.total_credits) if user.total_credits is not None else 140.0,
+                    completed_credits=float(user.completed_credits) if user.completed_credits is not None else 0.0,
+                    current_gpa=float(user.current_gpa) if user.current_gpa is not None else 0.0,
                 )
             else:
                 if current_gpa is not None:
                     plan.current_gpa = float(current_gpa)
                 if target_gpa is not None:
                     plan.target_gpa = float(target_gpa)
+                if completed_credits is not None:
+                    plan.completed_credits = float(completed_credits)
+                if total_credits is not None:
+                    plan.total_credits = float(total_credits)
                 plan.save()
         except Exception as e:
-            print("GPA sync error in update_user_profile:", e)
+            print("Academic sync error in update_user_profile:", e)
 
     for field, value in validated_data.items():
         if hasattr(user, field):

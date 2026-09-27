@@ -59,20 +59,21 @@ export default function StudentBrainLogo({
 
       {showText && (
         <span
-          className="student-brain-brand-text"
+          className="student-brain-brand-title"
           style={{
+            fontSize: `${Math.max(16, Math.round(size * 0.55))}px`,
             fontWeight: 800,
-            fontSize: "1.25rem",
             letterSpacing: "-0.02em",
+            color: "#ffffff",
+            lineHeight: 1,
             display: "inline-flex",
             alignItems: "center",
-            color: "var(--color-text)",
           }}
         >
-          <span>Student</span>
+          Student
           <span
             style={{
-              background: "linear-gradient(135deg, #f26522 0%, #f59e0b 100%)",
+              background: "linear-gradient(135deg, #F26522 0%, #F59E0B 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               marginLeft: "1px",

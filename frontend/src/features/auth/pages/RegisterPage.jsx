@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { GraduationCap, Info } from "lucide-react";
+import { Info } from "lucide-react";
 import { extractErrorMessage, register as registerRequest } from "../api";
 import { useAuth } from "../useAuth";
 import {
@@ -14,7 +14,6 @@ import AuthAmbientBackground from "../components/AuthAmbientBackground";
 import AuthPillInput from "../components/AuthPillInput";
 import FormError from "../../../components/FormError";
 import ThemeToggle from "../../../components/ThemeToggle";
-
 import StudentBrainLogo from "../../../components/StudentBrainLogo";
 
 export default function RegisterPage() {
