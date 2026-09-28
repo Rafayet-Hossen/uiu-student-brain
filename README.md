@@ -5,6 +5,7 @@
 [![Vite](https://img.shields.io/badge/Vite-8.1.5-646CFF?logo=vite)](https://vitejs.dev/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql)](https://www.postgresql.org/)
 [![Google Gemini](https://img.shields.io/badge/Google%20Gemini-2.0%20Flash-4285F4?logo=google)](https://deepmind.google/technologies/gemini/)
+[![Android APK Release](https://img.shields.io/badge/Download-Release%20APK%20(v1.0.0)-3DDC84?logo=android&logoColor=white)](https://github.com/souravsahapartho/uiu-student-brain/releases/download/v1.0.0/StudentBrain-v1.0.0.apk)
 [![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED?logo=docker)](https://www.docker.com/)
 [![Nginx](https://img.shields.io/badge/Nginx-Reverse%20Proxy-009639?logo=nginx)](https://nginx.org/)
 [![UIU BSCSE Aligned](https://img.shields.io/badge/UIU%20BSCSE-Syllabus%20Aligned-FF6F00?logo=buffer)](https://www.uiu.ac.bd/)
@@ -14,10 +15,20 @@
 
 ---
 
+## 📱 Mobile Application (Android APK Release)
+
+Get the official **StudentBrain Android App** directly on your device:
+
+- 🚀 **Direct Download**: [**Download StudentBrain-v1.0.0.apk (61 MB)**](https://github.com/souravsahapartho/uiu-student-brain/releases/download/v1.0.0/StudentBrain-v1.0.0.apk)
+- 📦 **GitHub Releases Page**: [**View v1.0.0 Release Notes & Assets**](https://github.com/souravsahapartho/uiu-student-brain/releases/tag/v1.0.0)
+
+---
+
 ## 📑 Table of Contents
 
-1. [System Architecture & Design Patterns](#-system-architecture)
-2. [Complete Feature Deep Dive & Background Mechanisms](#-complete-feature-deep-dive)
+1. [Mobile Application (Android APK Release)](#-mobile-application-android-apk-release)
+2. [System Architecture & Design Patterns](#-system-architecture)
+3. [Complete Feature Deep Dive & Background Mechanisms](#-complete-feature-deep-dive)
    - [1. Authentication & Visual Identity Engine (`accounts`)](#1-authentication--visual-identity-engine-accounts)
    - [2. UIU BSCSE Course Catalogue & Smart Autocomplete Engine](#2-uiu-bscse-course-catalogue--smart-autocomplete-engine)
    - [3. Study Schedule Maker & Routine Planner (`planner`)](#3-study-schedule-maker--routine-planner-planner)
@@ -31,18 +42,18 @@
    - [11. Cross-Module Academic Analytics Dashboard (`analytics`)](#11-cross-module-academic-analytics-dashboard-analytics)
    - [12. Student Community, Discussions & Study Events (`community`)](#12-student-community-discussions--study-events-community)
    - [13. Privacy-Preserving Global Study Leaderboard (`community`)](#13-privacy-preserving-global-study-leaderboard-community)
-3. [Under-the-Hood Algorithms & Mathematical Formulations](#-under-the-hood-algorithms--mathematical-formulations)
+4. [Under-the-Hood Algorithms & Mathematical Formulations](#-under-the-hood-algorithms--mathematical-formulations)
    - [A. Weighted Credit GPA Projection & Feasibility Math](#a-weighted-credit-gpa-projection--feasibility-math)
    - [B. Dynamic Streak Continuity & Gap Recovery Algorithm](#b-dynamic-streak-continuity--gap-recovery-algorithm)
    - [C. Dynamic Milestone Trophy & Badge Unlocking Logic](#c-dynamic-milestone-trophy--badge-unlocking-logic)
    - [D. Schedule Adherence Audit Metric](#d-schedule-adherence-audit-metric)
    - [E. Multi-Tier Deterministic Leaderboard Ranking Engine](#e-multi-tier-deterministic-leaderboard-ranking-engine)
-4. [Database Schema & Entity Relationship Diagram (ERD)](#-database-schema--entity-relationship-diagram)
-5. [Local Development Setup (Docker & Native)](#-local-development-setup)
-6. [Multi-Device & Remote Network Access](#-multi-device--remote-network-access)
-7. [Production Deployment Guide (Debian 13, Nginx, Gunicorn, SSL)](#-production-deployment-guide)
-8. [Pre-Seeded Demo Accounts & Credentials](#-pre-seeded-demo-accounts--credentials)
-9. [Project Team & Contributors](#-project-team--contributors)
+5. [Database Schema & Entity Relationship Diagram (ERD)](#-database-schema--entity-relationship-diagram)
+6. [Local Development Setup (Docker & Native)](#-local-development-setup)
+7. [Multi-Device & Remote Network Access](#-multi-device--remote-network-access)
+8. [Production Deployment Guide (Debian 13, Nginx, Gunicorn, SSL)](#-production-deployment-guide)
+9. [Pre-Seeded Demo Accounts & Credentials](#-pre-seeded-demo-accounts--credentials)
+10. [Project Team & Contributors](#-project-team--contributors)
 
 ---
 
@@ -523,7 +534,7 @@ All pre-seeded demo accounts share the password: **`Password123!`**
 ## 👨‍💻 Project Team & Contributors
 
 - **Rafayet Hossen** — Full-Stack Architecture, Study Tracker, Gemini AI Diagnostic Testing, Academic Analytics Dashboard, DevOps & Deployment.
-- **Sourav Saha** — Community Discussions Hub, Study Events Engine, Global Leaderboard Service, UIU BSCSE Autocomplete & Dynamic Course Catalogue Integration.
+- **Sourav Saha** — Community Discussions Hub, Study Events Engine, Global Leaderboard Service, UIU BSCSE Autocomplete & Dynamic Course Catalogue Integration, Android Mobile Release Deployment.
 - **Baitun Nahar Bithy** — Academic UI/UX Design System, Grade Planner & GPA Forecasting Engine.
 - **Saptarshi Biswas Supty** — Academic UI/UX Design System, Study Schedule Maker & Routine Planner.
 
