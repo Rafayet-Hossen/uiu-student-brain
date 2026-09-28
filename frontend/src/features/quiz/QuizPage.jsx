@@ -183,12 +183,71 @@ export default function QuizPage() {
         };
       });
 
-      const evalData = await evaluateQuiz({
-        subject,
-        question_results,
+      // 1. Calculate local instant evaluation
+      const totalQ = question_results.length;
+      const correctCount = question_results.filter((q) => q.is_correct).length;
+      const accuracy = totalQ > 0 ? (correctCount / totalQ) * 100 : 0;
+      const weakTopics = [
+        ...new Set(
+          question_results.filter((q) => !q.is_correct).map((q) => q.topic || "Core Concept"),
+        ),
+      ];
+      const masteredTopics = [
+        ...new Set(
+          question_results.filter((q) => q.is_correct).map((q) => q.topic || "Core Concept"),
+        ),
+      ];
+
+      const localTier =
+        accuracy >= 90
+          ? "Scholar Elite (Exceptional Performance)"
+          : accuracy >= 75
+            ? "Advanced Proficiency"
+            : accuracy >= 50
+              ? "Competent (Targeted Remediation Recommended)"
+              : "Needs Priority Reinforcement";
+
+      const localRecs =
+        weakTopics.length > 0
+          ? [
+              `Focus deliberate practice on: ${weakTopics.slice(0, 3).join(", ")}.`,
+              "Apply Active Recall and solve 3-5 standard textbook problem sets for weak topics.",
+              "Re-take this diagnostic quiz after reviewing lecture notes to consolidate concepts.",
+            ]
+          : [
+              "Outstanding mastery across all tested concepts! Maintain your active study streak.",
+              "Review advanced case studies and practice timed past exam questions.",
+            ];
+
+      // 2. Call backend evaluation for logging and persistence
+      let evalData = null;
+      try {
+        evalData = await evaluateQuiz({
+          subject,
+          question_results,
+        });
+      } catch {
+        // Fallback to instant local evaluation if network is offline
+        evalData = {
+          accuracy_percentage: accuracy,
+          performance_tier: localTier,
+          weak_topics: weakTopics,
+          mastered_topics: masteredTopics,
+          study_recommendations: localRecs,
+          recommendations: localRecs,
+        };
+      }
+
+      setEvaluationResult(evalData || {
+        accuracy_percentage: accuracy,
+        performance_tier: localTier,
+        weak_topics: weakTopics,
+        mastered_topics: masteredTopics,
+        study_recommendations: localRecs,
+        recommendations: localRecs,
       });
 
-      setEvaluationResult(evalData);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       setError(extractMaterialsErrorMessage(err));
     } finally {
@@ -464,7 +523,9 @@ export default function QuizPage() {
                   icon={evaluating ? undefined : CheckCircle2}
                   style={{ minWidth: "180px", justifyContent: "center" }}
                 >
-                  {evaluating ? "Submitting Assessment..." : "Submit Assessment"}
+                  {evaluating
+                    ? "Submitting Assessment..."
+                    : "Submit Assessment"}
                 </Button>
               )}
             </div>
@@ -491,7 +552,8 @@ export default function QuizPage() {
                 <div className="score-tier-badge">
                   <Award size={18} />
                   <span>
-                    {evaluationResult.performance_tier || "Assessment Submitted & Evaluated"}
+                    {evaluationResult.performance_tier ||
+                      "Assessment Submitted & Evaluated"}
                   </span>
                 </div>
                 <h2 className="score-headline">
@@ -673,9 +735,7 @@ export default function QuizPage() {
                               <div className="review-letter-badge">
                                 {letter}
                               </div>
-                              <div className="review-text-content">
-                                {opt}
-                              </div>
+                              <div className="review-text-content">{opt}</div>
                               <div className="review-status-indicator">
                                 {isCorrectChoice && isUserChoice && (
                                   <span className="badge-solution-tag tag-success">

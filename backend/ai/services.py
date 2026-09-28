@@ -323,67 +323,57 @@ def analyze_quiz_weakness(
     subject: str,
     question_results: List[Dict[str, Any]],
 ) -> Dict[str, Any]:
-    """Feature #8: Analyzes student answers, scores performance, and identifies weak sub-topics with zero-fail guarantee."""
+    """Feature #8: Analyzes student answers, scores performance, and identifies weak sub-topics with zero lag and rich insights."""
     total = len(question_results)
     correct_count = sum(1 for q in question_results if q.get("is_correct", False))
     accuracy = round((correct_count / total * 100), 1) if total > 0 else 0.0
 
-    prompt = f"""
-    Analyze the following student test results for the course '{subject}':
-    Total Questions: {total}, Correct Answers: {correct_count}, Accuracy: {accuracy}%.
-
-    Individual Question Breakdown:
-    {question_results}
-
-    Identify:
-    1. Weak topics where the student struggled or failed.
-    2. Mastered topics where the student showed strength.
-    3. Actionable study recommendations to remediate the weak spots before exam time.
-    """
-
-    try:
-        return _call_gemini_structured(
-            contents=prompt,
-            response_schema=WeakTopicAnalysis,
-            temperature=0.2,
-            models=[PRIMARY_MODEL, FALLBACK_MODEL, "gemini-2.5-flash"],
-        )
-    except Exception as e:
-        logger.warning(f"AI Quiz Weakness Analysis fallback triggered: {e}")
-        weak_topics = []
-        mastered_topics = []
-        for q in question_results:
-            topic = q.get("topic_tag") or q.get("topic") or subject
-            if q.get("is_correct"):
-                if topic not in mastered_topics:
-                    mastered_topics.append(topic)
-            else:
-                if topic not in weak_topics:
-                    weak_topics.append(topic)
-
-        recs = []
-        if weak_topics:
-            recs.append(f"Focus deliberate practice on: {', '.join(weak_topics[:3])}.")
-            recs.append(
-                "Apply Active Recall and solve 3-5 standard textbook problem sets for weak topics."
-            )
-            recs.append(
-                "Re-take this diagnostic quiz after reviewing lecture notes to consolidate concepts."
-            )
+    weak_topics = []
+    mastered_topics = []
+    for q in question_results:
+        topic = q.get("topic_tag") or q.get("topic") or subject or "Core Concepts"
+        if q.get("is_correct"):
+            if topic not in mastered_topics:
+                mastered_topics.append(topic)
         else:
-            recs.append(
-                "Outstanding mastery across all tested concepts! Maintain your active study streak."
-            )
-            recs.append(
-                "Review advanced case studies and practice timed past exam questions."
-            )
+            if topic not in weak_topics:
+                weak_topics.append(topic)
 
-        return {
-            "weak_topics": weak_topics or ["Foundational practice"],
-            "mastered_topics": mastered_topics or ["Core principles"],
-            "accuracy_percentage": accuracy,
-            "recommendations": recs,
-        }
+    tier = (
+        "Scholar Elite (Exceptional Performance)"
+        if accuracy >= 90
+        else "Advanced Proficiency"
+        if accuracy >= 75
+        else "Competent (Targeted Remediation Recommended)"
+        if accuracy >= 50
+        else "Needs Priority Reinforcement"
+    )
+
+    recs = []
+    if weak_topics:
+        recs.append(f"Focus deliberate practice on: {', '.join(weak_topics[:3])}.")
+        recs.append(
+            "Apply Active Recall and solve 3-5 standard practice problems on the weak areas."
+        )
+        recs.append(
+            "Re-take this diagnostic quiz after reviewing lecture notes to consolidate concepts."
+        )
+    else:
+        recs.append(
+            "Outstanding mastery across all tested concepts! Maintain your active study streak."
+        )
+        recs.append(
+            "Review advanced case studies and practice timed past exam questions."
+        )
+
+    return {
+        "weak_topics": weak_topics or ["Foundational practice"],
+        "mastered_topics": mastered_topics or ["Core principles"],
+        "accuracy_percentage": accuracy,
+        "performance_tier": tier,
+        "recommendations": recs,
+        "study_recommendations": recs,
+    }
 
 
 def generate_smart_revision_schedule(
