@@ -48,7 +48,7 @@ def extract_text_from_uploaded_file(file_obj) -> str:
             if extracted_pages:
                 return "\n\n".join(extracted_pages)
         except Exception as e:
-            logger.debug("PDF extraction error: %s", e)
+            print(f"PDF extraction error: {e}")
 
     # 2. DOCX Extraction via standard zipfile and xml parsing
     if filename.endswith(".docx") or filename.endswith(".doc"):
@@ -73,7 +73,7 @@ def extract_text_from_uploaded_file(file_obj) -> str:
                 if paragraphs:
                     return "\n\n".join(paragraphs)
         except Exception as e:
-            logger.debug("DOCX extraction error: %s", e)
+            print(f"DOCX extraction error: {e}")
 
     # 3. Plain Text, Markdown, CSV, Code files
     try:
@@ -89,7 +89,7 @@ def extract_text_from_uploaded_file(file_obj) -> str:
             return raw_bytes.decode("utf-8", errors="ignore")
         return str(raw_bytes)
     except Exception as e:
-        logger.debug("Text file read error: %s", e)
+        print(f"Text file read error: {e}")
 
     return f"Study material document: {getattr(file_obj, 'name', 'Document')}"
 

@@ -4345,12 +4345,12 @@
 
 .leaderboard-row {
   display: grid;
-  grid-template-columns: 70px 1fr 160px 130px 110px;
-  gap: 14px;
+  grid-template-columns: 80px minmax(180px, 1fr) 150px 140px 130px;
+  gap: 16px;
   padding: 14px 20px;
   align-items: center;
   border-bottom: 1px solid var(--color-border-subtle);
-  transition: background 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .leaderboard-row:last-child {
@@ -4359,6 +4359,7 @@
 
 .leaderboard-row:hover {
   background: var(--color-surface-subtle);
+  transform: translateY(-1px);
 }
 
 .leaderboard-row-you {
@@ -4366,29 +4367,24 @@
   border-left: 3px solid var(--color-accent);
 }
 
-@media (min-width: 641px) {
-  .leaderboard-row-top-mobile,
-  .leaderboard-row-bottom-mobile {
-    display: contents;
-  }
-  .leaderboard-row-left-mobile {
-    display: contents;
-  }
-  .leaderboard-row .col-rank {
-    grid-column: 1;
-  }
-  .leaderboard-row .col-student {
-    grid-column: 2;
-  }
-  .leaderboard-row .col-metric {
-    grid-column: 3;
-  }
-  .leaderboard-row .col-achievements {
-    grid-column: 4;
-  }
-  .leaderboard-row .col-action {
-    grid-column: 5;
-  }
+.leaderboard-self-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-accent-text, #ea580c);
+  background: var(--color-accent-subtle, rgba(234, 88, 12, 0.12));
+  border: 1px solid var(--color-accent);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+.student-table-sub {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
 }
 
 .rank-number-badge {
@@ -4486,8 +4482,8 @@
   }
   .leaderboard-table-header,
   .leaderboard-row {
-    grid-template-columns: 50px 1fr 130px 110px 100px;
-    gap: 10px;
+    grid-template-columns: 60px minmax(150px, 1fr) 130px 120px 110px;
+    gap: 12px;
     padding: 12px 14px;
   }
 }
@@ -4542,7 +4538,7 @@
     text-align: center;
   }
 
-  /* Compact 2-3 Column Podium on Phone (Real Podium Look, Not Giant Stacked Boxes) */
+  /* Compact 2-3 Column Podium on Phone */
   .leaderboard-podium-container {
     gap: 6px;
     margin-bottom: 20px;
@@ -4585,48 +4581,62 @@
     width: 100%;
   }
 
-  /* Compact Mobile Leaderboard Rows */
+  /* Beautiful Mobile Card Layout for Leaderboard Rows */
   .leaderboard-table-header {
     display: none;
   }
   .leaderboard-rows-list {
-    gap: 8px;
-    padding: 8px;
-  }
-  .leaderboard-row {
     display: flex;
     flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-    padding: 10px 12px;
-    background: var(--color-surface-subtle);
+    gap: 10px;
+    padding: 10px;
+  }
+  .leaderboard-row {
+    display: grid;
+    grid-template-areas:
+      "rank student action"
+      "metric metric achievements";
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 10px 12px;
+    padding: 12px 14px;
+    background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
-    border-bottom: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
   }
-  .leaderboard-row-top-mobile {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    width: 100%;
+  .leaderboard-row:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
   }
-  .leaderboard-row-left-mobile {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  .leaderboard-row.leaderboard-row-you {
+    background: var(--color-accent-subtle) !important;
+    border: 1.5px solid var(--color-accent);
+    border-left: 4px solid var(--color-accent);
+  }
+  .leaderboard-row .col-rank {
+    grid-area: rank;
+  }
+  .leaderboard-row .col-student {
+    grid-area: student;
     min-width: 0;
-    flex: 1;
   }
-  .leaderboard-row-bottom-mobile {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 6px;
-    flex-wrap: wrap;
+  .leaderboard-row .col-action {
+    grid-area: action;
+    justify-self: end;
+  }
+  .leaderboard-row .col-metric {
+    grid-area: metric;
     border-top: 1px dashed var(--color-border-subtle);
-    padding-top: 6px;
-    width: 100%;
+    padding-top: 8px;
+    margin-top: 2px;
+  }
+  .leaderboard-row .col-achievements {
+    grid-area: achievements;
+    justify-self: end;
+    border-top: 1px dashed var(--color-border-subtle);
+    padding-top: 8px;
+    margin-top: 2px;
   }
 }
 
@@ -12607,18 +12617,18 @@ html[data-theme="dark"] .native-reader-main-viewport {
   z-index: 70;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(226, 232, 240, 0.8);
   border-radius: 20px;
   padding: 12px 22px;
-  box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.04);
   transition: all 0.25s ease;
 }
 
 [data-theme="dark"] .study-center-unified-header {
-  background: var(--color-surface);
-  border-color: var(--color-border);
-  box-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.45);
+  background: rgba(15, 23, 42, 0.85);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.35);
 }
 
 .study-center-header-row {
@@ -20969,17 +20979,17 @@ html[data-theme="dark"] .btn-celebration-extend:hover {
     padding: 10px 12px !important;
     border-radius: 16px !important;
     margin-bottom: 6px !important;
-    border: 1px solid var(--color-border) !important;
-    background: var(--color-surface) !important;
+    border: 1px solid var(--color-border-subtle) !important;
+    background: rgba(255, 255, 255, 0.94) !important;
     backdrop-filter: blur(14px) !important;
     -webkit-backdrop-filter: blur(14px) !important;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
   }
 
   [data-theme="dark"] .study-center-unified-header {
-    background: var(--color-surface) !important;
-    border-color: var(--color-border) !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45) !important;
+    background: rgba(15, 23, 42, 0.94) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
   }
 
   .study-center-header-row {

@@ -189,12 +189,16 @@ export default function QuizPage() {
       const accuracy = totalQ > 0 ? (correctCount / totalQ) * 100 : 0;
       const weakTopics = [
         ...new Set(
-          question_results.filter((q) => !q.is_correct).map((q) => q.topic || "Core Concept"),
+          question_results
+            .filter((q) => !q.is_correct)
+            .map((q) => q.topic || "Core Concept"),
         ),
       ];
       const masteredTopics = [
         ...new Set(
-          question_results.filter((q) => q.is_correct).map((q) => q.topic || "Core Concept"),
+          question_results
+            .filter((q) => q.is_correct)
+            .map((q) => q.topic || "Core Concept"),
         ),
       ];
 
@@ -238,14 +242,16 @@ export default function QuizPage() {
         };
       }
 
-      setEvaluationResult(evalData || {
-        accuracy_percentage: accuracy,
-        performance_tier: localTier,
-        weak_topics: weakTopics,
-        mastered_topics: masteredTopics,
-        study_recommendations: localRecs,
-        recommendations: localRecs,
-      });
+      setEvaluationResult(
+        evalData || {
+          accuracy_percentage: accuracy,
+          performance_tier: localTier,
+          weak_topics: weakTopics,
+          mastered_topics: masteredTopics,
+          study_recommendations: localRecs,
+          recommendations: localRecs,
+        },
+      );
 
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {

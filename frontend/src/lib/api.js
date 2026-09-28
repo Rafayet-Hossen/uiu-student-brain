@@ -46,7 +46,6 @@ const API_BASE_URL = getApiBaseUrl();
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 45000,
 });
 
 api.interceptors.request.use((config) => {
@@ -75,21 +74,7 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    if (!originalRequest) return Promise.reject(error);
 
-    // 1. Handle transient 502/503/504 or network timeout (e.g. backend spin-up) with 1 auto-retry
-    const isTransientError =
-      !error.response ||
-      error.code === "ECONNABORTED" ||
-      [502, 503, 504].includes(error.response.status);
-
-    if (isTransientError && !originalRequest._networkRetry && originalRequest.method !== "post" && originalRequest.method !== "POST") {
-      originalRequest._networkRetry = true;
-      await new Promise((res) => setTimeout(res, 1200));
-      return api(originalRequest);
-    }
-
-    // 2. Handle 401 Unauthorized token refresh
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
@@ -125,7 +110,6 @@ api.interceptors.response.use(
           {
             refresh: refreshToken,
           },
-          { timeout: 15000 },
         );
         const newAccessToken = res.data.access;
         localStorage.setItem("access_token", newAccessToken);
