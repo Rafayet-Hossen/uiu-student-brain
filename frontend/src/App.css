@@ -5474,73 +5474,6 @@
   flex-wrap: wrap;
 }
 
-/* ==========================================================================
-   MATERIAL ANALYSIS MODAL FOOTER & RESPONSIVE BUTTONS
-   ========================================================================== */
-.material-modal-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  width: 100%;
-  padding-top: 16px;
-  border-top: 1px solid var(--color-border-subtle);
-  box-sizing: border-box;
-}
-
-.material-modal-footer-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  flex: 1;
-}
-
-.mat-footer-btn {
-  white-space: nowrap;
-}
-
-.mat-footer-close-btn {
-  min-width: 90px;
-}
-
-@media (max-width: 768px) {
-  .material-modal-footer {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-  }
-
-  .material-modal-footer-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    width: 100%;
-  }
-
-  .material-modal-footer-actions .mat-footer-btn-primary-action {
-    grid-column: 1 / -1;
-    width: 100%;
-    justify-content: center;
-  }
-
-  .material-modal-footer-actions .mat-footer-btn {
-    width: 100%;
-    justify-content: center;
-    padding: 9px 12px;
-    font-size: 0.8125rem;
-  }
-
-  .mat-footer-close-btn {
-    width: 100%;
-    justify-content: center;
-    order: 3;
-    padding: 10px 16px;
-    font-size: 0.875rem;
-    font-weight: 700;
-  }
-}
-
 /* Responsive adjust — Complete Zero-Horizontal-Spillage Suite */
 @media (max-width: 640px) {
   .main-content {
@@ -12674,18 +12607,18 @@ html[data-theme="dark"] .native-reader-main-viewport {
   z-index: 70;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(226, 232, 240, 0.8);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 20px;
   padding: 12px 22px;
-  box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
   transition: all 0.25s ease;
 }
 
 [data-theme="dark"] .study-center-unified-header {
-  background: rgba(15, 23, 42, 0.85);
-  border-color: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.35);
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  box-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.45);
 }
 
 .study-center-header-row {
@@ -21036,17 +20969,17 @@ html[data-theme="dark"] .btn-celebration-extend:hover {
     padding: 10px 12px !important;
     border-radius: 16px !important;
     margin-bottom: 6px !important;
-    border: 1px solid var(--color-border-subtle) !important;
-    background: rgba(255, 255, 255, 0.94) !important;
+    border: 1px solid var(--color-border) !important;
+    background: var(--color-surface) !important;
     backdrop-filter: blur(14px) !important;
     -webkit-backdrop-filter: blur(14px) !important;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
   }
 
   [data-theme="dark"] .study-center-unified-header {
-    background: rgba(15, 23, 42, 0.94) !important;
-    border-color: rgba(255, 255, 255, 0.08) !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
+    background: var(--color-surface) !important;
+    border-color: var(--color-border) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45) !important;
   }
 
   .study-center-header-row {

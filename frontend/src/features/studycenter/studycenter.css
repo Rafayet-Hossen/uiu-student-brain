@@ -64,19 +64,19 @@
     border-radius: 16px !important;
     margin-top: 0 !important;
     margin-bottom: 4px !important;
-    background: rgba(255, 255, 255, 0.95) !important;
+    background: var(--color-surface) !important;
     backdrop-filter: blur(16px) !important;
     -webkit-backdrop-filter: blur(16px) !important;
-    border: 1px solid var(--color-border-subtle) !important;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04) !important;
+    border: 1px solid var(--color-border) !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08) !important;
     width: 100% !important;
     box-sizing: border-box !important;
   }
 
   [data-theme="dark"] .study-center-unified-header {
-    background: rgba(15, 23, 42, 0.95) !important;
-    border-color: rgba(255, 255, 255, 0.08) !important;
-    box-shadow: 0 4px 22px rgba(0, 0, 0, 0.35) !important;
+    background: var(--color-surface) !important;
+    border-color: var(--color-border) !important;
+    box-shadow: 0 4px 22px rgba(0, 0, 0, 0.45) !important;
   }
 
   .study-center-header-row {
