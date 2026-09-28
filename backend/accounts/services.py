@@ -1,7 +1,9 @@
+import logging
 from typing import Any, Dict
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
 
+logger = logging.getLogger(__name__)
 User = get_user_model()
 
 
@@ -48,7 +50,7 @@ def update_user_profile(user, validated_data: Dict[str, Any]):
                     plan.total_credits = float(total_credits)
                 plan.save()
         except Exception as e:
-            print("Academic sync error in update_user_profile:", e)
+            logger.debug("Academic sync error in update_user_profile: %s", e)
 
     for field, value in validated_data.items():
         if hasattr(user, field):
@@ -90,7 +92,7 @@ def get_user_profile_summary(user) -> Dict[str, Any]:
         rewards = get_user_rewards(user=user)
         badges_earned = sum(1 for r in rewards if r.get("unlocked"))
     except Exception as e:
-        print("Tracker summary error:", e)
+        logger.debug("Tracker summary: %s", e)
 
     # 2. Grade Planner stats
     target_gpa = float(user.target_gpa) if getattr(user, "target_gpa", None) is not None else None
@@ -113,7 +115,7 @@ def get_user_profile_summary(user) -> Dict[str, Any]:
             from materials.models import Course
             total_courses = Course.objects.filter(user=user).count()
     except Exception as e:
-        print("Grades summary error:", e)
+        logger.debug("Grades summary: %s", e)
 
     # 3. Planner routines
     routines_count = 0
@@ -122,7 +124,7 @@ def get_user_profile_summary(user) -> Dict[str, Any]:
 
         routines_count = Schedule.objects.filter(user=user).count()
     except Exception as e:
-        print("Planner summary error:", e)
+        logger.debug("Planner summary: %s", e)
 
     # 4. Materials & Topics
     materials_count = 0
@@ -144,7 +146,7 @@ def get_user_profile_summary(user) -> Dict[str, Any]:
                         topics_set.add(str(t).strip())
         topics_count = len(topics_set)
     except Exception as e:
-        print("Materials summary error:", e)
+        logger.debug("Materials summary: %s", e)
 
     # 5. Community & Ranking stats
     community_rank = 1
@@ -166,7 +168,7 @@ def get_user_profile_summary(user) -> Dict[str, Any]:
                 total_xp = entry.get("total_points", 0)
                 break
     except Exception as e:
-        print("Community summary error:", e)
+        logger.debug("Community summary: %s", e)
 
     return {
         "user": {
