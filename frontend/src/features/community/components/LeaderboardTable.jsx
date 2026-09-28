@@ -127,9 +127,7 @@ export default function LeaderboardTable({
 
               {/* Column 4: Badges */}
               <div className="col-achievements">
-                <Badge variant="accent">
-                  🏆 {entry.trophies_count} Badges
-                </Badge>
+                <Badge variant="accent">🏆 {entry.trophies_count} Badges</Badge>
               </div>
 
               {/* Column 5: Connect / Action */}
