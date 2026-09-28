@@ -1,59 +1,63 @@
-CourseCode,Title,Credits,Type,Major
-CSE 1110,Introduction to Computer Systems,1.0,Core Lab,General
-CSE 1111,Structured Programming Language,3.0,Core Theory,General
-CSE 1112,Structured Programming Language Laboratory,1.0,Core Lab,General
-MATH 1151,Fundamental Calculus,3.0,Basic Science,General
-ENG 1011,English I (Basic English),3.0,GED,General
-BDS 1201,History of the Emergence of Bangladesh,2.0,GED,General
-PHY 2105,Physics,3.0,Basic Science,General
-PHY 2106,Physics Laboratory,1.0,Core Lab,General
-MATH 2183,Coordinate Geometry and Vector Analysis,3.0,Basic Science,General
-CSE 1325,Digital Logic Design,3.0,Core Theory,General
-CSE 1326,Digital Logic Design Laboratory,1.0,Core Lab,General
-CSE 2115,Object Oriented Programming,3.0,Core Theory,General
-CSE 2116,Object Oriented Programming Laboratory,1.0,Core Lab,General
-MATH 2205,Probability and Statistics,3.0,Basic Science,General
-SOC 2101,Society Technology and Engineering Ethics,3.0,GED,General
-CSE 2215,Data Structure and Algorithms I,3.0,Core Theory,General
-CSE 2216,Data Structure and Algorithms I Laboratory,1.0,Core Lab,General
-CSE 2217,Data Structure and Algorithms II,3.0,Core Theory,General
-CSE 2218,Data Structure and Algorithms II Laboratory,1.0,Core Lab,General
-CSE 3521,Database Management Systems,3.0,Core Theory,General
-CSE 3522,Database Management Systems Laboratory,1.0,Core Lab,General
-CSE 3313,Microprocessors and Microcontrollers,3.0,Core Theory,General
-CSE 4326,Microprocessors and Microcontrollers Laboratory,1.0,Core Lab,General
-CSE 3411,System Analysis and Design,3.0,Core Theory,General
-CSE 3412,System Analysis and Design Laboratory,1.0,Core Lab,General
-CSE 3421,Software Engineering,3.0,Core Theory,General
-CSE 3422,Software Engineering Laboratory,1.0,Core Lab,General
-CSE 3711,Computer Networks,3.0,Core Theory,General
-CSE 3712,Computer Networks Laboratory,1.0,Core Lab,General
-CSE 3811,Artificial Intelligence,3.0,Core Theory,General
-CSE 3812,Artificial Intelligence Laboratory,1.0,Core Lab,General
-CSE 3531,Theory of Computation,3.0,Core Theory,General
-GED OPT 1,General Education Optional-I,3.0,GED,General
-GED OPT 2,General Education Optional-II,3.0,GED,General
-CSE 4000A,Final Year Design Project - I,3.0,Capstone,General
-CSE 4000B,Final Year Design Project - II,3.0,Capstone,General
-CSE 4531,Computer Security,3.0,Core Theory,Network and Cyber Security
-ACT 2111,Financial and Managerial Accounting,3.0,GED,General
-TEC 2499,Technology Entrepreneurship,3.0,GED,General
-CSE 4125,Ethical Hacking and Network Defense,3.0,Major Elective,Network and Cyber Security
-CSE 4777,Network Security,3.0,Major Elective,Network and Cyber Security
-CSE 4779,Wireless and Mobile Communication,3.0,Major Elective,Network and Cyber Security
-CSE 4165,UI: Concepts and Design,3.0,Major Elective,Software Engineering
-CSE 4181,Mobile Application Development,3.0,Major Elective,Software Engineering
-CSE 4495,Software Testing and Quality Assurance,3.0,Major Elective,Software Engineering
-CSE 4451,Human Computer Interaction,3.0,Major Elective,Business System Engineering
-CSE 4587,Cloud Computing and Distributed Systems,3.0,Major Elective,Software Engineering
-CSE 4621,Advanced Software Architecture and Design,3.0,Major Elective,Software Engineering
-CSE 4327,VLSI Design,3.0,Major Elective,Embedded Systems and Hardware
-CSE 4329,Embedded Machine Learning (Special Topics),3.0,Major Elective,Embedded Systems and Hardware
-CSE 4331,Robotics and Autonomous Systems,3.0,Major Elective,Embedded Systems and Hardware
-CSE 4889,Machine Learning,3.0,Major Elective,AI and Data Science
-CSE 4801,Data Mining,3.0,Major Elective,AI and Data Science
-CSE 4817,Big Data Analytics,3.0,Major Elective,AI and Data Science
-CSE 4821,Digital Image Processing,3.0,Major Elective,AI and Data Science
-CSE 4811,Natural Language Processing,3.0,Major Elective,AI and Data Science
-CSE 4813,Deep Learning,3.0,Major Elective,AI and Data Science
-CSE 4825,Computer Vision and Pattern Recognition,3.0,Major Elective,AI and Data Science
+Trimester,SL,Course Code,Title,Cr,Prerequisite,Exam Day,Exam Slot
+1,1,ENG 1011,English I,3,X,Day 1,T1
+1,2,BDS 1201,History of the Emergence of Bangladesh,2,X,Day 6,T1
+1,3,CSE 1110,Introduction to Computer Systems,1,X,N/A,N/A
+1,4,MATH 1151,Fundamental Calculus,3,X,Day 2,T2
+2,1,ENG 1013,English II,3,ENG 1011,Day 1,T2
+2,2,CSE 1111,Structured Programming Language,3,CSE 1110,Day 4,T2
+2,3,CSE 1112,Structured Programming Language Laboratory,1,CSE 1110,N/A,N/A
+2,4,CSE 2213,Discrete Mathematics,3,X,Day 3,T2
+3,1,MATH 2183,Calculus and Linear Algebra,3,MATH 1151,Day 1,T3
+3,2,PHY 2105,Physics,3,X,Day 7,T3
+3,3,PHY 2106,Physics Lab,1,X,N/A,N/A
+3,4,CSE 2215,Data Structure and Algorithms I,3,CSE 1111,Day 4,T2
+3,5,CSE 2216,Data Structure and Algorithms I Laboratory,1,CSE 1112,N/A,N/A
+4,1,MATH 2201,Coordinate Geometry and Vector Analysis,3,MATH 1151,Day 5,T1
+4,2,CSE 1325,Digital Logic Design,3,X,Day 3,T3
+4,3,CSE 1326,Digital Logic Design Lab,1,X,N/A,N/A
+4,4,CSE 1115,Object Oriented Programming,3,CSE 2215,Day 6,T2
+4,5,CSE 1116,Object Oriented Programming Lab,1,CSE 2216,N/A,N/A
+5,1,MATH 2205,Probability and Statistics,3,MATH 1151,Day 2,T3
+5,2,SOC 2101,"Society, Technology and Engineering Ethics",3,X,Day 1,T3
+5,3,CSE 2217,Data Structure and Algorithms II,3,CSE 2215,Day 5,T2
+5,4,CSE 2218,Data Structure and Algorithms II Laboratory,1,CSE 2216,N/A,N/A
+5,5,EEE 2113,Electrical Circuits,3,X,Day 6,T3
+6,1,CSE 3521,Database Management Systems,3,CSE 2215,Day 2,T1
+6,2,CSE 3522,Database Management Systems Lab,1,CSE 2216,N/A,N/A
+6,3,EEE 2123,Electronics,3,EEE 2113,Day 6,T3
+6,4,EEE 2124,Electronics Lab,1,X,N/A,N/A
+6,5,CSE 4165,Web Programming,3,"CSE 1115, CSE 1116",Day 7,T1
+7,1,CSE 3313,Computer Architecture,3,CSE 1325,Day 1,T3
+7,2,CSE 2118,Advanced Object Oriented Programming Lab,1,CSE 1116,N/A,N/A
+7,3,BIO 3105,Biology for Engineers,3,X,Day 3,T3
+7,4,CSE 3411,System Analysis and Design,3,CSE 3521,Day 5,T1
+7,5,CSE 3412,System Analysis and Design Lab,1,CSE 3522,N/A,N/A
+8,1,CSE 4325,Microprocessors and Microcontrollers,3,CSE 3313,Day 2,T2
+8,2,CSE 4326,Microprocessors and Microcontrollers Lab,1,EEE 2124,N/A,N/A
+8,3,CSE 3421,Software Engineering,3,CSE 3411,Day 5,T3
+8,4,CSE 3422,Software Engineering Lab,1,CSE 3412,N/A,N/A
+8,5,CSE 3811,Artificial Intelligence,3,"MATH 2205, CSE 2217",Day 3,T1
+8,6,CSE 3812,Artificial Intelligence Lab,1,"MATH 2205, CSE 2218",N/A,N/A
+9,1,CSE 2233,Theory of Computation,3,X,Day 7,T2
+9,2,GED OPT1,General Education Optional-I,3,X,----,----
+9,3,PMG 4101,Project Management,3,CSE 3411,Day 3,T2
+9,4,CSE 3711,Computer Networks,3,CSE 2217,Day 4,T3
+9,5,CSE 3712,Computer Networks Lab,1,X,N/A,N/A
+10,1,GED OPT2,General Education Optional-II,3,X,----,----
+10,2,CSE 4000 A,Final Year Design Project - I,2,minimum 85 credits,----,----
+10,3,CSE ****,Elective - I,3,X,----,----
+10,4,CSE 4509,Operating Systems,3,"CSE 2217, CSE 3313",Day 1,T1
+10,5,CSE 4510,Operating Systems Laboratory,1,CSE 2218,N/A,N/A
+11,1,GED OPT3,General Education Optional - III,3,X,----,----
+11,2,CSE ****,Elective - II,3,X,----,----
+11,3,CSE ****,Elective - III,3,X,----,----
+11,4,CSE 4000 B,Final Year Design Project - II,2,CSE 4000 A,N/A,N/A
+11,5,CSE 4531,Computer Security,3,"CSE 3711, CSE 4509",Day 6,T3
+12,1,CSE 4000 C,Final Year Design Project - III,2,CSE 4000 A & CSE 4000 B,----,----
+12,2,EEE 4261,Green Computing,3,X,Day 5,T1
+12,3,CSE ****,Elective - IV,3,X,----,----
+12,4,CSE ****,Elective - V,3,X,----,----
+GenEd,1,GED 1005,AI Literacy and Prompt Engineering,3,X,Day 1,T1
+GenEd,2,ECO 4101,Economics,3,X,Day 6,T1
+GenEd,3,ACT 2111,Financial and Managerial Accounting,3,X,Day 2,T3
+GenEd,4,TEC 2499,Technology Entrepreneurship,3,X,Day 3,T2

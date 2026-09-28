@@ -240,12 +240,37 @@ export default function CourseAutocomplete({
                     </div>
                     <div
                       style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        flexWrap: "wrap",
                         fontSize: "0.7rem",
                         color: "var(--color-text-muted)",
-                        marginTop: "1px",
+                        marginTop: "2px",
                       }}
                     >
-                      {item.major !== "General" ? item.major : item.type}
+                      {item.trimester && (
+                        <span
+                          style={{
+                            fontWeight: 600,
+                            color: "var(--color-primary)",
+                          }}
+                        >
+                          {item.trimester}
+                        </span>
+                      )}
+                      {item.prerequisite &&
+                        item.prerequisite !== "None" &&
+                        item.prerequisite !== "X" && (
+                          <span>• Prereq: {item.prerequisite}</span>
+                        )}
+                      {item.examDay &&
+                        item.examDay !== "N/A" &&
+                        item.examDay !== "----" && (
+                          <span style={{ opacity: 0.85 }}>
+                            • Exam: {item.examDay} ({item.examSlot})
+                          </span>
+                        )}
                     </div>
                   </div>
 
