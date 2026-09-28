@@ -226,6 +226,21 @@ class StudyMaterialCreateSerializer(serializers.ModelSerializer):
         content_text = (attrs.get("content_text") or attrs.get("content") or "").strip()
         attrs["content_text"] = content_text
 
+        if file_obj:
+            max_size_bytes = 50 * 1024 * 1024  # 50 MB limit
+            if getattr(file_obj, "size", 0) > max_size_bytes:
+                raise serializers.ValidationError("File size exceeds 50MB limit.")
+
+            allowed_extensions = (
+                ".pdf", ".docx", ".doc", ".pptx", ".ppt", ".txt", ".md",
+                ".csv", ".xlsx", ".xls", ".png", ".jpg", ".jpeg", ".webp", ".zip"
+            )
+            file_name = getattr(file_obj, "name", "").lower()
+            if not file_name.endswith(allowed_extensions):
+                raise serializers.ValidationError(
+                    "Unsupported or restricted file type. Allowed formats: PDF, DOCX, PPTX, TXT, MD, CSV, XLSX, Images, ZIP."
+                )
+
         if m_type == "document" and not file_obj and not content_text:
             raise serializers.ValidationError("Please upload a file or provide document text.")
         if m_type == "link" and not link_url:
