@@ -7,9 +7,10 @@
 [![Google Gemini](https://img.shields.io/badge/Google%20Gemini-2.0%20Flash-4285F4?logo=google)](https://deepmind.google/technologies/gemini/)
 [![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED?logo=docker)](https://www.docker.com/)
 [![Nginx](https://img.shields.io/badge/Nginx-Reverse%20Proxy-009639?logo=nginx)](https://nginx.org/)
+[![UIU BSCSE Aligned](https://img.shields.io/badge/UIU%20BSCSE-Syllabus%20Aligned-FF6F00?logo=buffer)](https://www.uiu.ac.bd/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> **StudentBrain** is an all-in-one academic operating system designed for modern university scholars. It unifies course curriculum management, intelligent schedule planning, real-time GPA trajectory forecasting, time-gated focus session tracking, multimodal course material analysis with **Google Gemini AI**, automated post-session diagnostic concept testing, gamified study leaderboards, and an interactive peer community network.
+> **StudentBrain** is an all-in-one academic operating system designed for modern university scholars. It unifies official course curriculum management, dynamic UIU BSCSE course autocomplete with exam-slot clash prevention, intelligent schedule planning, real-time GPA trajectory forecasting, time-gated focus session tracking, multimodal course material analysis with **Google Gemini AI**, automated post-session diagnostic concept testing, gamified study leaderboards, and an interactive peer community network.
 
 ---
 
@@ -17,17 +18,19 @@
 
 1. [System Architecture & Design Patterns](#-system-architecture)
 2. [Complete Feature Deep Dive & Background Mechanisms](#-complete-feature-deep-dive)
-   - [1. Authentication & Security Engine (`accounts`)](#1-authentication--security-engine-accounts)
-   - [2. Study Schedule Maker & Routine Planner (`planner`)](#2-study-schedule-maker--routine-planner-planner)
-   - [3. Grade Planner & GPA Projection Engine (`grades`)](#3-grade-planner--gpa-projection-engine-grades)
-   - [4. Scheduled Study Tracker & Focus Sessions (`tracker`)](#4-scheduled-study-tracker--focus-sessions-tracker)
-   - [5. Post-Session Gemini AI Diagnostic Testing & Weak Topic Reports (`tracker` + `ai`)](#5-post-session-gemini-ai-diagnostic-testing--weak-topic-reports)
-   - [6. Study Materials Hub, Native Reader & PDF Exporter (`materials`)](#6-study-materials-hub-native-reader--pdf-exporter-materials)
-   - [7. Course-Specific AI Chat Assistant (`materials` + `ai`)](#7-course-specific-ai-chat-assistant)
-   - [8. Gamified Rewards, Streaks & Milestone Badges (`tracker`)](#8-gamified-rewards-streaks--milestone-badges-tracker)
-   - [9. Cross-Module Academic Analytics Dashboard (`analytics`)](#9-cross-module-academic-analytics-dashboard-analytics)
-   - [10. Student Community, Discussions & Study Events (`community`)](#10-student-community-discussions--study-events-community)
-   - [11. Privacy-Preserving Global Study Leaderboard (`community`)](#11-privacy-preserving-global-study-leaderboard-community)
+   - [1. Authentication & Visual Identity Engine (`accounts`)](#1-authentication--visual-identity-engine-accounts)
+   - [2. UIU BSCSE Course Catalogue & Smart Autocomplete Engine](#2-uiu-bscse-course-catalogue--smart-autocomplete-engine)
+   - [3. Study Schedule Maker & Routine Planner (`planner`)](#3-study-schedule-maker--routine-planner-planner)
+   - [4. Grade Planner, GPA Projection & Course Retake Advisor (`grades`)](#4-grade-planner-gpa-projection--course-retake-advisor-grades)
+   - [5. Scheduled Study Tracker & Focus Sessions (`tracker`)](#5-scheduled-study-tracker--focus-sessions-tracker)
+   - [6. Post-Session Gemini AI Diagnostic Testing & Weak Topic Reports (`tracker` + `ai`)](#6-post-session-gemini-ai-diagnostic-testing--weak-topic-reports)
+   - [7. Interactive Detailed Solution Breakdown & AI Concept Explanations](#7-interactive-detailed-solution-breakdown--ai-concept-explanations)
+   - [8. Study Materials Hub, Native Reader & Multi-Format Exporter (`materials`)](#8-study-materials-hub-native-reader--multi-format-exporter-materials)
+   - [9. Course-Specific AI Chat Assistant (`materials` + `ai`)](#9-course-specific-ai-chat-assistant)
+   - [10. Gamified Rewards, Streaks & Milestone Badges (`tracker`)](#10-gamified-rewards-streaks--milestone-badges-tracker)
+   - [11. Cross-Module Academic Analytics Dashboard (`analytics`)](#11-cross-module-academic-analytics-dashboard-analytics)
+   - [12. Student Community, Discussions & Study Events (`community`)](#12-student-community-discussions--study-events-community)
+   - [13. Privacy-Preserving Global Study Leaderboard (`community`)](#13-privacy-preserving-global-study-leaderboard-community)
 3. [Under-the-Hood Algorithms & Mathematical Formulations](#-under-the-hood-algorithms--mathematical-formulations)
    - [A. Weighted Credit GPA Projection & Feasibility Math](#a-weighted-credit-gpa-projection--feasibility-math)
    - [B. Dynamic Streak Continuity & Gap Recovery Algorithm](#b-dynamic-streak-continuity--gap-recovery-algorithm)
@@ -83,49 +86,66 @@ graph TD
 
 ---
 
-### 1. Authentication & Security Engine (`accounts`)
+### 1. Authentication & Visual Identity Engine (`accounts`)
 
-- **Purpose**: Secure onboarding, biometric-friendly identity management, and credential authorization.
+- **Purpose**: Secure onboarding, biometric-friendly identity management, customized scholar profiles, and authentic university brand immersion.
 - **How It Works**:
   - Employs custom `User` model inheriting from `AbstractBaseUser` and `PermissionsMixin` with email as unique identifier.
   - Passwords hashed via PBKDF2 with SHA-256 and automatic salt rotation.
-  - Profile management supports customized avatars, bio, department/major, student ID, and institution name.
+  - **Modern StudentBrain Visual Identity**: Both Login and Register experiences feature high-definition StudentBrain branding badges, orbital product intelligence showcases, dynamic theme toggling, and ambient glowing backdrops.
+  - **Scholar Profile Management**: Supports customized avatars, bio, department/major, student ID, custom daily study goal selection, and privacy settings.
   - Dual-token JWT lifecycle: Access token attached to all requests via `Authorization: Bearer <token>`; token expiration is automatically caught by Axios interceptors to request a new token seamlessly without logging out the student.
 
 ---
 
-### 2. Study Schedule Maker & Routine Planner (`planner`)
+### 2. UIU BSCSE Course Catalogue & Smart Autocomplete Engine
+
+- **Purpose**: Eliminates typing errors, enforces official course metadata, displays prerequisite requirements, and prevents final exam slot scheduling clashes.
+- **How It Works**:
+  - **Embedded Trimester Syllabus Matrix**: Sourced from official UIU BSCSE curriculum specifications spanning **Trimester 1 to 12**, General Education electives (AI Literacy, Economics, Accounting, Entrepreneurship), and major elective tracks.
+  - **Intelligent Ranking Autocomplete (`CourseAutocomplete.jsx`)**:
+    - Real-time prefix, acronym, code, and title matching as the student types.
+    - Displays Course Code, Full Title, Credit Hours (3.0, 2.0, 1.0), and Theory vs. Lab badges.
+    - Displays **Trimester level** (e.g. `Trimester 3`), **Prerequisites** (e.g. `Prereq: CSE 1111`), and **Exam Slot Matrix** (e.g. `Exam: Day 4 (T2)`).
+    - Selecting any course instantly auto-fills the course title, code, and credit load.
+  - **Seamless Integration**: Active across **Grade Planner** (Retake / Add Course), **Semester Study Planner** (Create Course Modal), and **Class Routine Planner** (Schedule Form).
+
+---
+
+### 3. Study Schedule Maker & Routine Planner (`planner`)
 
 - **Purpose**: Weekly time-blocking, class routine organization, and assignment deadline tracking.
 - **How It Works**:
   - Students create recurring weekly schedule blocks specifying subject, start time, end time, location/room, multi-day recurring chips (e.g. _Mon, Wed, Fri_), color theme, and assignment deadlines.
+  - Integrated with the **UIU Course Autocomplete Engine** for rapid routine entry.
   - Built-in validation guarantees schedule integrity (`start_time < end_time`).
   - Real-time sorting and filter tabs allow viewing today's upcoming classes or the full 7-day academic grid.
 
 ---
 
-### 3. Grade Planner & GPA Projection Engine (`grades`)
+### 4. Grade Planner, GPA Projection & Course Retake Advisor (`grades`)
 
-- **Purpose**: Degree credit audits, cumulative GPA tracking, and mathematical required score forecasting.
+- **Purpose**: Degree credit audits, cumulative GPA tracking, course retake scenario analysis, and mathematical required score forecasting.
 - **How It Works**:
   - Tracks total degree credits, completed credits, current cumulative GPA, and target graduation GPA.
+  - **Course Retake Advisor**: Allows students to add previous courses with initial grade and simulate retake grades to observe direct trajectory impact on overall CGPA.
   - Dynamically computes the **Exact Required GPA** needed across all remaining credit hours using weighted quality points formulas.
   - Feasibility Audit: If the required GPA exceeds $4.00$, the system highlights the goal in warning amber with actionable guidance to adjust the target.
 
 ---
 
-### 4. Scheduled Study Tracker & Focus Sessions (`tracker`)
+### 5. Scheduled Study Tracker & Focus Sessions (`tracker`)
 
-- **Purpose**: Real-time focus tracking with calendar scheduling, material linking, and time-gating.
+- **Purpose**: Real-time focus tracking with calendar scheduling, material linking, custom durations, and time-gating.
 - **How It Works**:
-  - **Scheduled Focus Blocks**: Students book study sessions with a scheduled date, start time, duration, linked course, and uploaded study material note/document.
+  - **Scheduled Focus Blocks**: Students book study sessions with a scheduled date, start time, flexible duration (quick preset chips or custom minute input), linked course, and attached study material.
   - **Strict Time-Gating**: Sessions are locked until the scheduled start time arrives, preventing premature completions and fostering true academic discipline.
   - **Live Focus Timer**: Includes full-screen focus mode, pause/resume, and extension options (+15m, +30m, +45m) with real-time goal progress updates.
   - **Multi-Format Session Logging**: Supports scheduled sessions, live Pomodoro sessions, and retroactive manual logging.
 
 ---
 
-### 5. Post-Session Gemini AI Diagnostic Testing & Weak Topic Reports
+### 6. Post-Session Gemini AI Diagnostic Testing & Weak Topic Reports
 
 - **Purpose**: Verifies concept mastery immediately upon finishing a study block and pinpoints weak areas.
 - **How It Works**:
@@ -138,11 +158,21 @@ graph TD
 
 ---
 
-### 6. Study Materials Hub, Native Reader & PDF Exporter (`materials`)
+### 7. Interactive Detailed Solution Breakdown & AI Concept Explanations
 
-- **Purpose**: Centralized course document repository, rich Markdown notes editor, in-browser reader, and PDF export.
+- **Purpose**: High-clarity interactive answer review for diagnostic tests with conceptual reinforcement.
 - **How It Works**:
-  - **Multi-Format Support**: Upload lecture slides, syllabus documents, textbooks, and notes (`.pdf`, `.docx`, `.txt`, `.md`, `.csv`).
+  - Displays each question with responsive question cards and color-coded status badges (`Correct`, `Incorrect`, `Unanswered`).
+  - **Interactive Options Review**: Side-by-side comparison displaying the student's selected answer vs. the correct answer with letter badge highlights and status tags.
+  - **AI Concept Explanation Box**: Features dedicated conceptual breakdown cards generated by Gemini AI explaining why the correct option is scientifically sound and where typical misunderstandings arise.
+
+---
+
+### 8. Study Materials Hub, Native Reader & Multi-Format Exporter (`materials`)
+
+- **Purpose**: Centralized course document repository, rich Markdown notes editor, in-browser reader, and multi-format document support.
+- **How It Works**:
+  - **Broad Multi-Format Ingestion**: Upload lecture slides, syllabus documents, textbooks, spreadsheets, and notes (`.pdf`, `.docx`, `.txt`, `.md`, `.csv`, `.png`, `.jpg`, `.jpeg`).
   - **Multimodal Text Extraction**: Powered by `pypdf` and XML docx parsers, automatically extracting plain text from uploaded files on save.
   - **AI Analysis Pipeline**: Runs background Gemini AI analysis on uploaded materials to extract key topics, chapter summaries, formula sheets, and study cheat-sheets.
   - **Native Document Reader**: Full-screen reader with dark/light modes, table of contents generator, and instant text search.
@@ -150,7 +180,7 @@ graph TD
 
 ---
 
-### 7. Course-Specific AI Chat Assistant
+### 9. Course-Specific AI Chat Assistant
 
 - **Purpose**: 24/7 AI tutor grounded exclusively in the student's enrolled course materials.
 - **How It Works**:
@@ -160,11 +190,11 @@ graph TD
 
 ---
 
-### 8. Gamified Rewards, Streaks & Milestone Badges (`tracker`)
+### 10. Gamified Rewards, Streaks & Milestone Badges (`tracker`)
 
 - **Purpose**: Fosters consistent daily learning habits through streak mechanics and milestone achievements.
 - **How It Works**:
-  - **Custom Daily Goals**: Students configure daily target focus minutes (default: 60 min).
+  - **Custom Daily Goals**: Students configure daily target focus minutes (default: 60 min, with custom presets or exact minute values from the profile).
   - **Continuous Streak Engine**: Analyzes unique session dates in chronological order to detect active streaks, preserved streaks, or gap resets.
   - **8 Tiered Milestone Badges**:
     - 🌱 **First Step**: First focus session logged.
@@ -178,7 +208,7 @@ graph TD
 
 ---
 
-### 9. Cross-Module Academic Analytics Dashboard (`analytics`)
+### 11. Cross-Module Academic Analytics Dashboard (`analytics`)
 
 - **Purpose**: Visual intelligence aggregating data from Tracker, Planner, Materials, and Grade Planner.
 - **How It Works**:
@@ -189,7 +219,7 @@ graph TD
 
 ---
 
-### 10. Student Community, Discussions & Study Events (`community`)
+### 12. Student Community, Discussions & Study Events (`community`)
 
 - **Purpose**: Peer collaboration, academic Q&A forums, study groups, and campus review sessions.
 - **How It Works**:
@@ -199,7 +229,7 @@ graph TD
 
 ---
 
-### 11. Privacy-Preserving Global Study Leaderboard (`community`)
+### 13. Privacy-Preserving Global Study Leaderboard (`community`)
 
 - **Purpose**: Healthy academic competition with strict privacy controls.
 - **How It Works**:
@@ -376,8 +406,8 @@ erDiagram
 1. **Clone the repository**:
 
    ```bash
-   git clone https://github.com/Rafayet-Hossen/student-brain.git
-   cd student-brain
+   git clone https://github.com/souravsahapartho/uiu-student-brain.git
+   cd uiu-student-brain
    ```
 
 2. **Configure environment variables**:
@@ -397,6 +427,33 @@ erDiagram
    - Frontend: `http://localhost:5173`
    - Backend API: `http://localhost:8000/api/`
    - Django Admin: `http://localhost:8000/admin/`
+
+---
+
+### Native Setup (Without Docker)
+
+#### Backend (Django REST Framework)
+
+```bash
+cd backend
+python -m venv venv
+# Windows:
+.\venv\Scripts\activate
+# Linux/macOS:
+source venv/bin/activate
+
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver 0.0.0.0:8000
+```
+
+#### Frontend (React + Vite)
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
 ---
 
@@ -429,7 +486,7 @@ This generates a live public HTTPS link (e.g., `https://random-words.trycloudfla
 1. **Clone and run the automated deployment script**:
 
    ```bash
-   git clone https://github.com/Rafayet-Hossen/student-brain.git /opt/student-brain
+   git clone https://github.com/souravsahapartho/uiu-student-brain.git /opt/student-brain
    cd /opt/student-brain
    ./scripts/deploy.sh
    ```
@@ -466,7 +523,7 @@ All pre-seeded demo accounts share the password: **`Password123!`**
 ## 👨‍💻 Project Team & Contributors
 
 - **Rafayet Hossen** — Full-Stack Architecture, Study Tracker, Gemini AI Diagnostic Testing, Academic Analytics Dashboard, DevOps & Deployment.
-- **Sourav Saha** — Community Discussions Hub, Study Events Engine, Global Leaderboard Service.
+- **Sourav Saha** — Community Discussions Hub, Study Events Engine, Global Leaderboard Service, UIU BSCSE Autocomplete & Dynamic Course Catalogue Integration.
 - **Baitun Nahar Bithy** — Academic UI/UX Design System, Grade Planner & GPA Forecasting Engine.
 - **Saptarshi Biswas Supty** — Academic UI/UX Design System, Study Schedule Maker & Routine Planner.
 
