@@ -341,7 +341,7 @@ export default function MaterialAnalysisModal({
               loading={isBusy}
               disabled={isBusy || exportingPdf || downloadingOriginal}
               icon={RotateCcw}
-              className="mat-footer-btn"
+              className="mat-footer-btn mat-footer-btn-primary-action"
             >
               {isBusy
                 ? "Analyzing..."

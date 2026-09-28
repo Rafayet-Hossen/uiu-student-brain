@@ -14,8 +14,7 @@ export default function UpcomingSchedule({
     const today = schedules.filter((s) => s.days?.includes(todayWeekdayName));
     const others = schedules.filter((s) => !s.days?.includes(todayWeekdayName));
 
-    const combined = [...today, ...others];
-    return combined.slice(0, 3);
+    return [...today, ...others];
   }, [schedules, todayWeekdayName]);
 
   return (

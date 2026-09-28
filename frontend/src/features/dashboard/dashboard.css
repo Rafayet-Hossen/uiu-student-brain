@@ -2155,19 +2155,46 @@
    8. UPCOMING SCHEDULE WIDGET (Photo 5 Fix: Clean Time & Day Layout)
    ========================================================================== */
 .dash-upcoming-card {
-  padding: 20px 22px;
+  padding: 18px 20px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   flex: 1;
   min-height: 0;
+  overflow: hidden;
+}
+
+.dash-upcoming-card .dash-section-header {
+  flex-shrink: 0;
+  margin-bottom: 8px;
 }
 
 .dash-upcoming-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 8px;
+  margin-top: 4px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  padding-right: 4px;
+  overscroll-behavior: contain;
+}
+
+.dash-upcoming-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.dash-upcoming-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dash-upcoming-list::-webkit-scrollbar-thumb {
+  background: var(--dash-card-border);
+  border-radius: 9999px;
+}
+
+.dash-upcoming-list::-webkit-scrollbar-thumb:hover {
+  background: var(--dash-primary);
 }
 
 .dash-upcoming-card-item {
