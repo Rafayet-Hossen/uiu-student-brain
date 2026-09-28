@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Button from "../../../components/Button";
 
 const NOTE_TEMPLATES = {
@@ -495,7 +495,8 @@ export default function AddMaterialModal({
                           <strong>study materials or documents</strong> here
                         </p>
                         <p className="drop-sub-text">
-                          or click to browse (PDF, DOCX, CSV, Images, Notes — video excluded)
+                          or click to browse (PDF, DOCX, CSV, Images, Notes —
+                          video excluded)
                         </p>
                       </div>
                     )}
@@ -562,7 +563,11 @@ export default function AddMaterialModal({
               type="button"
               variant="outline"
               onClick={onClose}
-              disabled={submitting || actionStatus === "adding" || actionStatus === "added"}
+              disabled={
+                submitting ||
+                actionStatus === "adding" ||
+                actionStatus === "added"
+              }
             >
               Cancel
             </Button>
@@ -570,7 +575,11 @@ export default function AddMaterialModal({
               type="submit"
               variant={actionStatus === "added" ? "success" : "primary"}
               loading={actionStatus === "adding" || submitting}
-              disabled={actionStatus === "adding" || actionStatus === "added" || submitting}
+              disabled={
+                actionStatus === "adding" ||
+                actionStatus === "added" ||
+                submitting
+              }
               style={
                 actionStatus === "added"
                   ? {
@@ -582,10 +591,16 @@ export default function AddMaterialModal({
               }
             >
               {actionStatus === "adding" || submitting
-                ? (activeTab === "note" ? "Saving Note..." : "Adding Material...")
+                ? activeTab === "note"
+                  ? "Saving Note..."
+                  : "Adding Material..."
                 : actionStatus === "added"
-                  ? (activeTab === "note" ? "✓ Note Saved!" : "✓ Material Added!")
-                  : (activeTab === "note" ? "Save Course Note" : "Add Material")}
+                  ? activeTab === "note"
+                    ? "✓ Note Saved!"
+                    : "✓ Material Added!"
+                  : activeTab === "note"
+                    ? "Save Course Note"
+                    : "Add Material"}
             </Button>
           </div>
         </form>
