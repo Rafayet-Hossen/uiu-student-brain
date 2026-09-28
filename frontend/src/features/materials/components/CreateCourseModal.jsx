@@ -40,6 +40,16 @@ export default function CreateCourseModal({
     setError("");
   }, [course, isOpen]);
 
+  useEffect(() => {
+    if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleSubmit = (e) => {
@@ -163,7 +173,6 @@ export default function CreateCourseModal({
               Cancel
             </Button>
             <Button type="submit" variant="primary" loading={submitting}>
-              Create Course
               {course ? "Save Changes" : "Create Course"}
             </Button>
           </div>

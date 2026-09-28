@@ -62,19 +62,56 @@ export default function AddMaterialModal({
   const [error, setError] = useState("");
   const fileInputRef = useRef(null);
 
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isOpen]);
+
   // Note specific states
   const [selectedTags, setSelectedTags] = useState(["Lecture"]);
   const [actionStatus, setActionStatus] = useState("idle"); // 'idle' | 'adding' | 'added'
 
   if (!isOpen) return null;
 
+  const isVideoFile = (fileObj) => {
+    if (!fileObj) return false;
+    if (fileObj.type && fileObj.type.startsWith("video/")) return true;
+    const ext = fileObj.name?.split(".").pop()?.toLowerCase();
+    return [
+      "mp4",
+      "mkv",
+      "avi",
+      "mov",
+      "webm",
+      "wmv",
+      "flv",
+      "3gp",
+      "m4v",
+      "mpg",
+      "mpeg",
+    ].includes(ext);
+  };
+
   const handleFileChange = (selectedFile) => {
-    if (selectedFile) {
-      setFile(selectedFile);
-      if (!title.trim()) {
-        const baseName = selectedFile.name.replace(/\.[^/.]+$/, "");
-        setTitle(baseName);
-      }
+    if (!selectedFile) return;
+    if (isVideoFile(selectedFile)) {
+      setError(
+        "Video files are not supported. You can upload documents, images, CSV, spreadsheets, slides, and notes.",
+      );
+      setFile(null);
+      return;
+    }
+    setError("");
+    setFile(selectedFile);
+    if (!title.trim()) {
+      const baseName = selectedFile.name.replace(/\.[^/.]+$/, "");
+      setTitle(baseName);
     }
   };
 
@@ -435,7 +472,7 @@ export default function AddMaterialModal({
                       ref={fileInputRef}
                       type="file"
                       className="file-hidden-input"
-                      accept=".pdf,.doc,.docx,.txt"
+                      accept=".pdf,.doc,.docx,.txt,.csv,.xlsx,.xls,.ppt,.pptx,.md,.rtf,.png,.jpg,.jpeg,.webp,.gif,.svg,.zip,.rar,image/*,text/*"
                       onChange={(e) => handleFileChange(e.target.files?.[0])}
                       disabled={submitting}
                     />
@@ -455,10 +492,10 @@ export default function AddMaterialModal({
                       <div className="drop-zone-labels">
                         <p className="drop-main-text">
                           Drag and drop your{" "}
-                          <strong>PDF notes or book chapter</strong> here
+                          <strong>study materials or documents</strong> here
                         </p>
                         <p className="drop-sub-text">
-                          or click to browse from device (PDF, DOCX, TXT)
+                          or click to browse (PDF, DOCX, CSV, Images, Notes — video excluded)
                         </p>
                       </div>
                     )}

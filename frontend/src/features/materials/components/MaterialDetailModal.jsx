@@ -68,6 +68,9 @@ function detectFileType(fileUrl, fileName) {
     target.endsWith(".jpeg") ||
     target.endsWith(".png") ||
     target.endsWith(".webp") ||
+    target.endsWith(".gif") ||
+    target.endsWith(".bmp") ||
+    target.endsWith(".avif") ||
     target.endsWith(".svg")
   ) {
     return "image";
@@ -354,8 +357,14 @@ export default function MaterialDetailModal({ material, onClose, onUpdated }) {
               }`}
               onClick={() => setActiveTab("file_viewer")}
             >
-              <FileText size={13} />
-              <span>PDF Viewer</span>
+              {fileType === "image" ? <ImageIcon size={13} /> : <FileText size={13} />}
+              <span>
+                {fileType === "image"
+                  ? "Image Viewer"
+                  : fileType === "pdf"
+                    ? "PDF Viewer"
+                    : "File / Document"}
+              </span>
             </button>
           )}
 
@@ -478,7 +487,11 @@ export default function MaterialDetailModal({ material, onClose, onUpdated }) {
                       <Download size={16} />
                       <span>
                         Download & Open in{" "}
-                        {fileType === "pptx" ? "PowerPoint" : "Word"}
+                        {fileType === "pptx"
+                          ? "PowerPoint"
+                          : fileType === "xlsx"
+                            ? "Excel / Spreadsheet"
+                            : "Word / Editor"}
                       </span>
                     </a>
                     <button

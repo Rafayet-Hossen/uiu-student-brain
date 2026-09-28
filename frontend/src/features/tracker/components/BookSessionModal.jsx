@@ -66,12 +66,38 @@ export default function BookSessionModal({
 
   const [startTime, setStartTime] = useState(getInitialStartTime);
   const [durationMinutes, setDurationMinutes] = useState(60);
+  const [isCustomDuration, setIsCustomDuration] = useState(false);
+  const [customDurationInput, setCustomDurationInput] = useState("60");
   const [notes, setNotes] = useState("");
 
   const [loadingInitial, setLoadingInitial] = useState(true);
   const [loadingMaterials, setLoadingMaterials] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isOpen]);
+
+  const adjustDuration = (delta) => {
+    const current = parseInt(customDurationInput, 10) || durationMinutes || 60;
+    const nextVal = Math.max(5, Math.min(720, current + delta));
+    setCustomDurationInput(String(nextVal));
+    setDurationMinutes(nextVal);
+  };
+
+  const handleQuickDuration = (mins) => {
+    setDurationMinutes(mins);
+    setIsCustomDuration(false);
+    setCustomDurationInput(String(mins));
+  };
 
   // Inline Quick Upload Drawer State
   const [showQuickUpload, setShowQuickUpload] = useState(false);
@@ -241,8 +267,23 @@ export default function BookSessionModal({
     }
   };
 
-  const handleQuickDuration = (mins) => {
-    setDurationMinutes(mins);
+  const isVideoFile = (fileObj) => {
+    if (!fileObj) return false;
+    if (fileObj.type && fileObj.type.startsWith("video/")) return true;
+    const ext = fileObj.name?.split(".").pop()?.toLowerCase();
+    return [
+      "mp4",
+      "mkv",
+      "avi",
+      "mov",
+      "webm",
+      "wmv",
+      "flv",
+      "3gp",
+      "m4v",
+      "mpg",
+      "mpeg",
+    ].includes(ext);
   };
 
   const handleQuickDate = (type) => {
@@ -261,6 +302,15 @@ export default function BookSessionModal({
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (isVideoFile(file)) {
+        setUploadError(
+          "Video files are not supported. Please upload documents, slides, CSV, spreadsheets, or images.",
+        );
+        setUploadFile(null);
+        e.target.value = "";
+        return;
+      }
+      setUploadError("");
       setUploadFile(file);
       if (!uploadTitle.trim()) {
         const cleanName = file.name.replace(/\.[^/.]+$/, "");
@@ -284,6 +334,14 @@ export default function BookSessionModal({
     setIsDragOver(false);
     const file = e.dataTransfer.files?.[0];
     if (file) {
+      if (isVideoFile(file)) {
+        setUploadError(
+          "Video files are not supported. Please upload documents, slides, CSV, spreadsheets, or images.",
+        );
+        setUploadFile(null);
+        return;
+      }
+      setUploadError("");
       setUploadFile(file);
       if (!uploadTitle.trim()) {
         const cleanName = file.name.replace(/\.[^/.]+$/, "");
@@ -509,6 +567,28 @@ export default function BookSessionModal({
                 <Layers size={13} className="inline mr-1 text-primary" />
                 Target Course
               </label>
+
+              {!loadingInitial && courses.length === 0 && (
+                <div className="tracker-empty-courses-alert">
+                  <AlertCircle size={18} className="text-amber flex-shrink-0 mt-0.5" />
+                  <div className="tracker-empty-courses-alert-text">
+                    <strong>No enrolled courses found.</strong> To schedule a study session with AI quizzes, you need at least one course in your Study Planner.
+                    {onNavigateToMaterials && (
+                      <div style={{ marginTop: "6px" }}>
+                        <button
+                          type="button"
+                          className="tracker-upload-trigger-btn"
+                          onClick={onNavigateToMaterials}
+                        >
+                          <Plus size={13} />
+                          Go to Courses & Add Course
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <select
                 value={selectedCourseId}
                 onChange={(e) => setSelectedCourseId(e.target.value)}
@@ -599,7 +679,7 @@ export default function BookSessionModal({
                       <button
                         type="button"
                         onClick={() => setShowQuickUpload(true)}
-                        className="text-xs font-bold text-primary flex items-center gap-1 hover:underline"
+                        className="tracker-upload-trigger-btn"
                       >
                         <FileUp size={13} />
                         Click here to upload or paste notes directly
@@ -729,7 +809,7 @@ export default function BookSessionModal({
                         onClick={() => setUploadType("document")}
                       >
                         <FileUp size={13} />
-                        Upload Document (.pdf, .docx, .txt)
+                        Upload File (.pdf, .docx, .csv, image)
                       </button>
                       <button
                         type="button"
@@ -787,7 +867,7 @@ export default function BookSessionModal({
                           type="file"
                           ref={fileInputRef}
                           style={{ display: "none" }}
-                          accept=".pdf,.docx,.doc,.txt,.md,.ppt,.pptx,.csv"
+                          accept=".pdf,.docx,.doc,.txt,.md,.ppt,.pptx,.csv,.xlsx,.xls,.png,.jpg,.jpeg,.webp,.gif,.svg,image/*,text/*"
                           onChange={handleFileChange}
                         />
 
@@ -1058,11 +1138,18 @@ export default function BookSessionModal({
 
             {/* Duration Selector */}
             <div className="form-group mb-0">
-              <label className="form-label text-xs font-medium text-muted mb-1 block">
-                Duration:{" "}
-                <strong className="text-text">{durationMinutes} minutes</strong>
-              </label>
-              <div className="tracker-preset-pills">
+              <div className="flex justify-between items-center mb-1">
+                <label className="form-label text-xs font-medium text-muted mb-0">
+                  <Clock size={13} className="inline mr-1" />
+                  Duration:{" "}
+                  <strong className="text-text">
+                    {durationMinutes} minutes ({Math.floor(durationMinutes / 60)}h{" "}
+                    {durationMinutes % 60}m)
+                  </strong>
+                </label>
+              </div>
+
+              <div className="tracker-preset-pills mb-2">
                 {[
                   { mins: 25, label: "25m (Pomodoro)" },
                   { mins: 45, label: "45m" },
@@ -1074,14 +1161,107 @@ export default function BookSessionModal({
                     key={item.mins}
                     type="button"
                     className={`tracker-preset-pill ${
-                      durationMinutes === item.mins ? "active" : ""
+                      !isCustomDuration && durationMinutes === item.mins
+                        ? "active"
+                        : ""
                     }`}
                     onClick={() => handleQuickDuration(item.mins)}
                   >
                     {item.label}
                   </button>
                 ))}
+                <button
+                  type="button"
+                  className={`tracker-preset-pill ${
+                    isCustomDuration ? "active" : ""
+                  }`}
+                  onClick={() => {
+                    setIsCustomDuration(true);
+                    setCustomDurationInput(String(durationMinutes));
+                  }}
+                >
+                  ✏️ Custom Duration
+                </button>
               </div>
+
+              {isCustomDuration && (
+                <div className="tracker-custom-duration-card">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-semibold text-text">
+                      Custom Duration:
+                    </span>
+                    <span className="text-xs text-primary font-medium">
+                      {durationMinutes >= 60
+                        ? `${(durationMinutes / 60).toFixed(1)} hours`
+                        : `${durationMinutes} mins`}
+                    </span>
+                  </div>
+                  <div className="tracker-duration-input-row">
+                    <input
+                      type="number"
+                      min="5"
+                      max="720"
+                      step="5"
+                      className="form-input form-input-sm"
+                      style={{ maxWidth: "120px" }}
+                      value={customDurationInput}
+                      onChange={(e) => {
+                        setCustomDurationInput(e.target.value);
+                        const val = parseInt(e.target.value, 10);
+                        if (!isNaN(val) && val > 0) {
+                          setDurationMinutes(Math.max(5, Math.min(720, val)));
+                        }
+                      }}
+                      disabled={submitting}
+                      placeholder="Minutes"
+                    />
+                    <span className="text-xs text-muted">minutes</span>
+
+                    <div className="flex items-center gap-1 ml-auto">
+                      <button
+                        type="button"
+                        className="tracker-duration-stepper-btn"
+                        onClick={() => adjustDuration(-15)}
+                        title="Minus 15 minutes"
+                      >
+                        -15m
+                      </button>
+                      <button
+                        type="button"
+                        className="tracker-duration-stepper-btn"
+                        onClick={() => adjustDuration(-5)}
+                        title="Minus 5 minutes"
+                      >
+                        -5m
+                      </button>
+                      <button
+                        type="button"
+                        className="tracker-duration-stepper-btn"
+                        onClick={() => adjustDuration(5)}
+                        title="Plus 5 minutes"
+                      >
+                        +5m
+                      </button>
+                      <button
+                        type="button"
+                        className="tracker-duration-stepper-btn"
+                        onClick={() => adjustDuration(15)}
+                        title="Plus 15 minutes"
+                      >
+                        +15m
+                      </button>
+                      <button
+                        type="button"
+                        className="tracker-duration-stepper-btn"
+                        onClick={() => adjustDuration(30)}
+                        title="Plus 30 minutes"
+                      >
+                        +30m
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

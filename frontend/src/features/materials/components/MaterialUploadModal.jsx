@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from "../../../components/Button";
 import FormError from "../../../components/FormError";
 import Input from "../../../components/Input";
@@ -24,6 +24,33 @@ export default function MaterialUploadModal({ onClose, onCreated }) {
   const [submitting, setSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
+
+  const isVideoFile = (fileObj) => {
+    if (!fileObj) return false;
+    if (fileObj.type && fileObj.type.startsWith("video/")) return true;
+    const ext = fileObj.name?.split(".").pop()?.toLowerCase();
+    return [
+      "mp4",
+      "mkv",
+      "avi",
+      "mov",
+      "webm",
+      "wmv",
+      "flv",
+      "3gp",
+      "m4v",
+      "mpg",
+      "mpeg",
+    ].includes(ext);
+  };
 
   function handleAddTag(e) {
     if (e.key === "Enter" || e.key === ",") {
@@ -198,7 +225,7 @@ export default function MaterialUploadModal({ onClose, onCreated }) {
           {/* Upload file optional */}
           <div className="form-group">
             <label className="form-label">
-              📁 Or Upload Document File (PDF, DOCX, TXT, MD, etc.)
+              📁 Or Upload Study Material (PDF, DOCX, CSV, Images, etc. — video excluded)
             </label>
             <div
               style={{
@@ -213,9 +240,18 @@ export default function MaterialUploadModal({ onClose, onCreated }) {
             >
               <input
                 type="file"
-                accept=".pdf,.docx,.doc,.txt,.md,.rtf,.csv,.json,.py,.java,.c,.cpp"
+                accept=".pdf,.docx,.doc,.txt,.md,.rtf,.csv,.xlsx,.xls,.ppt,.pptx,.json,.py,.java,.c,.cpp,.png,.jpg,.jpeg,.webp,.gif,.svg,.zip,.rar,image/*,text/*"
                 onChange={(e) => {
                   const selected = e.target.files[0] || null;
+                  if (selected && isVideoFile(selected)) {
+                    setError(
+                      "Video files are not supported. You can upload documents, images, CSV, spreadsheets, and notes.",
+                    );
+                    setFile(null);
+                    e.target.value = "";
+                    return;
+                  }
+                  setError("");
                   setFile(selected);
                   if (selected && !title) {
                     const cleanName = selected.name.replace(/\.[^/.]+$/, "");

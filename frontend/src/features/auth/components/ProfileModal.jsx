@@ -36,6 +36,17 @@ function ToggleSwitch({
   );
 }
 
+const DAILY_GOAL_PRESETS = [
+  { value: 30, label: "30 minutes (0.5 hour / day)" },
+  { value: 45, label: "45 minutes (45 mins / day)" },
+  { value: 60, label: "60 minutes (1 hour / day)" },
+  { value: 90, label: "90 minutes (1.5 hours / day)" },
+  { value: 120, label: "120 minutes (2 hours / day)" },
+  { value: 180, label: "180 minutes (3 hours / day)" },
+  { value: 240, label: "240 minutes (4 hours / day)" },
+  { value: 300, label: "300 minutes (5 hours / day)" },
+];
+
 export default function ProfileModal({ initialTab = "settings", onClose }) {
   const { user, updateUser, logout } = useAuth();
   const [activeTab, setActiveTab] = useState(() => {
@@ -50,6 +61,24 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
   const [targetDailyMinutes, setTargetDailyMinutes] = useState(
     user?.target_daily_minutes || 120,
   );
+  const [dailyGoalMode, setDailyGoalMode] = useState(() => {
+    const val = user?.target_daily_minutes || 120;
+    return DAILY_GOAL_PRESETS.some((p) => p.value === val)
+      ? "preset"
+      : "custom";
+  });
+  const [customGoalMinutes, setCustomGoalMinutes] = useState(() => {
+    return String(user?.target_daily_minutes || 120);
+  });
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
 
   const [currentAvatar, setCurrentAvatar] = useState(() =>
     getScholarAvatar(user),
@@ -133,7 +162,14 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
           setFullName(data.user.full_name || "");
           setDepartment(data.user.department || "");
           setBio(data.user.bio || "");
-          setTargetDailyMinutes(data.user.target_daily_minutes || 120);
+          const val = data.user.target_daily_minutes || 120;
+          setTargetDailyMinutes(val);
+          setCustomGoalMinutes(String(val));
+          if (!DAILY_GOAL_PRESETS.some((p) => p.value === val)) {
+            setDailyGoalMode("custom");
+          } else {
+            setDailyGoalMode("preset");
+          }
         }
         if (data.performance) {
           if (
@@ -209,11 +245,16 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
     setSaving(true);
 
     try {
+      const finalDailyMinutes =
+        dailyGoalMode === "custom"
+          ? Math.max(5, Math.min(1440, parseInt(customGoalMinutes, 10) || 120))
+          : Number(targetDailyMinutes) || 120;
+
       const payload = {
         full_name: fullName.trim(),
         department: department.trim(),
         bio: bio.trim(),
-        target_daily_minutes: Number(targetDailyMinutes) || 120,
+        target_daily_minutes: finalDailyMinutes,
         current_gpa: currentGpa === "" ? null : parseFloat(currentGpa),
         target_gpa: targetGpa === "" ? null : parseFloat(targetGpa),
       };
@@ -482,19 +523,89 @@ export default function ProfileModal({ initialTab = "settings", onClose }) {
                     ⏱️ Target Daily Study Goal (Minutes)
                   </label>
                   <select
-                    value={targetDailyMinutes}
-                    onChange={(e) =>
-                      setTargetDailyMinutes(Number(e.target.value))
+                    value={
+                      dailyGoalMode === "custom" ? "custom" : targetDailyMinutes
                     }
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === "custom") {
+                        setDailyGoalMode("custom");
+                      } else {
+                        setDailyGoalMode("preset");
+                        setTargetDailyMinutes(Number(val));
+                        setCustomGoalMinutes(val);
+                      }
+                    }}
                     className="form-input-control"
                     disabled={saving}
                   >
-                    <option value={60}>60 minutes (1 hour / day)</option>
-                    <option value={90}>90 minutes (1.5 hours / day)</option>
-                    <option value={120}>120 minutes (2 hours / day)</option>
-                    <option value={180}>180 minutes (3 hours / day)</option>
-                    <option value={240}>240 minutes (4 hours / day)</option>
+                    {DAILY_GOAL_PRESETS.map((p) => (
+                      <option key={p.value} value={p.value}>
+                        {p.label}
+                      </option>
+                    ))}
+                    <option value="custom">✏️ Custom Target Goal...</option>
                   </select>
+
+                  {dailyGoalMode === "custom" && (
+                    <div
+                      style={{
+                        marginTop: "8px",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "4px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                        }}
+                      >
+                        <input
+                          type="number"
+                          min={5}
+                          max={1440}
+                          step={5}
+                          value={customGoalMinutes}
+                          onChange={(e) => {
+                            setCustomGoalMinutes(e.target.value);
+                            const parsed = parseInt(e.target.value, 10);
+                            if (!isNaN(parsed) && parsed > 0) {
+                              setTargetDailyMinutes(parsed);
+                            }
+                          }}
+                          placeholder="e.g. 75"
+                          className="form-input-control"
+                          disabled={saving}
+                          style={{ flex: 1 }}
+                        />
+                        <span
+                          style={{
+                            fontSize: "0.8125rem",
+                            color: "var(--color-text-muted)",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          minutes/day
+                        </span>
+                      </div>
+                      <span
+                        style={{
+                          fontSize: "0.75rem",
+                          color: "var(--color-accent)",
+                          fontWeight: 500,
+                        }}
+                      >
+                        ≈{" "}
+                        {(
+                          Math.max(0, parseInt(customGoalMinutes, 10) || 0) / 60
+                        ).toFixed(1)}{" "}
+                        hours of focus time per day
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="form-group">
