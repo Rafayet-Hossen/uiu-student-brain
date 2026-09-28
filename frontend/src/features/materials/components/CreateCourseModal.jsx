@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Button from "../../../components/Button";
+import CourseAutocomplete from "../../../components/CourseAutocomplete";
 
 const COLOR_OPTIONS = [
   { name: "Royal Blue", value: "#2563eb" },
@@ -99,37 +100,38 @@ export default function CreateCourseModal({
         )}
 
         <form onSubmit={handleSubmit} className="modal-body-content">
+          <div className="form-group">
+            <CourseAutocomplete
+              id="course-title"
+              label="Course Title *"
+              placeholder="e.g. Data Structures or type course name..."
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onSelectCourse={(selected) => {
+                setTitle(selected.title);
+                if (selected.code) setCode(selected.code);
+              }}
+              disabled={submitting}
+              autoFocus
+              required
+            />
+          </div>
+
           <div className="form-row-grid">
             <div className="form-group flex-1">
               <label className="form-label" htmlFor="course-code">
-                Course Code (Optional)
+                Course Code (Auto-filled or Custom)
               </label>
               <input
                 id="course-code"
                 type="text"
                 className="form-input"
-                placeholder="e.g., CSE 220"
+                placeholder="e.g., CSE 2215"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 disabled={submitting}
-                autoFocus
               />
             </div>
-          </div>
-
-          <div className="form-group">
-            <label className="form-label" htmlFor="course-title">
-              Course Title <span className="text-danger">*</span>
-            </label>
-            <input
-              id="course-title"
-              type="text"
-              className="form-input"
-              placeholder="e.g., Data Structures & Algorithms"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              disabled={submitting}
-            />
           </div>
 
           <div className="form-group">

@@ -34,6 +34,7 @@ import Button from "../../../components/Button";
 import Card from "../../../components/Card";
 import Spinner from "../../../components/Spinner";
 import { parseInlineFormatting } from "../../../lib/markdownHelper";
+import CourseAutocomplete from "../../../components/CourseAutocomplete";
 import {
   createCourseGrade,
   updateCourseGrade,
@@ -1288,23 +1289,20 @@ export default function CourseRetakeAdvisor({
                 </div>
 
                 <div>
-                  <label
-                    style={{
-                      display: "block",
-                      marginBottom: "6px",
-                      fontWeight: 600,
-                      fontSize: "0.8125rem",
-                      color: "var(--color-text-secondary)",
-                    }}
-                  >
-                    Course Title *
-                  </label>
-                  <input
-                    type="text"
+                  <CourseAutocomplete
+                    id="new-course-name"
+                    label="Course Title *"
                     className="form-input-control"
-                    placeholder="e.g. Data Structures & Algorithms"
+                    placeholder="e.g. Data Structures or type course title..."
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
+                    onSelectCourse={(course) => {
+                      setNewName(course.title);
+                      setNewCode(course.code);
+                      if (course.credits) {
+                        setNewCredits(course.credits);
+                      }
+                    }}
                     required
                   />
                 </div>

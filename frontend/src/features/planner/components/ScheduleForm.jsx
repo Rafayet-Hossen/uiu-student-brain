@@ -5,6 +5,7 @@ import Button from "../../../components/Button";
 import Card from "../../../components/Card";
 import FormError from "../../../components/FormError";
 import Input from "../../../components/Input";
+import CourseAutocomplete from "../../../components/CourseAutocomplete";
 import {
   createSchedule,
   extractPlannerErrorMessage,
@@ -348,17 +349,25 @@ export default function ScheduleForm({
       </div>
 
       <form onSubmit={handleSubmit} noValidate>
-        <Input
-          id="subject"
-          name="subject"
-          label="Subject / Course Name"
-          type="text"
-          placeholder="e.g. Advanced Algorithms, Organic Chemistry"
-          value={form.subject}
-          onChange={handleChange}
-          disabled={submitting}
-          required
-        />
+        <div style={{ marginBottom: "16px" }}>
+          <CourseAutocomplete
+            id="subject"
+            label="Subject / Course Name *"
+            placeholder="e.g. Data Structures or type course title..."
+            value={form.subject}
+            onChange={(e) =>
+              setForm((current) => ({ ...current, subject: e.target.value }))
+            }
+            onSelectCourse={(course) => {
+              setForm((current) => ({
+                ...current,
+                subject: `${course.code}: ${course.title}`,
+              }));
+            }}
+            disabled={submitting}
+            required
+          />
+        </div>
 
         <div className="planner-time-row">
           <Input

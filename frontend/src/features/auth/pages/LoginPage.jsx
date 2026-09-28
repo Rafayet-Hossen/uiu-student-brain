@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { GraduationCap, Info } from "lucide-react";
+import { Info } from "lucide-react";
 import { extractErrorMessage } from "../api";
 import { useAuth } from "../useAuth";
 import { validateEmail, validatePassword } from "../validators";
@@ -9,6 +9,7 @@ import AuthAmbientBackground from "../components/AuthAmbientBackground";
 import AuthPillInput from "../components/AuthPillInput";
 import FormError from "../../../components/FormError";
 import ThemeToggle from "../../../components/ThemeToggle";
+import logoImg from "../../../assets/logo.jpg";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -59,7 +60,11 @@ export default function LoginPage() {
       <header className="auth-sb-topbar">
         <Link to="/" className="auth-sb-brand">
           <div className="auth-sb-brand-icon-box">
-            <GraduationCap size={20} />
+            <img
+              src={logoImg}
+              alt="StudentBrain Logo"
+              className="navbar-brand-img"
+            />
           </div>
           <span className="auth-sb-brand-name">
             Student<span className="auth-sb-brand-accent">Brain</span>
@@ -82,6 +87,13 @@ export default function LoginPage() {
         <div className="auth-sb-right-col">
           <div className="auth-sb-card">
             <div className="auth-sb-card-header">
+              <div className="auth-card-logo-badge">
+                <img
+                  src={logoImg}
+                  alt="StudentBrain Logo"
+                  className="auth-card-logo-img"
+                />
+              </div>
               <h2 className="auth-sb-title">Welcome Back</h2>
               <p className="auth-sb-subtitle">
                 Sign in to your StudentBrain portal to continue.

@@ -24388,3 +24388,27 @@ html[data-theme="dark"] .btn-celebration-extend:hover {
     gap: 8px !important;
   }
 }
+
+/* ==========================================================================
+   STUDENTBRAIN LOGO IMAGE ENHANCEMENTS FOR AUTH PAGES
+   ========================================================================== */
+.auth-card-logo-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.auth-card-logo-img {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--color-border);
+}
+
+.auth-sb-brand-icon-box {
+  overflow: hidden;
+}
+

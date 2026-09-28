@@ -1,0 +1,59 @@
+CourseCode,Title,Credits,Type,Major
+CSE 1110,Introduction to Computer Systems,1.0,Core Lab,General
+CSE 1111,Structured Programming Language,3.0,Core Theory,General
+CSE 1112,Structured Programming Language Laboratory,1.0,Core Lab,General
+MATH 1151,Fundamental Calculus,3.0,Basic Science,General
+ENG 1011,English I (Basic English),3.0,GED,General
+BDS 1201,History of the Emergence of Bangladesh,2.0,GED,General
+PHY 2105,Physics,3.0,Basic Science,General
+PHY 2106,Physics Laboratory,1.0,Core Lab,General
+MATH 2183,Coordinate Geometry and Vector Analysis,3.0,Basic Science,General
+CSE 1325,Digital Logic Design,3.0,Core Theory,General
+CSE 1326,Digital Logic Design Laboratory,1.0,Core Lab,General
+CSE 2115,Object Oriented Programming,3.0,Core Theory,General
+CSE 2116,Object Oriented Programming Laboratory,1.0,Core Lab,General
+MATH 2205,Probability and Statistics,3.0,Basic Science,General
+SOC 2101,Society Technology and Engineering Ethics,3.0,GED,General
+CSE 2215,Data Structure and Algorithms I,3.0,Core Theory,General
+CSE 2216,Data Structure and Algorithms I Laboratory,1.0,Core Lab,General
+CSE 2217,Data Structure and Algorithms II,3.0,Core Theory,General
+CSE 2218,Data Structure and Algorithms II Laboratory,1.0,Core Lab,General
+CSE 3521,Database Management Systems,3.0,Core Theory,General
+CSE 3522,Database Management Systems Laboratory,1.0,Core Lab,General
+CSE 3313,Microprocessors and Microcontrollers,3.0,Core Theory,General
+CSE 4326,Microprocessors and Microcontrollers Laboratory,1.0,Core Lab,General
+CSE 3411,System Analysis and Design,3.0,Core Theory,General
+CSE 3412,System Analysis and Design Laboratory,1.0,Core Lab,General
+CSE 3421,Software Engineering,3.0,Core Theory,General
+CSE 3422,Software Engineering Laboratory,1.0,Core Lab,General
+CSE 3711,Computer Networks,3.0,Core Theory,General
+CSE 3712,Computer Networks Laboratory,1.0,Core Lab,General
+CSE 3811,Artificial Intelligence,3.0,Core Theory,General
+CSE 3812,Artificial Intelligence Laboratory,1.0,Core Lab,General
+CSE 3531,Theory of Computation,3.0,Core Theory,General
+GED OPT 1,General Education Optional-I,3.0,GED,General
+GED OPT 2,General Education Optional-II,3.0,GED,General
+CSE 4000A,Final Year Design Project - I,3.0,Capstone,General
+CSE 4000B,Final Year Design Project - II,3.0,Capstone,General
+CSE 4531,Computer Security,3.0,Core Theory,Network and Cyber Security
+ACT 2111,Financial and Managerial Accounting,3.0,GED,General
+TEC 2499,Technology Entrepreneurship,3.0,GED,General
+CSE 4125,Ethical Hacking and Network Defense,3.0,Major Elective,Network and Cyber Security
+CSE 4777,Network Security,3.0,Major Elective,Network and Cyber Security
+CSE 4779,Wireless and Mobile Communication,3.0,Major Elective,Network and Cyber Security
+CSE 4165,UI: Concepts and Design,3.0,Major Elective,Software Engineering
+CSE 4181,Mobile Application Development,3.0,Major Elective,Software Engineering
+CSE 4495,Software Testing and Quality Assurance,3.0,Major Elective,Software Engineering
+CSE 4451,Human Computer Interaction,3.0,Major Elective,Business System Engineering
+CSE 4587,Cloud Computing and Distributed Systems,3.0,Major Elective,Software Engineering
+CSE 4621,Advanced Software Architecture and Design,3.0,Major Elective,Software Engineering
+CSE 4327,VLSI Design,3.0,Major Elective,Embedded Systems and Hardware
+CSE 4329,Embedded Machine Learning (Special Topics),3.0,Major Elective,Embedded Systems and Hardware
+CSE 4331,Robotics and Autonomous Systems,3.0,Major Elective,Embedded Systems and Hardware
+CSE 4889,Machine Learning,3.0,Major Elective,AI and Data Science
+CSE 4801,Data Mining,3.0,Major Elective,AI and Data Science
+CSE 4817,Big Data Analytics,3.0,Major Elective,AI and Data Science
+CSE 4821,Digital Image Processing,3.0,Major Elective,AI and Data Science
+CSE 4811,Natural Language Processing,3.0,Major Elective,AI and Data Science
+CSE 4813,Deep Learning,3.0,Major Elective,AI and Data Science
+CSE 4825,Computer Vision and Pattern Recognition,3.0,Major Elective,AI and Data Science
