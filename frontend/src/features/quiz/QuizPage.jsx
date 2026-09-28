@@ -694,12 +694,18 @@ export default function QuizPage() {
               <div className="solutions-list">
                 {quiz.questions.map((q, idx) => {
                   const selIdx = selectedAnswers[idx];
-                  const isCorrect = selIdx === q.correct_answer_index;
+                  const isUnanswered = selIdx === undefined || selIdx === null;
+                  const isCorrect =
+                    !isUnanswered && selIdx === q.correct_answer_index;
                   return (
                     <div
                       key={idx}
                       className={`solution-item-card ${
-                        isCorrect ? "solution-correct" : "solution-incorrect"
+                        isCorrect
+                          ? "solution-correct"
+                          : isUnanswered
+                            ? "solution-unanswered"
+                            : "solution-incorrect"
                       }`}
                     >
                       <div className="solution-item-header">
@@ -710,6 +716,10 @@ export default function QuizPage() {
                           {isCorrect ? (
                             <span className="badge-correct">
                               <Check size={14} /> Correct
+                            </span>
+                          ) : isUnanswered ? (
+                            <span className="badge-unanswered">
+                              <HelpCircle size={14} /> Unanswered
                             </span>
                           ) : (
                             <span className="badge-incorrect">
@@ -766,8 +776,13 @@ export default function QuizPage() {
 
                       {q.explanation && (
                         <div className="solution-explanation-box">
-                          <strong>Explanation:</strong>
-                          <p>{q.explanation}</p>
+                          <div className="solution-explanation-header">
+                            <Sparkles size={14} className="text-amber" />
+                            <span>AI Concept Explanation</span>
+                          </div>
+                          <p className="solution-explanation-text">
+                            {q.explanation}
+                          </p>
                         </div>
                       )}
                     </div>
