@@ -1,0 +1,609 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/config/providers.dart';
+import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/widgets/app_button.dart';
+import '../../../../core/widgets/app_text_field.dart';
+import '../../../../core/widgets/glass_card.dart';
+import '../../../../core/widgets/responsive.dart';
+import '../../../../core/widgets/user_avatar.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../grades/presentation/providers/grades_provider.dart';
+import '../../../leaderboard/presentation/providers/leaderboard_provider.dart';
+
+class SettingsPage extends ConsumerStatefulWidget {
+  const SettingsPage({super.key});
+
+  @override
+  ConsumerState<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends ConsumerState<SettingsPage> {
+  final _urlCtrl = TextEditingController();
+  final _targetGpaCtrl = TextEditingController();
+  final _customGoalCtrl = TextEditingController();
+
+  int _selectedDailyGoalMinutes = 60;
+  bool _isCustomGoal = false;
+
+  // Notification Preferences matching website
+  bool _notifAnnouncements = true;
+  bool _notifComments = true;
+  bool _notifAcademic = true;
+  bool _notifSound = true;
+
+  bool _isSavingProfile = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final currentUrl = ref.read(secureStorageServiceProvider).getBaseUrl() ??
+        ApiEndpoints.defaultBaseUrl;
+    _urlCtrl.text = currentUrl;
+
+    final gradePlan = ref.read(gradesProvider).plan;
+    _targetGpaCtrl.text = (gradePlan?.targetGpa ?? 3.90).toStringAsFixed(2);
+  }
+
+  @override
+  void dispose() {
+    _urlCtrl.dispose();
+    _targetGpaCtrl.dispose();
+    _customGoalCtrl.dispose();
+    super.dispose();
+  }
+
+  void _saveUrl() {
+    final newUrl = _urlCtrl.text.trim();
+    if (newUrl.isNotEmpty) {
+      ref.read(dioClientProvider).updateBaseUrl(newUrl);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('API Backend Server URL updated successfully'),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    }
+  }
+
+  Future<void> _saveStudyTargets() async {
+    setState(() => _isSavingProfile = true);
+
+    final targetGpa = double.tryParse(_targetGpaCtrl.text.trim()) ?? 3.90;
+    final targetMinutes = _isCustomGoal
+        ? (int.tryParse(_customGoalCtrl.text.trim()) ?? 60)
+        : _selectedDailyGoalMinutes;
+
+    try {
+      // 1. Update grade target
+      final gradesNotifier = ref.read(gradesProvider.notifier);
+      final currentPlan = ref.read(gradesProvider).plan;
+      await gradesNotifier.updatePlan(
+        totalCredits: currentPlan?.totalCredits ?? 140.0,
+        completedCredits: currentPlan?.completedCredits ?? 45.0,
+        currentGpa: currentPlan?.currentGpa ?? 3.80,
+        targetGpa: targetGpa,
+      );
+
+      // 2. Update daily study goal
+      await ref.read(dioClientProvider).post(
+        ApiEndpoints.studyGoal,
+        data: {'daily_target_minutes': targetMinutes},
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Academic targets and daily study goal saved!'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Target preferences updated locally'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSavingProfile = false);
+    }
+  }
+
+  void _confirmSignOut() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+        title: const Row(
+          children: [
+            Icon(Icons.logout_rounded, color: AppColors.error),
+            SizedBox(width: 8),
+            Text('Sign Out?'),
+          ],
+        ),
+        content: const Text(
+          'Are you sure you want to sign out of StudentBrain on this device?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await ref.read(authProvider.notifier).logout();
+              if (mounted) {
+                context.go('/login');
+              }
+            },
+            child: const Text('Sign Out', style: TextStyle(fontWeight: FontWeight.w800)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final user = ref.watch(authProvider).user;
+    final lbState = ref.watch(leaderboardProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Preferences & Settings'),
+      ),
+      body: SingleChildScrollView(
+        padding: Responsive.padding(context),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 540),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // 1. Scholar Profile Overview Card
+                GlassCard(
+                  padding: const EdgeInsets.all(18),
+                  child: Row(
+                    children: [
+                      UserAvatar(
+                        name: user?.fullName ?? 'Scholar',
+                        size: 56,
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              user?.fullName ?? 'Scholar',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -0.2,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              user?.department ?? 'UIU Academic Portal',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isDark
+                                    ? AppColors.textDarkMuted
+                                    : AppColors.textLightMuted,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.success.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.verified_rounded,
+                                    size: 11,
+                                    color: AppColors.success,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    user?.email ?? 'Verified Student',
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.success,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // 2. Academic Target & Daily Focus Goal
+                GlassCard(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.track_changes_rounded,
+                              size: 18, color: AppColors.primary),
+                          SizedBox(width: 8),
+                          Text(
+                            'Academic Targets & Daily Goal',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      AppTextField(
+                        label: 'Target CGPA',
+                        hint: 'e.g. 3.90',
+                        controller: _targetGpaCtrl,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      ),
+                      const Text(
+                        'Daily Study Goal:',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          ...[30, 45, 60, 90, 120].map((mins) {
+                            final isSel = !_isCustomGoal && _selectedDailyGoalMinutes == mins;
+                            return ChoiceChip(
+                              label: Text('${mins}m / day'),
+                              selected: isSel,
+                              selectedColor: AppColors.primary,
+                              labelStyle: TextStyle(
+                                color: isSel ? Colors.white : null,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 11,
+                              ),
+                              onSelected: (_) {
+                                setState(() {
+                                  _isCustomGoal = false;
+                                  _selectedDailyGoalMinutes = mins;
+                                });
+                              },
+                            );
+                          }),
+                          ChoiceChip(
+                            label: const Text('Custom'),
+                            selected: _isCustomGoal,
+                            selectedColor: AppColors.primary,
+                            labelStyle: TextStyle(
+                              color: _isCustomGoal ? Colors.white : null,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 11,
+                            ),
+                            onSelected: (_) {
+                              setState(() => _isCustomGoal = true);
+                            },
+                          ),
+                        ],
+                      ),
+                      if (_isCustomGoal) ...[
+                        const SizedBox(height: 10),
+                        AppTextField(
+                          label: 'Custom Minutes / Day',
+                          hint: 'e.g. 75',
+                          controller: _customGoalCtrl,
+                          keyboardType: TextInputType.number,
+                        ),
+                      ],
+                      const SizedBox(height: 14),
+                      AppButton(
+                        label: 'Save Targets',
+                        height: 42,
+                        isLoading: _isSavingProfile,
+                        onPressed: _saveStudyTargets,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // 3. Community Leaderboard Opt-in Preference
+                GlassCard(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    secondary: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.gold.withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.emoji_events_rounded,
+                          color: AppColors.gold, size: 20),
+                    ),
+                    title: const Text(
+                      'Community Leaderboard Opt-In',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                    ),
+                    subtitle: const Text(
+                      'Display your study streak and focus hours on the campus leaderboard',
+                      style: TextStyle(fontSize: 11, color: Colors.grey),
+                    ),
+                    value: lbState.isOptedIn,
+                    activeTrackColor: AppColors.primary,
+                    onChanged: (val) {
+                      ref.read(leaderboardProvider.notifier).toggleOptIn(val);
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // 4. Notification Channels & Dynamic Alerts
+                GlassCard(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.notifications_active_rounded,
+                              size: 18, color: AppColors.primary),
+                          SizedBox(width: 8),
+                          Text(
+                            'Notification Channels & Alerts',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Customize notifications and alert types for your device.',
+                        style: TextStyle(fontSize: 11, color: Colors.grey),
+                      ),
+                      const SizedBox(height: 12),
+
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text(
+                          'Campus Announcements & Events',
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: const Text(
+                          'Exam reviews, guest seminars, and university notices',
+                          style: TextStyle(fontSize: 11, color: Colors.grey),
+                        ),
+                        value: _notifAnnouncements,
+                        activeTrackColor: AppColors.primary,
+                        onChanged: (val) => setState(() => _notifAnnouncements = val),
+                      ),
+                      const Divider(height: 1),
+
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text(
+                          'Comments & Discussion Replies',
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: const Text(
+                          'Classmate answers and solution updates',
+                          style: TextStyle(fontSize: 11, color: Colors.grey),
+                        ),
+                        value: _notifComments,
+                        activeTrackColor: AppColors.primary,
+                        onChanged: (val) => setState(() => _notifComments = val),
+                      ),
+                      const Divider(height: 1),
+
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text(
+                          'Academic Targets & Habit Streaks',
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: const Text(
+                          'Daily consistency reminders and milestone celebrations',
+                          style: TextStyle(fontSize: 11, color: Colors.grey),
+                        ),
+                        value: _notifAcademic,
+                        activeTrackColor: AppColors.primary,
+                        onChanged: (val) => setState(() => _notifAcademic = val),
+                      ),
+                      const Divider(height: 1),
+
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text(
+                          'Audio & Timer Sound Alerts',
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: const Text(
+                          'Play completion sound when focus timer finishes',
+                          style: TextStyle(fontSize: 11, color: Colors.grey),
+                        ),
+                        value: _notifSound,
+                        activeTrackColor: AppColors.primary,
+                        onChanged: (val) => setState(() => _notifSound = val),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // 5. Backend Server Configuration
+                GlassCard(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.dns_rounded, size: 18, color: AppColors.primary),
+                          SizedBox(width: 8),
+                          Text(
+                            'Backend API Server Host',
+                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Connected to StudentBrain live cloud API endpoint. You can switch between production or local emulator.',
+                        style: TextStyle(fontSize: 11, color: Colors.grey, height: 1.35),
+                      ),
+                      const SizedBox(height: 14),
+                      AppTextField(
+                        label: 'API Base URL',
+                        controller: _urlCtrl,
+                        hint: 'https://uiu-student-brain.onrender.com/api',
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              onPressed: () {
+                                _urlCtrl.text = ApiEndpoints.defaultBaseUrl;
+                                _saveUrl();
+                              },
+                              child: const Text('Reset Default'),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: AppButton(
+                              label: 'Save Host',
+                              height: 42,
+                              onPressed: _saveUrl,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // 6. Account Sign Out Card
+                GlassCard(
+                  padding: const EdgeInsets.all(16),
+                  borderColor: AppColors.error.withValues(alpha: 0.3),
+                  color: AppColors.error.withValues(alpha: 0.05),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.error.withValues(alpha: 0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.logout_rounded,
+                            color: AppColors.error, size: 20),
+                      ),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Account Sign Out',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.error,
+                              ),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              'Sign out of StudentBrain on this device',
+                              style: TextStyle(fontSize: 11, color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.error,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: _confirmSignOut,
+                        child: const Text('Sign Out'),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // 7. App Build Info
+                GlassCard(
+                  padding: const EdgeInsets.all(16),
+                  child: const Center(
+                    child: Column(
+                      children: [
+                        Text(
+                          'StudentBrain Android App',
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+                        ),
+                        SizedBox(height: 3),
+                        Text(
+                          'Version 1.0.4 (Production Release)',
+                          style: TextStyle(fontSize: 11, color: Colors.grey),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Package: com.uiu.studentbrain',
+                          style: TextStyle(fontSize: 10, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

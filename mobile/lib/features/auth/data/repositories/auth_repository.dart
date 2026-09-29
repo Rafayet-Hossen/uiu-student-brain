@@ -1,0 +1,72 @@
+import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/network/dio_client.dart';
+import '../../../../core/storage/secure_storage_service.dart';
+import '../models/user_model.dart';
+
+class AuthRepository {
+  final DioClient _dioClient;
+  final SecureStorageService _storageService;
+
+  AuthRepository(this._dioClient, this._storageService);
+
+  Future<UserModel> login({
+    required String email,
+    required String password,
+  }) async {
+    final response = await _dioClient.post(
+      ApiEndpoints.login,
+      data: {
+        'email': email.trim(),
+        'password': password,
+      },
+    );
+
+    final data = response.data as Map<String, dynamic>;
+    final access = data['access'] as String;
+    final refresh = data['refresh'] as String?;
+
+    await _storageService.saveTokens(access: access, refresh: refresh);
+    return await getMe();
+  }
+
+  Future<UserModel> register({
+    required String email,
+    required String password,
+    required String fullName,
+    String? department,
+    String? institution,
+  }) async {
+    await _dioClient.post(
+      ApiEndpoints.register,
+      data: {
+        'email': email.trim(),
+        'password': password,
+        'full_name': fullName.trim(),
+        if (department != null && department.isNotEmpty) 'department': department.trim(),
+        if (institution != null && institution.isNotEmpty) 'institution': institution.trim(),
+      },
+    );
+
+    // Auto login after registration
+    return await login(email: email, password: password);
+  }
+
+  Future<UserModel> getMe() async {
+    final response = await _dioClient.get(ApiEndpoints.me);
+    return UserModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<UserModel> updateProfile(Map<String, dynamic> data) async {
+    final response = await _dioClient.patch(ApiEndpoints.me, data: data);
+    return UserModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<void> logout() async {
+    await _storageService.clearTokens();
+  }
+
+  Future<bool> hasValidToken() async {
+    final token = await _storageService.getAccessToken();
+    return token != null && token.isNotEmpty;
+  }
+}

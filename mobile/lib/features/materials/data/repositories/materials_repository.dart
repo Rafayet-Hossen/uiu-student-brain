@@ -1,0 +1,39 @@
+import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/network/dio_client.dart';
+import '../models/material_model.dart';
+
+class MaterialsRepository {
+  final DioClient _dioClient;
+
+  MaterialsRepository(this._dioClient);
+
+  Future<List<StudyMaterialModel>> getMaterials() async {
+    final response = await _dioClient.get(ApiEndpoints.globalMaterials);
+    if (response.data is List) {
+      return (response.data as List)
+          .map((e) => StudyMaterialModel.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
+    return [];
+  }
+
+  Future<StudyMaterialModel> getMaterialDetail(int id) async {
+    final response = await _dioClient.get(ApiEndpoints.materialDetail(id));
+    return StudyMaterialModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<Map<String, dynamic>> analyzeMaterial(int id) async {
+    final response = await _dioClient.post(ApiEndpoints.materialAnalyze(id));
+    return Map<String, dynamic>.from(response.data as Map);
+  }
+
+  Future<List<Map<String, dynamic>>> getCourses() async {
+    final response = await _dioClient.get(ApiEndpoints.globalCourses);
+    if (response.data is List) {
+      return (response.data as List)
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
+    }
+    return [];
+  }
+}
