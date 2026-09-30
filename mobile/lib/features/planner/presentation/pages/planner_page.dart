@@ -8,6 +8,7 @@ import '../../../../core/widgets/responsive.dart';
 import '../../../../core/widgets/student_brain_loader.dart';
 import '../providers/planner_provider.dart';
 import '../../data/models/schedule_model.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'add_schedule_dialog.dart';
 
 class PlannerPage extends ConsumerWidget {
@@ -285,6 +286,99 @@ class PlannerPage extends ConsumerWidget {
               ),
             ),
           ],
+          Builder(
+            builder: (context) {
+              final urlRegex = RegExp(
+                r'(https?:\/\/[^\s]+|meet\.google\.com\/[^\s]+|zoom\.us\/[^\s]+)',
+                caseSensitive: false,
+              );
+              final combinedText = '${item.subject} ${item.notes}';
+              final match = urlRegex.firstMatch(combinedText);
+              final linkUrl = match?.group(0);
+
+              if (linkUrl != null) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: InkWell(
+                    onTap: () async {
+                      final target = linkUrl.startsWith('http')
+                          ? linkUrl
+                          : 'https://$linkUrl';
+                      final uri = Uri.tryParse(target);
+                      if (uri != null) {
+                        try {
+                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        } catch (_) {}
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: AppColors.accent.withValues(alpha: 0.15),
+                        border: Border.all(color: AppColors.accent.withValues(alpha: 0.5)),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.video_call_rounded,
+                            size: 18,
+                            color: AppColors.accent,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Join Online Meeting: $linkUrl',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.accent,
+                                decoration: TextDecoration.underline,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          const Icon(
+                            Icons.open_in_new_rounded,
+                            size: 14,
+                            color: AppColors.accent,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              } else if (item.notes.toLowerCase().contains('online')) {
+                return Container(
+                  margin: const EdgeInsets.only(top: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.wifi_rounded, size: 12, color: AppColors.primary),
+                      SizedBox(width: 6),
+                      Text(
+                        'Online Campus Event',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
         ],
       ),
     );

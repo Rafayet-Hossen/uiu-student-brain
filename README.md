@@ -5,7 +5,7 @@
 [![Vite](https://img.shields.io/badge/Vite-8.1.5-646CFF?logo=vite)](https://vitejs.dev/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql)](https://www.postgresql.org/)
 [![Google Gemini](https://img.shields.io/badge/Google%20Gemini-2.0%20Flash-4285F4?logo=google)](https://deepmind.google/technologies/gemini/)
-[![Android APK Release](https://img.shields.io/badge/Download-Release%20APK%20(v2.3.0)-3DDC84?logo=android&logoColor=white)](https://github.com/souravsahapartho/uiu-student-brain/releases/download/v2.3.0/StudentBrain-v2.3.0.apk)
+[![Android APK Release](https://img.shields.io/badge/Download-Release%20APK%20(v2.3.1)-3DDC84?logo=android&logoColor=white)](https://github.com/souravsahapartho/uiu-student-brain/releases/download/v2.3.1/StudentBrain-v2.3.1.apk)
 [![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED?logo=docker)](https://www.docker.com/)
 [![Nginx](https://img.shields.io/badge/Nginx-Reverse%20Proxy-009639?logo=nginx)](https://nginx.org/)
 [![UIU BSCSE Aligned](https://img.shields.io/badge/UIU%20BSCSE-Syllabus%20Aligned-FF6F00?logo=buffer)](https://www.uiu.ac.bd/)
@@ -15,12 +15,12 @@
 
 ---
 
-## 📱 Mobile Application (Android APK Release v2.3.0)
+## 📱 Mobile Application (Android APK Release v2.3.1)
 
-Get the official **StudentBrain Android App (v2.3.0)** directly on your device:
+Get the official **StudentBrain Android App (v2.3.1)** directly on your device:
 
-- 🚀 **Direct Download (v2.3.0)**: [**Download StudentBrain-v2.3.0.apk**](https://github.com/souravsahapartho/uiu-student-brain/releases/download/v2.3.0/StudentBrain-v2.3.0.apk)
-- 📦 **GitHub Releases Page**: [**View v2.3.0 Release Notes & Assets**](https://github.com/souravsahapartho/uiu-student-brain/releases/tag/v2.3.0)
+- 🚀 **Direct Download (v2.3.1)**: [**Download StudentBrain-v2.3.1.apk**](https://github.com/souravsahapartho/uiu-student-brain/releases/download/v2.3.1/StudentBrain-v2.3.1.apk)
+- 📦 **GitHub Releases Page**: [**View v2.3.1 Release Notes & Assets**](https://github.com/souravsahapartho/uiu-student-brain/releases/tag/v2.3.1)
 
 ---
 

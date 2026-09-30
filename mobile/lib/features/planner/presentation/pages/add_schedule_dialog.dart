@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../providers/planner_provider.dart';
 
@@ -22,16 +21,6 @@ class _AddScheduleDialogState extends ConsumerState<AddScheduleDialog> {
   TimeOfDay? _endTime;
   final Set<String> _selectedDays = {};
   bool _isLoading = false;
-
-  static const List<String> availableDays = [
-    'Saturday',
-    'Sunday',
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-  ];
 
   @override
   void dispose() {
@@ -92,16 +81,67 @@ class _AddScheduleDialogState extends ConsumerState<AddScheduleDialog> {
     }
   }
 
+  String _formatTime12(TimeOfDay time) {
+    final hour = time.hour == 0 ? 12 : (time.hour > 12 ? time.hour - 12 : time.hour);
+    final minute = time.minute.toString().padLeft(2, '0');
+    final period = time.hour >= 12 ? 'PM' : 'AM';
+    return '$hour:$minute $period';
+  }
+
+  Widget _buildDayChip(String dayName, String shortName, bool isDark) {
+    final isSelected = _selectedDays.contains(dayName);
+    return InkWell(
+      onTap: () {
+        setState(() {
+          if (isSelected) {
+            _selectedDays.remove(dayName);
+          } else {
+            _selectedDays.add(dayName);
+          }
+        });
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(vertical: 9),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primary
+              : (isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected
+                ? AppColors.primary
+                : (isDark ? AppColors.borderDark : AppColors.borderLight),
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Text(
+          shortName,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+            color: isSelected
+                ? Colors.white
+                : (isDark ? AppColors.textDark : AppColors.textLight),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 440),
         child: Padding(
-          padding: const EdgeInsets.all(22),
+          padding: const EdgeInsets.all(20),
           child: SingleChildScrollView(
             child: Form(
               key: _formKey,
@@ -160,50 +200,59 @@ class _AddScheduleDialogState extends ConsumerState<AddScheduleDialog> {
                     style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: availableDays.map((d) {
-                      final isSelected = _selectedDays.contains(d);
-                      return FilterChip(
-                        label: Text(d.substring(0, 3)),
-                        selected: isSelected,
-                        showCheckmark: false,
-                        onSelected: (selected) {
-                          setState(() {
-                            if (selected) {
-                              _selectedDays.add(d);
-                            } else {
-                              _selectedDays.remove(d);
-                            }
-                          });
-                        },
-                        selectedColor: AppColors.primary,
-                        backgroundColor: isDark
-                            ? AppColors.surfaceDarkSubtle
-                            : AppColors.surfaceLightSubtle,
-                        labelStyle: TextStyle(
-                          color: isSelected
-                              ? Colors.white
-                              : (isDark
-                                  ? AppColors.textDark
-                                  : AppColors.textLight),
-                          fontWeight:
-                              isSelected ? FontWeight.w800 : FontWeight.w600,
-                          fontSize: 12,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 2.5),
+                          child: _buildDayChip('Saturday', 'Sat', isDark),
                         ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(
-                            color: isSelected
-                                ? AppColors.primary
-                                : (isDark
-                                    ? AppColors.borderDark
-                                    : AppColors.borderLight),
-                          ),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 2.5),
+                          child: _buildDayChip('Sunday', 'Sun', isDark),
                         ),
-                      );
-                    }).toList(),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 2.5),
+                          child: _buildDayChip('Monday', 'Mon', isDark),
+                        ),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 2.5),
+                          child: _buildDayChip('Tuesday', 'Tue', isDark),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 2.5),
+                          child: _buildDayChip('Wednesday', 'Wed', isDark),
+                        ),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 2.5),
+                          child: _buildDayChip('Thursday', 'Thu', isDark),
+                        ),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 2.5),
+                          child: _buildDayChip('Friday', 'Fri', isDark),
+                        ),
+                      ),
+                      const Expanded(
+                        child: SizedBox(),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 18),
                   const Text(
@@ -217,7 +266,7 @@ class _AddScheduleDialogState extends ConsumerState<AddScheduleDialog> {
                         child: OutlinedButton.icon(
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
+                              horizontal: 8,
                               vertical: 12,
                             ),
                             side: BorderSide(
@@ -236,22 +285,25 @@ class _AddScheduleDialogState extends ConsumerState<AddScheduleDialog> {
                             size: 16,
                             color: _startTime != null
                                 ? AppColors.primary
-                                : Colors.grey,
+                                : (isDark ? AppColors.textDarkMuted : AppColors.textLightMuted),
                           ),
-                          label: Text(
-                            _startTime == null
-                                ? 'Start Time'
-                                : 'Start: ${_formatTime(_startTime!)}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: _startTime != null
-                                  ? FontWeight.w800
-                                  : FontWeight.w600,
-                              color: _startTime != null
-                                  ? AppColors.primary
-                                  : (isDark
-                                      ? AppColors.textDarkMuted
-                                      : AppColors.textLightMuted),
+                          label: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              _startTime == null
+                                  ? 'Start Time'
+                                  : _formatTime12(_startTime!),
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: _startTime != null
+                                    ? FontWeight.w800
+                                    : FontWeight.w600,
+                                color: _startTime != null
+                                    ? AppColors.primary
+                                    : (isDark
+                                        ? AppColors.textDarkMuted
+                                        : AppColors.textLightMuted),
+                              ),
                             ),
                           ),
                           onPressed: () async {
@@ -266,12 +318,12 @@ class _AddScheduleDialogState extends ConsumerState<AddScheduleDialog> {
                           },
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: OutlinedButton.icon(
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
+                              horizontal: 8,
                               vertical: 12,
                             ),
                             side: BorderSide(
@@ -290,22 +342,25 @@ class _AddScheduleDialogState extends ConsumerState<AddScheduleDialog> {
                             size: 16,
                             color: _endTime != null
                                 ? AppColors.primary
-                                : Colors.grey,
+                                : (isDark ? AppColors.textDarkMuted : AppColors.textLightMuted),
                           ),
-                          label: Text(
-                            _endTime == null
-                                ? 'End Time'
-                                : 'End: ${_formatTime(_endTime!)}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: _endTime != null
-                                  ? FontWeight.w800
-                                  : FontWeight.w600,
-                              color: _endTime != null
-                                  ? AppColors.primary
-                                  : (isDark
-                                      ? AppColors.textDarkMuted
-                                      : AppColors.textLightMuted),
+                          label: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              _endTime == null
+                                  ? 'End Time'
+                                  : _formatTime12(_endTime!),
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: _endTime != null
+                                    ? FontWeight.w800
+                                    : FontWeight.w600,
+                                color: _endTime != null
+                                    ? AppColors.primary
+                                    : (isDark
+                                        ? AppColors.textDarkMuted
+                                        : AppColors.textLightMuted),
+                              ),
                             ),
                           ),
                           onPressed: () async {
@@ -332,17 +387,63 @@ class _AddScheduleDialogState extends ConsumerState<AddScheduleDialog> {
                   Row(
                     children: [
                       Expanded(
+                        flex: 2,
                         child: TextButton(
                           onPressed: () => Navigator.pop(context),
-                          child: const Text('Cancel'),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 13),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: isDark
+                                  ? AppColors.textDarkMuted
+                                  : AppColors.textLightMuted,
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
-                        child: AppButton(
-                          label: 'Save Routine',
-                          onPressed: _handleSubmit,
-                          isLoading: _isLoading,
+                        flex: 3,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _handleSubmit,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 13,
+                              horizontal: 10,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(
+                                    'Save Routine',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
                         ),
                       ),
                     ],

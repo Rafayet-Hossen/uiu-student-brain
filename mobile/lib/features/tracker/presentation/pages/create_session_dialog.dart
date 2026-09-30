@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/widgets/app_button.dart';
+import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../providers/tracker_provider.dart';
 
@@ -15,9 +15,10 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
   final _formKey = GlobalKey<FormState>();
   final _subjectCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
-  int _durationMinutes = 60;
-  DateTime _selectedDate = DateTime.now();
-  TimeOfDay _selectedTime = TimeOfDay.now();
+
+  int? _durationMinutes;
+  DateTime? _selectedDate;
+  TimeOfDay? _selectedTime;
   bool _isLoading = false;
 
   @override
@@ -27,23 +28,66 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
     super.dispose();
   }
 
-  String _formatDate(DateTime d) {
+  String _formatDateApi(DateTime d) {
     return '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
   }
 
-  String _formatTime(TimeOfDay t) {
+  String _formatDateDisplay(DateTime d) {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return '${d.day.toString().padLeft(2, '0')} ${months[d.month - 1]}, ${d.year}';
+  }
+
+  String _formatTimeApi(TimeOfDay t) {
     return '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
+  }
+
+  String _formatTime12(TimeOfDay time) {
+    final hour = time.hour == 0 ? 12 : (time.hour > 12 ? time.hour - 12 : time.hour);
+    final minute = time.minute.toString().padLeft(2, '0');
+    final period = time.hour >= 12 ? 'PM' : 'AM';
+    return '$hour:$minute $period';
   }
 
   Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) return;
+
+    if (_durationMinutes == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select a focus duration'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    if (_selectedDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select session date'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    if (_selectedTime == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select session start time'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     final success = await ref.read(trackerProvider.notifier).createSession({
       'subject': _subjectCtrl.text.trim(),
-      'duration_minutes': _durationMinutes,
-      'session_date': _formatDate(_selectedDate),
-      'start_time': _formatTime(_selectedTime),
+      'duration_minutes': _durationMinutes!,
+      'session_date': _formatDateApi(_selectedDate!),
+      'start_time': _formatTimeApi(_selectedTime!),
       'notes': _notesCtrl.text.trim(),
     });
 
@@ -53,9 +97,47 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
     }
   }
 
+  Widget _buildDurationChip(int mins, bool isDark) {
+    final isSelected = _durationMinutes == mins;
+    return InkWell(
+      onTap: () => setState(() => _durationMinutes = mins),
+      borderRadius: BorderRadius.circular(12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primary
+              : (isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected
+                ? AppColors.primary
+                : (isDark ? AppColors.borderDark : AppColors.borderLight),
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Text(
+          '$mins min',
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+            color: isSelected
+                ? Colors.white
+                : (isDark ? AppColors.textDark : AppColors.textLight),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 440),
@@ -68,9 +150,37 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text(
-                    'Book Scheduled Focus Session',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.timer_outlined,
+                          color: AppColors.primary,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Text(
+                          'Book Scheduled Focus Session',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded, size: 20),
+                        onPressed: () => Navigator.pop(context),
+                        tooltip: 'Close',
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
                   AppTextField(
@@ -81,74 +191,239 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                         val == null || val.trim().isEmpty ? 'Subject is required' : null,
                   ),
                   const Text(
-                    'Duration (Minutes)',
+                    'Duration (Minutes) *',
                     style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    children: [25, 45, 60, 90, 120].map((mins) {
-                      final isSelected = _durationMinutes == mins;
-                      return ChoiceChip(
-                        label: Text('$mins min'),
-                        selected: isSelected,
-                        onSelected: (_) => setState(() => _durationMinutes = mins),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 16),
                   Row(
                     children: [
                       Expanded(
-                        child: OutlinedButton(
-                          onPressed: () async {
-                            final d = await showDatePicker(
-                              context: context,
-                              initialDate: _selectedDate,
-                              firstDate: DateTime.now().subtract(const Duration(days: 1)),
-                              lastDate: DateTime.now().add(const Duration(days: 60)),
-                            );
-                            if (d != null) setState(() => _selectedDate = d);
-                          },
-                          child: Text(_formatDate(_selectedDate)),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 2.5),
+                          child: _buildDurationChip(25, isDark),
                         ),
                       ),
-                      const SizedBox(width: 10),
                       Expanded(
-                        child: OutlinedButton(
-                          onPressed: () async {
-                            final t = await showTimePicker(
-                              context: context,
-                              initialTime: _selectedTime,
-                            );
-                            if (t != null) setState(() => _selectedTime = t);
-                          },
-                          child: Text(_formatTime(_selectedTime)),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 2.5),
+                          child: _buildDurationChip(45, isDark),
+                        ),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 2.5),
+                          child: _buildDurationChip(60, isDark),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 2.5),
+                          child: _buildDurationChip(90, isDark),
+                        ),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 2.5),
+                          child: _buildDurationChip(120, isDark),
+                        ),
+                      ),
+                      const Expanded(
+                        child: SizedBox(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+                  const Text(
+                    'Session Date & Time *',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 12,
+                            ),
+                            side: BorderSide(
+                              color: _selectedDate != null
+                                  ? AppColors.primary
+                                  : (isDark
+                                      ? AppColors.borderDark
+                                      : AppColors.borderLight),
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          icon: Icon(
+                            Icons.calendar_today_rounded,
+                            size: 16,
+                            color: _selectedDate != null
+                                ? AppColors.primary
+                                : (isDark ? AppColors.textDarkMuted : AppColors.textLightMuted),
+                          ),
+                          label: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              _selectedDate == null
+                                  ? 'Select Date'
+                                  : _formatDateDisplay(_selectedDate!),
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: _selectedDate != null
+                                    ? FontWeight.w800
+                                    : FontWeight.w600,
+                                color: _selectedDate != null
+                                    ? AppColors.primary
+                                    : (isDark
+                                        ? AppColors.textDarkMuted
+                                        : AppColors.textLightMuted),
+                              ),
+                            ),
+                          ),
+                          onPressed: () async {
+                            final now = DateTime.now();
+                            final d = await showDatePicker(
+                              context: context,
+                              initialDate: _selectedDate ?? now,
+                              firstDate: now.subtract(const Duration(days: 1)),
+                              lastDate: now.add(const Duration(days: 60)),
+                            );
+                            if (d != null) setState(() => _selectedDate = d);
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 12,
+                            ),
+                            side: BorderSide(
+                              color: _selectedTime != null
+                                  ? AppColors.primary
+                                  : (isDark
+                                      ? AppColors.borderDark
+                                      : AppColors.borderLight),
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          icon: Icon(
+                            Icons.access_time_rounded,
+                            size: 16,
+                            color: _selectedTime != null
+                                ? AppColors.primary
+                                : (isDark ? AppColors.textDarkMuted : AppColors.textLightMuted),
+                          ),
+                          label: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              _selectedTime == null
+                                  ? 'Select Time'
+                                  : _formatTime12(_selectedTime!),
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: _selectedTime != null
+                                    ? FontWeight.w800
+                                    : FontWeight.w600,
+                                color: _selectedTime != null
+                                    ? AppColors.primary
+                                    : (isDark
+                                        ? AppColors.textDarkMuted
+                                        : AppColors.textLightMuted),
+                              ),
+                            ),
+                          ),
+                          onPressed: () async {
+                            final t = await showTimePicker(
+                              context: context,
+                              initialTime: _selectedTime ?? TimeOfDay.now(),
+                            );
+                            if (t != null) setState(() => _selectedTime = t);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
                   AppTextField(
                     label: 'Study Notes & Goals',
                     hint: 'Topics, formulas, or chapters to cover',
                     controller: _notesCtrl,
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 14),
                   Row(
                     children: [
                       Expanded(
+                        flex: 2,
                         child: TextButton(
                           onPressed: () => Navigator.pop(context),
-                          child: const Text('Cancel'),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 13),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: isDark
+                                  ? AppColors.textDarkMuted
+                                  : AppColors.textLightMuted,
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
-                        child: AppButton(
-                          label: 'Book Session',
-                          onPressed: _handleSubmit,
-                          isLoading: _isLoading,
+                        flex: 3,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _handleSubmit,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 13,
+                              horizontal: 10,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(
+                                    'Book Session',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
                         ),
                       ),
                     ],
