@@ -11,6 +11,7 @@ import '../../../../core/widgets/student_brain_loader.dart';
 import '../../../../core/widgets/user_avatar.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/dashboard_provider.dart';
+import '../widgets/notifications_sheet.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -108,14 +109,7 @@ class DashboardPage extends ConsumerWidget {
               IconButton(
                 icon: const Icon(Icons.notifications_none_rounded, size: 22),
                 tooltip: 'Notifications',
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('All class schedules & reminders are up to date'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                },
+                onPressed: () => NotificationsSheet.show(context),
               ),
               Positioned(
                 top: 13,

@@ -11,6 +11,7 @@ final materialsRepositoryProvider = Provider<MaterialsRepository>((ref) {
 class MaterialsState {
   final List<StudyMaterialModel> materials;
   final List<Map<String, dynamic>> courses;
+  final List<Map<String, dynamic>> semesters;
   final String searchQuery;
   final String selectedCategory;
   final bool isLoading;
@@ -19,6 +20,7 @@ class MaterialsState {
   const MaterialsState({
     this.materials = const [],
     this.courses = const [],
+    this.semesters = const [],
     this.searchQuery = '',
     this.selectedCategory = 'All',
     this.isLoading = false,
@@ -28,6 +30,7 @@ class MaterialsState {
   MaterialsState copyWith({
     List<StudyMaterialModel>? materials,
     List<Map<String, dynamic>>? courses,
+    List<Map<String, dynamic>>? semesters,
     String? searchQuery,
     String? selectedCategory,
     bool? isLoading,
@@ -36,6 +39,7 @@ class MaterialsState {
     return MaterialsState(
       materials: materials ?? this.materials,
       courses: courses ?? this.courses,
+      semesters: semesters ?? this.semesters,
       searchQuery: searchQuery ?? this.searchQuery,
       selectedCategory: selectedCategory ?? this.selectedCategory,
       isLoading: isLoading ?? this.isLoading,
@@ -67,13 +71,49 @@ class MaterialsNotifier extends StateNotifier<MaterialsState> {
     try {
       final mats = await _repository.getMaterials();
       final crs = await _repository.getCourses();
+      final sems = await _repository.getSemesters();
       state = state.copyWith(
         materials: mats,
         courses: crs,
+        semesters: sems,
         isLoading: false,
       );
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  Future<bool> createSemester(String name, bool isCurrent) async {
+    try {
+      await _repository.createSemester({
+        'name': name,
+        'is_current': isCurrent,
+      });
+      await loadMaterialsData();
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> createCourse({
+    required int semesterId,
+    required String title,
+    required String code,
+    String color = '#2563eb',
+    String description = '',
+  }) async {
+    try {
+      await _repository.createCourse(semesterId, {
+        'title': title,
+        'code': code,
+        'color': color,
+        'description': description,
+      });
+      await loadMaterialsData();
+      return true;
+    } catch (_) {
+      return false;
     }
   }
 

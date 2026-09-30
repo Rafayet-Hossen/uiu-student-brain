@@ -36,4 +36,24 @@ class MaterialsRepository {
     }
     return [];
   }
+
+  Future<List<Map<String, dynamic>>> getSemesters() async {
+    final response = await _dioClient.get(ApiEndpoints.semesters);
+    if (response.data is List) {
+      return (response.data as List)
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
+    }
+    return [];
+  }
+
+  Future<Map<String, dynamic>> createSemester(Map<String, dynamic> data) async {
+    final response = await _dioClient.post(ApiEndpoints.semesters, data: data);
+    return Map<String, dynamic>.from(response.data as Map);
+  }
+
+  Future<Map<String, dynamic>> createCourse(int semesterId, Map<String, dynamic> data) async {
+    final response = await _dioClient.post(ApiEndpoints.semesterCourses(semesterId), data: data);
+    return Map<String, dynamic>.from(response.data as Map);
+  }
 }

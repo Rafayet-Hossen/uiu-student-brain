@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/error_card.dart';
+import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/student_brain_loader.dart';
 import '../../data/models/material_model.dart';
 import '../providers/materials_provider.dart';
@@ -16,17 +18,28 @@ class MaterialReaderPage extends ConsumerStatefulWidget {
   ConsumerState<MaterialReaderPage> createState() => _MaterialReaderPageState();
 }
 
-class _MaterialReaderPageState extends ConsumerState<MaterialReaderPage> {
+class _MaterialReaderPageState extends ConsumerState<MaterialReaderPage>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
   StudyMaterialModel? _material;
   bool _isLoading = true;
+  bool _isAnalyzing = false;
   String? _error;
   double _fontSizeScale = 1.0;
   bool _isBookmarked = false;
+  final Set<int> _revealedAnswers = {};
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 4, vsync: this);
     _loadDetail();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadDetail() async {
@@ -41,12 +54,85 @@ class _MaterialReaderPageState extends ConsumerState<MaterialReaderPage> {
         _material = item;
         _isLoading = false;
       });
+
+      // If not analyzed yet and has content, auto-analyze in background for instant user experience
+      if (!item.isAnalyzed &&
+          item.summary.isEmpty &&
+          (item.contentText.isNotEmpty || item.fileUrl != null)) {
+        _triggerAiAnalysis();
+      }
     } catch (e) {
       setState(() {
         _error = e.toString();
         _isLoading = false;
       });
     }
+  }
+
+  Future<void> _triggerAiAnalysis() async {
+    if (_isAnalyzing) return;
+    setState(() => _isAnalyzing = true);
+
+    try {
+      final repo = ref.read(materialsRepositoryProvider);
+      await repo.analyzeMaterial(widget.materialId);
+
+      // Reload fresh analyzed material
+      final updated = await repo.getMaterialDetail(widget.materialId);
+      if (mounted) {
+        setState(() {
+          _material = updated;
+          _isAnalyzing = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('AI Analysis and Practice Quiz generated successfully!'),
+            backgroundColor: AppColors.success,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isAnalyzing = false);
+      }
+    }
+  }
+
+  double _getDifficultyPercent(String level) {
+    switch (level.toLowerCase()) {
+      case 'beginner':
+        return 0.33;
+      case 'intermediate':
+        return 0.66;
+      case 'advanced':
+        return 1.0;
+      default:
+        return 0.5;
+    }
+  }
+
+  Color _getDifficultyColor(String level) {
+    switch (level.toLowerCase()) {
+      case 'beginner':
+        return AppColors.success;
+      case 'intermediate':
+        return AppColors.accent;
+      case 'advanced':
+        return AppColors.error;
+      default:
+        return AppColors.primary;
+    }
+  }
+
+  void _copyToClipboard(String text, String label) {
+    Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$label copied to clipboard'),
+        duration: const Duration(seconds: 1),
+      ),
+    );
   }
 
   @override
@@ -56,17 +142,30 @@ class _MaterialReaderPageState extends ConsumerState<MaterialReaderPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _material?.title ?? 'Document Reader',
+          _material?.title ?? 'Study Material',
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
         actions: [
+          if (_material != null)
+            IconButton(
+              icon: _isAnalyzing
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                    )
+                  : const Icon(Icons.auto_awesome_rounded, color: AppColors.primary),
+              tooltip: 'Re-Analyze with Gemini AI',
+              onPressed: _isAnalyzing ? null : _triggerAiAnalysis,
+            ),
           IconButton(
             icon: Icon(
               _isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
               color: _isBookmarked ? AppColors.primary : null,
             ),
+            tooltip: 'Bookmark',
             onPressed: () {
               setState(() => _isBookmarked = !_isBookmarked);
               ScaffoldMessenger.of(context).showSnackBar(
@@ -89,12 +188,40 @@ class _MaterialReaderPageState extends ConsumerState<MaterialReaderPage> {
             ],
           ),
         ],
+        bottom: TabBar(
+          controller: _tabController,
+          isScrollable: true,
+          labelColor: AppColors.primary,
+          unselectedLabelColor: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+          indicatorColor: AppColors.primary,
+          indicatorWeight: 3,
+          labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+          unselectedLabelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+          tabs: [
+            const Tab(
+              icon: Icon(Icons.auto_awesome_rounded, size: 18),
+              text: 'AI Summary',
+            ),
+            Tab(
+              icon: const Icon(Icons.lightbulb_outline_rounded, size: 18),
+              text: 'Key Terms (${_material?.keyConcepts.length ?? 0})',
+            ),
+            Tab(
+              icon: const Icon(Icons.quiz_outlined, size: 18),
+              text: 'Quiz (${_material?.keyQuestions.length ?? 0})',
+            ),
+            const Tab(
+              icon: Icon(Icons.description_outlined, size: 18),
+              text: 'Document',
+            ),
+          ],
+        ),
       ),
       body: SafeArea(
         child: Builder(
           builder: (context) {
             if (_isLoading) {
-              return const StudentBrainLoader.fullScreen(message: 'Preparing document reader...');
+              return const StudentBrainLoader.fullScreen(message: 'Loading study material & AI insights...');
             }
 
             if (_error != null) {
@@ -110,78 +237,626 @@ class _MaterialReaderPageState extends ConsumerState<MaterialReaderPage> {
             }
 
             final mat = _material!;
-            final displayContent = mat.contentText.isNotEmpty
-                ? mat.contentText
-                : (mat.summary.isNotEmpty ? mat.summary : '# ${mat.title}\n\nNo text content parsed for this document.');
 
-            return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+            return TabBarView(
+              controller: _tabController,
+              children: [
+                _buildSummaryTab(mat, isDark),
+                _buildConceptsTab(mat, isDark),
+                _buildQuizTab(mat, isDark),
+                _buildDocumentTab(mat, isDark),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  // ============================================================
+  // TAB 1: AI SUMMARY & INSIGHTS
+  // ============================================================
+  Widget _buildSummaryTab(StudyMaterialModel mat, bool isDark) {
+    final diffColor = _getDifficultyColor(mat.difficultyLevel);
+    final diffPercent = _getDifficultyPercent(mat.difficultyLevel);
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (_isAnalyzing) ...[
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+              ),
+              child: const Row(
                 children: [
-                  // Meta bar
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle,
-                      borderRadius: BorderRadius.circular(12),
+                  SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                  ),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Gemini AI is analyzing material & generating quiz...',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.primary),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+          ],
+
+          // Executive Summary Card
+          GlassCard(
+            borderColor: AppColors.primary.withValues(alpha: 0.3),
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.auto_awesome_rounded, color: AppColors.primary, size: 18),
+                        SizedBox(width: 8),
+                        Text(
+                          'Executive Syllabus Summary',
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900),
+                        ),
+                      ],
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.copy_rounded, size: 16),
+                      tooltip: 'Copy Summary',
+                      onPressed: mat.summary.isNotEmpty
+                          ? () => _copyToClipboard(mat.summary, 'Summary')
+                          : null,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                if (mat.summary.isNotEmpty)
+                  MarkdownBody(
+                    data: mat.summary,
+                    styleSheet: MarkdownStyleSheet(
+                      p: TextStyle(
+                        fontSize: 14 * _fontSizeScale,
+                        height: 1.5,
+                        color: isDark ? AppColors.textDark : AppColors.textLight,
+                      ),
+                    ),
+                  )
+                else
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          mat.category,
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
-                        ),
-                        Text(
-                          '${mat.estimatedReadingTime} min read | ${mat.difficultyLevel}',
+                          'No AI summary generated yet.',
                           style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 13,
                             color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        ElevatedButton.icon(
+                          onPressed: _triggerAiAnalysis,
+                          icon: const Icon(Icons.bolt_rounded, size: 16),
+                          label: const Text('Analyze with Gemini AI'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
 
-                  // Markdown Viewer with Code Highlighting
-                  MarkdownBody(
-                    data: displayContent,
-                    selectable: true,
-                    styleSheet: MarkdownStyleSheet(
-                      h1: TextStyle(
-                        fontSize: 22 * _fontSizeScale,
+          // Academic Metrics Row
+          Row(
+            children: [
+              Expanded(
+                child: GlassCard(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Difficulty',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: diffColor.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              mat.difficultyLevel,
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                color: diffColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: diffPercent,
+                          backgroundColor: isDark ? Colors.white10 : Colors.black12,
+                          valueColor: AlwaysStoppedAnimation<Color>(diffColor),
+                          minHeight: 6,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Coursework Level',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: isDark ? AppColors.textDarkSubtle : AppColors.textLightSubtle,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: GlassCard(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Reading Time',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                            ),
+                          ),
+                          const Icon(Icons.timer_outlined, size: 14, color: AppColors.accent),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        '${mat.estimatedReadingTime} min',
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '~200 words / min',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: isDark ? AppColors.textDarkSubtle : AppColors.textLightSubtle,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+
+          // Key Syllabus Topics
+          if (mat.keyTopics.isNotEmpty) ...[
+            const Text(
+              'Extracted Syllabus Topics',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: mat.keyTopics.map((topic) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                      width: 0.8,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.tag_rounded, size: 12, color: AppColors.primary),
+                      const SizedBox(width: 4),
+                      Text(
+                        topic,
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
+  // TAB 2: KEY CONCEPTS & DEFINITIONS
+  // ============================================================
+  Widget _buildConceptsTab(StudyMaterialModel mat, bool isDark) {
+    if (mat.keyConcepts.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.lightbulb_outline_rounded, size: 48, color: AppColors.accent),
+              const SizedBox(height: 12),
+              const Text(
+                'No Key Concepts Extracted',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Generate key term definitions and formulas directly using Gemini AI.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: _triggerAiAnalysis,
+                icon: const Icon(Icons.bolt_rounded, size: 16),
+                label: const Text('Extract Key Terms with AI'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      itemCount: mat.keyConcepts.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 10),
+      itemBuilder: (context, index) {
+        final concept = mat.keyConcepts[index];
+        final term = concept['term'] ?? 'Concept';
+        final definition = concept['definition'] ?? '';
+
+        return GlassCard(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 24,
+                    height: 24,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      '${index + 1}',
+                      style: const TextStyle(
+                        fontSize: 11,
                         fontWeight: FontWeight.w900,
-                        color: isDark ? AppColors.textDark : AppColors.textLight,
-                      ),
-                      h2: TextStyle(
-                        fontSize: 18 * _fontSizeScale,
-                        fontWeight: FontWeight.w800,
-                        color: isDark ? AppColors.textDark : AppColors.textLight,
-                      ),
-                      p: TextStyle(
-                        fontSize: 14 * _fontSizeScale,
-                        height: 1.55,
-                        color: isDark ? AppColors.textDark : AppColors.textLight,
-                      ),
-                      code: TextStyle(
-                        backgroundColor: isDark ? Colors.black45 : Colors.grey.shade200,
-                        fontSize: 12 * _fontSizeScale,
-                        fontFamily: 'monospace',
-                      ),
-                      codeblockDecoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(8),
+                        color: AppColors.primary,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 40),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      term,
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.copy_rounded, size: 15),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    tooltip: 'Copy Definition',
+                    onPressed: () => _copyToClipboard('$term: $definition', 'Concept'),
+                  ),
                 ],
               ),
-            );
-          },
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.only(left: 34),
+                child: Text(
+                  definition,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    height: 1.45,
+                    color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // ============================================================
+  // TAB 3: PRACTICE QUIZ & REVEALABLE ANSWERS
+  // ============================================================
+  Widget _buildQuizTab(StudyMaterialModel mat, bool isDark) {
+    if (mat.keyQuestions.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.quiz_outlined, size: 48, color: AppColors.primary),
+              const SizedBox(height: 12),
+              const Text(
+                'No Quiz Questions Yet',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Generate instant practice questions with revealable solutions matching exam standards.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: _triggerAiAnalysis,
+                icon: const Icon(Icons.bolt_rounded, size: 16),
+                label: const Text('Generate Quiz Questions'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ],
+          ),
         ),
+      );
+    }
+
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      itemCount: mat.keyQuestions.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        final q = mat.keyQuestions[index];
+        final question = q['question'] ?? 'Question';
+        final answer = q['answer'] ?? 'No answer provided.';
+        final isRevealed = _revealedAnswers.contains(index);
+
+        return GlassCard(
+          padding: const EdgeInsets.all(16),
+          borderColor: isRevealed
+              ? AppColors.primary.withValues(alpha: 0.4)
+              : (isDark ? AppColors.borderDark : AppColors.borderLight),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      'QUESTION ${index + 1}',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.primary,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      side: BorderSide(
+                        color: isRevealed ? AppColors.primary : (isDark ? AppColors.borderDark : AppColors.borderLight),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    icon: Icon(
+                      isRevealed ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                      size: 14,
+                      color: isRevealed ? AppColors.primary : (isDark ? AppColors.textDarkMuted : AppColors.textLightMuted),
+                    ),
+                    label: Text(
+                      isRevealed ? 'Hide Answer' : 'Reveal Answer',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: isRevealed ? AppColors.primary : (isDark ? AppColors.textDark : AppColors.textLight),
+                      ),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        if (isRevealed) {
+                          _revealedAnswers.remove(index);
+                        } else {
+                          _revealedAnswers.add(index);
+                        }
+                      });
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(
+                question,
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, height: 1.4),
+              ),
+              if (isRevealed) ...[
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.success.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: AppColors.success.withValues(alpha: 0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.check_circle_outline_rounded, size: 16, color: AppColors.success),
+                          SizedBox(width: 6),
+                          Text(
+                            'Expected Academic Solution:',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.success,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        answer,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          height: 1.45,
+                          color: isDark ? AppColors.textDark : AppColors.textLight,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // ============================================================
+  // TAB 4: ORIGINAL EXTRACTED DOCUMENT TEXT
+  // ============================================================
+  Widget _buildDocumentTab(StudyMaterialModel mat, bool isDark) {
+    final displayContent = mat.contentText.isNotEmpty
+        ? mat.contentText
+        : (mat.summary.isNotEmpty ? mat.summary : '# ${mat.title}\n\nNo text content parsed for this document.');
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  mat.category,
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                ),
+                Text(
+                  '${mat.estimatedReadingTime} min read | ${mat.difficultyLevel}',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          MarkdownBody(
+            data: displayContent,
+            selectable: true,
+            styleSheet: MarkdownStyleSheet(
+              h1: TextStyle(
+                fontSize: 22 * _fontSizeScale,
+                fontWeight: FontWeight.w900,
+                color: isDark ? AppColors.textDark : AppColors.textLight,
+              ),
+              h2: TextStyle(
+                fontSize: 18 * _fontSizeScale,
+                fontWeight: FontWeight.w800,
+                color: isDark ? AppColors.textDark : AppColors.textLight,
+              ),
+              p: TextStyle(
+                fontSize: 14 * _fontSizeScale,
+                height: 1.55,
+                color: isDark ? AppColors.textDark : AppColors.textLight,
+              ),
+              code: TextStyle(
+                backgroundColor: isDark ? Colors.black45 : Colors.grey.shade200,
+                fontSize: 12 * _fontSizeScale,
+                fontFamily: 'monospace',
+              ),
+              codeblockDecoration: BoxDecoration(
+                color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+          const SizedBox(height: 40),
+        ],
       ),
     );
   }

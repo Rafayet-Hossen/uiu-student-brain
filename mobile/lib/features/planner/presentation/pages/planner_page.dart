@@ -267,118 +267,7 @@ class PlannerPage extends ConsumerWidget {
               ),
             ],
           ),
-          if (item.notes.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                item.notes,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontStyle: FontStyle.italic,
-                  color: isDark ? AppColors.textDarkSubtle : AppColors.textLightSubtle,
-                ),
-              ),
-            ),
-          ],
-          Builder(
-            builder: (context) {
-              final urlRegex = RegExp(
-                r'(https?:\/\/[^\s]+|meet\.google\.com\/[^\s]+|zoom\.us\/[^\s]+)',
-                caseSensitive: false,
-              );
-              final combinedText = '${item.subject} ${item.notes}';
-              final match = urlRegex.firstMatch(combinedText);
-              final linkUrl = match?.group(0);
-
-              if (linkUrl != null) {
-                return Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: InkWell(
-                    onTap: () async {
-                      final target = linkUrl.startsWith('http')
-                          ? linkUrl
-                          : 'https://$linkUrl';
-                      final uri = Uri.tryParse(target);
-                      if (uri != null) {
-                        try {
-                          await launchUrl(uri, mode: LaunchMode.externalApplication);
-                        } catch (_) {}
-                      }
-                    },
-                    borderRadius: BorderRadius.circular(10),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: AppColors.accent.withValues(alpha: 0.15),
-                        border: Border.all(color: AppColors.accent.withValues(alpha: 0.5)),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.video_call_rounded,
-                            size: 18,
-                            color: AppColors.accent,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              'Join Online Meeting: $linkUrl',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.accent,
-                                decoration: TextDecoration.underline,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          const Icon(
-                            Icons.open_in_new_rounded,
-                            size: 14,
-                            color: AppColors.accent,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              } else if (item.notes.toLowerCase().contains('online')) {
-                return Container(
-                  margin: const EdgeInsets.only(top: 8),
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.wifi_rounded, size: 12, color: AppColors.primary),
-                      SizedBox(width: 6),
-                      Text(
-                        'Online Campus Event',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }
-              return const SizedBox.shrink();
-            },
-          ),
+          _buildEventDetailsView(context, item, isDark, cleanTitle),
         ],
       ),
     );
@@ -480,6 +369,199 @@ class PlannerPage extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildEventDetailsView(BuildContext context, ScheduleModel item, bool isDark, String cleanTitle) {
+    if (item.notes.isEmpty) return const SizedBox.shrink();
+
+    String? topic;
+    String? location;
+    String? host;
+    String? details;
+    final otherLines = <String>[];
+
+    for (final line in item.notes.split('\n')) {
+      final trimmed = line.trim();
+      if (trimmed.isEmpty) continue;
+
+      // Filter redundant "Campus Study Event (Going)" or "(Interested)" header
+      if (trimmed.toLowerCase().startsWith('campus study event')) continue;
+
+      if (trimmed.toLowerCase().startsWith('subject / topic:')) {
+        topic = trimmed.substring('subject / topic:'.length).trim();
+      } else if (trimmed.toLowerCase().startsWith('location:')) {
+        location = trimmed.substring('location:'.length).trim();
+      } else if (trimmed.toLowerCase().startsWith('host:')) {
+        host = trimmed.substring('host:'.length).trim();
+      } else if (trimmed.toLowerCase().startsWith('details:')) {
+        details = trimmed.substring('details:'.length).trim();
+      } else {
+        otherLines.add(trimmed);
+      }
+    }
+
+    if (details == null && otherLines.isNotEmpty) {
+      details = otherLines.join('\n');
+    } else if (details != null && otherLines.isNotEmpty) {
+      details = '$details\n${otherLines.join('\n')}';
+    }
+
+    // Check if location or details contains a meeting URL
+    String? meetingUrl;
+    final urlRegex = RegExp(r'https?://[^\s]+|(?:meet\.google\.com|zoom\.us|teams\.microsoft\.com)/[^\s]+', caseSensitive: false);
+    if (location != null && urlRegex.hasMatch(location)) {
+      final match = urlRegex.firstMatch(location);
+      if (match != null) meetingUrl = match.group(0);
+    }
+    if (meetingUrl == null && details != null && urlRegex.hasMatch(details)) {
+      final match = urlRegex.firstMatch(details);
+      if (match != null) meetingUrl = match.group(0);
+    }
+
+    final isOnline = meetingUrl != null || (location != null && (location.toLowerCase().contains('online') || location.toLowerCase().contains('meet') || location.toLowerCase().contains('zoom')));
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 10),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? AppColors.borderDark : AppColors.borderLight,
+          width: 0.8,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (topic != null && topic.isNotEmpty && topic.toLowerCase() != cleanTitle.toLowerCase()) ...[
+            _buildEventInfoRow(
+              Icons.bookmark_outline_rounded,
+              'Topic',
+              topic,
+              isDark,
+              AppColors.primary,
+            ),
+            const SizedBox(height: 8),
+          ],
+          if (location != null && location.isNotEmpty) ...[
+            _buildEventInfoRow(
+              isOnline ? Icons.videocam_rounded : Icons.location_on_rounded,
+              'Location',
+              location,
+              isDark,
+              isOnline ? AppColors.accent : AppColors.primary,
+            ),
+            if (meetingUrl != null) ...[
+              const SizedBox(height: 8),
+              InkWell(
+                onTap: () => _launchMeetingUrl(context, meetingUrl!),
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: AppColors.accent.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.open_in_new_rounded, size: 14, color: AppColors.accent),
+                      SizedBox(width: 6),
+                      Text(
+                        'Join Online Meeting',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.accent,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+            const SizedBox(height: 8),
+          ],
+          if (host != null && host.isNotEmpty) ...[
+            _buildEventInfoRow(
+              Icons.person_rounded,
+              'Host',
+              host,
+              isDark,
+              AppColors.textDarkMuted,
+            ),
+            const SizedBox(height: 8),
+          ],
+          if (details != null && details.isNotEmpty && details != 'No extra details provided.') ...[
+            _buildEventInfoRow(
+              Icons.notes_rounded,
+              'Details',
+              details,
+              isDark,
+              AppColors.textDarkSubtle,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEventInfoRow(
+    IconData icon,
+    String label,
+    String value,
+    bool isDark,
+    Color iconColor,
+  ) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 15, color: iconColor),
+        const SizedBox(width: 6),
+        Text(
+          '$label: ',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: isDark ? AppColors.textDark : AppColors.textLight,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _launchMeetingUrl(BuildContext context, String urlStr) async {
+    String finalUrl = urlStr.trim();
+    if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+      finalUrl = 'https://$finalUrl';
+    }
+    final uri = Uri.tryParse(finalUrl);
+    if (uri != null) {
+      try {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+        return;
+      } catch (_) {}
+    }
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not open link: $urlStr')),
+      );
+    }
   }
 
   void _confirmDelete(BuildContext context, WidgetRef ref, ScheduleModel item) async {
