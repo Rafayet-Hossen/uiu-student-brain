@@ -221,6 +221,22 @@ class ProfilePage extends ConsumerWidget {
                   child: Column(
                     children: [
                       ListTile(
+                        leading: const Icon(Icons.school_outlined, color: AppColors.primary),
+                        title: const Text('Grade Planner & Degree Targets', style: TextStyle(fontWeight: FontWeight.w700)),
+                        subtitle: const Text('Manage completed courses, import transcript & simulate CGPA', style: TextStyle(fontSize: 11)),
+                        trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
+                        onTap: () => context.push('/grades'),
+                      ),
+                      const Divider(),
+                      ListTile(
+                        leading: const Icon(Icons.timer_outlined, color: AppColors.accent),
+                        title: const Text('Live Focus Mode', style: TextStyle(fontWeight: FontWeight.w700)),
+                        subtitle: const Text('Start custom study sessions with focus stopwatch', style: TextStyle(fontSize: 11)),
+                        trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
+                        onTap: () => context.push('/tracker/live'),
+                      ),
+                      const Divider(),
+                      ListTile(
                         leading: const Icon(Icons.settings_outlined, color: AppColors.primary),
                         title: const Text('App Settings & Backend Host', style: TextStyle(fontWeight: FontWeight.w700)),
                         trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),

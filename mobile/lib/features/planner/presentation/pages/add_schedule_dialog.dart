@@ -47,6 +47,13 @@ class _AddScheduleDialogState extends ConsumerState<AddScheduleDialog> {
     return '$h:$m';
   }
 
+  String _formatDisplayTime(TimeOfDay time) {
+    final period = time.hour >= 12 ? 'PM' : 'AM';
+    final h12 = time.hour == 0 ? 12 : (time.hour > 12 ? time.hour - 12 : time.hour);
+    final mStr = time.minute.toString().padLeft(2, '0');
+    return '$h12:$mStr $period';
+  }
+
   Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -241,7 +248,7 @@ class _AddScheduleDialogState extends ConsumerState<AddScheduleDialog> {
                           label: Text(
                             _startTime == null
                                 ? 'Start Time'
-                                : 'Start: ${_formatTime(_startTime!)}',
+                                : 'Start: ${_formatDisplayTime(_startTime!)}',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: _startTime != null
@@ -295,7 +302,7 @@ class _AddScheduleDialogState extends ConsumerState<AddScheduleDialog> {
                           label: Text(
                             _endTime == null
                                 ? 'End Time'
-                                : 'End: ${_formatTime(_endTime!)}',
+                                : 'End: ${_formatDisplayTime(_endTime!)}',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: _endTime != null

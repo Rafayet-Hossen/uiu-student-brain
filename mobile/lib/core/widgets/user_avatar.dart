@@ -24,63 +24,27 @@ class UserAvatar extends StatelessWidget {
     return input[0].toUpperCase();
   }
 
-  String _getCartoonAvatarUrl(String seed) {
-    final cleanSeed = Uri.encodeComponent(seed.trim().isEmpty ? 'Scholar' : seed.trim());
-    return 'https://api.dicebear.com/7.x/notionists/png?seed=$cleanSeed&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf';
-  }
-
   @override
   Widget build(BuildContext context) {
-    final effectiveUrl = (imageUrl != null && imageUrl!.trim().isNotEmpty)
-        ? imageUrl!
-        : _getCartoonAvatarUrl(name);
-
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.12),
+        color: AppColors.primary.withValues(alpha: 0.18),
         shape: BoxShape.circle,
         border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.35),
+          color: AppColors.primary.withValues(alpha: 0.4),
           width: 1.5,
         ),
       ),
-      child: ClipOval(
-        child: Image.network(
-          effectiveUrl,
-          width: size,
-          height: size,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              color: AppColors.primary.withValues(alpha: 0.18),
-              alignment: Alignment.center,
-              child: Text(
-                _getInitials(name),
-                style: TextStyle(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w900,
-                  fontSize: size * 0.38,
-                ),
-              ),
-            );
-          },
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-            return Container(
-              color: AppColors.primary.withValues(alpha: 0.08),
-              alignment: Alignment.center,
-              child: Text(
-                _getInitials(name),
-                style: TextStyle(
-                  color: AppColors.primary.withValues(alpha: 0.6),
-                  fontWeight: FontWeight.w800,
-                  fontSize: size * 0.38,
-                ),
-              ),
-            );
-          },
+      child: Center(
+        child: Text(
+          _getInitials(name),
+          style: TextStyle(
+            color: AppColors.primary,
+            fontWeight: FontWeight.w800,
+            fontSize: size * 0.4,
+          ),
         ),
       ),
     );

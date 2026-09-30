@@ -6,7 +6,6 @@ import 'package:percent_indicator/linear_percent_indicator.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/glass_card.dart';
-import '../../../../core/widgets/notifications_sheet.dart';
 import '../../../../core/widgets/responsive.dart';
 import '../../../../core/widgets/student_brain_loader.dart';
 import '../../../../core/widgets/user_avatar.dart';
@@ -107,7 +106,14 @@ class DashboardPage extends ConsumerWidget {
               IconButton(
                 icon: const Icon(Icons.notifications_none_rounded, size: 22),
                 tooltip: 'Notifications',
-                onPressed: () => NotificationsSheet.show(context),
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('All class schedules & reminders are up to date'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
               ),
               Positioned(
                 top: 13,
@@ -148,10 +154,9 @@ class DashboardPage extends ConsumerWidget {
                   // 1. Streak & Today Focus Row
                   Row(
                     children: [
-                      // Streak Card (Taps to Analytics Heatmap)
+                      // Streak Card
                       Expanded(
                         child: GlassCard(
-                          onTap: () => context.go('/analytics'),
                           padding: const EdgeInsets.all(14),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -263,7 +268,7 @@ class DashboardPage extends ConsumerWidget {
 
                   // 2. GPA Trajectory Snapshot
                   GlassCard(
-                    onTap: () => context.push('/grades'),
+                    onTap: () => context.go('/grades'),
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -451,77 +456,41 @@ class DashboardPage extends ConsumerWidget {
                     }),
                   const SizedBox(height: 18),
 
-                  // 6. Top 3 Scholars / Weekly Focus Podium Section
+                  // 6. Leaderboard Preview Banner
                   GlassCard(
+                    onTap: () => context.push('/community/leaderboard'),
                     padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.gold.withValues(alpha: 0.15),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(Icons.emoji_events_rounded, color: AppColors.gold, size: 18),
-                                ),
-                                const SizedBox(width: 8),
-                                const Text(
-                                  'Top Weekly Scholars',
-                                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
-                                ),
-                              ],
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.arrow_forward_rounded, size: 18, color: AppColors.primary),
-                              tooltip: 'Full Leaderboard',
-                              onPressed: () => context.push('/community/leaderboard'),
-                            ),
-                          ],
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppColors.gold.withValues(alpha: 0.15),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.emoji_events_rounded, color: AppColors.gold, size: 22),
                         ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            // #2 Silver
-                            Expanded(
-                              child: _buildScholarPodium(
-                                rank: 2,
-                                name: 'Sadia R.',
-                                hours: '28.5h',
-                                badgeColor: AppColors.silver,
-                                isDark: isDark,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Scholar Leaderboard',
+                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            // #1 Gold
-                            Expanded(
-                              child: _buildScholarPodium(
-                                rank: 1,
-                                name: 'Tanvir A.',
-                                hours: '34.2h',
-                                badgeColor: AppColors.gold,
-                                isDark: isDark,
-                                isTop: true,
+                              const SizedBox(height: 2),
+                              Text(
+                                'Compare focus hours & streaks with peers',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            // #3 Bronze
-                            Expanded(
-                              child: _buildScholarPodium(
-                                rank: 3,
-                                name: 'Mehedi H.',
-                                hours: '24.0h',
-                                badgeColor: AppColors.bronze,
-                                isDark: isDark,
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
+                        const Icon(Icons.chevron_right_rounded, color: AppColors.primary),
                       ],
                     ),
                   ),
@@ -531,72 +500,6 @@ class DashboardPage extends ConsumerWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildScholarPodium({
-    required int rank,
-    required String name,
-    required String hours,
-    required Color badgeColor,
-    required bool isDark,
-    bool isTop = false,
-  }) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8, vertical: isTop ? 14 : 10),
-      decoration: BoxDecoration(
-        color: isTop
-            ? AppColors.primary.withValues(alpha: isDark ? 0.15 : 0.08)
-            : (isDark ? Colors.white.withValues(alpha: 0.04) : Colors.black.withValues(alpha: 0.03)),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isTop ? AppColors.primary.withValues(alpha: 0.4) : (isDark ? AppColors.borderDark : AppColors.borderLight),
-        ),
-      ),
-      child: Column(
-        children: [
-          Stack(
-            alignment: Alignment.topRight,
-            children: [
-              UserAvatar(name: name, size: isTop ? 44 : 36),
-              Container(
-                padding: const EdgeInsets.all(3),
-                decoration: BoxDecoration(
-                  color: badgeColor,
-                  shape: BoxShape.circle,
-                ),
-                child: Text(
-                  '$rank',
-                  style: const TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            name,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-              color: isDark ? AppColors.textDark : AppColors.textLight,
-            ),
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 2),
-          Text(
-            hours,
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              color: AppColors.primary,
-            ),
-          ),
-        ],
       ),
     );
   }

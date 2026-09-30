@@ -4,7 +4,6 @@ import '../constants/app_colors.dart';
 class AppTextField extends StatefulWidget {
   final String label;
   final String? hint;
-  final String? hintText;
   final TextEditingController? controller;
   final String? initialValue;
   final TextInputType keyboardType;
@@ -16,14 +15,12 @@ class AppTextField extends StatefulWidget {
   final FormFieldValidator<String>? validator;
   final int maxLines;
   final bool readOnly;
-  final bool? enabled;
   final VoidCallback? onTap;
 
   const AppTextField({
     super.key,
     required this.label,
     this.hint,
-    this.hintText,
     this.controller,
     this.initialValue,
     this.keyboardType = TextInputType.text,
@@ -35,7 +32,6 @@ class AppTextField extends StatefulWidget {
     this.validator,
     this.maxLines = 1,
     this.readOnly = false,
-    this.enabled,
     this.onTap,
   });
 
@@ -76,7 +72,6 @@ class _AppTextFieldState extends State<AppTextField> {
           obscureText: _obscureText,
           maxLines: widget.isPassword ? 1 : widget.maxLines,
           readOnly: widget.readOnly,
-          enabled: widget.enabled,
           onTap: widget.onTap,
           onChanged: widget.onChanged,
           validator: widget.validator,
@@ -86,7 +81,7 @@ class _AppTextFieldState extends State<AppTextField> {
             color: isDark ? AppColors.textDark : AppColors.textLight,
           ),
           decoration: InputDecoration(
-            hintText: widget.hintText ?? widget.hint,
+            hintText: widget.hint,
             errorText: widget.errorText,
             prefixIcon: widget.prefixIcon,
             suffixIcon: widget.isPassword

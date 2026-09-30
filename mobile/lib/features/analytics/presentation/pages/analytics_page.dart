@@ -8,7 +8,6 @@ import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/responsive.dart';
 import '../../../../core/widgets/student_brain_loader.dart';
 import '../providers/analytics_provider.dart';
-import '../widgets/study_contribution_box.dart';
 
 class AnalyticsPage extends ConsumerWidget {
   const AnalyticsPage({super.key});
@@ -141,13 +140,7 @@ class AnalyticsPage extends ConsumerWidget {
                       ),
                       const SizedBox(height: 18),
 
-                      // 2. GitHub-style Study Contribution Heatmap
-                      StudyContributionBox(
-                        dailySessions: state.weeklyTrend,
-                      ),
-                      const SizedBox(height: 18),
-
-                      // 3. Weekly Bar Chart (fl_chart)
+                      // 2. Weekly Bar Chart (fl_chart)
                       GlassCard(
                         padding: const EdgeInsets.all(18),
                         child: Column(
@@ -229,7 +222,7 @@ class AnalyticsPage extends ConsumerWidget {
                       ),
                       const SizedBox(height: 18),
 
-                      // 4. Subject Investment Distribution (Pie Chart & Legend)
+                      // 3. Subject Investment Distribution (Pie Chart & Legend)
                       if (state.subjectDistribution.isNotEmpty) ...[
                         GlassCard(
                           padding: const EdgeInsets.all(18),
@@ -311,7 +304,7 @@ class AnalyticsPage extends ConsumerWidget {
                         const SizedBox(height: 18),
                       ],
 
-                      // 5. Schedule Adherence Audit Card
+                      // 4. Schedule Adherence Audit Card
                       GlassCard(
                         padding: const EdgeInsets.all(18),
                         child: Column(
