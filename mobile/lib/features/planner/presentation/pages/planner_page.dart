@@ -7,6 +7,7 @@ import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/responsive.dart';
 import '../../../../core/widgets/student_brain_loader.dart';
 import '../providers/planner_provider.dart';
+import '../../data/models/schedule_model.dart';
 import 'add_schedule_dialog.dart';
 
 class PlannerPage extends ConsumerWidget {
@@ -142,136 +143,14 @@ class PlannerPage extends ConsumerWidget {
                     separatorBuilder: (_, __) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final item = schedules[index];
-                      return GlassCard(
-                        padding: const EdgeInsets.all(16),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                color: AppColors.primary.withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              child: const Icon(
-                                Icons.school_outlined,
-                                color: AppColors.primary,
-                                size: 24,
-                              ),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    item.subject,
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.access_time_rounded,
-                                        size: 14,
-                                        color: AppColors.primary,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        '${item.startTime} - ${item.endTime}',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                          color: isDark
-                                              ? AppColors.textDarkMuted
-                                              : AppColors.textLightMuted,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  if (item.days.isNotEmpty) ...[
-                                    const SizedBox(height: 8),
-                                    Wrap(
-                                      spacing: 4,
-                                      runSpacing: 4,
-                                      children: item.days.map((d) {
-                                        return Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                            vertical: 2,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: isDark
-                                                ? AppColors.surfaceDarkSubtle
-                                                : AppColors.surfaceLightSubtle,
-                                            borderRadius:
-                                                BorderRadius.circular(6),
-                                          ),
-                                          child: Text(
-                                            d.substring(0, 3),
-                                            style: const TextStyle(
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.w700,
-                                            ),
-                                          ),
-                                        );
-                                      }).toList(),
-                                    ),
-                                  ],
-                                  if (item.notes.isNotEmpty) ...[
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      item.notes,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontStyle: FontStyle.italic,
-                                        color: isDark
-                                            ? AppColors.textDarkSubtle
-                                            : AppColors.textLightSubtle,
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                            IconButton(
-                              icon: const Icon(
-                                Icons.delete_outline_rounded,
-                                size: 20,
-                                color: AppColors.error,
-                              ),
-                              onPressed: () async {
-                                final confirm = await showDialog<bool>(
-                                  context: context,
-                                  builder: (ctx) => AlertDialog(
-                                    title: const Text('Delete Class Routine?'),
-                                    content: Text('Remove ${item.subject} from your schedule?'),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(ctx, false),
-                                        child: const Text('Cancel'),
-                                      ),
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(ctx, true),
-                                        child: const Text('Delete', style: TextStyle(color: AppColors.error)),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                                if (confirm == true) {
-                                  ref
-                                      .read(plannerProvider.notifier)
-                                      .deleteSchedule(item.id);
-                                }
-                              },
-                            ),
-                          ],
-                        ),
-                      );
+                      final isEvent = item.subject.startsWith('[Event]') ||
+                          item.subject.toLowerCase().contains('hackathon') ||
+                          item.subject.toLowerCase().contains('event');
+
+                      if (isEvent) {
+                        return _buildEventCard(context, ref, item, isDark);
+                      }
+                      return _buildClassRoutineCard(context, ref, item, isDark);
                     },
                   );
                 },
@@ -281,5 +160,254 @@ class PlannerPage extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  static String _format12Hour(String timeStr) {
+    if (timeStr.isEmpty) return timeStr;
+    try {
+      final parts = timeStr.trim().split(':');
+      if (parts.length >= 2) {
+        int hour = int.parse(parts[0]);
+        final minute = parts[1].padLeft(2, '0');
+        final period = hour >= 12 ? 'PM' : 'AM';
+        if (hour == 0) {
+          hour = 12;
+        } else if (hour > 12) {
+          hour -= 12;
+        }
+        return '${hour.toString().padLeft(2, '0')}:$minute $period';
+      }
+    } catch (_) {}
+    return timeStr;
+  }
+
+  Widget _buildEventCard(BuildContext context, WidgetRef ref, ScheduleModel item, bool isDark) {
+    final cleanTitle = item.subject.replaceFirst(RegExp(r'^\[Event\]\s*'), '');
+    final timeRange = '${_format12Hour(item.startTime)} – ${_format12Hour(item.endTime)}';
+
+    return GlassCard(
+      borderColor: AppColors.accent.withValues(alpha: 0.6),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppColors.accent, AppColors.flame],
+                  ),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.stars_rounded, color: Colors.white, size: 12),
+                    SizedBox(width: 4),
+                    Text(
+                      'CAMPUS EVENT',
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.check_circle_rounded, color: AppColors.success, size: 12),
+                    SizedBox(width: 4),
+                    Text(
+                      'Going',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.success,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 4),
+              IconButton(
+                icon: const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.error),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                onPressed: () => _confirmDelete(context, ref, item),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            cleanTitle,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              const Icon(Icons.schedule_rounded, size: 14, color: AppColors.accent),
+              const SizedBox(width: 6),
+              Text(
+                timeRange,
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.accent),
+              ),
+            ],
+          ),
+          if (item.notes.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                item.notes,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic,
+                  color: isDark ? AppColors.textDarkSubtle : AppColors.textLightSubtle,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildClassRoutineCard(BuildContext context, WidgetRef ref, ScheduleModel item, bool isDark) {
+    final timeRange = '${_format12Hour(item.startTime)} – ${_format12Hour(item.endTime)}';
+
+    return GlassCard(
+      borderColor: AppColors.primary.withValues(alpha: 0.3),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.school_rounded, color: AppColors.primary, size: 12),
+                    SizedBox(width: 4),
+                    Text(
+                      'CLASS ROUTINE',
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.primary,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              IconButton(
+                icon: const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.error),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                onPressed: () => _confirmDelete(context, ref, item),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            item.subject,
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              const Icon(Icons.access_time_rounded, size: 14, color: AppColors.primary),
+              const SizedBox(width: 6),
+              Text(
+                timeRange,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                ),
+              ),
+            ],
+          ),
+          if (item.days.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 4,
+              children: item.days.map((d) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    d.substring(0, 3),
+                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+          if (item.notes.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              item.notes,
+              style: TextStyle(
+                fontSize: 12,
+                fontStyle: FontStyle.italic,
+                color: isDark ? AppColors.textDarkSubtle : AppColors.textLightSubtle,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  void _confirmDelete(BuildContext context, WidgetRef ref, ScheduleModel item) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Routine?'),
+        content: Text('Remove ${item.subject} from your schedule?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete', style: TextStyle(color: AppColors.error)),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true) {
+      ref.read(plannerProvider.notifier).deleteSchedule(item.id);
+    }
   }
 }

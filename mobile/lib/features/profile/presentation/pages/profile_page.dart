@@ -57,6 +57,8 @@ class ProfilePage extends ConsumerWidget {
                     children: [
                       UserAvatar(
                         name: user?.fullName ?? 'Scholar',
+                        imageUrl: user?.avatar,
+                        seed: user?.email ?? user?.fullName,
                         size: 76,
                       ),
                       const SizedBox(height: 14),

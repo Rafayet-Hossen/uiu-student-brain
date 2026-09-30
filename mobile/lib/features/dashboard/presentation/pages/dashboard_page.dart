@@ -42,6 +42,8 @@ class DashboardPage extends ConsumerWidget {
               children: [
                 UserAvatar(
                   name: user?.fullName ?? 'Scholar',
+                  imageUrl: user?.avatar,
+                  seed: user?.email ?? user?.fullName,
                   size: 38,
                 ),
                 Positioned(
@@ -456,44 +458,171 @@ class DashboardPage extends ConsumerWidget {
                     }),
                   const SizedBox(height: 18),
 
-                  // 6. Leaderboard Preview Banner
-                  GlassCard(
-                    onTap: () => context.push('/community/leaderboard'),
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: AppColors.gold.withValues(alpha: 0.15),
-                            shape: BoxShape.circle,
+                  // 6. Scholarboard / Top Scholars Section
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: AppColors.gold.withValues(alpha: 0.15),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.emoji_events_rounded, color: AppColors.gold, size: 18),
                           ),
-                          child: const Icon(Icons.emoji_events_rounded, color: AppColors.gold, size: 22),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Scholar Leaderboard',
-                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'Compare focus hours & streaks with peers',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
-                                ),
-                              ),
-                            ],
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Scholarboard',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
                           ),
-                        ),
-                        const Icon(Icons.chevron_right_rounded, color: AppColors.primary),
-                      ],
-                    ),
+                        ],
+                      ),
+                      TextButton.icon(
+                        onPressed: () => context.push('/community/leaderboard'),
+                        icon: const Icon(Icons.arrow_forward_rounded, size: 14),
+                        label: const Text('View All', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                      ),
+                    ],
                   ),
+                  const SizedBox(height: 8),
+                  if (dashState.leaderboardTopThree.isNotEmpty)
+                    GlassCard(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      child: Column(
+                        children: List.generate(dashState.leaderboardTopThree.length, (index) {
+                          final item = dashState.leaderboardTopThree[index];
+                          final rank = item['rank'] ?? (index + 1);
+                          final name = item['display_name'] ?? item['full_name'] ?? item['username'] ?? 'Scholar #$rank';
+                          final rawHours = item['study_hours'] != null
+                              ? (double.tryParse('${item['study_hours']}') ?? 0.0)
+                              : item['weekly_minutes'] != null
+                                  ? (double.tryParse('${item['weekly_minutes']}') ?? 0.0) / 60.0
+                                  : 0.0;
+                          final hoursStr = '${rawHours.toStringAsFixed(1)}h';
+                          final streak = item['current_streak'] ?? 0;
+                          final avatarUrl = item['avatar'] as String?;
+
+                          Color rankColor;
+                          IconData rankIcon;
+                          if (rank == 1) {
+                            rankColor = AppColors.gold;
+                            rankIcon = Icons.military_tech_rounded;
+                          } else if (rank == 2) {
+                            rankColor = AppColors.silver;
+                            rankIcon = Icons.military_tech_rounded;
+                          } else {
+                            rankColor = AppColors.bronze;
+                            rankIcon = Icons.military_tech_rounded;
+                          }
+
+                          return InkWell(
+                            onTap: () => context.push('/community/leaderboard'),
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(vertical: 8),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 26,
+                                    height: 26,
+                                    decoration: BoxDecoration(
+                                      color: rankColor.withValues(alpha: 0.15),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Center(
+                                      child: Icon(rankIcon, color: rankColor, size: 16),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  UserAvatar(
+                                    name: name,
+                                    imageUrl: avatarUrl,
+                                    seed: name,
+                                    size: 34,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          name,
+                                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        Text(
+                                          streak > 0 ? '🔥 $streak-day streak' : 'Dedicated Scholar',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600,
+                                            color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(9999),
+                                    ),
+                                    child: Text(
+                                      hoursStr,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w900,
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }),
+                      ),
+                    )
+                  else
+                    GlassCard(
+                      onTap: () => context.push('/community/leaderboard'),
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: AppColors.gold.withValues(alpha: 0.15),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.emoji_events_rounded, color: AppColors.gold, size: 24),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Top Weekly Scholarboard',
+                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Complete focus sessions to take the lead!',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.chevron_right_rounded, color: AppColors.primary),
+                        ],
+                      ),
+                    ),
                   const SizedBox(height: 24),
                 ],
               ),
