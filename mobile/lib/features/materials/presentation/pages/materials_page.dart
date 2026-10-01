@@ -134,9 +134,60 @@ class MaterialsPage extends ConsumerWidget {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 8),
+
+                  // Trimester Pills Filter
+                  if (matState.semesters.isNotEmpty)
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          ChoiceChip(
+                            label: const Text('All Terms'),
+                            selected: matState.selectedSemesterId == null,
+                            onSelected: (_) => notifier.selectSemester(null),
+                            selectedColor: AppColors.primary.withValues(alpha: 0.15),
+                            labelStyle: TextStyle(
+                              fontSize: 12,
+                              fontWeight: matState.selectedSemesterId == null ? FontWeight.w800 : FontWeight.w500,
+                              color: matState.selectedSemesterId == null ? AppColors.primary : (isDark ? AppColors.textDarkMuted : AppColors.textLightMuted),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          ...matState.semesters.map((sem) {
+                            final semId = sem['id'] as int?;
+                            final semName = sem['name']?.toString() ?? 'Term';
+                            final isCurrent = sem['is_current'] == true;
+                            final isSelected = matState.selectedSemesterId == semId;
+
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: ChoiceChip(
+                                avatar: isCurrent
+                                    ? Icon(
+                                        Icons.star_rounded,
+                                        size: 14,
+                                        color: isSelected ? AppColors.primary : AppColors.warning,
+                                      )
+                                    : null,
+                                label: Text(semName),
+                                selected: isSelected,
+                                onSelected: (_) => notifier.selectSemester(semId),
+                                selectedColor: AppColors.primary.withValues(alpha: 0.15),
+                                labelStyle: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                                  color: isSelected ? AppColors.primary : (isDark ? AppColors.textDarkMuted : AppColors.textLightMuted),
+                                ),
+                              ),
+                            );
+                          }),
+                        ],
+                      ),
+                    ),
                   const SizedBox(height: 10),
 
-                  if (matState.courses.isEmpty)
+                  if (matState.semesterCourses.isEmpty)
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -154,9 +205,9 @@ class MaterialsPage extends ConsumerWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('No Courses Added Yet', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800)),
+                                const Text('No Courses in this Trimester', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800)),
                                 Text(
-                                  'Tap "+ Trimester" or "+ Course" to organize your university classes.',
+                                  'Tap "+ Course" above to organize classes for this trimester.',
                                   style: TextStyle(
                                     fontSize: 11,
                                     color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
@@ -170,106 +221,136 @@ class MaterialsPage extends ConsumerWidget {
                     )
                   else
                     SizedBox(
-                      height: 116,
+                      height: 122,
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
-                        itemCount: matState.courses.length,
+                        itemCount: matState.semesterCourses.length,
                         separatorBuilder: (_, __) => const SizedBox(width: 10),
                         itemBuilder: (context, index) {
-                          final c = matState.courses[index];
+                          final c = matState.semesterCourses[index];
                           final courseId = c['id'] as int? ?? 1;
                           final code = c['code']?.toString() ?? 'CSE';
                           final title = c['title']?.toString() ?? 'Course';
                           final semName = c['semester_name']?.toString();
+                          final isSelected = matState.selectedCourseId == courseId;
 
-                          return Container(
-                            width: 230,
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                          return InkWell(
+                            onTap: () => notifier.selectCourse(courseId),
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              width: 240,
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? AppColors.primary.withValues(alpha: isDark ? 0.2 : 0.08)
+                                    : (isDark ? AppColors.surfaceDark : AppColors.surfaceLight),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : (isDark ? AppColors.borderDark : AppColors.borderLight),
+                                  width: isSelected ? 1.8 : 1.0,
+                                ),
                               ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                          decoration: BoxDecoration(
-                                            color: AppColors.primary.withValues(alpha: 0.15),
-                                            borderRadius: BorderRadius.circular(4),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                                            decoration: BoxDecoration(
+                                              color: isSelected
+                                                  ? AppColors.primary
+                                                  : AppColors.primary.withValues(alpha: 0.15),
+                                              borderRadius: BorderRadius.circular(6),
+                                            ),
+                                            child: Text(
+                                              code,
+                                              style: TextStyle(
+                                                fontSize: 10.5,
+                                                fontWeight: FontWeight.w800,
+                                                color: isSelected ? Colors.white : AppColors.primary,
+                                              ),
+                                            ),
                                           ),
-                                          child: Text(
-                                            code,
-                                            style: const TextStyle(
-                                              fontSize: 10,
+                                          if (isSelected)
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                              decoration: BoxDecoration(
+                                                color: AppColors.primary.withValues(alpha: 0.15),
+                                                borderRadius: BorderRadius.circular(4),
+                                              ),
+                                              child: const Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Icon(Icons.check_circle_rounded, size: 10, color: AppColors.primary),
+                                                  SizedBox(width: 3),
+                                                  Text(
+                                                    'Filtered',
+                                                    style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w800, color: AppColors.primary),
+                                                  ),
+                                                ],
+                                              ),
+                                            )
+                                          else if (semName != null && semName.isNotEmpty)
+                                            Flexible(
+                                              child: Text(
+                                                semName,
+                                                style: TextStyle(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        title,
+                                        style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                  InkWell(
+                                    onTap: () {
+                                      context.push('/ai/chat/$courseId?title=$code - $title');
+                                    },
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4.5),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary.withValues(alpha: 0.12),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.auto_awesome_rounded, size: 13, color: AppColors.primary),
+                                          SizedBox(width: 5),
+                                          Text(
+                                            'Chat with Course AI',
+                                            style: TextStyle(
+                                              fontSize: 11,
                                               fontWeight: FontWeight.w800,
                                               color: AppColors.primary,
                                             ),
                                           ),
-                                        ),
-                                        if (semName != null && semName.isNotEmpty) ...[
-                                          const SizedBox(width: 6),
-                                          Flexible(
-                                            child: Text(
-                                              semName,
-                                              style: TextStyle(
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.w600,
-                                                color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
-                                              ),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
                                         ],
-                                      ],
-                                    ),
-                                    const SizedBox(height: 5),
-                                    Text(
-                                      title,
-                                      style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                                InkWell(
-                                  onTap: () {
-                                    context.push('/ai/chat/$courseId?title=$code - $title');
-                                  },
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primary.withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: const Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(Icons.auto_awesome_rounded, size: 13, color: AppColors.primary),
-                                        SizedBox(width: 5),
-                                        Text(
-                                          'Chat with Course AI',
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w800,
-                                            color: AppColors.primary,
-                                          ),
-                                        ),
-                                      ],
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           );
                         },
@@ -277,10 +358,41 @@ class MaterialsPage extends ConsumerWidget {
                     ),
                   const SizedBox(height: 18),
 
-                  // 4. Materials List Header
-                  const Text(
-                    'Course Documents & Cheat Sheets',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                  // 4. Materials List Header with Filter Clear Option
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          'Course Documents & Cheat Sheets',
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (matState.selectedCourseId != null)
+                        InkWell(
+                          onTap: () => notifier.selectCourse(null),
+                          borderRadius: BorderRadius.circular(6),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: AppColors.error.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.close_rounded, size: 12, color: AppColors.error),
+                                SizedBox(width: 4),
+                                Text(
+                                  'Clear Filter',
+                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.error),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                   const SizedBox(height: 10),
 

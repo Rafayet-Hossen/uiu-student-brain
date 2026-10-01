@@ -54,8 +54,11 @@ class CommunityRepository {
     return [];
   }
 
-  Future<void> rsvpEvent(int eventId) async {
-    await _dioClient.post(ApiEndpoints.eventRsvp(eventId));
+  Future<void> rsvpEvent(int eventId, [String status = 'going']) async {
+    await _dioClient.post(
+      ApiEndpoints.eventRsvp(eventId),
+      data: {'status': status},
+    );
   }
 
   Future<StudyEventModel> createEvent(Map<String, dynamic> data) async {

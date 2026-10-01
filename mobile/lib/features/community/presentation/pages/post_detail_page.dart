@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/app_button.dart';
@@ -85,6 +86,22 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Discussion & Replies'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.share_outlined),
+            tooltip: 'Share',
+            onPressed: () {
+              final link = 'https://studentbrain.uiu.ac.bd/community/post/${post.id}';
+              Clipboard.setData(ClipboardData(text: link));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Discussion link copied to clipboard!'),
+                  backgroundColor: AppColors.primary,
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: SafeArea(
         child: Column(
@@ -136,6 +153,64 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                                   color: isDark ? AppColors.textDark : AppColors.textLight,
                                 ),
                               ),
+                              if (post.codeSnippet != null && post.codeSnippet!.isNotEmpty) ...[
+                                const SizedBox(height: 12),
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: isDark ? const Color(0xFF1E1E2E) : const Color(0xFF282A36),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(color: Colors.white10),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white12,
+                                              borderRadius: BorderRadius.circular(4),
+                                            ),
+                                            child: Text(
+                                              (post.codeLanguage ?? 'code').toUpperCase(),
+                                              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Color(0xFF50FA7B)),
+                                            ),
+                                          ),
+                                          InkWell(
+                                            onTap: () {
+                                              Clipboard.setData(ClipboardData(text: post.codeSnippet!));
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(content: Text('Code copied to clipboard!')),
+                                              );
+                                            },
+                                            child: const Row(
+                                              children: [
+                                                Icon(Icons.copy_rounded, size: 12, color: Colors.white70),
+                                                SizedBox(width: 4),
+                                                Text('Copy', style: TextStyle(fontSize: 11, color: Colors.white70)),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        post.codeSnippet!,
+                                        style: const TextStyle(
+                                          fontFamily: 'monospace',
+                                          fontSize: 12,
+                                          color: Color(0xFFF8F8F2),
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                         ),

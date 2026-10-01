@@ -17,6 +17,8 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
   final _notesCtrl = TextEditingController();
 
   int? _durationMinutes;
+  bool _isCustomDuration = false;
+  final TextEditingController _customMinutesCtrl = TextEditingController();
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   bool _isLoading = false;
@@ -25,6 +27,7 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
   void dispose() {
     _subjectCtrl.dispose();
     _notesCtrl.dispose();
+    _customMinutesCtrl.dispose();
     super.dispose();
   }
 
@@ -98,9 +101,12 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
   }
 
   Widget _buildDurationChip(int mins, bool isDark) {
-    final isSelected = _durationMinutes == mins;
+    final isSelected = !_isCustomDuration && _durationMinutes == mins;
     return InkWell(
-      onTap: () => setState(() => _durationMinutes = mins),
+      onTap: () => setState(() {
+        _isCustomDuration = false;
+        _durationMinutes = mins;
+      }),
       borderRadius: BorderRadius.circular(12),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
@@ -232,11 +238,67 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                           child: _buildDurationChip(120, isDark),
                         ),
                       ),
-                      const Expanded(
-                        child: SizedBox(),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 2.5),
+                          child: InkWell(
+                            onTap: () => setState(() {
+                              _isCustomDuration = true;
+                              _durationMinutes = int.tryParse(_customMinutesCtrl.text) ?? 30;
+                            }),
+                            borderRadius: BorderRadius.circular(12),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 150),
+                              alignment: Alignment.center,
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              decoration: BoxDecoration(
+                                color: _isCustomDuration
+                                    ? AppColors.primary
+                                    : (isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: _isCustomDuration
+                                      ? AppColors.primary
+                                      : (isDark ? AppColors.borderDark : AppColors.borderLight),
+                                  width: _isCustomDuration ? 1.5 : 1,
+                                ),
+                              ),
+                              child: Text(
+                                'Custom',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: _isCustomDuration ? FontWeight.w800 : FontWeight.w600,
+                                  color: _isCustomDuration
+                                      ? Colors.white
+                                      : (isDark ? AppColors.textDark : AppColors.textLight),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
+                  if (_isCustomDuration) ...[
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _customMinutesCtrl,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'Custom Focus Minutes *',
+                        hintText: 'e.g. 30, 75, 150',
+                        prefixIcon: const Icon(Icons.edit_outlined, size: 18),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      onChanged: (val) {
+                        final parsed = int.tryParse(val);
+                        if (parsed != null && parsed > 0) {
+                          setState(() => _durationMinutes = parsed);
+                        }
+                      },
+                    ),
+                  ],
                   const SizedBox(height: 18),
                   const Text(
                     'Session Date & Time *',

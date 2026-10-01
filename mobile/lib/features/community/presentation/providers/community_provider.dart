@@ -75,12 +75,22 @@ class CommunityNotifier extends StateNotifier<CommunityState> {
     state = state.copyWith(selectedCategory: cat);
   }
 
-  Future<bool> createPost(String title, String content, String category) async {
+  Future<bool> createPost({
+    required String title,
+    required String content,
+    required String category,
+    String? codeSnippet,
+    String? codeLanguage,
+    String? vscodeLiveshareUrl,
+  }) async {
     try {
       final post = await _repository.createPost({
         'title': title,
         'content': content,
         'category': category,
+        if (codeSnippet != null && codeSnippet.isNotEmpty) 'code_snippet': codeSnippet,
+        if (codeLanguage != null && codeLanguage.isNotEmpty) 'code_language': codeLanguage,
+        if (vscodeLiveshareUrl != null && vscodeLiveshareUrl.isNotEmpty) 'vscode_liveshare_url': vscodeLiveshareUrl,
       });
       state = state.copyWith(posts: [post, ...state.posts]);
       return true;
@@ -97,17 +107,9 @@ class CommunityNotifier extends StateNotifier<CommunityState> {
         posts: state.posts.map((p) {
           if (p.id == postId) {
             final nowReacted = !p.hasReacted;
-            return PostModel(
-              id: p.id,
-              title: p.title,
-              content: p.content,
-              category: p.category,
-              authorName: p.authorName,
-              authorAvatar: p.authorAvatar,
-              reactionsCount: nowReacted ? p.reactionsCount + 1 : (p.reactionsCount - 1).clamp(0, 9999),
-              commentsCount: p.commentsCount,
+            return p.copyWith(
               hasReacted: nowReacted,
-              createdAt: p.createdAt,
+              reactionsCount: nowReacted ? p.reactionsCount + 1 : (p.reactionsCount - 1).clamp(0, 9999),
             );
           }
           return p;
@@ -116,28 +118,37 @@ class CommunityNotifier extends StateNotifier<CommunityState> {
     } catch (_) {}
   }
 
-  Future<void> toggleRsvp(int eventId) async {
+  Future<void> toggleRsvp(int eventId, [String status = 'going']) async {
     try {
-      await _repository.rsvpEvent(eventId);
+      await _repository.rsvpEvent(eventId, status);
+      final refreshedEvents = await _repository.getEvents();
+      state = state.copyWith(events: refreshedEvents);
+    } catch (_) {}
+  }
+
+  Future<List<CommentModel>> getComments(int postId) async {
+    try {
+      return await _repository.getComments(postId);
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<CommentModel?> addComment(int postId, String content) async {
+    try {
+      final comment = await _repository.addComment(postId, content);
       state = state.copyWith(
-        events: state.events.map((e) {
-          if (e.id == eventId) {
-            final nowAttending = !e.isAttending;
-            return StudyEventModel(
-              id: e.id,
-              title: e.title,
-              description: e.description,
-              eventDate: e.eventDate,
-              location: e.location,
-              eventType: e.eventType,
-              attendeesCount: nowAttending ? e.attendeesCount + 1 : (e.attendeesCount - 1).clamp(0, 9999),
-              isAttending: nowAttending,
-            );
+        posts: state.posts.map((p) {
+          if (p.id == postId) {
+            return p.copyWith(commentsCount: p.commentsCount + 1);
           }
-          return e;
+          return p;
         }).toList(),
       );
-    } catch (_) {}
+      return comment;
+    } catch (_) {
+      return null;
+    }
   }
 }
 

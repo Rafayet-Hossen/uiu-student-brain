@@ -13,6 +13,9 @@ class StudyMaterialModel {
   final String? fileUrl;
   final bool isAnalyzed;
   final Map<String, dynamic>? aiAnalysis;
+  final int? courseId;
+  final String? courseCode;
+  final String? courseTitle;
 
   StudyMaterialModel({
     required this.id,
@@ -29,6 +32,9 @@ class StudyMaterialModel {
     this.fileUrl,
     this.isAnalyzed = false,
     this.aiAnalysis,
+    this.courseId,
+    this.courseCode,
+    this.courseTitle,
   });
 
   factory StudyMaterialModel.fromJson(Map<String, dynamic> json) {
@@ -92,6 +98,26 @@ class StudyMaterialModel {
         (json['analyzed_at'] != null) ||
         (json['summary'] != null && (json['summary'] as String).isNotEmpty);
 
+    int? cId;
+    String? cCode;
+    String? cTitle;
+    if (json['course'] is Map) {
+      cId = json['course']['id'] as int?;
+      cCode = json['course']['code']?.toString();
+      cTitle = json['course']['title']?.toString();
+    } else if (json['course'] is int) {
+      cId = json['course'] as int?;
+    }
+    if (json['course_id'] != null) {
+      cId = json['course_id'] as int?;
+    }
+    if (json['course_code'] != null) {
+      cCode = json['course_code']?.toString();
+    }
+    if (json['course_title'] != null) {
+      cTitle = json['course_title']?.toString();
+    }
+
     return StudyMaterialModel(
       id: json['id'] as int? ?? 0,
       title: json['title'] as String? ?? 'Lecture Notes',
@@ -107,6 +133,9 @@ class StudyMaterialModel {
       fileUrl: json['file_url'] as String? ?? json['file'] as String?,
       isAnalyzed: analyzed,
       aiAnalysis: analysisMap,
+      courseId: cId,
+      courseCode: cCode,
+      courseTitle: cTitle,
     );
   }
 }

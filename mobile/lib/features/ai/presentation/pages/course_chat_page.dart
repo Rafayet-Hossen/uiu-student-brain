@@ -76,6 +76,34 @@ class _CourseChatPageState extends ConsumerState<CourseChatPage> {
 
   Future<void> _loadChatHistory() async {
     try {
+      final remoteList = await ref.read(aiRepositoryProvider).getCourseChatHistory(widget.courseId);
+      if (remoteList.isNotEmpty) {
+        final List<ChatMessage> serverMessages = [];
+        for (final item in remoteList) {
+          final content = item['content']?.toString().trim();
+          if (content != null && content.isNotEmpty) {
+            serverMessages.add(
+              ChatMessage(
+                text: content,
+                isUser: item['role'] == 'user',
+                timestamp: DateTime.tryParse(item['created_at']?.toString() ?? '') ?? DateTime.now(),
+              ),
+            );
+          }
+        }
+        if (serverMessages.isNotEmpty && mounted) {
+          setState(() {
+            _messages.addAll(serverMessages);
+            _isLoadingHistory = false;
+          });
+          _saveChatHistory();
+          _scrollToBottom();
+          return;
+        }
+      }
+    } catch (_) {}
+
+    try {
       final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString(_storageKey);
       if (raw != null && raw.isNotEmpty) {

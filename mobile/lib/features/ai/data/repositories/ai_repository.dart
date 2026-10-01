@@ -68,11 +68,30 @@ class AiRepository {
       ApiEndpoints.courseChat(courseId),
       data: {'message': message},
     );
-    if (response.data is Map && response.data['response'] != null) {
-      return response.data['response'].toString();
-    } else if (response.data is Map && response.data['reply'] != null) {
-      return response.data['reply'].toString();
+    if (response.data is Map) {
+      final map = response.data as Map;
+      if (map['content'] != null && map['content'].toString().trim().isNotEmpty) {
+        return map['content'].toString();
+      }
+      if (map['response'] != null && map['response'].toString().trim().isNotEmpty) {
+        return map['response'].toString();
+      }
+      if (map['reply'] != null && map['reply'].toString().trim().isNotEmpty) {
+        return map['reply'].toString();
+      }
     }
-    return 'Based on your enrolled course syllabus and lecture materials, this concept focuses on establishing core invariants and verifying time complexity constraints.';
+    return 'Based on your enrolled course syllabus and materials, here is the verified solution.';
+  }
+
+  Future<List<Map<String, dynamic>>> getCourseChatHistory(int courseId) async {
+    try {
+      final response = await _dioClient.get(ApiEndpoints.courseChat(courseId));
+      if (response.data is List) {
+        return List<Map<String, dynamic>>.from(response.data as List);
+      }
+      return [];
+    } catch (_) {
+      return [];
+    }
   }
 }

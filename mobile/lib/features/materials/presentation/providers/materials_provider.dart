@@ -12,6 +12,8 @@ class MaterialsState {
   final List<StudyMaterialModel> materials;
   final List<Map<String, dynamic>> courses;
   final List<Map<String, dynamic>> semesters;
+  final int? selectedSemesterId;
+  final int? selectedCourseId;
   final String searchQuery;
   final String selectedCategory;
   final bool isLoading;
@@ -21,6 +23,8 @@ class MaterialsState {
     this.materials = const [],
     this.courses = const [],
     this.semesters = const [],
+    this.selectedSemesterId,
+    this.selectedCourseId,
     this.searchQuery = '',
     this.selectedCategory = 'All',
     this.isLoading = false,
@@ -31,6 +35,8 @@ class MaterialsState {
     List<StudyMaterialModel>? materials,
     List<Map<String, dynamic>>? courses,
     List<Map<String, dynamic>>? semesters,
+    int? Function()? selectedSemesterId,
+    int? Function()? selectedCourseId,
     String? searchQuery,
     String? selectedCategory,
     bool? isLoading,
@@ -40,6 +46,8 @@ class MaterialsState {
       materials: materials ?? this.materials,
       courses: courses ?? this.courses,
       semesters: semesters ?? this.semesters,
+      selectedSemesterId: selectedSemesterId != null ? selectedSemesterId() : this.selectedSemesterId,
+      selectedCourseId: selectedCourseId != null ? selectedCourseId() : this.selectedCourseId,
       searchQuery: searchQuery ?? this.searchQuery,
       selectedCategory: selectedCategory ?? this.selectedCategory,
       isLoading: isLoading ?? this.isLoading,
@@ -47,14 +55,33 @@ class MaterialsState {
     );
   }
 
+  List<Map<String, dynamic>> get semesterCourses {
+    if (selectedSemesterId == null) return courses;
+    return courses.where((c) => c['semester'] == selectedSemesterId).toList();
+  }
+
   List<StudyMaterialModel> get filteredMaterials {
     return materials.where((m) {
       final matchesSearch = searchQuery.isEmpty ||
           m.title.toLowerCase().contains(searchQuery.toLowerCase()) ||
-          m.summary.toLowerCase().contains(searchQuery.toLowerCase());
+          m.summary.toLowerCase().contains(searchQuery.toLowerCase()) ||
+          (m.courseCode != null && m.courseCode!.toLowerCase().contains(searchQuery.toLowerCase()));
       final matchesCat =
           selectedCategory == 'All' || m.category == selectedCategory;
-      return matchesSearch && matchesCat;
+      final matchesCourse = selectedCourseId == null || m.courseId == selectedCourseId;
+
+      bool matchesSemester = true;
+      if (selectedSemesterId != null && selectedCourseId == null) {
+        final semesterCourseIds = courses
+            .where((c) => c['semester'] == selectedSemesterId)
+            .map((c) => c['id'] as int?)
+            .toSet();
+        if (semesterCourseIds.isNotEmpty) {
+          matchesSemester = semesterCourseIds.contains(m.courseId);
+        }
+      }
+
+      return matchesSearch && matchesCat && matchesCourse && matchesSemester;
     }).toList();
   }
 }
@@ -72,15 +99,36 @@ class MaterialsNotifier extends StateNotifier<MaterialsState> {
       final mats = await _repository.getMaterials();
       final crs = await _repository.getCourses();
       final sems = await _repository.getSemesters();
+
+      int? initialSemId = state.selectedSemesterId;
+      if (initialSemId == null && sems.isNotEmpty) {
+        final cur = sems.firstWhere((s) => s['is_current'] == true, orElse: () => sems.first);
+        initialSemId = cur['id'] as int?;
+      }
+
       state = state.copyWith(
         materials: mats,
         courses: crs,
         semesters: sems,
+        selectedSemesterId: () => initialSemId,
         isLoading: false,
       );
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
+  }
+
+  void selectSemester(int? semesterId) {
+    state = state.copyWith(
+      selectedSemesterId: () => semesterId,
+      selectedCourseId: () => null,
+    );
+  }
+
+  void selectCourse(int? courseId) {
+    state = state.copyWith(
+      selectedCourseId: () => courseId == state.selectedCourseId ? null : courseId,
+    );
   }
 
   Future<bool> createSemester(String name, bool isCurrent) async {
@@ -91,7 +139,8 @@ class MaterialsNotifier extends StateNotifier<MaterialsState> {
       });
       await loadMaterialsData();
       return true;
-    } catch (_) {
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
       return false;
     }
   }
@@ -100,19 +149,18 @@ class MaterialsNotifier extends StateNotifier<MaterialsState> {
     required int semesterId,
     required String title,
     required String code,
-    String color = '#2563eb',
-    String description = '',
+    String? color,
   }) async {
     try {
       await _repository.createCourse(semesterId, {
         'title': title,
         'code': code,
-        'color': color,
-        'description': description,
+        if (color != null) 'color': color,
       });
       await loadMaterialsData();
       return true;
-    } catch (_) {
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
       return false;
     }
   }
@@ -121,8 +169,8 @@ class MaterialsNotifier extends StateNotifier<MaterialsState> {
     state = state.copyWith(searchQuery: query);
   }
 
-  void selectCategory(String cat) {
-    state = state.copyWith(selectedCategory: cat);
+  void selectCategory(String category) {
+    state = state.copyWith(selectedCategory: category);
   }
 }
 

@@ -196,74 +196,183 @@ class TrackerPage extends ConsumerWidget {
                         final isScheduled = session.isScheduled;
                         final isCompleted = session.isCompleted;
 
+                        Color statusColor = AppColors.primary;
+                        String statusLabel = session.status.toUpperCase();
+                        IconData statusIcon = Icons.hourglass_top_rounded;
+
+                        if (isCompleted) {
+                          statusColor = AppColors.success;
+                          statusLabel = 'COMPLETED';
+                          statusIcon = Icons.check_circle_rounded;
+                        } else if (isScheduled) {
+                          statusColor = AppColors.primary;
+                          statusLabel = 'SCHEDULED';
+                          statusIcon = Icons.alarm_rounded;
+                        } else if (session.status.toUpperCase() == 'IN_PROGRESS') {
+                          statusColor = AppColors.warning;
+                          statusLabel = 'IN PROGRESS';
+                          statusIcon = Icons.bolt_rounded;
+                        } else if (session.status.toUpperCase() == 'MISSED') {
+                          statusColor = AppColors.error;
+                          statusLabel = 'MISSED';
+                          statusIcon = Icons.cancel_rounded;
+                        }
+
+                        // Format readable date
+                        String displayDate = session.sessionDate;
+                        try {
+                          final dt = DateTime.parse(session.sessionDate);
+                          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                          displayDate = '${dt.day} ${months[dt.month - 1]}, ${dt.year}';
+                        } catch (_) {}
+
+                        // Format 12-hour AM/PM time
+                        String displayTime = '';
+                        if (session.startTime != null && session.startTime!.isNotEmpty) {
+                          final parts = session.startTime!.split(':');
+                          if (parts.isNotEmpty) {
+                            final hr = int.tryParse(parts[0]) ?? 0;
+                            final min = parts.length > 1 ? parts[1] : '00';
+                            final period = hr >= 12 ? 'PM' : 'AM';
+                            final h12 = hr == 0 ? 12 : (hr > 12 ? hr - 12 : hr);
+                            final hStr = h12.toString().padLeft(2, '0');
+                            displayTime = ' • $hStr:$min $period';
+                          }
+                        }
+
                         return GlassCard(
                           padding: const EdgeInsets.all(16),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Expanded(
-                                    child: Text(
-                                      session.subject,
-                                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          session.subject,
+                                          style: const TextStyle(fontSize: 15.5, fontWeight: FontWeight.w800),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.calendar_today_rounded,
+                                              size: 13,
+                                              color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                                            ),
+                                            const SizedBox(width: 5),
+                                            Text(
+                                              '$displayDate$displayTime',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                                color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
                                     ),
                                   ),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color: (isCompleted
-                                              ? AppColors.success
-                                              : (isScheduled ? AppColors.warning : AppColors.primary))
-                                          .withValues(alpha: 0.15),
-                                      borderRadius: BorderRadius.circular(9999),
-                                    ),
-                                    child: Text(
-                                      session.status.toUpperCase(),
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w800,
-                                        color: isCompleted
-                                            ? AppColors.success
-                                            : (isScheduled ? AppColors.warning : AppColors.primary),
+                                      color: statusColor.withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: statusColor.withValues(alpha: 0.3),
+                                        width: 1,
                                       ),
                                     ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(statusIcon, size: 12, color: statusColor),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          statusLabel,
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w800,
+                                            color: statusColor,
+                                            letterSpacing: 0.3,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 6),
-                              Row(
+                              const SizedBox(height: 10),
+
+                              // Duration and stats row
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 6,
+                                crossAxisAlignment: WrapCrossAlignment.center,
                                 children: [
-                                  Icon(Icons.calendar_today_outlined, size: 13, color: isDark ? AppColors.textDarkSubtle : AppColors.textLightSubtle),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    session.sessionDate,
-                                    style: TextStyle(fontSize: 12, color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                                    decoration: BoxDecoration(
+                                      color: isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle,
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                        color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.hourglass_bottom_rounded, size: 12, color: AppColors.primary),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          '${session.totalMinutes} min focus',
+                                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                  const SizedBox(width: 14),
-                                  Icon(Icons.access_time_rounded, size: 13, color: isDark ? AppColors.textDarkSubtle : AppColors.textLightSubtle),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    '${session.totalMinutes} min${session.startTime != null ? " at ${session.startTime}" : ""}',
-                                    style: TextStyle(fontSize: 12, color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted),
-                                  ),
+                                  if (session.quizTaken && session.quizScore != null)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.accent.withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(Icons.stars_rounded, size: 12, color: AppColors.accent),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'Diagnostic: ${session.quizScore!.toInt()}%',
+                                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.accent),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                 ],
                               ),
-                              if (session.quizTaken && session.quizScore != null) ...[
+
+                              if (session.notes.isNotEmpty) ...[
                                 const SizedBox(height: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primary.withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(6),
+                                Text(
+                                  session.notes,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontStyle: FontStyle.italic,
+                                    color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
                                   ),
-                                  child: Text(
-                                    'AI Quiz Mastered: ${session.quizScore!.toInt()}%',
-                                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.primary),
-                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ],
+
                               if (isScheduled) ...[
                                 const SizedBox(height: 12),
                                 AppButton(
