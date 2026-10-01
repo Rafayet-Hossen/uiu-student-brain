@@ -223,6 +223,14 @@ class ProfilePage extends ConsumerWidget {
                   child: Column(
                     children: [
                       ListTile(
+                        leading: const Icon(Icons.insights_rounded, color: AppColors.primary),
+                        title: const Text('Study Analytics & Performance Stats', style: TextStyle(fontWeight: FontWeight.w700)),
+                        subtitle: const Text('Weekly focus histogram, subject investment & study audits', style: TextStyle(fontSize: 11)),
+                        trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
+                        onTap: () => context.push('/analytics'),
+                      ),
+                      const Divider(),
+                      ListTile(
                         leading: const Icon(Icons.school_outlined, color: AppColors.primary),
                         title: const Text('Grade Planner & Degree Targets', style: TextStyle(fontWeight: FontWeight.w700)),
                         subtitle: const Text('Manage completed courses, import transcript & simulate CGPA', style: TextStyle(fontSize: 11)),

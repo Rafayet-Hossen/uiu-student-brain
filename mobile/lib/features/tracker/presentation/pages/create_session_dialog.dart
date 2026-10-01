@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../providers/tracker_provider.dart';
+import '../../../materials/presentation/providers/materials_provider.dart';
 
 class CreateSessionDialog extends ConsumerStatefulWidget {
   const CreateSessionDialog({super.key});
@@ -15,6 +16,9 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
   final _formKey = GlobalKey<FormState>();
   final _subjectCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
+
+  int? _selectedCourseId;
+  int? _selectedMaterialId;
 
   int? _durationMinutes;
   bool _isCustomDuration = false;
@@ -92,6 +96,8 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
       'session_date': _formatDateApi(_selectedDate!),
       'start_time': _formatTimeApi(_selectedTime!),
       'notes': _notesCtrl.text.trim(),
+      if (_selectedCourseId != null) 'course': _selectedCourseId,
+      if (_selectedMaterialId != null) 'material': _selectedMaterialId,
     });
 
     setState(() => _isLoading = false);
@@ -141,6 +147,7 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final materialsState = ref.watch(materialsProvider);
 
     return Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
@@ -189,6 +196,104 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                     ],
                   ),
                   const SizedBox(height: 16),
+                  // Course Selector
+                  if (materialsState.courses.isNotEmpty) ...[
+                    DropdownButtonFormField<int?>(
+                      initialValue: _selectedCourseId,
+                      isExpanded: true,
+                      decoration: InputDecoration(
+                        labelText: 'Select Course (Optional)',
+                        prefixIcon: const Icon(Icons.school_outlined, size: 18),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      ),
+                      hint: const Text('Choose Course', style: TextStyle(fontSize: 13)),
+                      items: [
+                        const DropdownMenuItem<int?>(
+                          value: null,
+                          child: Text('General / Non-course study', style: TextStyle(fontSize: 13)),
+                        ),
+                        ...materialsState.courses.map((c) {
+                          final id = c['id'] as int;
+                          final code = c['code']?.toString() ?? '';
+                          final title = c['title']?.toString() ?? 'Course $id';
+                          return DropdownMenuItem<int?>(
+                            value: id,
+                            child: Text(
+                              code.isNotEmpty ? '[$code] $title' : title,
+                              style: const TextStyle(fontSize: 13),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          );
+                        }),
+                      ],
+                      onChanged: (val) {
+                        setState(() {
+                          _selectedCourseId = val;
+                          _selectedMaterialId = null;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+
+                  // Document / Material Selector (suggested based on selected course)
+                  Builder(
+                    builder: (context) {
+                      final availableMats = _selectedCourseId != null
+                          ? materialsState.materials.where((m) => m.courseId == _selectedCourseId).toList()
+                          : materialsState.materials;
+
+                      if (availableMats.isEmpty) return const SizedBox.shrink();
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          DropdownButtonFormField<int?>(
+                            initialValue: _selectedMaterialId,
+                            isExpanded: true,
+                            decoration: InputDecoration(
+                              labelText: 'Attach Study Document (For AI Quiz)',
+                              prefixIcon: const Icon(Icons.auto_stories_outlined, size: 18),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            ),
+                            hint: const Text('Select uploaded document...', style: TextStyle(fontSize: 13)),
+                            items: [
+                              const DropdownMenuItem<int?>(
+                                value: null,
+                                child: Text('No Document / Type custom topic below', style: TextStyle(fontSize: 13)),
+                              ),
+                              ...availableMats.map((m) {
+                                return DropdownMenuItem<int?>(
+                                  value: m.id,
+                                  child: Text(
+                                    m.title,
+                                    style: const TextStyle(fontSize: 13),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                );
+                              }),
+                            ],
+                            onChanged: (val) {
+                              setState(() {
+                                _selectedMaterialId = val;
+                                if (val != null) {
+                                  final chosen = availableMats.firstWhere((m) => m.id == val);
+                                  _subjectCtrl.text = chosen.title;
+                                  if (_selectedCourseId == null && chosen.courseId != null) {
+                                    _selectedCourseId = chosen.courseId;
+                                  }
+                                }
+                              });
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                      );
+                    },
+                  ),
+
                   AppTextField(
                     label: 'Study Subject / Topic *',
                     hint: 'e.g. Distributed Algorithms Review',

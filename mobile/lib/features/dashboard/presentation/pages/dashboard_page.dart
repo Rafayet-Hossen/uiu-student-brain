@@ -36,9 +36,13 @@ class DashboardPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        titleSpacing: 16,
-        title: Row(
-          children: [
+        title: InkWell(
+          onTap: () => context.go('/profile'),
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4.0),
+            child: Row(
+              children: [
             Stack(
               children: [
                 UserAvatar(
@@ -102,6 +106,8 @@ class DashboardPage extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    ),
         actions: [
           Stack(
             alignment: Alignment.center,

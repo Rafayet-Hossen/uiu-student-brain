@@ -359,6 +359,27 @@ class TrackerPage extends ConsumerWidget {
                                 ],
                               ),
 
+                              if (session.courseTitle != null || session.materialTitle != null) ...[
+                                const SizedBox(height: 6),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.auto_stories_outlined, size: 13, color: AppColors.primary),
+                                    const SizedBox(width: 4),
+                                    Expanded(
+                                      child: Text(
+                                        [
+                                          if (session.courseTitle != null) session.courseTitle!,
+                                          if (session.materialTitle != null) session.materialTitle!,
+                                        ].join(' • '),
+                                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primary),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+
                               if (session.notes.isNotEmpty) ...[
                                 const SizedBox(height: 8),
                                 Text(

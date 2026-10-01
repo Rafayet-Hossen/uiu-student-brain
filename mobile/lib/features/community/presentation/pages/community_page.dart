@@ -1118,6 +1118,15 @@ class _CreateDiscussionDialogState extends ConsumerState<_CreateDiscussionDialog
     'Resources',
   ];
 
+  static const Map<String, IconData> _categoryIcons = {
+    'General': Icons.forum_outlined,
+    'Code Help': Icons.code_rounded,
+    'Exam Prep': Icons.quiz_outlined,
+    'Study Group': Icons.groups_outlined,
+    'Course Help': Icons.school_outlined,
+    'Resources': Icons.folder_shared_outlined,
+  };
+
   static const List<String> _codeLanguages = [
     'python',
     'javascript',
@@ -1252,11 +1261,16 @@ class _CreateDiscussionDialogState extends ConsumerState<_CreateDiscussionDialog
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final size = MediaQuery.sizeOf(context);
 
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 18),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 520, maxHeight: 680),
+        constraints: BoxConstraints(
+          maxWidth: size.width > 560 ? 520 : size.width * 0.94,
+          maxHeight: size.height * 0.86,
+        ),
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -1266,11 +1280,18 @@ class _CreateDiscussionDialogState extends ConsumerState<_CreateDiscussionDialog
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.forum_rounded, color: AppColors.primary, size: 22),
-                      SizedBox(width: 8),
-                      Text(
+                      Container(
+                        padding: const EdgeInsets.all(7),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.forum_rounded, color: AppColors.primary, size: 20),
+                      ),
+                      const SizedBox(width: 10),
+                      const Text(
                         'Start Academic Discussion',
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
                       ),
@@ -1285,25 +1306,40 @@ class _CreateDiscussionDialogState extends ConsumerState<_CreateDiscussionDialog
               ),
               const SizedBox(height: 12),
 
-              // Category Selector Chips
+              // Category Selector Chips with Icons
               const Text('Select Category', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
                 child: Row(
                   children: _categories.map((cat) {
                     final isSelected = _category == cat;
+                    final icon = _categoryIcons[cat] ?? Icons.label_outline_rounded;
                     return Padding(
-                      padding: const EdgeInsets.only(right: 6.0),
+                      padding: const EdgeInsets.only(right: 8.0),
                       child: ChoiceChip(
+                        avatar: Icon(
+                          icon,
+                          size: 15,
+                          color: isSelected ? Colors.white : (isDark ? AppColors.textDarkMuted : AppColors.textLightMuted),
+                        ),
                         label: Text(cat),
                         selected: isSelected,
                         onSelected: (_) => setState(() => _category = cat),
-                        selectedColor: AppColors.primary.withValues(alpha: 0.18),
+                        selectedColor: AppColors.primary,
+                        backgroundColor: isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle,
                         labelStyle: TextStyle(
                           fontSize: 11.5,
-                          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-                          color: isSelected ? AppColors.primary : (isDark ? AppColors.textDarkMuted : AppColors.textLightMuted),
+                          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                          color: isSelected ? Colors.white : (isDark ? AppColors.textDark : AppColors.textLight),
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          side: BorderSide(
+                            color: isSelected ? AppColors.primary : (isDark ? AppColors.borderDark : AppColors.borderLight),
+                            width: 1,
+                          ),
                         ),
                       ),
                     );

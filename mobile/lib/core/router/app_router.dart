@@ -91,8 +91,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const ForgotPasswordPage(),
       ),
       GoRoute(
-        path: '/grades',
-        builder: (context, state) => const GradesPage(),
+        path: '/analytics',
+        builder: (context, state) => const AnalyticsPage(),
       ),
       GoRoute(
         path: '/tracker/live',
@@ -194,12 +194,12 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
-          // 5: Analytics
+          // 5: Grades
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/analytics',
-                builder: (context, state) => const AnalyticsPage(),
+                path: '/grades',
+                builder: (context, state) => const GradesPage(),
               ),
             ],
           ),

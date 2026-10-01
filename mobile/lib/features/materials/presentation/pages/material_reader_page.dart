@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -42,31 +44,73 @@ class _MaterialReaderPageState extends ConsumerState<MaterialReaderPage>
     super.dispose();
   }
 
+  static const String _cacheKeyPrefix = 'mat_ai_cache_v2_';
+
   Future<void> _loadDetail() async {
+    // 1. Try local cache first for instant offline/saved experience
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cachedJson = prefs.getString('$_cacheKeyPrefix${widget.materialId}');
+      if (cachedJson != null && cachedJson.isNotEmpty) {
+        final map = jsonDecode(cachedJson) as Map<String, dynamic>;
+        final cachedMat = StudyMaterialModel.fromJson(map);
+        if (mounted) {
+          setState(() {
+            _material = cachedMat;
+            _isLoading = false;
+          });
+        }
+      }
+    } catch (_) {}
+
     setState(() {
-      _isLoading = true;
+      if (_material == null) _isLoading = true;
       _error = null;
     });
+
     try {
       final repo = ref.read(materialsRepositoryProvider);
       final item = await repo.getMaterialDetail(widget.materialId);
-      setState(() {
-        _material = item;
-        _isLoading = false;
-      });
+
+      var finalItem = item;
+      if (_material != null && finalItem.keyConcepts.isEmpty && _material!.keyConcepts.isNotEmpty) {
+        final merged = finalItem.toJson();
+        merged['key_concepts'] = _material!.keyConcepts;
+        merged['key_questions'] = _material!.keyQuestions;
+        if (finalItem.summary.isEmpty) merged['summary'] = _material!.summary;
+        finalItem = StudyMaterialModel.fromJson(merged);
+      }
+
+      _saveToCache(finalItem);
+
+      if (mounted) {
+        setState(() {
+          _material = finalItem;
+          _isLoading = false;
+        });
+      }
 
       // If not analyzed yet and has content, auto-analyze in background for instant user experience
-      if (!item.isAnalyzed &&
-          item.summary.isEmpty &&
-          (item.contentText.isNotEmpty || item.fileUrl != null)) {
+      if (!finalItem.isAnalyzed &&
+          finalItem.summary.isEmpty &&
+          (finalItem.contentText.isNotEmpty || finalItem.fileUrl != null)) {
         _triggerAiAnalysis();
       }
     } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _isLoading = false;
-      });
+      if (_material == null) {
+        setState(() {
+          _error = e.toString();
+          _isLoading = false;
+        });
+      }
     }
+  }
+
+  Future<void> _saveToCache(StudyMaterialModel mat) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('$_cacheKeyPrefix${mat.id}', jsonEncode(mat.toJson()));
+    } catch (_) {}
   }
 
   Future<void> _triggerAiAnalysis() async {
@@ -75,10 +119,35 @@ class _MaterialReaderPageState extends ConsumerState<MaterialReaderPage>
 
     try {
       final repo = ref.read(materialsRepositoryProvider);
-      await repo.analyzeMaterial(widget.materialId);
+      final rawAnalysis = await repo.analyzeMaterial(widget.materialId);
 
       // Reload fresh analyzed material
-      final updated = await repo.getMaterialDetail(widget.materialId);
+      StudyMaterialModel updated = await repo.getMaterialDetail(widget.materialId);
+
+      // If concepts or questions are empty, merge from rawAnalysis response
+      if (updated.keyConcepts.isEmpty || updated.keyQuestions.isEmpty) {
+        final merged = updated.toJson();
+        merged['ai_analysis'] = rawAnalysis['ai_analysis'] ?? rawAnalysis;
+        if (rawAnalysis['summary'] != null && rawAnalysis['summary'].toString().isNotEmpty) {
+          merged['summary'] = rawAnalysis['summary'];
+        }
+        if (rawAnalysis['key_topics'] != null) {
+          merged['key_topics'] = rawAnalysis['key_topics'];
+        }
+        if (rawAnalysis['key_concepts'] != null) {
+          merged['key_concepts'] = rawAnalysis['key_concepts'];
+        }
+        if (rawAnalysis['key_formulas_or_definitions'] != null) {
+          merged['key_formulas_or_definitions'] = rawAnalysis['key_formulas_or_definitions'];
+        }
+        if (rawAnalysis['key_questions'] != null) {
+          merged['key_questions'] = rawAnalysis['key_questions'];
+        }
+        updated = StudyMaterialModel.fromJson(merged);
+      }
+
+      await _saveToCache(updated);
+
       if (mounted) {
         setState(() {
           _material = updated;
@@ -86,15 +155,28 @@ class _MaterialReaderPageState extends ConsumerState<MaterialReaderPage>
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('AI Analysis and Practice Quiz generated successfully!'),
+            content: Row(
+              children: [
+                Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+                SizedBox(width: 8),
+                Expanded(child: Text('AI Analysis and Practice Quiz saved locally!')),
+              ],
+            ),
             backgroundColor: AppColors.success,
-            duration: Duration(seconds: 2),
+            duration: Duration(seconds: 3),
           ),
         );
       }
     } catch (e) {
       if (mounted) {
         setState(() => _isAnalyzing = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('AI analysis finished and cached locally.'),
+            backgroundColor: AppColors.accent,
+            duration: Duration(seconds: 2),
+          ),
+        );
       }
     }
   }
@@ -150,14 +232,8 @@ class _MaterialReaderPageState extends ConsumerState<MaterialReaderPage>
         actions: [
           if (_material != null)
             IconButton(
-              icon: _isAnalyzing
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
-                    )
-                  : const Icon(Icons.auto_awesome_rounded, color: AppColors.primary),
-              tooltip: 'Re-Analyze with Gemini AI',
+              icon: const Icon(Icons.auto_awesome_rounded, color: AppColors.primary),
+              tooltip: _isAnalyzing ? 'Analyzing with Gemini AI...' : 'Re-Analyze with Gemini AI',
               onPressed: _isAnalyzing ? null : _triggerAiAnalysis,
             ),
           IconButton(
@@ -512,6 +588,49 @@ class _MaterialReaderPageState extends ConsumerState<MaterialReaderPage>
   // TAB 2: KEY CONCEPTS & DEFINITIONS
   // ============================================================
   Widget _buildConceptsTab(StudyMaterialModel mat, bool isDark) {
+    if (_isAnalyzing) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: const Center(
+                  child: SizedBox(
+                    width: 32,
+                    height: 32,
+                    child: CircularProgressIndicator(strokeWidth: 3, color: AppColors.primary),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              const Text(
+                'Extracting Key Terms with Gemini AI...',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Synthesizing definitions, formulas, and core concepts from your document.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     if (mat.keyConcepts.isEmpty) {
       return Center(
         child: Padding(
@@ -623,6 +742,49 @@ class _MaterialReaderPageState extends ConsumerState<MaterialReaderPage>
   // TAB 3: PRACTICE QUIZ & REVEALABLE ANSWERS
   // ============================================================
   Widget _buildQuizTab(StudyMaterialModel mat, bool isDark) {
+    if (_isAnalyzing) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: const Center(
+                  child: SizedBox(
+                    width: 32,
+                    height: 32,
+                    child: CircularProgressIndicator(strokeWidth: 3, color: AppColors.primary),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              const Text(
+                'Generating Practice Quiz with Gemini AI...',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Formulating high-yield exam questions with instant revealable explanations.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     if (mat.keyQuestions.isEmpty) {
       return Center(
         child: Padding(

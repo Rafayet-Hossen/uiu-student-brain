@@ -55,10 +55,10 @@ class MainShellPage extends StatelessWidget {
         tooltip: 'Community',
       ),
       NavigationDestination(
-        icon: Icon(Icons.insights_outlined, size: 22),
-        selectedIcon: Icon(Icons.insights_rounded, color: AppColors.primary, size: 23),
-        label: 'Stats',
-        tooltip: 'Analytics',
+        icon: Icon(Icons.school_outlined, size: 22),
+        selectedIcon: Icon(Icons.school_rounded, color: AppColors.primary, size: 23),
+        label: 'Grades',
+        tooltip: 'Grade Planner',
       ),
       NavigationDestination(
         icon: Icon(Icons.person_outline, size: 22),
