@@ -56,4 +56,22 @@ class MaterialsRepository {
     final response = await _dioClient.post(ApiEndpoints.semesterCourses(semesterId), data: data);
     return Map<String, dynamic>.from(response.data as Map);
   }
+
+  Future<Map<String, dynamic>> updateSemester(int id, Map<String, dynamic> data) async {
+    final response = await _dioClient.patch('${ApiEndpoints.semesters}$id/', data: data);
+    return Map<String, dynamic>.from(response.data as Map);
+  }
+
+  Future<void> deleteSemester(int id) async {
+    await _dioClient.delete('${ApiEndpoints.semesters}$id/');
+  }
+
+  Future<Map<String, dynamic>> updateCourse(int id, Map<String, dynamic> data) async {
+    final response = await _dioClient.patch('${ApiEndpoints.globalCourses}$id/', data: data);
+    return Map<String, dynamic>.from(response.data as Map);
+  }
+
+  Future<void> deleteCourse(int id) async {
+    await _dioClient.delete('${ApiEndpoints.globalCourses}$id/');
+  }
 }

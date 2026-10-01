@@ -52,6 +52,23 @@ class SemesterDetailView(APIView):
             status=status.HTTP_200_OK,
         )
 
+    def patch(self, request, pk):
+        serializer = SemesterSerializer(data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        sem = services.update_user_semester(
+            user=request.user,
+            semester_id=pk,
+            name=serializer.validated_data.get("name"),
+            is_current=serializer.validated_data.get("is_current"),
+        )
+        return Response(
+            SemesterSerializer(sem, context={"request": request}).data,
+            status=status.HTTP_200_OK,
+        )
+
+    def put(self, request, pk):
+        return self.patch(request, pk)
+
     def delete(self, request, pk):
         services.delete_user_semester(user=request.user, semester_id=pk)
         return Response(status=status.HTTP_204_NO_CONTENT)

@@ -162,22 +162,39 @@ class MaterialsPage extends ConsumerWidget {
 
                             return Padding(
                               padding: const EdgeInsets.only(right: 8.0),
-                              child: ChoiceChip(
-                                avatar: isCurrent
-                                    ? Icon(
-                                        Icons.star_rounded,
-                                        size: 14,
-                                        color: isSelected ? AppColors.primary : AppColors.warning,
-                                      )
-                                    : null,
-                                label: Text(semName),
-                                selected: isSelected,
-                                onSelected: (_) => notifier.selectSemester(semId),
-                                selectedColor: AppColors.primary.withValues(alpha: 0.15),
-                                labelStyle: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-                                  color: isSelected ? AppColors.primary : (isDark ? AppColors.textDarkMuted : AppColors.textLightMuted),
+                              child: GestureDetector(
+                                onLongPress: () => _showTrimesterOptionsBottomSheet(context, ref, sem),
+                                child: ChoiceChip(
+                                  avatar: isCurrent
+                                      ? Icon(
+                                          Icons.star_rounded,
+                                          size: 14,
+                                          color: isSelected ? AppColors.primary : AppColors.warning,
+                                        )
+                                      : null,
+                                  label: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(semName),
+                                      const SizedBox(width: 4),
+                                      InkWell(
+                                        onTap: () => _showTrimesterOptionsBottomSheet(context, ref, sem),
+                                        child: Icon(
+                                          Icons.more_vert_rounded,
+                                          size: 13,
+                                          color: isSelected ? AppColors.primary : (isDark ? AppColors.textDarkMuted : AppColors.textLightMuted),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  selected: isSelected,
+                                  onSelected: (_) => notifier.selectSemester(semId),
+                                  selectedColor: AppColors.primary.withValues(alpha: 0.15),
+                                  labelStyle: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                                    color: isSelected ? AppColors.primary : (isDark ? AppColors.textDarkMuted : AppColors.textLightMuted),
+                                  ),
                                 ),
                               ),
                             );
@@ -279,37 +296,79 @@ class MaterialsPage extends ConsumerWidget {
                                               ),
                                             ),
                                           ),
-                                          if (isSelected)
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-                                              decoration: BoxDecoration(
-                                                color: AppColors.primary.withValues(alpha: 0.15),
-                                                borderRadius: BorderRadius.circular(4),
-                                              ),
-                                              child: const Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Icon(Icons.check_circle_rounded, size: 10, color: AppColors.primary),
-                                                  SizedBox(width: 3),
-                                                  Text(
-                                                    'Filtered',
-                                                    style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w800, color: AppColors.primary),
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              if (isSelected)
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                                  decoration: BoxDecoration(
+                                                    color: AppColors.primary.withValues(alpha: 0.15),
+                                                    borderRadius: BorderRadius.circular(4),
                                                   ),
-                                                ],
-                                              ),
-                                            )
-                                          else if (semName != null && semName.isNotEmpty)
-                                            Flexible(
-                                              child: Text(
-                                                semName,
-                                                style: TextStyle(
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.w600,
+                                                  child: const Row(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: [
+                                                      Icon(Icons.check_circle_rounded, size: 10, color: AppColors.primary),
+                                                      SizedBox(width: 3),
+                                                      Text(
+                                                        'Filtered',
+                                                        style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w800, color: AppColors.primary),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                )
+                                              else if (semName != null && semName.isNotEmpty)
+                                                Text(
+                                                  semName,
+                                                  style: TextStyle(
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                                                  ),
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              const SizedBox(width: 4),
+                                              PopupMenuButton<String>(
+                                                icon: Icon(
+                                                  Icons.more_vert_rounded,
+                                                  size: 16,
                                                   color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
                                                 ),
-                                                overflow: TextOverflow.ellipsis,
+                                                padding: EdgeInsets.zero,
+                                                constraints: const BoxConstraints(),
+                                                itemBuilder: (_) => [
+                                                  const PopupMenuItem(
+                                                    value: 'edit',
+                                                    child: Row(
+                                                      children: [
+                                                        Icon(Icons.edit_outlined, size: 16),
+                                                        SizedBox(width: 8),
+                                                        Text('Edit Course', style: TextStyle(fontSize: 13)),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  const PopupMenuItem(
+                                                    value: 'delete',
+                                                    child: Row(
+                                                      children: [
+                                                        Icon(Icons.delete_outline_rounded, size: 16, color: AppColors.error),
+                                                        SizedBox(width: 8),
+                                                        Text('Delete Course', style: TextStyle(fontSize: 13, color: AppColors.error)),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                                onSelected: (val) {
+                                                  if (val == 'edit') {
+                                                    _showEditCourseDialog(context, ref, c);
+                                                  } else if (val == 'delete') {
+                                                    _confirmDeleteCourse(context, ref, c);
+                                                  }
+                                                },
                                               ),
-                                            ),
+                                            ],
+                                          ),
                                         ],
                                       ),
                                       const SizedBox(height: 6),
@@ -742,6 +801,372 @@ class MaterialsPage extends ConsumerWidget {
             ],
           );
         },
+      ),
+    );
+  }
+
+  void _showTrimesterOptionsBottomSheet(BuildContext context, WidgetRef ref, Map<String, dynamic> sem) {
+    final semId = sem['id'] as int;
+    final semName = sem['name']?.toString() ?? 'Trimester';
+    final isCurrent = sem['is_current'] == true;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (bCtx) => Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).brightness == Brightness.dark ? AppColors.surfaceDark : AppColors.surfaceLight,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                const Icon(Icons.school_rounded, color: AppColors.primary, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    semName,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                  ),
+                ),
+                if (isCurrent)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Text('Active', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.primary)),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            const Divider(height: 1),
+            ListTile(
+              leading: const Icon(Icons.edit_outlined, color: AppColors.primary),
+              title: const Text('Edit Trimester Name', style: TextStyle(fontWeight: FontWeight.w600)),
+              onTap: () {
+                Navigator.pop(bCtx);
+                _showEditSemesterDialog(context, ref, sem);
+              },
+            ),
+            ListTile(
+              leading: Icon(
+                isCurrent ? Icons.star_border_rounded : Icons.star_rounded,
+                color: AppColors.warning,
+              ),
+              title: Text(
+                isCurrent ? 'Unmark as Active Trimester' : 'Set as Active Trimester',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              onTap: () async {
+                Navigator.pop(bCtx);
+                await ref.read(materialsProvider.notifier).updateSemester(semId, isCurrent: !isCurrent);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
+              title: const Text('Delete Trimester', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.error)),
+              onTap: () {
+                Navigator.pop(bCtx);
+                _confirmDeleteSemester(context, ref, sem);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showEditSemesterDialog(BuildContext context, WidgetRef ref, Map<String, dynamic> sem) {
+    final semId = sem['id'] as int;
+    final nameCtrl = TextEditingController(text: sem['name']?.toString() ?? '');
+    bool isCurrent = sem['is_current'] == true;
+    bool isSubmitting = false;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          title: const Text('Edit Trimester', style: TextStyle(fontWeight: FontWeight.w800)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameCtrl,
+                decoration: InputDecoration(
+                  labelText: 'Trimester Name',
+                  hintText: 'e.g. Fall 2027, Spring 2028',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Set as Active / Current', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                value: isCurrent,
+                onChanged: (val) => setDialogState(() => isCurrent = val),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              onPressed: isSubmitting
+                  ? null
+                  : () async {
+                      final name = nameCtrl.text.trim();
+                      if (name.isEmpty) return;
+                      setDialogState(() => isSubmitting = true);
+                      final success = await ref.read(materialsProvider.notifier).updateSemester(
+                            semId,
+                            name: name,
+                            isCurrent: isCurrent,
+                          );
+                      if (ctx.mounted) {
+                        Navigator.pop(ctx);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(success ? 'Trimester updated' : 'Failed to update trimester'),
+                            backgroundColor: success ? AppColors.success : AppColors.error,
+                          ),
+                        );
+                      }
+                    },
+              child: isSubmitting
+                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : const Text('Save Changes', style: TextStyle(fontWeight: FontWeight.w700)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _confirmDeleteSemester(BuildContext context, WidgetRef ref, Map<String, dynamic> sem) {
+    final semId = sem['id'] as int;
+    final semName = sem['name']?.toString() ?? 'Trimester';
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Trimester'),
+        content: Text('Are you sure you want to delete "$semName"? All associated courses and study materials will also be removed.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final success = await ref.read(materialsProvider.notifier).deleteSemester(semId);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(success ? 'Trimester deleted' : 'Failed to delete trimester'),
+                    backgroundColor: success ? AppColors.success : AppColors.error,
+                  ),
+                );
+              }
+            },
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEditCourseDialog(BuildContext context, WidgetRef ref, Map<String, dynamic> course) {
+    final courseId = course['id'] as int;
+    final codeCtrl = TextEditingController(text: course['code']?.toString() ?? '');
+    final titleCtrl = TextEditingController(text: course['title']?.toString() ?? '');
+    final descCtrl = TextEditingController(text: course['description']?.toString() ?? '');
+    String selectedColor = course['color']?.toString() ?? '#2563eb';
+    bool isSubmitting = false;
+
+    final colorOptions = [
+      {'hex': '#2563eb', 'name': 'Blue'},
+      {'hex': '#7c3aed', 'name': 'Purple'},
+      {'hex': '#059669', 'name': 'Emerald'},
+      {'hex': '#d97706', 'name': 'Amber'},
+      {'hex': '#dc2626', 'name': 'Red'},
+      {'hex': '#0891b2', 'name': 'Cyan'},
+    ];
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          title: const Text('Edit Course', style: TextStyle(fontWeight: FontWeight.w800)),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: codeCtrl,
+                  decoration: InputDecoration(
+                    labelText: 'Course Code *',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: titleCtrl,
+                  decoration: InputDecoration(
+                    labelText: 'Course Title *',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: descCtrl,
+                  decoration: InputDecoration(
+                    labelText: 'Description (Optional)',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                const Text('Course Theme Color', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: colorOptions.map((opt) {
+                    final hex = opt['hex']!;
+                    final color = Color(int.parse(hex.replaceFirst('#', '0xFF')));
+                    final isSelected = selectedColor == hex;
+
+                    return GestureDetector(
+                      onTap: () => setDialogState(() => selectedColor = hex),
+                      child: Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isSelected ? Colors.white : Colors.transparent,
+                            width: 2.5,
+                          ),
+                        ),
+                        child: isSelected ? const Icon(Icons.check, size: 16, color: Colors.white) : null,
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              onPressed: isSubmitting
+                  ? null
+                  : () async {
+                      final code = codeCtrl.text.trim();
+                      final title = titleCtrl.text.trim();
+                      if (code.isEmpty || title.isEmpty) return;
+
+                      setDialogState(() => isSubmitting = true);
+                      final success = await ref.read(materialsProvider.notifier).updateCourse(
+                            courseId,
+                            title: title,
+                            code: code,
+                            color: selectedColor,
+                            description: descCtrl.text.trim(),
+                          );
+                      if (ctx.mounted) {
+                        Navigator.pop(ctx);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(success ? 'Course updated' : 'Failed to update course'),
+                            backgroundColor: success ? AppColors.success : AppColors.error,
+                          ),
+                        );
+                      }
+                    },
+              child: isSubmitting
+                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : const Text('Save Changes', style: TextStyle(fontWeight: FontWeight.w700)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _confirmDeleteCourse(BuildContext context, WidgetRef ref, Map<String, dynamic> course) {
+    final courseId = course['id'] as int;
+    final courseTitle = course['title']?.toString() ?? 'Course';
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Course'),
+        content: Text('Are you sure you want to delete "$courseTitle"? All study materials inside this course will also be removed.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final success = await ref.read(materialsProvider.notifier).deleteCourse(courseId);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(success ? 'Course deleted' : 'Failed to delete course'),
+                    backgroundColor: success ? AppColors.success : AppColors.error,
+                  ),
+                );
+              }
+            },
+            child: const Text('Delete'),
+          ),
+        ],
       ),
     );
   }

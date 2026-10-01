@@ -182,9 +182,79 @@ class PlannerPage extends ConsumerWidget {
     return timeStr;
   }
 
+  static String? _extractSmartDate(ScheduleModel item) {
+    String? rawDate = item.deadline;
+    if (rawDate == null || rawDate.isEmpty) {
+      final match = RegExp(r'(?:Date|Event Date):\s*([0-9]{4}-[0-9]{2}-[0-9]{2})', caseSensitive: false).firstMatch(item.notes);
+      if (match != null) {
+        rawDate = match.group(1);
+      }
+    }
+    if (rawDate == null || rawDate.isEmpty) return null;
+
+    try {
+      final targetDate = DateTime.parse(rawDate);
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final targetDay = DateTime(targetDate.year, targetDate.month, targetDate.day);
+      final diff = targetDay.difference(today).inDays;
+
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      final dateStr = '${weekdays[targetDate.weekday - 1]}, ${targetDate.day} ${months[targetDate.month - 1]}';
+
+      if (diff == 0) {
+        return 'Today ($dateStr)';
+      } else if (diff == 1) {
+        return 'Tomorrow ($dateStr)';
+      } else if (diff == -1) {
+        return 'Yesterday ($dateStr)';
+      } else {
+        return dateStr;
+      }
+    } catch (_) {
+      return rawDate;
+    }
+  }
+
+  static bool _isToday(ScheduleModel item) {
+    String? rawDate = item.deadline;
+    if (rawDate == null || rawDate.isEmpty) {
+      final match = RegExp(r'(?:Date|Event Date):\s*([0-9]{4}-[0-9]{2}-[0-9]{2})', caseSensitive: false).firstMatch(item.notes);
+      if (match != null) rawDate = match.group(1);
+    }
+    if (rawDate != null && rawDate.isNotEmpty) {
+      try {
+        final targetDate = DateTime.parse(rawDate);
+        final now = DateTime.now();
+        return targetDate.year == now.year && targetDate.month == now.month && targetDate.day == now.day;
+      } catch (_) {}
+    }
+    return false;
+  }
+
+  static bool _isTomorrow(ScheduleModel item) {
+    String? rawDate = item.deadline;
+    if (rawDate == null || rawDate.isEmpty) {
+      final match = RegExp(r'(?:Date|Event Date):\s*([0-9]{4}-[0-9]{2}-[0-9]{2})', caseSensitive: false).firstMatch(item.notes);
+      if (match != null) rawDate = match.group(1);
+    }
+    if (rawDate != null && rawDate.isNotEmpty) {
+      try {
+        final targetDate = DateTime.parse(rawDate);
+        final tomorrow = DateTime.now().add(const Duration(days: 1));
+        return targetDate.year == tomorrow.year && targetDate.month == tomorrow.month && targetDate.day == tomorrow.day;
+      } catch (_) {}
+    }
+    return false;
+  }
+
   Widget _buildEventCard(BuildContext context, WidgetRef ref, ScheduleModel item, bool isDark) {
     final cleanTitle = item.subject.replaceFirst(RegExp(r'^\[Event\]\s*'), '');
     final timeRange = '${_format12Hour(item.startTime)} – ${_format12Hour(item.endTime)}';
+    final smartDate = _extractSmartDate(item);
+    final isToday = _isToday(item);
+    final isTomorrow = _isTomorrow(item);
 
     return GlassCard(
       borderColor: AppColors.accent.withValues(alpha: 0.6),
@@ -256,14 +326,67 @@ class PlannerPage extends ConsumerWidget {
             cleanTitle,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
           ),
-          const SizedBox(height: 6),
-          Row(
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 6,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              const Icon(Icons.schedule_rounded, size: 14, color: AppColors.accent),
-              const SizedBox(width: 6),
-              Text(
-                timeRange,
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.accent),
+              if (smartDate != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                  decoration: BoxDecoration(
+                    color: isToday
+                        ? AppColors.flame.withValues(alpha: 0.15)
+                        : (isTomorrow
+                            ? AppColors.accent.withValues(alpha: 0.15)
+                            : (isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle)),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: isToday
+                          ? AppColors.flame
+                          : (isTomorrow
+                              ? AppColors.accent
+                              : (isDark ? AppColors.borderDark : AppColors.borderLight)),
+                      width: 0.8,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.calendar_month_rounded,
+                        size: 12,
+                        color: isToday
+                            ? AppColors.flame
+                            : (isTomorrow ? AppColors.accent : AppColors.primary),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        smartDate,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          color: isToday
+                              ? AppColors.flame
+                              : (isTomorrow
+                                  ? AppColors.accent
+                                  : (isDark ? AppColors.textDark : AppColors.textLight)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.schedule_rounded, size: 14, color: AppColors.accent),
+                  const SizedBox(width: 5),
+                  Text(
+                    timeRange,
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.accent),
+                  ),
+                ],
               ),
             ],
           ),
@@ -275,6 +398,8 @@ class PlannerPage extends ConsumerWidget {
 
   Widget _buildClassRoutineCard(BuildContext context, WidgetRef ref, ScheduleModel item, bool isDark) {
     final timeRange = '${_format12Hour(item.startTime)} – ${_format12Hour(item.endTime)}';
+    final todayWeekday = const ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][DateTime.now().weekday % 7];
+    final isClassToday = item.days.contains(todayWeekday);
 
     return GlassCard(
       borderColor: AppColors.primary.withValues(alpha: 0.3),
@@ -307,6 +432,26 @@ class PlannerPage extends ConsumerWidget {
                   ],
                 ),
               ),
+              if (isClassToday) ...[
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.success.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: AppColors.success, width: 0.8),
+                  ),
+                  child: const Text(
+                    'TODAY',
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.success,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ],
               const Spacer(),
               IconButton(
                 icon: const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.error),

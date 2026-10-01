@@ -40,6 +40,10 @@ class TrackerRepository {
     return StudySessionModel.fromJson(response.data as Map<String, dynamic>);
   }
 
+  Future<void> deleteSession(int id) async {
+    await _dioClient.delete(ApiEndpoints.studySessionDetail(id));
+  }
+
   Future<Map<String, dynamic>> generateQuiz(int sessionId) async {
     final response = await _dioClient.post(ApiEndpoints.generateSessionQuiz(sessionId));
     return Map<String, dynamic>.from(response.data as Map);

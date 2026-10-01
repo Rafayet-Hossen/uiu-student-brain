@@ -266,21 +266,22 @@ class _MaterialReaderPageState extends ConsumerState<MaterialReaderPage>
         ],
         bottom: TabBar(
           controller: _tabController,
-          isScrollable: true,
+          isScrollable: false,
           labelColor: AppColors.primary,
           unselectedLabelColor: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
           indicatorColor: AppColors.primary,
           indicatorWeight: 3,
-          labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
-          unselectedLabelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+          labelPadding: const EdgeInsets.symmetric(horizontal: 2),
+          labelStyle: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800),
+          unselectedLabelStyle: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600),
           tabs: [
             const Tab(
               icon: Icon(Icons.auto_awesome_rounded, size: 18),
-              text: 'AI Summary',
+              text: 'Summary',
             ),
             Tab(
               icon: const Icon(Icons.lightbulb_outline_rounded, size: 18),
-              text: 'Key Terms (${_material?.keyConcepts.length ?? 0})',
+              text: 'Terms (${_material?.keyConcepts.length ?? 0})',
             ),
             Tab(
               icon: const Icon(Icons.quiz_outlined, size: 18),
@@ -288,7 +289,7 @@ class _MaterialReaderPageState extends ConsumerState<MaterialReaderPage>
             ),
             const Tab(
               icon: Icon(Icons.description_outlined, size: 18),
-              text: 'Document',
+              text: 'Doc View',
             ),
           ],
         ),
@@ -554,7 +555,10 @@ class _MaterialReaderPageState extends ConsumerState<MaterialReaderPage>
               runSpacing: 6,
               children: mat.keyTopics.map((topic) {
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width - 48,
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
                     color: isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle,
                     borderRadius: BorderRadius.circular(8),
@@ -567,10 +571,13 @@ class _MaterialReaderPageState extends ConsumerState<MaterialReaderPage>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Icon(Icons.tag_rounded, size: 12, color: AppColors.primary),
-                      const SizedBox(width: 4),
-                      Text(
-                        topic,
-                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+                      const SizedBox(width: 5),
+                      Flexible(
+                        child: Text(
+                          topic,
+                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+                          softWrap: true,
+                        ),
                       ),
                     ],
                   ),
@@ -670,68 +677,130 @@ class _MaterialReaderPageState extends ConsumerState<MaterialReaderPage>
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       itemCount: mat.keyConcepts.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 10),
+      separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final concept = mat.keyConcepts[index];
         final term = concept['term'] ?? 'Concept';
         final definition = concept['definition'] ?? '';
 
-        return GlassCard(
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 24,
-                    height: 24,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.15),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Text(
-                      '${index + 1}',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      term,
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.copy_rounded, size: 15),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    tooltip: 'Copy Definition',
-                    onPressed: () => _copyToClipboard('$term: $definition', 'Concept'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.only(left: 34),
-                child: Text(
-                  definition,
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    height: 1.45,
-                    color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
-                  ),
-                ),
+        return Container(
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.surfaceDark : Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isDark ? AppColors.borderDark : AppColors.borderLight,
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
             ],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Colorful left indicator accent bar
+                Container(
+                  width: 5,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [AppColors.primary, AppColors.accent],
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                '#${(index + 1).toString().padLeft(2, '0')}',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w900,
+                                  color: AppColors.primary,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                term,
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -0.2,
+                                ),
+                              ),
+                            ),
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(8),
+                                onTap: () => _copyToClipboard('$term: $definition', 'Concept'),
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: (isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                                      width: 0.8,
+                                    ),
+                                  ),
+                                  child: Icon(
+                                    Icons.copy_rounded,
+                                    size: 14,
+                                    color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            definition,
+                            style: TextStyle(
+                              fontSize: 13,
+                              height: 1.5,
+                              color: isDark ? AppColors.textDark : AppColors.textLight,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -824,7 +893,7 @@ class _MaterialReaderPageState extends ConsumerState<MaterialReaderPage>
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       itemCount: mat.keyQuestions.length,
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
@@ -833,11 +902,27 @@ class _MaterialReaderPageState extends ConsumerState<MaterialReaderPage>
         final answer = q['answer'] ?? 'No answer provided.';
         final isRevealed = _revealedAnswers.contains(index);
 
-        return GlassCard(
+        return Container(
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.surfaceDark : Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isRevealed
+                  ? AppColors.primary.withValues(alpha: 0.5)
+                  : (isDark ? AppColors.borderDark : AppColors.borderLight),
+              width: isRevealed ? 1.5 : 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: isRevealed
+                    ? AppColors.primary.withValues(alpha: 0.08)
+                    : Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
           padding: const EdgeInsets.all(16),
-          borderColor: isRevealed
-              ? AppColors.primary.withValues(alpha: 0.4)
-              : (isDark ? AppColors.borderDark : AppColors.borderLight),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -845,97 +930,142 @@ class _MaterialReaderPageState extends ConsumerState<MaterialReaderPage>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(6),
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.primary.withValues(alpha: 0.15),
+                          AppColors.accent.withValues(alpha: 0.15),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.25),
+                        width: 0.8,
+                      ),
                     ),
                     child: Text(
                       'QUESTION ${index + 1}',
                       style: const TextStyle(
-                        fontSize: 10,
+                        fontSize: 11,
                         fontWeight: FontWeight.w900,
                         color: AppColors.primary,
-                        letterSpacing: 0.5,
+                        letterSpacing: 0.6,
                       ),
                     ),
                   ),
-                  OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      side: BorderSide(
-                        color: isRevealed ? AppColors.primary : (isDark ? AppColors.borderDark : AppColors.borderLight),
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      onTap: () {
+                        setState(() {
+                          if (isRevealed) {
+                            _revealedAnswers.remove(index);
+                          } else {
+                            _revealedAnswers.add(index);
+                          }
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                        decoration: BoxDecoration(
+                          color: isRevealed
+                              ? AppColors.primary.withValues(alpha: 0.12)
+                              : (isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isRevealed
+                                ? AppColors.primary
+                                : (isDark ? AppColors.borderDark : AppColors.borderLight),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              isRevealed ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                              size: 14,
+                              color: isRevealed
+                                  ? AppColors.primary
+                                  : (isDark ? AppColors.textDarkMuted : AppColors.textLightMuted),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              isRevealed ? 'Hide Solution' : 'Reveal Solution',
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w700,
+                                color: isRevealed
+                                    ? AppColors.primary
+                                    : (isDark ? AppColors.textDark : AppColors.textLight),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    icon: Icon(
-                      isRevealed ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                      size: 14,
-                      color: isRevealed ? AppColors.primary : (isDark ? AppColors.textDarkMuted : AppColors.textLightMuted),
-                    ),
-                    label: Text(
-                      isRevealed ? 'Hide Answer' : 'Reveal Answer',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: isRevealed ? AppColors.primary : (isDark ? AppColors.textDark : AppColors.textLight),
-                      ),
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        if (isRevealed) {
-                          _revealedAnswers.remove(index);
-                        } else {
-                          _revealedAnswers.add(index);
-                        }
-                      });
-                    },
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               Text(
                 question,
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, height: 1.4),
+                style: const TextStyle(
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w800,
+                  height: 1.45,
+                ),
               ),
               if (isRevealed) ...[
-                const SizedBox(height: 12),
+                const SizedBox(height: 14),
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: AppColors.success.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color: AppColors.success.withValues(alpha: 0.3),
+                      color: AppColors.success.withValues(alpha: 0.35),
                       width: 1,
                     ),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Row(
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Icon(Icons.check_circle_outline_rounded, size: 16, color: AppColors.success),
-                          SizedBox(width: 6),
-                          Text(
-                            'Expected Academic Solution:',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w900,
-                              color: AppColors.success,
+                          const Row(
+                            children: [
+                              Icon(Icons.check_circle_rounded, size: 16, color: AppColors.success),
+                              SizedBox(width: 6),
+                              Text(
+                                'Verified Solution',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w900,
+                                  color: AppColors.success,
+                                ),
+                              ),
+                            ],
+                          ),
+                          InkWell(
+                            onTap: () => _copyToClipboard(answer, 'Answer'),
+                            child: const Padding(
+                              padding: EdgeInsets.all(2),
+                              child: Icon(Icons.copy_rounded, size: 14, color: AppColors.success),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 8),
                       Text(
                         answer,
                         style: TextStyle(
-                          fontSize: 12.5,
-                          height: 1.45,
+                          fontSize: 13,
+                          height: 1.5,
                           color: isDark ? AppColors.textDark : AppColors.textLight,
                         ),
                       ),

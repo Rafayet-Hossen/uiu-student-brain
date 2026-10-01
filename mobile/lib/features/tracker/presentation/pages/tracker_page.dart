@@ -242,6 +242,7 @@ class TrackerPage extends ConsumerWidget {
 
                         return GlassCard(
                           padding: const EdgeInsets.all(16),
+                          onTap: () => _showSessionDetailsModal(context, ref, session),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -279,32 +280,45 @@ class TrackerPage extends ConsumerWidget {
                                       ],
                                     ),
                                   ),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: statusColor.withValues(alpha: 0.15),
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                        color: statusColor.withValues(alpha: 0.3),
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(statusIcon, size: 12, color: statusColor),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          statusLabel,
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w800,
-                                            color: statusColor,
-                                            letterSpacing: 0.3,
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: statusColor.withValues(alpha: 0.15),
+                                          borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(
+                                            color: statusColor.withValues(alpha: 0.3),
+                                            width: 1,
                                           ),
                                         ),
-                                      ],
-                                    ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(statusIcon, size: 12, color: statusColor),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              statusLabel,
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w800,
+                                                color: statusColor,
+                                                letterSpacing: 0.3,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.error),
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                                        tooltip: 'Delete Session Record',
+                                        onPressed: () => _confirmDeleteSession(context, ref, session),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
@@ -414,6 +428,15 @@ class TrackerPage extends ConsumerWidget {
                                   },
                                 ),
                               ],
+                              if (session.status.toUpperCase() == 'IN_PROGRESS') ...[
+                                const SizedBox(height: 12),
+                                AppButton(
+                                  label: 'Continue Live Focus',
+                                  icon: const Icon(Icons.bolt_rounded, size: 16),
+                                  height: 38,
+                                  onPressed: () => context.push('/tracker/live'),
+                                ),
+                              ],
                               if (isCompleted && !session.quizTaken) ...[
                                 const SizedBox(height: 12),
                                 AppButton(
@@ -433,6 +456,455 @@ class TrackerPage extends ConsumerWidget {
                 ],
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _confirmDeleteSession(BuildContext context, WidgetRef ref, dynamic session) {
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: const Text('Delete Study Session'),
+        content: Text('Are you sure you want to delete "${session.subject}"? This history record cannot be recovered.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogCtx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () async {
+              Navigator.pop(dialogCtx);
+              final success = await ref.read(trackerProvider.notifier).deleteSession(session.id);
+              if (!success && context.mounted) {
+                final err = ref.read(trackerProvider).error ?? 'Failed to delete session';
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(err), backgroundColor: AppColors.error),
+                );
+              } else if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Session record deleted successfully')),
+                );
+              }
+            },
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSessionDetailsModal(BuildContext context, WidgetRef ref, dynamic session) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isCompleted = session.status.toUpperCase() == 'COMPLETED';
+    final isScheduled = session.status.toUpperCase() == 'SCHEDULED';
+    final isInProgress = session.status.toUpperCase() == 'IN_PROGRESS';
+
+    Color statusColor = AppColors.primary;
+    String statusLabel = session.status.toUpperCase();
+    IconData statusIcon = Icons.hourglass_top_rounded;
+
+    if (isCompleted) {
+      statusColor = AppColors.success;
+      statusLabel = 'COMPLETED';
+      statusIcon = Icons.check_circle_rounded;
+    } else if (isScheduled) {
+      statusColor = AppColors.primary;
+      statusLabel = 'SCHEDULED';
+      statusIcon = Icons.alarm_rounded;
+    } else if (isInProgress) {
+      statusColor = AppColors.warning;
+      statusLabel = 'IN PROGRESS';
+      statusIcon = Icons.bolt_rounded;
+    } else if (session.status.toUpperCase() == 'MISSED') {
+      statusColor = AppColors.error;
+      statusLabel = 'MISSED';
+      statusIcon = Icons.cancel_rounded;
+    }
+
+    String displayDate = session.sessionDate;
+    try {
+      final dt = DateTime.parse(session.sessionDate);
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      displayDate = '${dt.day} ${months[dt.month - 1]}, ${dt.year}';
+    } catch (_) {}
+
+    String displayTime = 'Not specified';
+    if (session.startTime != null && session.startTime!.isNotEmpty) {
+      final parts = session.startTime!.split(':');
+      if (parts.isNotEmpty) {
+        final hr = int.tryParse(parts[0]) ?? 0;
+        final min = parts.length > 1 ? parts[1] : '00';
+        final period = hr >= 12 ? 'PM' : 'AM';
+        final h12 = hr == 0 ? 12 : (hr > 12 ? hr - 12 : hr);
+        final hStr = h12.toString().padLeft(2, '0');
+        displayTime = '$hStr:$min $period';
+      }
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (bCtx) => Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+          maxWidth: 600,
+        ),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border.all(
+            color: isDark ? AppColors.borderDark : AppColors.borderLight,
+            width: 1,
+          ),
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Drag handle
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.white24 : Colors.black12,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Title & Status
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          session.subject,
+                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                        ),
+                        const SizedBox(height: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: statusColor.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: statusColor.withValues(alpha: 0.3)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(statusIcon, size: 13, color: statusColor),
+                              const SizedBox(width: 5),
+                              Text(
+                                statusLabel,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                  color: statusColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: () => Navigator.pop(bCtx),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              const Divider(height: 1),
+              const SizedBox(height: 18),
+
+              // Key Metrics Grid
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                          width: 0.8,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.calendar_today_rounded, size: 14, color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Date & Time',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            displayDate,
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+                          ),
+                          Text(
+                            displayTime,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                          width: 0.8,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.timer_outlined, size: 14, color: AppColors.primary),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Focused Time',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            '${session.totalMinutes} min',
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: AppColors.primary),
+                          ),
+                          Text(
+                            'Target: ${session.durationMinutes} min',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+
+              // Course & Material Info
+              if (session.courseTitle != null || session.materialTitle != null) ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                      width: 0.8,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (session.courseTitle != null)
+                        Row(
+                          children: [
+                            const Icon(Icons.school_outlined, size: 14, color: AppColors.primary),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Course: ${session.courseTitle}',
+                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                              ),
+                            ),
+                          ],
+                        ),
+                      if (session.courseTitle != null && session.materialTitle != null)
+                        const SizedBox(height: 8),
+                      if (session.materialTitle != null)
+                        Row(
+                          children: [
+                            const Icon(Icons.menu_book_rounded, size: 14, color: AppColors.secondary),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Document: ${session.materialTitle}',
+                                style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+              ],
+
+              // Diagnostic Quiz Section
+              if (session.quizTaken && session.quizScore != null) ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.stars_rounded, color: AppColors.accent, size: 28),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'AI Diagnostic Quiz Completed',
+                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Mastery Score: ${session.quizScore!.toInt()}%',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w900,
+                                color: AppColors.accent,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+              ],
+
+              // Notes / Agenda
+              if (session.notes.isNotEmpty) ...[
+                const Text(
+                  'Session Notes / Agenda',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 6),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                      width: 0.8,
+                    ),
+                  ),
+                  child: Text(
+                    session.notes,
+                    style: TextStyle(
+                      fontSize: 13,
+                      height: 1.45,
+                      color: isDark ? AppColors.textDark : AppColors.textLight,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
+
+              // Actions
+              if (isScheduled) ...[
+                AppButton(
+                  label: 'Start Focus Session Now',
+                  icon: const Icon(Icons.play_arrow_rounded, size: 18),
+                  onPressed: () async {
+                    Navigator.pop(bCtx);
+                    final err = await ref.read(trackerProvider.notifier).startSession(session.id);
+                    if (err != null && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(err), backgroundColor: AppColors.error),
+                      );
+                    } else if (context.mounted) {
+                      context.push('/tracker/live');
+                    }
+                  },
+                ),
+                const SizedBox(height: 10),
+              ],
+              if (isInProgress) ...[
+                AppButton(
+                  label: 'Continue Live Focus Session',
+                  icon: const Icon(Icons.bolt_rounded, size: 18),
+                  onPressed: () {
+                    Navigator.pop(bCtx);
+                    context.push('/tracker/live');
+                  },
+                ),
+                const SizedBox(height: 10),
+              ],
+              if (isCompleted && !session.quizTaken) ...[
+                AppButton(
+                  label: 'Take AI Diagnostic Quiz',
+                  variant: AppButtonVariant.outline,
+                  icon: const Icon(Icons.quiz_outlined, size: 18),
+                  onPressed: () {
+                    Navigator.pop(bCtx);
+                    context.push('/ai/quiz/${session.id}');
+                  },
+                ),
+                const SizedBox(height: 10),
+              ],
+
+              // Delete Session Button
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.error,
+                  side: const BorderSide(color: AppColors.error, width: 1),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                icon: const Icon(Icons.delete_outline_rounded, size: 16),
+                label: const Text('Delete Study Session Record', style: TextStyle(fontWeight: FontWeight.w700)),
+                onPressed: () {
+                  Navigator.pop(bCtx);
+                  _confirmDeleteSession(context, ref, session);
+                },
+              ),
+            ],
           ),
         ),
       ),

@@ -134,6 +134,22 @@ class TrackerNotifier extends StateNotifier<TrackerState> {
       return false;
     }
   }
+
+  Future<bool> deleteSession(int id) async {
+    try {
+      await _repository.deleteSession(id);
+      final wasActive = state.activeSession?.id == id;
+      state = state.copyWith(
+        activeSession: wasActive ? null : state.activeSession,
+        sessions: state.sessions.where((s) => s.id != id).toList(),
+      );
+      await loadTrackerData();
+      return true;
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+      return false;
+    }
+  }
 }
 
 final trackerProvider =

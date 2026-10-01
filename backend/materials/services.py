@@ -130,6 +130,21 @@ def delete_user_semester(*, user, semester_id: int) -> None:
     sem.delete()
 
 
+def update_user_semester(*, user, semester_id: int, name: str | None = None, is_current: bool | None = None) -> Semester:
+    sem = get_user_semester(user=user, semester_id=semester_id)
+    if name is not None:
+        clean_name = name.strip()
+        if not clean_name:
+            raise ValidationError({"name": ["Semester name cannot be blank."]})
+        sem.name = clean_name
+    if is_current is not None:
+        if is_current:
+            Semester.objects.filter(user=user, is_current=True).exclude(id=sem.id).update(is_current=False)
+        sem.is_current = is_current
+    sem.save()
+    return sem
+
+
 # ============================================================
 # COURSE SERVICES
 # ============================================================

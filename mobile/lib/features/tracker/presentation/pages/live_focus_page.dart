@@ -166,97 +166,165 @@ class _LiveFocusPageState extends ConsumerState<LiveFocusPage>
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (ctx) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 24,
-            right: 24,
-            top: 24,
-            bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        int selectedMinutes = (_secondsRemaining / 60).round();
+        if (selectedMinutes <= 0) selectedMinutes = 25;
+        textCtrl.text = selectedMinutes.toString();
+
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 24,
+                right: 24,
+                top: 24,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Set Focus Duration',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Interactive Stepper Row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.remove_circle_outline_rounded, size: 28),
+                        color: AppColors.primary,
+                        onPressed: selectedMinutes > 5
+                            ? () {
+                                setModalState(() {
+                                  selectedMinutes -= 5;
+                                  textCtrl.text = selectedMinutes.toString();
+                                });
+                              }
+                            : null,
+                      ),
+                      const SizedBox(width: 12),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          '$selectedMinutes mins',
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      IconButton(
+                        icon: const Icon(Icons.add_circle_outline_rounded, size: 28),
+                        color: AppColors.primary,
+                        onPressed: selectedMinutes < 360
+                            ? () {
+                                setModalState(() {
+                                  selectedMinutes += 5;
+                                  textCtrl.text = selectedMinutes.toString();
+                                });
+                              }
+                            : null,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+
                   const Text(
-                    'Set Focus Duration',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                    'Quick Presets:',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.close_rounded),
-                    onPressed: () => Navigator.pop(ctx),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [15, 25, 45, 60, 90, 120].map((mins) {
+                      final isSelected = selectedMinutes == mins;
+                      return ChoiceChip(
+                        label: Text('${mins}m'),
+                        selected: isSelected,
+                        onSelected: (val) {
+                          if (val) {
+                            setModalState(() {
+                              selectedMinutes = mins;
+                              textCtrl.text = mins.toString();
+                            });
+                          }
+                        },
+                      );
+                    }).toList(),
                   ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              const Text(
-                'Quick Presets:',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [15, 25, 45, 60, 90, 120].map((mins) {
-                  return ActionChip(
-                    label: Text('${mins}m'),
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      _applyCustomDuration(mins);
+                  const SizedBox(height: 16),
+
+                  const Text(
+                    'Or Enter Minutes Directly:',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: textCtrl,
+                    keyboardType: TextInputType.number,
+                    onChanged: (val) {
+                      final parsed = int.tryParse(val.trim());
+                      if (parsed != null && parsed > 0 && parsed <= 720) {
+                        setModalState(() {
+                          selectedMinutes = parsed;
+                        });
+                      }
                     },
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Or enter exact minutes:',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: textCtrl,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        hintText: 'e.g. 50',
-                        suffixText: 'minutes',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
+                    decoration: InputDecoration(
+                      hintText: 'e.g. 50',
+                      suffixText: 'minutes',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(height: 18),
+
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
                     ),
                     onPressed: () {
-                      final parsed = int.tryParse(textCtrl.text.trim());
-                      if (parsed != null && parsed > 0 && parsed <= 720) {
+                      final parsed = int.tryParse(textCtrl.text.trim()) ?? selectedMinutes;
+                      if (parsed > 0 && parsed <= 720) {
                         Navigator.pop(ctx);
                         _applyCustomDuration(parsed);
                       }
                     },
-                    child: const Text('Apply', style: TextStyle(fontWeight: FontWeight.w800)),
+                    child: const Text('Apply Focus Time', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
                   ),
                 ],
               ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
@@ -560,48 +628,60 @@ class _LiveFocusPageState extends ConsumerState<LiveFocusPage>
                   ),
                   const SizedBox(height: 24),
 
-                  // Quick Extension Buttons (+10m, +15m, +30m, +Custom)
+                  // Quick Extension Buttons (2 per row)
                   const Text(
                     'Quick Extend Session:',
                     style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
                   ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    alignment: WrapAlignment.center,
+                  const SizedBox(height: 10),
+                  Row(
                     children: [
-                      OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      Expanded(
+                        child: _buildQuickExtendCard(
+                          icon: Icons.add_rounded,
+                          label: '+10 mins',
+                          subtitle: 'Short Boost',
+                          color: AppColors.primary,
+                          isDark: isDark,
+                          onTap: () => _extend(10),
                         ),
-                        icon: const Icon(Icons.add_rounded, size: 14),
-                        onPressed: () => _extend(10),
-                        label: const Text('10 min'),
                       ),
-                      OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _buildQuickExtendCard(
+                          icon: Icons.add_rounded,
+                          label: '+15 mins',
+                          subtitle: 'Standard',
+                          color: AppColors.secondary,
+                          isDark: isDark,
+                          onTap: () => _extend(15),
                         ),
-                        icon: const Icon(Icons.add_rounded, size: 14),
-                        onPressed: () => _extend(15),
-                        label: const Text('15 min'),
                       ),
-                      OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildQuickExtendCard(
+                          icon: Icons.add_rounded,
+                          label: '+30 mins',
+                          subtitle: 'Deep Sprint',
+                          color: AppColors.flame,
+                          isDark: isDark,
+                          onTap: () => _extend(30),
                         ),
-                        icon: const Icon(Icons.add_rounded, size: 14),
-                        onPressed: () => _extend(30),
-                        label: const Text('30 min'),
                       ),
-                      OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _buildQuickExtendCard(
+                          icon: Icons.tune_rounded,
+                          label: 'Custom',
+                          subtitle: 'Set Any Time',
+                          color: AppColors.accent,
+                          isDark: isDark,
+                          onTap: _showCustomTimeDialog,
                         ),
-                        icon: const Icon(Icons.edit_calendar_rounded, size: 14),
-                        onPressed: _showCustomTimeDialog,
-                        label: const Text('Custom'),
                       ),
                     ],
                   ),
@@ -619,6 +699,76 @@ class _LiveFocusPageState extends ConsumerState<LiveFocusPage>
                 ],
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickExtendCard({
+    required IconData icon,
+    required String label,
+    required String subtitle,
+    required Color color,
+    required bool isDark,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.surfaceDark : Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isDark ? AppColors.borderDark : AppColors.borderLight,
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, size: 16, color: color),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),

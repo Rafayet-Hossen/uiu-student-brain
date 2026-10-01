@@ -165,6 +165,64 @@ class MaterialsNotifier extends StateNotifier<MaterialsState> {
     }
   }
 
+  Future<bool> updateSemester(int id, {String? name, bool? isCurrent}) async {
+    try {
+      await _repository.updateSemester(id, {
+        if (name != null) 'name': name,
+        if (isCurrent != null) 'is_current': isCurrent,
+      });
+      await loadMaterialsData();
+      return true;
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+      return false;
+    }
+  }
+
+  Future<bool> deleteSemester(int id) async {
+    try {
+      await _repository.deleteSemester(id);
+      if (state.selectedSemesterId == id) {
+        state = state.copyWith(selectedSemesterId: null);
+      }
+      await loadMaterialsData();
+      return true;
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+      return false;
+    }
+  }
+
+  Future<bool> updateCourse(int id, {String? title, String? code, String? color, String? description}) async {
+    try {
+      await _repository.updateCourse(id, {
+        if (title != null) 'title': title,
+        if (code != null) 'code': code,
+        if (color != null) 'color': color,
+        if (description != null) 'description': description,
+      });
+      await loadMaterialsData();
+      return true;
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+      return false;
+    }
+  }
+
+  Future<bool> deleteCourse(int id) async {
+    try {
+      await _repository.deleteCourse(id);
+      if (state.selectedCourseId == id) {
+        state = state.copyWith(selectedCourseId: null);
+      }
+      await loadMaterialsData();
+      return true;
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+      return false;
+    }
+  }
+
   void setSearchQuery(String query) {
     state = state.copyWith(searchQuery: query);
   }
