@@ -246,83 +246,82 @@ class TrackerPage extends ConsumerWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              // Row 1: Subject + Status Badge + Delete Action
                               Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                    child: Text(
+                                      session.subject,
+                                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: statusColor.withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: statusColor.withValues(alpha: 0.3),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
                                       children: [
+                                        Icon(statusIcon, size: 12, color: statusColor),
+                                        const SizedBox(width: 4),
                                         Text(
-                                          session.subject,
-                                          style: const TextStyle(fontSize: 15.5, fontWeight: FontWeight.w800),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Row(
-                                          children: [
-                                            Icon(
-                                              Icons.calendar_today_rounded,
-                                              size: 13,
-                                              color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
-                                            ),
-                                            const SizedBox(width: 5),
-                                            Text(
-                                              '$displayDate$displayTime',
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w600,
-                                                color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
-                                              ),
-                                            ),
-                                          ],
+                                          statusLabel,
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w800,
+                                            color: statusColor,
+                                            letterSpacing: 0.3,
+                                          ),
                                         ),
                                       ],
                                     ),
                                   ),
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: statusColor.withValues(alpha: 0.15),
-                                          borderRadius: BorderRadius.circular(8),
-                                          border: Border.all(
-                                            color: statusColor.withValues(alpha: 0.3),
-                                            width: 1,
-                                          ),
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Icon(statusIcon, size: 12, color: statusColor),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              statusLabel,
-                                              style: TextStyle(
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.w800,
-                                                color: statusColor,
-                                                letterSpacing: 0.3,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      IconButton(
-                                        icon: const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.error),
-                                        padding: EdgeInsets.zero,
-                                        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                                        tooltip: 'Delete Session Record',
-                                        onPressed: () => _confirmDeleteSession(context, ref, session),
-                                      ),
-                                    ],
+                                  const SizedBox(width: 4),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.error),
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                                    tooltip: 'Delete Session Record',
+                                    onPressed: () => _confirmDeleteSession(context, ref, session),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 10),
+                              const SizedBox(height: 6),
+
+                              // Row 2: Date & Time Display
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.calendar_today_rounded,
+                                    size: 13,
+                                    color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                                  ),
+                                  const SizedBox(width: 5),
+                                  Expanded(
+                                    child: Text(
+                                      '$displayDate$displayTime',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
 
                               // Duration and stats row
                               Wrap(
