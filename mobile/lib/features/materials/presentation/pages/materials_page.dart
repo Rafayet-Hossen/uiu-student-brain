@@ -1,7 +1,9 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/data/courses_catalog.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/error_card.dart';
 import '../../../../core/widgets/glass_card.dart';
@@ -417,7 +419,7 @@ class MaterialsPage extends ConsumerWidget {
                     ),
                   const SizedBox(height: 18),
 
-                  // 4. Materials List Header with Filter Clear Option
+                  // 4. Materials List Header with Filter Clear Option & Upload Material Button
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -428,7 +430,21 @@ class MaterialsPage extends ConsumerWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (matState.selectedCourseId != null)
+                      const SizedBox(width: 8),
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.upload_file_rounded, size: 14),
+                        label: const Text('Upload Material', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          elevation: 0,
+                        ),
+                        onPressed: () => _showUploadMaterialDialog(context, ref),
+                      ),
+                      if (matState.selectedCourseId != null) ...[
+                        const SizedBox(width: 6),
                         InkWell(
                           onTap: () => notifier.selectCourse(null),
                           borderRadius: BorderRadius.circular(6),
@@ -444,13 +460,14 @@ class MaterialsPage extends ConsumerWidget {
                                 Icon(Icons.close_rounded, size: 12, color: AppColors.error),
                                 SizedBox(width: 4),
                                 Text(
-                                  'Clear Filter',
+                                  'Clear',
                                   style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.error),
                                 ),
                               ],
                             ),
                           ),
                         ),
+                      ],
                     ],
                   ),
                   const SizedBox(height: 10),
@@ -524,7 +541,12 @@ class MaterialsPage extends ConsumerWidget {
                                       ],
                                     ),
                                   ),
-                                  const Icon(Icons.arrow_forward_ios_rounded, size: 13, color: AppColors.primary),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete_outline, size: 18, color: Colors.grey),
+                                      tooltip: 'Delete Material',
+                                      onPressed: () => _confirmDeleteMaterial(context, ref, item),
+                                    ),
+                                    const Icon(Icons.arrow_forward_ios_rounded, size: 13, color: AppColors.primary),
                                 ],
                               ),
                               if (item.summary.isNotEmpty) ...[
@@ -658,6 +680,7 @@ class MaterialsPage extends ConsumerWidget {
     final titleCtrl = TextEditingController();
     String selectedColor = '#2563eb';
     bool isSubmitting = false;
+    List<CatalogCourse> courseSuggestions = [];
 
     final colorOptions = [
       {'hex': '#2563eb', 'name': 'Blue'},
@@ -712,7 +735,32 @@ class MaterialsPage extends ConsumerWidget {
                       hintText: 'e.g. CSE 4123, MATH 2183',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     ),
+                    onChanged: (val) {
+                      setDialogState(() {
+                        courseSuggestions = searchCoursesCatalog(val);
+                      });
+                    },
                   ),
+                  if (courseSuggestions.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      children: courseSuggestions.take(4).map((c) {
+                        return ActionChip(
+                          avatar: const Icon(Icons.school, size: 14, color: AppColors.primary),
+                          label: Text('${c.code} (${c.title})', style: const TextStyle(fontSize: 11)),
+                          onPressed: () {
+                            setDialogState(() {
+                              codeCtrl.text = c.code;
+                              titleCtrl.text = c.title;
+                              courseSuggestions = [];
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+                  ],
                   const SizedBox(height: 12),
                   TextField(
                     controller: titleCtrl,
@@ -1167,6 +1215,375 @@ class MaterialsPage extends ConsumerWidget {
             child: const Text('Delete'),
           ),
         ],
+      ),
+    );
+  }
+
+  void _confirmDeleteMaterial(BuildContext context, WidgetRef ref, dynamic item) {
+    final materialId = item.id as int;
+    final title = item.title as String;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Material'),
+        content: Text('Delete "$title"? This document will be removed from your device library.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final success = await ref.read(materialsProvider.notifier).deleteMaterial(materialId);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(success ? 'Document removed from library' : 'Failed to delete document'),
+                    backgroundColor: success ? AppColors.success : AppColors.error,
+                  ),
+                );
+              }
+            },
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showUploadMaterialDialog(BuildContext context, WidgetRef ref) {
+    final matState = ref.read(materialsProvider);
+    final semesters = matState.semesters;
+
+    int? selectedSemesterId = matState.selectedSemesterId ?? (semesters.isNotEmpty ? semesters.first['id'] as int? : null);
+    List<Map<String, dynamic>> availableCourses = selectedSemesterId != null
+        ? matState.courses.where((c) => c['semester'] == selectedSemesterId || c['semester_id'] == selectedSemesterId).toList()
+        : matState.courses;
+    int? selectedCourseId = availableCourses.isNotEmpty ? (availableCourses.first['id'] as int?) : null;
+
+    final titleCtrl = TextEditingController();
+    final notesCtrl = TextEditingController();
+    String category = 'Lecture Note';
+    PlatformFile? pickedFile;
+    bool isSubmitting = false;
+    List<CatalogCourse> courseSuggestions = [];
+
+    const categoriesList = [
+      'Lecture Note',
+      'Cheat Sheet',
+      'Textbook Chapter',
+      'Lab Report',
+      'Other',
+    ];
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Row(
+              children: [
+                Icon(Icons.cloud_upload_rounded, color: AppColors.primary, size: 22),
+                SizedBox(width: 8),
+                Text('Upload Study Document', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+              ],
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Trimester selector
+                  DropdownButtonFormField<int>(
+                    initialValue: selectedSemesterId,
+                    decoration: InputDecoration(
+                      labelText: 'Select Trimester *',
+                      prefixIcon: const Icon(Icons.calendar_today_rounded, size: 18),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                    items: semesters.map((s) {
+                      final id = s['id'] as int;
+                      final name = s['name']?.toString() ?? 'Trimester $id';
+                      final isCur = s['is_current'] == true;
+                      return DropdownMenuItem(
+                        value: id,
+                        child: Text(isCur ? '$name (Active)' : name),
+                      );
+                    }).toList(),
+                    onChanged: (val) {
+                      if (val != null) {
+                        setDialogState(() {
+                          selectedSemesterId = val;
+                          availableCourses = matState.courses
+                              .where((c) => c['semester'] == val || c['semester_id'] == val)
+                              .toList();
+                          selectedCourseId = availableCourses.isNotEmpty ? (availableCourses.first['id'] as int) : null;
+                        });
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Course Selector (Strictly filtered by selected trimester)
+                  DropdownButtonFormField<int?>(
+                    initialValue: selectedCourseId,
+                    decoration: InputDecoration(
+                      labelText: 'Select Course *',
+                      prefixIcon: const Icon(Icons.school_outlined, size: 18),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                    items: availableCourses.isEmpty
+                        ? [
+                            const DropdownMenuItem<int?>(
+                              value: null,
+                              enabled: false,
+                              child: Text('No courses in this trimester (Add Course first)', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                            ),
+                          ]
+                        : availableCourses.map((c) {
+                            final id = c['id'] as int;
+                            final code = c['code']?.toString() ?? '';
+                            final title = c['title']?.toString() ?? 'Course';
+                            return DropdownMenuItem<int?>(
+                              value: id,
+                              child: Text('[$code] $title', style: const TextStyle(fontSize: 13), overflow: TextOverflow.ellipsis),
+                            );
+                          }).toList(),
+                    onChanged: availableCourses.isEmpty
+                        ? null
+                        : (val) {
+                            if (val != null) setDialogState(() => selectedCourseId = val);
+                          },
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Material Title with Autocomplete from catalog
+                  TextField(
+                    controller: titleCtrl,
+                    decoration: InputDecoration(
+                      labelText: 'Document Title *',
+                      hintText: 'e.g. Midterm Cheat Sheet & Formulas',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                    onChanged: (val) {
+                      setDialogState(() {
+                        courseSuggestions = searchCoursesCatalog(val);
+                      });
+                    },
+                  ),
+                  if (courseSuggestions.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      children: courseSuggestions.take(4).map((c) {
+                        return ActionChip(
+                          avatar: const Icon(Icons.school, size: 14, color: AppColors.primary),
+                          label: Text('${c.code} (${c.title})', style: const TextStyle(fontSize: 11)),
+                          onPressed: () {
+                            setDialogState(() {
+                              titleCtrl.text = '${c.code} - ${c.title} Lecture Notes';
+                              courseSuggestions = [];
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                  const SizedBox(height: 12),
+
+                  // Category Selector
+                  DropdownButtonFormField<String>(
+                    initialValue: category,
+                    decoration: InputDecoration(
+                      labelText: 'Document Category',
+                      prefixIcon: const Icon(Icons.category_outlined, size: 18),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                    items: categoriesList.map((cat) => DropdownMenuItem(value: cat, child: Text(cat, style: const TextStyle(fontSize: 13)))).toList(),
+                    onChanged: (val) {
+                      if (val != null) setDialogState(() => category = val);
+                    },
+                  ),
+                  const SizedBox(height: 14),
+
+                  // File Picker Area
+                  const Text('Attach File (PDF, CSV, Image, TXT, DOCX)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 6),
+                  if (pickedFile == null)
+                    InkWell(
+                      onTap: () async {
+                        final messenger = ScaffoldMessenger.of(context);
+                        try {
+                          final result = await FilePicker.platform.pickFiles(
+                            type: FileType.any,
+                            allowMultiple: false,
+                          );
+                          if (result != null && result.files.isNotEmpty) {
+                            setDialogState(() {
+                              pickedFile = result.files.first;
+                              if (titleCtrl.text.isEmpty) {
+                                final nameWithoutExt = pickedFile!.name.split('.').first;
+                                titleCtrl.text = nameWithoutExt.replaceAll(RegExp(r'[_\-]'), ' ');
+                              }
+                            });
+                          }
+                        } catch (e) {
+                          messenger.showSnackBar(
+                            SnackBar(content: Text('File picker error: $e')),
+                          );
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                        decoration: BoxDecoration(
+                          color: isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppColors.primary.withValues(alpha: 0.35),
+                            style: BorderStyle.solid,
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            const Icon(Icons.cloud_upload_outlined, color: AppColors.primary, size: 30),
+                            const SizedBox(height: 6),
+                            const Text(
+                              'Tap to select document from device',
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'PDF, CSV, Image, TXT, DOCX supported',
+                              style: TextStyle(fontSize: 10.5, color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.insert_drive_file_rounded, color: AppColors.primary, size: 24),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  pickedFile!.name,
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  '${(pickedFile!.size / 1024).toStringAsFixed(1)} KB',
+                                  style: const TextStyle(fontSize: 10, color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close_rounded, size: 18),
+                            onPressed: () => setDialogState(() => pickedFile = null),
+                          ),
+                        ],
+                      ),
+                    ),
+                  const SizedBox(height: 12),
+
+                  // Notes / Description
+                  TextField(
+                    controller: notesCtrl,
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                      labelText: 'Notes / Topic Overview (Optional)',
+                      hintText: 'Chapters, formulas, or key insights covered...',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.all(12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                onPressed: isSubmitting
+                    ? null
+                    : () async {
+                        if (selectedCourseId == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Please select or add a course first')),
+                          );
+                          return;
+                        }
+                        if (titleCtrl.text.trim().isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Please enter a document title')),
+                          );
+                          return;
+                        }
+
+                        setDialogState(() => isSubmitting = true);
+                        final messenger = ScaffoldMessenger.of(context);
+
+                        final success = await ref.read(materialsProvider.notifier).createMaterial(
+                              courseId: selectedCourseId!,
+                              title: titleCtrl.text.trim(),
+                              category: category,
+                              filePath: pickedFile?.path,
+                              fileName: pickedFile?.name,
+                              contentText: notesCtrl.text.trim().isNotEmpty ? notesCtrl.text.trim() : null,
+                            );
+
+                        if (ctx.mounted) {
+                          Navigator.pop(ctx);
+                          messenger.showSnackBar(
+                            SnackBar(
+                              content: Text(success
+                                  ? 'Study document uploaded and saved locally to device!'
+                                  : 'Could not upload document'),
+                              backgroundColor: success ? AppColors.success : AppColors.error,
+                            ),
+                          );
+                        }
+                      },
+                child: isSubmitting
+                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    : const Text('Save Material', style: TextStyle(fontWeight: FontWeight.w700)),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

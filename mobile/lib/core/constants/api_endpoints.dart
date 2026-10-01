@@ -22,6 +22,7 @@ class ApiEndpoints {
   static const String courseGrades = '/grades/courses/';
   static String courseGradeDetail(int id) => '/grades/courses/$id/';
   static const String retakeAdvisor = '/grades/retake-advisor/';
+  static const String uploadTranscript = '/grades/transcript/upload/';
 
   // Tracker
   static const String studySessions = '/tracker/sessions/';

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/data/courses_catalog.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/error_card.dart';
@@ -14,7 +16,7 @@ import '../../../../core/widgets/user_avatar.dart';
 import '../../data/models/community_models.dart';
 import '../providers/community_provider.dart';
 
-class CommunityPage extends ConsumerWidget {
+class CommunityPage extends ConsumerStatefulWidget {
   const CommunityPage({super.key});
 
   static const List<String> categories = [
@@ -28,47 +30,80 @@ class CommunityPage extends ConsumerWidget {
   ];
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CommunityPage> createState() => _CommunityPageState();
+}
+
+class _CommunityPageState extends ConsumerState<CommunityPage>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(communityProvider);
     final notifier = ref.read(communityProvider.notifier);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final categories = ['All', 'Academic', 'Career', 'Projects', 'Campus Life', 'General'];
 
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Scholar Community'),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.leaderboard_outlined),
-              tooltip: 'Leaderboard',
-              onPressed: () => context.push('/community/leaderboard'),
-            ),
-            IconButton(
-              icon: const Icon(Icons.refresh_rounded),
-              onPressed: () => notifier.loadCommunityData(),
-            ),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Scholar Community'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.leaderboard_outlined),
+            tooltip: 'Leaderboard',
+            onPressed: () => context.push('/community/leaderboard'),
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            onPressed: () => notifier.loadCommunityData(),
+          ),
+        ],
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: AppColors.primary,
+          labelColor: AppColors.primary,
+          tabs: const [
+            Tab(text: 'Discussions & Q&A'),
+            Tab(text: 'Study Events & Meetups'),
           ],
-          bottom: const TabBar(
-            indicatorColor: AppColors.primary,
-            labelColor: AppColors.primary,
-            tabs: [
-              Tab(text: 'Discussions & Q&A'),
-              Tab(text: 'Study Events & Meetups'),
-            ],
-          ),
         ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () => _showCreatePostDialog(context, ref),
-          backgroundColor: AppColors.primary,
-          icon: const Icon(Icons.add_rounded, color: Colors.white),
-          label: const Text(
-            'New Discussion',
-            style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white),
-          ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          if (_tabController.index == 0) {
+            _showCreatePostDialog(context, ref);
+          } else {
+            _showCreateEventDialog(context, ref);
+          }
+        },
+        backgroundColor: AppColors.primary,
+        icon: Icon(
+          _tabController.index == 0 ? Icons.add_rounded : Icons.event_available_rounded,
+          color: Colors.white,
         ),
-        body: TabBarView(
-          children: [
+        label: Text(
+          _tabController.index == 0 ? 'New Discussion' : 'Host Study Event',
+          style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.white),
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
             // Tab 1: Discussions
             RefreshIndicator(
               onRefresh: () => notifier.loadCommunityData(),
@@ -186,7 +221,6 @@ class CommunityPage extends ConsumerWidget {
             ),
           ],
         ),
-      ),
     );
   }
 
@@ -194,6 +228,13 @@ class CommunityPage extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => const _CreateDiscussionDialog(),
+    );
+  }
+
+  void _showCreateEventDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (ctx) => const _CreateStudyEventDialog(),
     );
   }
 }
@@ -1612,5 +1653,570 @@ class _CreateDiscussionDialogState extends ConsumerState<_CreateDiscussionDialog
       default:
         return 'e.g. Tips for managing trimester coursework';
     }
+  }
+}
+
+/// Dynamic Host Study Event & Meetup Dialog matching website EventForm
+class _CreateStudyEventDialog extends ConsumerStatefulWidget {
+  const _CreateStudyEventDialog();
+
+  @override
+  ConsumerState<_CreateStudyEventDialog> createState() => _CreateStudyEventDialogState();
+}
+
+class _CreateStudyEventDialogState extends ConsumerState<_CreateStudyEventDialog> {
+  final _titleCtrl = TextEditingController();
+  final _subjectCtrl = TextEditingController();
+  final _locationCtrl = TextEditingController(text: 'Campus Library 4th Floor (Quiet Study Room)');
+  final _descCtrl = TextEditingController();
+  final _customCapacityCtrl = TextEditingController(text: '15');
+
+  String _eventType = 'offline'; // 'offline' or 'online'
+  DateTime _eventDate = DateTime.now();
+  TimeOfDay _startTime = const TimeOfDay(hour: 14, minute: 0);
+  TimeOfDay _endTime = const TimeOfDay(hour: 16, minute: 0);
+  int _maxParticipants = 20;
+  bool _isCustomCapacity = false;
+  bool _isSubmitting = false;
+  List<CatalogCourse> _courseSuggestions = [];
+
+  static const List<Map<String, dynamic>> _capacityPresets = [
+    {'label': 'Unlimited', 'value': 0},
+    {'label': '10 Seats', 'value': 10},
+    {'label': '20 Seats', 'value': 20},
+    {'label': '30 Seats', 'value': 30},
+    {'label': '50 Seats', 'value': 50},
+  ];
+
+  @override
+  void dispose() {
+    _titleCtrl.dispose();
+    _subjectCtrl.dispose();
+    _locationCtrl.dispose();
+    _descCtrl.dispose();
+    _customCapacityCtrl.dispose();
+    super.dispose();
+  }
+
+  void _applyTimePreset(int startH, int startM, int endH, int endM) {
+    setState(() {
+      _startTime = TimeOfDay(hour: startH, minute: startM);
+      _endTime = TimeOfDay(hour: endH, minute: endM);
+    });
+  }
+
+  String _formatTimeDisplay(TimeOfDay time) {
+    final now = DateTime.now();
+    final dt = DateTime(now.year, now.month, now.day, time.hour, time.minute);
+    return DateFormat('h:mm a').format(dt);
+  }
+
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _eventDate,
+      firstDate: DateTime.now().subtract(const Duration(days: 1)),
+      lastDate: DateTime.now().add(const Duration(days: 180)),
+    );
+    if (picked != null) {
+      setState(() => _eventDate = picked);
+    }
+  }
+
+  Future<void> _pickStartTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _startTime,
+    );
+    if (picked != null) {
+      setState(() => _startTime = picked);
+    }
+  }
+
+  Future<void> _pickEndTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _endTime,
+    );
+    if (picked != null) {
+      setState(() => _endTime = picked);
+    }
+  }
+
+  Future<void> _submit() async {
+    final title = _titleCtrl.text.trim();
+    final subject = _subjectCtrl.text.trim();
+    final location = _locationCtrl.text.trim();
+    final desc = _descCtrl.text.trim();
+
+    if (title.isEmpty || subject.isEmpty || location.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in Title, Subject, and Location/Link.')),
+      );
+      return;
+    }
+
+    final startMinutes = _startTime.hour * 60 + _startTime.minute;
+    final endMinutes = _endTime.hour * 60 + _endTime.minute;
+    if (startMinutes >= endMinutes) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('End time must be after start time.')),
+      );
+      return;
+    }
+
+    int capacity = _maxParticipants;
+    if (_isCustomCapacity) {
+      capacity = int.tryParse(_customCapacityCtrl.text.trim()) ?? 20;
+    }
+
+    final dateStr = DateFormat('yyyy-MM-dd').format(_eventDate);
+    final startStr = '${_startTime.hour.toString().padLeft(2, '0')}:${_startTime.minute.toString().padLeft(2, '0')}';
+    final endStr = '${_endTime.hour.toString().padLeft(2, '0')}:${_endTime.minute.toString().padLeft(2, '0')}';
+
+    String finalLocation = location;
+    if (_eventType == 'online' && !finalLocation.toLowerCase().startsWith('http') && !finalLocation.toLowerCase().startsWith('online')) {
+      finalLocation = 'Online: $finalLocation';
+    }
+
+    setState(() => _isSubmitting = true);
+    final messenger = ScaffoldMessenger.of(context);
+
+    final success = await ref.read(communityProvider.notifier).createEvent({
+      'title': title,
+      'subject': subject,
+      'description': desc,
+      'event_date': dateStr,
+      'start_time': startStr,
+      'end_time': endStr,
+      'location': finalLocation,
+      'max_participants': capacity,
+    });
+
+    if (mounted) {
+      setState(() => _isSubmitting = false);
+      if (success) {
+        Navigator.pop(context);
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text('Study Event published and synced to Scholar Community!'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      } else {
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text('Could not create study event. Please check required fields.'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isToday = DateUtils.isSameDay(_eventDate, DateTime.now());
+    final isTomorrow = DateUtils.isSameDay(_eventDate, DateTime.now().add(const Duration(days: 1)));
+
+    return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 580, maxHeight: 720),
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.event_available_rounded, color: AppColors.primary, size: 20),
+                      ),
+                      const SizedBox(width: 10),
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Host Study Event & Meetup',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                          ),
+                          Text(
+                            'Invite batchmates for collaborative prep',
+                            style: TextStyle(fontSize: 11, color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+
+              // Scrollable Form Fields
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Event Title
+                      TextField(
+                        controller: _titleCtrl,
+                        decoration: InputDecoration(
+                          labelText: 'Event Title *',
+                          hintText: 'e.g. Midterm Problem Solving Marathon',
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Subject / Course with Autocomplete
+                      TextField(
+                        controller: _subjectCtrl,
+                        decoration: InputDecoration(
+                          labelText: 'Subject / Course *',
+                          hintText: 'e.g. CSE 2215 - Data Structures',
+                          prefixIcon: const Icon(Icons.school_outlined, size: 18),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        ),
+                        onChanged: (val) {
+                          setState(() {
+                            _courseSuggestions = searchCoursesCatalog(val);
+                          });
+                        },
+                      ),
+                      if (_courseSuggestions.isNotEmpty) ...[
+                        const SizedBox(height: 6),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 4,
+                          children: _courseSuggestions.take(4).map((c) {
+                            return ActionChip(
+                              avatar: const Icon(Icons.school, size: 14, color: AppColors.primary),
+                              label: Text('${c.code} (${c.title})', style: const TextStyle(fontSize: 11)),
+                              onPressed: () {
+                                setState(() {
+                                  _subjectCtrl.text = '${c.code} - ${c.title}';
+                                  _courseSuggestions = [];
+                                });
+                              },
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                      const SizedBox(height: 12),
+
+                      // Event Format (In-Person vs Online)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ChoiceChip(
+                              avatar: const Icon(Icons.location_on_outlined, size: 16),
+                              label: const Text('In-Person (Campus)'),
+                              selected: _eventType == 'offline',
+                              selectedColor: AppColors.primary,
+                              labelStyle: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: _eventType == 'offline' ? Colors.white : null,
+                              ),
+                              onSelected: (_) => setState(() {
+                                _eventType = 'offline';
+                                if (_locationCtrl.text.startsWith('http') || _locationCtrl.text.startsWith('Online')) {
+                                  _locationCtrl.text = 'Campus Library 4th Floor (Quiet Study Room)';
+                                }
+                              }),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: ChoiceChip(
+                              avatar: const Icon(Icons.videocam_outlined, size: 16),
+                              label: const Text('Online Meetup'),
+                              selected: _eventType == 'online',
+                              selectedColor: AppColors.primary,
+                              labelStyle: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: _eventType == 'online' ? Colors.white : null,
+                              ),
+                              onSelected: (_) => setState(() {
+                                _eventType = 'online';
+                                if (_locationCtrl.text.contains('Library')) {
+                                  _locationCtrl.text = 'Google Meet / Zoom Meeting Link';
+                                }
+                              }),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Location or Meeting Link
+                      TextField(
+                        controller: _locationCtrl,
+                        decoration: InputDecoration(
+                          labelText: _eventType == 'online' ? 'Meeting Link / Platform *' : 'Campus Location / Room *',
+                          hintText: _eventType == 'online' ? 'https://meet.google.com/xyz-abc' : 'e.g. Room 412 or Library 4th Floor',
+                          prefixIcon: Icon(_eventType == 'online' ? Icons.link : Icons.place_outlined, size: 18),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Date Selection
+                      const Text('Event Date *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          ChoiceChip(
+                            label: const Text('Today'),
+                            selected: isToday,
+                            onSelected: (_) => setState(() => _eventDate = DateTime.now()),
+                            selectedColor: AppColors.primary,
+                            labelStyle: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: isToday ? Colors.white : null,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          ChoiceChip(
+                            label: const Text('Tomorrow'),
+                            selected: isTomorrow,
+                            onSelected: (_) => setState(() => _eventDate = DateTime.now().add(const Duration(days: 1))),
+                            selectedColor: AppColors.primary,
+                            labelStyle: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: isTomorrow ? Colors.white : null,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: _pickDate,
+                              icon: const Icon(Icons.calendar_month, size: 14),
+                              label: Text(
+                                DateFormat('EEE, MMM d').format(_eventDate),
+                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Time Pickers (Start and End)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: InkWell(
+                              onTap: _pickStartTime,
+                              borderRadius: BorderRadius.circular(10),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.schedule, size: 14, color: AppColors.primary),
+                                    const SizedBox(width: 6),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text('Start Time', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                                          Text(_formatTimeDisplay(_startTime), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800)),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: InkWell(
+                              onTap: _pickEndTime,
+                              borderRadius: BorderRadius.circular(10),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.timelapse_rounded, size: 14, color: AppColors.warning),
+                                    const SizedBox(width: 6),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text('End Time', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                                          Text(_formatTimeDisplay(_endTime), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800)),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Quick Time Presets
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            ActionChip(
+                              label: const Text('10:00 - 12:00', style: TextStyle(fontSize: 10.5)),
+                              onPressed: () => _applyTimePreset(10, 0, 12, 0),
+                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                            ),
+                            const SizedBox(width: 6),
+                            ActionChip(
+                              label: const Text('14:00 - 16:00', style: TextStyle(fontSize: 10.5)),
+                              onPressed: () => _applyTimePreset(14, 0, 16, 0),
+                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                            ),
+                            const SizedBox(width: 6),
+                            ActionChip(
+                              label: const Text('16:00 - 18:00', style: TextStyle(fontSize: 10.5)),
+                              onPressed: () => _applyTimePreset(16, 0, 18, 0),
+                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                            ),
+                            const SizedBox(width: 6),
+                            ActionChip(
+                              label: const Text('19:00 - 21:00', style: TextStyle(fontSize: 10.5)),
+                              onPressed: () => _applyTimePreset(19, 0, 21, 0),
+                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Slot Capacity
+                      const Text('Total Seats / Capacity', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: [
+                          ..._capacityPresets.map((p) {
+                            final isSelected = !_isCustomCapacity && _maxParticipants == p['value'];
+                            return ChoiceChip(
+                              label: Text(p['label'] as String),
+                              selected: isSelected,
+                              onSelected: (_) => setState(() {
+                                _isCustomCapacity = false;
+                                _maxParticipants = p['value'] as int;
+                              }),
+                              selectedColor: AppColors.primary,
+                              labelStyle: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: isSelected ? Colors.white : null,
+                              ),
+                            );
+                          }),
+                          ChoiceChip(
+                            label: const Text('Custom'),
+                            selected: _isCustomCapacity,
+                            onSelected: (_) => setState(() => _isCustomCapacity = true),
+                            selectedColor: AppColors.primary,
+                            labelStyle: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: _isCustomCapacity ? Colors.white : null,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (_isCustomCapacity) ...[
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: _customCapacityCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: 'Enter number of seats',
+                            hintText: 'e.g. 15',
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 14),
+
+                      // Description
+                      TextField(
+                        controller: _descCtrl,
+                        maxLines: 3,
+                        decoration: InputDecoration(
+                          labelText: 'Event Details & Guidelines',
+                          hintText: 'What will be covered, prerequisites, or what to bring (e.g. Bring laptop)...',
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          contentPadding: const EdgeInsets.all(12),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+
+              // Buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel'),
+                  ),
+                  const SizedBox(width: 8),
+                  AppButton(
+                    label: 'Publish Meetup Event',
+                    isLoading: _isSubmitting,
+                    onPressed: _submit,
+                    height: 40,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

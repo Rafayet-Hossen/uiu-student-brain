@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import '../../../../core/constants/api_endpoints.dart';
 import '../../../../core/network/dio_client.dart';
 import '../models/material_model.dart';
@@ -73,5 +74,42 @@ class MaterialsRepository {
 
   Future<void> deleteCourse(int id) async {
     await _dioClient.delete('${ApiEndpoints.globalCourses}$id/');
+  }
+
+  Future<StudyMaterialModel> createMaterial({
+    required int courseId,
+    required String title,
+    required String category,
+    String? contentText,
+    String? filePath,
+    String? fileName,
+  }) async {
+    dynamic postData;
+    if (filePath != null && filePath.isNotEmpty) {
+      postData = FormData.fromMap({
+        'title': title,
+        'category': category,
+        'material_type': 'document',
+        if (contentText != null && contentText.isNotEmpty) 'content_text': contentText,
+        'file': await MultipartFile.fromFile(filePath, filename: fileName ?? 'study_document'),
+      });
+    } else {
+      postData = {
+        'title': title,
+        'category': category,
+        'material_type': 'document',
+        'content_text': contentText ?? '',
+      };
+    }
+
+    final response = await _dioClient.post(
+      ApiEndpoints.courseMaterials(courseId),
+      data: postData,
+    );
+    return StudyMaterialModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<void> deleteMaterial(int id) async {
+    await _dioClient.delete(ApiEndpoints.materialDetail(id));
   }
 }

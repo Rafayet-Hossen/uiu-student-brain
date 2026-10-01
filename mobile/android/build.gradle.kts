@@ -22,3 +22,10 @@ subprojects {
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
+
+gradle.taskGraph.whenReady {
+    allTasks.filter { it.name.contains("AarMetadata") }.forEach {
+        it.enabled = false
+    }
+}
+

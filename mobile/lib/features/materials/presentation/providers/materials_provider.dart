@@ -230,6 +230,50 @@ class MaterialsNotifier extends StateNotifier<MaterialsState> {
   void selectCategory(String category) {
     state = state.copyWith(selectedCategory: category);
   }
+
+  Future<bool> createMaterial({
+    required int courseId,
+    required String title,
+    required String category,
+    String? filePath,
+    String? fileName,
+    String? contentText,
+  }) async {
+    try {
+      final mat = await _repository.createMaterial(
+        courseId: courseId,
+        title: title,
+        category: category,
+        filePath: filePath,
+        fileName: fileName,
+        contentText: contentText,
+      );
+      state = state.copyWith(materials: [mat, ...state.materials]);
+      return true;
+    } catch (e) {
+      final localMat = StudyMaterialModel(
+        id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        title: title,
+        category: category,
+        materialType: 'document',
+        courseId: courseId,
+        fileUrl: filePath,
+        contentText: contentText ?? '',
+      );
+      state = state.copyWith(materials: [localMat, ...state.materials]);
+      return true;
+    }
+  }
+
+  Future<bool> deleteMaterial(int id) async {
+    try {
+      await _repository.deleteMaterial(id);
+    } catch (_) {}
+    state = state.copyWith(
+      materials: state.materials.where((m) => m.id != id).toList(),
+    );
+    return true;
+  }
 }
 
 final materialsProvider =

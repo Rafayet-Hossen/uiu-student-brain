@@ -79,6 +79,10 @@ class TrackerNotifier extends StateNotifier<TrackerState> {
     }
   }
 
+  void setActiveSession(StudySessionModel? session) {
+    state = state.copyWith(activeSession: session);
+  }
+
   Future<bool> createSession(Map<String, dynamic> data) async {
     try {
       final session = await _repository.createSession(data);

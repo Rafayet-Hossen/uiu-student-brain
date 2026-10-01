@@ -150,6 +150,17 @@ class CommunityNotifier extends StateNotifier<CommunityState> {
       return null;
     }
   }
+
+  Future<bool> createEvent(Map<String, dynamic> data) async {
+    try {
+      final ev = await _repository.createEvent(data);
+      state = state.copyWith(events: [ev, ...state.events]);
+      return true;
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+      return false;
+    }
+  }
 }
 
 final communityProvider =
