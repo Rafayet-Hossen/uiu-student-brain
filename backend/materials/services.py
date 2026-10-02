@@ -323,12 +323,28 @@ def create_study_material(
     word_count = len(words)
     reading_time = estimate_reading_time(extracted_text)
 
+    # Dynamic initial difficulty heuristic before AI analysis
+    combined_info = f"{title} {category} {extracted_text[:500]}".lower()
+    if any(w in combined_info for w in [
+        "intro", "introduction", "basics", "fundamental", "overview", "cheat sheet",
+        "beginner", "starter", "syllabus", "lab 1", "chapter 1"
+    ]):
+        initial_difficulty = "Beginner"
+    elif any(w in combined_info for w in [
+        "advanced", "research", "proof", "thesis", "cryptography", "compiler",
+        "deep learning", "neural", "quantum", "optimization", "distributed"
+    ]) or category == "Research Paper":
+        initial_difficulty = "Advanced"
+    else:
+        initial_difficulty = "Intermediate"
+
     return StudyMaterial.objects.create(
         course=course,
         user=user,
         title=title.strip(),
         material_type=material_type,
         category=category,
+        difficulty_level=initial_difficulty,
         file=file,
         file_size_bytes=file_size_bytes,
         link_url=link_url.strip() if link_url else None,

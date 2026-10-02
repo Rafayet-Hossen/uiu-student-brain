@@ -105,7 +105,12 @@ def extract_material_topics(
 
     prompt = (
         "You are an expert academic curriculum analyzer. Analyze the provided study material. "
-        "Extract the core conceptual topics, produce a concise summary, detect difficulty, and extract key formulas or definitions."
+        "Extract the core conceptual topics, produce a concise high-yield summary, and extract key formulas or definitions.\n"
+        "Critically evaluate and assign the academic difficulty level as exactly one of:\n"
+        "- 'Beginner': Introductory concepts, fundamentals, basic tutorials, overview slides, 100/1000-level courses.\n"
+        "- 'Intermediate': Standard undergraduate coursework, implementation problems, core algorithms, applied methods, 200-300 level.\n"
+        "- 'Advanced': Highly theoretical proofs, complex architecture, graduate/senior research papers, complex systems, high mathematical rigor.\n"
+        "DO NOT default to Intermediate. Strictly classify based on actual academic depth and cognitive complexity."
     )
     if subject_hint:
         prompt += f" The course subject is: {subject_hint}."
@@ -150,10 +155,25 @@ def extract_material_topics(
             else f"Comprehensive study material for {detected_title}."
         )
 
+        full_text = f"{detected_title} {summary_snip} {' '.join(extracted_topics)}".lower()
+        if any(w in full_text for w in [
+            "intro", "introduction", "basics", "fundamental", "elementary", "overview",
+            "cheat sheet", "cheatsheet", "beginner", "starter", "guide", "syllabus", "lab 1", "chapter 1"
+        ]):
+            inferred_difficulty = "Beginner"
+        elif any(w in full_text for w in [
+            "advanced", "research", "proof", "thesis", "complex", "cryptography",
+            "compiler", "optimization", "distributed", "deep learning", "neural", "quantum",
+            "formal methods", "senior", "graduate"
+        ]):
+            inferred_difficulty = "Advanced"
+        else:
+            inferred_difficulty = "Intermediate"
+
         return {
             "title": detected_title,
             "summary": summary_snip,
-            "difficulty": "Intermediate",
+            "difficulty": inferred_difficulty,
             "key_topics": extracted_topics[:6],
             "key_formulas_or_definitions": [
                 f"Core Definition: Essential foundational rules for {extracted_topics[0]}",

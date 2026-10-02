@@ -1371,43 +1371,46 @@ class _CommunityEventCard extends ConsumerWidget {
             children: [
               // Going Button
               Expanded(
-                flex: 5,
-                child: ElevatedButton.icon(
-                  onPressed: () async {
-                    await ref.read(communityProvider.notifier).toggleRsvp(event.id, 'going');
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            isGoing
-                                ? 'RSVP removed.'
-                                : 'Going! Event automatically synced to your Study Planner Calendar.',
+                flex: 1,
+                child: SizedBox(
+                  height: 38,
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      await ref.read(communityProvider.notifier).toggleRsvp(event.id, 'going');
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              isGoing
+                                  ? 'RSVP removed.'
+                                  : 'Going! Event automatically synced to your Study Planner Calendar.',
+                            ),
+                            backgroundColor: AppColors.success,
+                            duration: const Duration(seconds: 2),
                           ),
-                          backgroundColor: AppColors.success,
-                          duration: const Duration(seconds: 2),
-                        ),
-                      );
-                    }
-                  },
-                  icon: Icon(
-                    isGoing ? Icons.check_circle_rounded : Icons.check_rounded,
-                    size: 15,
-                    color: isGoing ? Colors.white : AppColors.success,
-                  ),
-                  label: Text(
-                    'Going',
-                    style: TextStyle(
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w800,
+                        );
+                      }
+                    },
+                    icon: Icon(
+                      isGoing ? Icons.check_circle_rounded : Icons.check_rounded,
+                      size: 16,
                       color: isGoing ? Colors.white : AppColors.success,
                     ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isGoing ? AppColors.success : AppColors.success.withValues(alpha: 0.12),
-                    foregroundColor: isGoing ? Colors.white : AppColors.success,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    label: Text(
+                      'Going',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: isGoing ? Colors.white : AppColors.success,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isGoing ? AppColors.success : AppColors.success.withValues(alpha: 0.12),
+                      foregroundColor: isGoing ? Colors.white : AppColors.success,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                    ),
                   ),
                 ),
               ),
@@ -1415,54 +1418,62 @@ class _CommunityEventCard extends ConsumerWidget {
 
               // Interested Button
               Expanded(
-                flex: 4,
-                child: ElevatedButton.icon(
-                  onPressed: () async {
-                    await ref.read(communityProvider.notifier).toggleRsvp(event.id, 'interested');
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            isInterested ? 'Marked as not interested.' : 'Marked as interested!',
+                flex: 1,
+                child: SizedBox(
+                  height: 38,
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      await ref.read(communityProvider.notifier).toggleRsvp(event.id, 'interested');
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              isInterested ? 'Marked as not interested.' : 'Marked as interested!',
+                            ),
+                            duration: const Duration(seconds: 2),
                           ),
-                          duration: const Duration(seconds: 2),
-                        ),
-                      );
-                    }
-                  },
-                  icon: Icon(
-                    isInterested ? Icons.star_rounded : Icons.star_border_rounded,
-                    size: 15,
-                    color: isInterested ? Colors.white : AppColors.warning,
-                  ),
-                  label: Text(
-                    isInterested ? 'Interested' : 'Interested',
-                    style: TextStyle(
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w800,
+                        );
+                      }
+                    },
+                    icon: Icon(
+                      isInterested ? Icons.star_rounded : Icons.star_border_rounded,
+                      size: 16,
                       color: isInterested ? Colors.white : AppColors.warning,
                     ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isInterested ? AppColors.warning : AppColors.warning.withValues(alpha: 0.12),
-                    foregroundColor: isInterested ? Colors.white : AppColors.warning,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                    label: Text(
+                      'Interested',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: isInterested ? Colors.white : AppColors.warning,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isInterested ? AppColors.warning : AppColors.warning.withValues(alpha: 0.12),
+                      foregroundColor: isInterested ? Colors.white : AppColors.warning,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                    ),
                   ),
                 ),
               ),
               const SizedBox(width: 8),
 
               // Google Calendar Icon Launcher
-              IconButton(
-                onPressed: () => _openGoogleCalendar(context),
-                icon: const Icon(Icons.calendar_month_outlined, size: 20),
-                tooltip: 'Add to Google Calendar',
-                style: IconButton.styleFrom(
-                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                  foregroundColor: AppColors.primary,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              SizedBox(
+                width: 38,
+                height: 38,
+                child: IconButton(
+                  onPressed: () => _openGoogleCalendar(context),
+                  icon: const Icon(Icons.calendar_month_outlined, size: 18),
+                  tooltip: 'Add to Google Calendar',
+                  padding: EdgeInsets.zero,
+                  style: IconButton.styleFrom(
+                    backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                    foregroundColor: AppColors.primary,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
                 ),
               ),
             ],

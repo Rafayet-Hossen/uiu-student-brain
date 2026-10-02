@@ -236,9 +236,13 @@ class TrackerPage extends ConsumerWidget {
                             final period = hr >= 12 ? 'PM' : 'AM';
                             final h12 = hr == 0 ? 12 : (hr > 12 ? hr - 12 : hr);
                             final hStr = h12.toString().padLeft(2, '0');
-                            displayTime = ' • $hStr:$min $period';
+                            displayTime = '$hStr:$min $period';
                           }
                         }
+
+                        final dateAndTime = displayTime.isNotEmpty
+                            ? '$displayDate  •  ⏰ $displayTime'
+                            : displayDate;
 
                         return GlassCard(
                           padding: const EdgeInsets.all(16),
@@ -309,7 +313,7 @@ class TrackerPage extends ConsumerWidget {
                                   const SizedBox(width: 5),
                                   Expanded(
                                     child: Text(
-                                      '$displayDate • $displayTime',
+                                      dateAndTime,
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
@@ -662,7 +666,7 @@ class TrackerPage extends ConsumerWidget {
                             style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
                           ),
                           Text(
-                            displayTime,
+                            displayTime != 'Not specified' ? '⏰ $displayTime' : displayTime,
                             style: TextStyle(
                               fontSize: 11,
                               color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,

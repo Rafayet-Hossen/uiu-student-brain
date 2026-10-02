@@ -543,100 +543,117 @@ class _MaterialsPageState extends ConsumerState<MaterialsPage> with SingleTicker
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: isBookmarked
-                                          ? AppColors.primary.withValues(alpha: 0.16)
-                                          : AppColors.primary.withValues(alpha: 0.12),
-                                      borderRadius: BorderRadius.circular(10),
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary.withValues(alpha: 0.12),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: const Icon(
+                                        Icons.description_outlined,
+                                        color: AppColors.primary,
+                                        size: 20,
+                                      ),
                                     ),
-                                    child: Icon(
-                                      isBookmarked ? Icons.bookmark_rounded : Icons.description_outlined,
-                                      color: AppColors.primary,
-                                      size: 20,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: Text(
-                                                item.title,
-                                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
-                                              ),
-                                            ),
-                                            if (isBookmarked) ...[
-                                              const SizedBox(width: 6),
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                                                decoration: BoxDecoration(
-                                                  color: AppColors.primary.withValues(alpha: 0.12),
-                                                  borderRadius: BorderRadius.circular(4),
-                                                ),
-                                                child: const Text(
-                                                  'SAVED',
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            item.title,
+                                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Row(
+                                            children: [
+                                              Flexible(
+                                                child: Text(
+                                                  '${item.category} • ${item.difficultyLevel} • ${item.estimatedReadingTime}m read',
                                                   style: TextStyle(
-                                                    fontSize: 9,
-                                                    fontWeight: FontWeight.w900,
-                                                    color: AppColors.primary,
-                                                    letterSpacing: 0.4,
+                                                    fontSize: 11,
+                                                    color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                              if (isBookmarked) ...[
+                                                const SizedBox(width: 6),
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                                  decoration: BoxDecoration(
+                                                    color: AppColors.accent.withValues(alpha: 0.15),
+                                                    borderRadius: BorderRadius.circular(4),
+                                                  ),
+                                                  child: const Text(
+                                                    'SAVED',
+                                                    style: TextStyle(
+                                                      fontSize: 8.5,
+                                                      fontWeight: FontWeight.w900,
+                                                      color: AppColors.accent,
+                                                      letterSpacing: 0.4,
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
+                                              ],
                                             ],
-                                          ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          constraints: const BoxConstraints(),
+                                          padding: const EdgeInsets.all(5),
+                                          icon: Icon(
+                                            isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
+                                            size: 19,
+                                            color: isBookmarked ? AppColors.accent : (isDark ? AppColors.textDarkMuted : AppColors.textLightMuted),
+                                          ),
+                                          tooltip: isBookmarked ? 'Remove Bookmark' : 'Save Bookmark',
+                                          onPressed: () async {
+                                            final nowBookmarked = await notifier.toggleBookmark(item.id);
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    nowBookmarked
+                                                        ? 'Saved "${item.title}" to Bookmarks'
+                                                        : 'Removed from Bookmarks',
+                                                  ),
+                                                  duration: const Duration(seconds: 1),
+                                                  behavior: SnackBarBehavior.floating,
+                                                ),
+                                              );
+                                            }
+                                          },
                                         ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          '${item.category} | ${item.difficultyLevel} | ${item.estimatedReadingTime} min read',
-                                          style: TextStyle(
-                                            fontSize: 11,
+                                        const SizedBox(width: 2),
+                                        IconButton(
+                                          constraints: const BoxConstraints(),
+                                          padding: const EdgeInsets.all(5),
+                                          icon: Icon(
+                                            Icons.delete_outline_rounded,
+                                            size: 18,
                                             color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
                                           ),
+                                          tooltip: 'Delete Material',
+                                          onPressed: () => _confirmDeleteMaterial(context, ref, item),
                                         ),
+                                        const SizedBox(width: 2),
+                                        const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: AppColors.primary),
                                       ],
                                     ),
-                                  ),
-                                  IconButton(
-                                    icon: Icon(
-                                      isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
-                                      size: 19,
-                                      color: isBookmarked ? AppColors.primary : Colors.grey,
-                                    ),
-                                    tooltip: isBookmarked ? 'Remove Bookmark' : 'Save Bookmark',
-                                    splashRadius: 16,
-                                    onPressed: () async {
-                                      final nowBookmarked = await notifier.toggleBookmark(item.id);
-                                      if (context.mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              nowBookmarked
-                                                  ? 'Saved "${item.title}" to Bookmarks'
-                                                  : 'Removed from Bookmarks',
-                                            ),
-                                            duration: const Duration(seconds: 1),
-                                            behavior: SnackBarBehavior.floating,
-                                          ),
-                                        );
-                                      }
-                                    },
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete_outline, size: 18, color: Colors.grey),
-                                    tooltip: 'Delete Material',
-                                    splashRadius: 16,
-                                    onPressed: () => _confirmDeleteMaterial(context, ref, item),
-                                  ),
-                                  const Icon(Icons.arrow_forward_ios_rounded, size: 13, color: AppColors.primary),
-                                ],
-                              ),
+                                  ],
+                                ),
                               if (item.summary.isNotEmpty) ...[
                                 const SizedBox(height: 10),
                                 Text(

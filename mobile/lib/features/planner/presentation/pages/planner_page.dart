@@ -257,8 +257,8 @@ class PlannerPage extends ConsumerWidget {
     final isTomorrow = _isTomorrow(item);
 
     return GlassCard(
-      borderColor: AppColors.accent.withValues(alpha: 0.6),
-      padding: const EdgeInsets.all(16),
+      borderColor: AppColors.accent.withValues(alpha: 0.5),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -291,7 +291,7 @@ class PlannerPage extends ConsumerWidget {
               ),
               const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                 decoration: BoxDecoration(
                   color: AppColors.success.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(6),
@@ -312,7 +312,7 @@ class PlannerPage extends ConsumerWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: 4),
+              const SizedBox(width: 6),
               IconButton(
                 icon: const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.error),
                 padding: EdgeInsets.zero,
@@ -321,12 +321,12 @@ class PlannerPage extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 5),
           Text(
             cleanTitle,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+            style: const TextStyle(fontSize: 15.5, fontWeight: FontWeight.w900),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Wrap(
             spacing: 8,
             runSpacing: 6,
@@ -403,7 +403,7 @@ class PlannerPage extends ConsumerWidget {
 
     return GlassCard(
       borderColor: AppColors.primary.withValues(alpha: 0.3),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -461,12 +461,12 @@ class PlannerPage extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 5),
           Text(
             item.subject,
             style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 5),
           Row(
             children: [
               const Icon(Icons.access_time_rounded, size: 14, color: AppColors.primary),
@@ -567,8 +567,8 @@ class PlannerPage extends ConsumerWidget {
 
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(top: 10),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
       decoration: BoxDecoration(
         color: isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle,
         borderRadius: BorderRadius.circular(12),
