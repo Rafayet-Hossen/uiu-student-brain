@@ -606,6 +606,97 @@ class _CommunityPostCardState extends ConsumerState<_CommunityPostCard> {
                   ),
                 ),
               ),
+              Builder(
+                builder: (context) {
+                  final authState = ref.watch(authProvider);
+                  final currentUserId = authState.user?.id;
+                  final currentUserName = (authState.user?.fullName ?? authState.user?.email ?? '').trim().toLowerCase();
+                  final isSelf = (post.authorId != null && post.authorId == currentUserId) ||
+                      (currentUserName.isNotEmpty && post.authorName.trim().toLowerCase() == currentUserName);
+
+                  if (!isSelf) return const SizedBox.shrink();
+
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(width: 4),
+                      PopupMenuButton<String>(
+                        icon: Icon(
+                          Icons.more_vert_rounded,
+                          size: 18,
+                          color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                        ),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        onSelected: (val) {
+                          if (val == 'edit') {
+                            showDialog(
+                              context: context,
+                              builder: (ctx) => _CreateDiscussionDialog(postToEdit: widget.post),
+                            );
+                          } else if (val == 'delete') {
+                            showDialog(
+                              context: context,
+                              builder: (dCtx) => AlertDialog(
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                title: const Text('Delete Post?', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+                                content: Text('Are you sure you want to delete "${widget.post.title}"?'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(dCtx),
+                                    child: const Text('Cancel'),
+                                  ),
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.error,
+                                      foregroundColor: Colors.white,
+                                    ),
+                                    onPressed: () async {
+                                      Navigator.pop(dCtx);
+                                      await ref.read(communityProvider.notifier).deletePost(widget.post.id);
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Discussion post deleted.'),
+                                            backgroundColor: AppColors.error,
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    child: const Text('Delete'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                        },
+                        itemBuilder: (ctx) => [
+                          const PopupMenuItem(
+                            value: 'edit',
+                            child: Row(
+                              children: [
+                                Icon(Icons.edit_outlined, size: 16),
+                                SizedBox(width: 8),
+                                Text('Edit Post', style: TextStyle(fontSize: 13)),
+                              ],
+                            ),
+                          ),
+                          const PopupMenuItem(
+                            value: 'delete',
+                            child: Row(
+                              children: [
+                                Icon(Icons.delete_outline_rounded, size: 16, color: AppColors.error),
+                                SizedBox(width: 8),
+                                Text('Delete Post', style: TextStyle(fontSize: 13, color: AppColors.error)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  );
+                },
+              ),
             ],
           ),
           const SizedBox(height: 10),
@@ -1060,11 +1151,14 @@ class _CommunityEventCard extends ConsumerWidget {
 
     return GlassCard(
       padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
+        clipBehavior: Clip.none,
         children: [
-          Row(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Visual Calendar Date Block
               Container(
@@ -1119,131 +1213,55 @@ class _CommunityEventCard extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Wrap(
-                            spacing: 6,
-                            runSpacing: 4,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  event.subject,
-                                  style: const TextStyle(
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.primary,
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-                                decoration: BoxDecoration(
-                                  color: isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle,
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(
-                                    color: isDark ? AppColors.borderDark : AppColors.borderLight,
-                                  ),
-                                ),
-                                child: Text(
-                                  event.eventType,
-                                  style: TextStyle(
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w700,
-                                    color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (isCreator)
-                          PopupMenuButton<String>(
-                            icon: Icon(
-                              Icons.more_vert_rounded,
-                              size: 18,
-                              color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                    Padding(
+                      padding: EdgeInsets.only(right: isCreator ? 28.0 : 0.0),
+                      child: Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6),
                             ),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                            onSelected: (val) {
-                              if (val == 'edit') {
-                                showDialog(
-                                  context: context,
-                                  builder: (ctx) => _CreateStudyEventDialog(eventToEdit: event),
-                                );
-                              } else if (val == 'delete') {
-                                showDialog(
-                                  context: context,
-                                  builder: (dCtx) => AlertDialog(
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                    title: const Text('Delete Study Event?', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
-                                    content: Text('Are you sure you want to delete "${event.title}"?'),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(dCtx),
-                                        child: const Text('Cancel'),
-                                      ),
-                                      ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: AppColors.error,
-                                          foregroundColor: Colors.white,
-                                        ),
-                                        onPressed: () async {
-                                          Navigator.pop(dCtx);
-                                          await ref.read(communityProvider.notifier).deleteEvent(event.id);
-                                          if (context.mounted) {
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              const SnackBar(
-                                                content: Text('Study Event deleted.'),
-                                                backgroundColor: AppColors.error,
-                                              ),
-                                            );
-                                          }
-                                        },
-                                        child: const Text('Delete'),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }
-                            },
-                            itemBuilder: (ctx) => [
-                              const PopupMenuItem(
-                                value: 'edit',
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.edit_outlined, size: 16),
-                                    SizedBox(width: 8),
-                                    Text('Edit Event', style: TextStyle(fontSize: 13)),
-                                  ],
-                                ),
+                            child: Text(
+                              event.subject,
+                              style: const TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.primary,
                               ),
-                              const PopupMenuItem(
-                                value: 'delete',
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.delete_outline_rounded, size: 16, color: AppColors.error),
-                                    SizedBox(width: 8),
-                                    Text('Delete Event', style: TextStyle(fontSize: 13, color: AppColors.error)),
-                                  ],
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
-                      ],
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                            decoration: BoxDecoration(
+                              color: isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                              ),
+                            ),
+                            child: Text(
+                              event.eventType,
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w700,
+                                color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 6),
-                    Text(
-                      event.title,
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                    Padding(
+                      padding: EdgeInsets.only(right: isCreator ? 26.0 : 0.0),
+                      child: Text(
+                        event.title,
+                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                      ),
                     ),
                     if (event.description.isNotEmpty) ...[
                       const SizedBox(height: 4),
@@ -1451,19 +1469,114 @@ class _CommunityEventCard extends ConsumerWidget {
           ),
         ],
       ),
-    );
+      if (isCreator)
+        Positioned(
+          top: -6,
+          right: -6,
+          child: PopupMenuButton<String>(
+            icon: Icon(
+              Icons.more_vert_rounded,
+              size: 20,
+              color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+            ),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            onSelected: (val) {
+              if (val == 'edit') {
+                showDialog(
+                  context: context,
+                  builder: (ctx) => _CreateStudyEventDialog(eventToEdit: event),
+                );
+              } else if (val == 'delete') {
+                showDialog(
+                  context: context,
+                  builder: (dCtx) => AlertDialog(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    title: const Text('Delete Study Event?', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+                    content: Text('Are you sure you want to delete "${event.title}"?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(dCtx),
+                        child: const Text('Cancel'),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.error,
+                          foregroundColor: Colors.white,
+                        ),
+                        onPressed: () async {
+                          Navigator.pop(dCtx);
+                          await ref.read(communityProvider.notifier).deleteEvent(event.id);
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Study Event deleted.'),
+                                backgroundColor: AppColors.error,
+                              ),
+                            );
+                          }
+                        },
+                        child: const Text('Delete'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            },
+            itemBuilder: (ctx) => [
+              const PopupMenuItem(
+                value: 'edit',
+                child: Row(
+                  children: [
+                    Icon(Icons.edit_outlined, size: 16),
+                    SizedBox(width: 8),
+                    Text('Edit Event', style: TextStyle(fontSize: 13)),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'delete',
+                child: Row(
+                  children: [
+                    Icon(Icons.delete_outline_rounded, size: 16, color: AppColors.error),
+                    SizedBox(width: 8),
+                    Text('Delete Event', style: TextStyle(fontSize: 13, color: AppColors.error)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+    ],
+  ),
+);
   }
 }
 
 /// Dynamic Start Academic Discussion Dialog with Category-Specific Fields
 class _CreateDiscussionDialog extends ConsumerStatefulWidget {
-  const _CreateDiscussionDialog();
+  final PostModel? postToEdit;
+  const _CreateDiscussionDialog({this.postToEdit});
 
   @override
   ConsumerState<_CreateDiscussionDialog> createState() => _CreateDiscussionDialogState();
 }
 
 class _CreateDiscussionDialogState extends ConsumerState<_CreateDiscussionDialog> {
+  @override
+  void initState() {
+    super.initState();
+    if (widget.postToEdit != null) {
+      final p = widget.postToEdit!;
+      _category = p.category;
+      _titleCtrl.text = p.title;
+      _contentCtrl.text = p.content;
+      if (p.codeSnippet != null) _codeSnippetCtrl.text = p.codeSnippet!;
+      if (p.codeLanguage != null) _codeLanguage = p.codeLanguage!;
+      if (p.vscodeLiveshareUrl != null) _vsCodeUrlCtrl.text = p.vscodeLiveshareUrl!;
+    }
+  }
+
   String _category = 'General';
 
   // Common / General
@@ -1677,9 +1790,9 @@ class _CreateDiscussionDialogState extends ConsumerState<_CreateDiscussionDialog
                         child: const Icon(Icons.forum_rounded, color: AppColors.primary, size: 20),
                       ),
                       const SizedBox(width: 10),
-                      const Text(
-                        'Start Academic Discussion',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                      Text(
+                        widget.postToEdit != null ? 'Edit Discussion Post' : 'Start Academic Discussion',
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
                       ),
                     ],
                   ),

@@ -980,12 +980,17 @@ class _GradesPageState extends ConsumerState<GradesPage> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    sim.selectedCount > 0
-                                        ? 'Simulation: ${sim.selectedCount} retake${sim.selectedCount > 1 ? "s" : ""} active'
-                                        : 'Simulation: Pick courses below to see CGPA boost',
-                                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+                                  Expanded(
+                                    child: Text(
+                                      sim.selectedCount > 0
+                                          ? 'Simulation: ${sim.selectedCount} retake${sim.selectedCount > 1 ? "s" : ""} active'
+                                          : 'Simulation: Select retakes below',
+                                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
+                                  const SizedBox(width: 8),
                                   Text(
                                     '${sim.gapClosedPercent}% Goal Reached',
                                     style: TextStyle(

@@ -22,6 +22,15 @@ class CommunityRepository {
     return PostModel.fromJson(response.data as Map<String, dynamic>);
   }
 
+  Future<PostModel> updatePost(int postId, Map<String, dynamic> data) async {
+    final response = await _dioClient.patch(ApiEndpoints.postDetail(postId), data: data);
+    return PostModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<void> deletePost(int postId) async {
+    await _dioClient.delete(ApiEndpoints.postDetail(postId));
+  }
+
   Future<void> reactToPost(int id) async {
     await _dioClient.post(ApiEndpoints.postReact(id));
   }

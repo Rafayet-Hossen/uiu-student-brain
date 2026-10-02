@@ -151,18 +151,19 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                 tooltip: 'Notifications',
                 onPressed: () => NotificationsSheet.show(context),
               ),
-              Positioned(
-                top: 13,
-                right: 13,
-                child: Container(
-                  width: 7,
-                  height: 7,
-                  decoration: const BoxDecoration(
-                    color: AppColors.primary,
-                    shape: BoxShape.circle,
+              if (dashState.unreadNotifications > 0)
+                Positioned(
+                  top: 13,
+                  right: 13,
+                  child: Container(
+                    width: 7,
+                    height: 7,
+                    decoration: const BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
           IconButton(
@@ -457,46 +458,113 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                     )
                   else
                     ...dashState.upcomingClasses.map((item) {
+                      final rawSubject = item['subject']?.toString() ?? 'Course Class';
+                      final isEvent = rawSubject.toLowerCase().startsWith('[event]') || item['type'] == 'event';
+                      final title = isEvent ? rawSubject.replaceFirst(RegExp(r'^\[Event\]\s*', caseSensitive: false), '') : rawSubject;
+                      final rawTime = item['start_time']?.toString() ?? '';
+                      final formattedTime = rawTime.length >= 5 ? rawTime.substring(0, 5) : rawTime;
+
+                      final accentColor = isEvent ? AppColors.accent : AppColors.primary;
+                      final icon = isEvent ? Icons.groups_rounded : Icons.school_rounded;
+                      final badgeText = isEvent ? 'STUDY EVENT' : 'ACADEMIC CLASS';
+                      final subtitleText = isEvent
+                          ? 'Venue: ${item['room'] ?? item['location'] ?? 'Campus / Online Meetup'}'
+                          : 'Room: ${item['room'] ?? 'TBA'} • ${item['teacher'] ?? 'Faculty'}';
+
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 8.0),
                         child: GlassCard(
+                          onTap: () {
+                            if (isEvent) {
+                              context.go('/community');
+                            } else {
+                              context.go('/planner');
+                            }
+                          },
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                           child: Row(
                             children: [
                               Container(
-                                width: 4,
-                                height: 36,
+                                width: 40,
+                                height: 40,
                                 decoration: BoxDecoration(
-                                  color: AppColors.primary,
-                                  borderRadius: BorderRadius.circular(2),
+                                  color: accentColor.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: accentColor.withValues(alpha: 0.25),
+                                  ),
                                 ),
+                                child: Icon(icon, color: accentColor, size: 20),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
+                                    Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: accentColor.withValues(alpha: 0.15),
+                                            borderRadius: BorderRadius.circular(4),
+                                          ),
+                                          child: Text(
+                                            badgeText,
+                                            style: TextStyle(
+                                              fontSize: 9.5,
+                                              fontWeight: FontWeight.w800,
+                                              color: accentColor,
+                                              letterSpacing: 0.3,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4),
                                     Text(
-                                      item['subject'] ?? 'Course Class',
+                                      title,
                                       style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      'Room: ${item['room'] ?? 'TBA'} | ${item['teacher'] ?? 'Faculty'}',
+                                      subtitleText,
                                       style: TextStyle(
                                         fontSize: 11,
                                         color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
                                       ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ],
                                 ),
                               ),
-                              Text(
-                                '${item['start_time'] ?? ''}',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.primary,
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.access_time_rounded, size: 12, color: accentColor),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      formattedTime,
+                                      style: TextStyle(
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.w800,
+                                        color: accentColor,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],

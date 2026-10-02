@@ -147,6 +147,59 @@ class CommunityNotifier extends StateNotifier<CommunityState> {
     }
   }
 
+  Future<bool> updatePost(
+    int postId, {
+    required String title,
+    required String content,
+    required String category,
+    String? codeSnippet,
+    String? codeLanguage,
+    String? vscodeLiveshareUrl,
+  }) async {
+    try {
+      final updated = await _repository.updatePost(postId, {
+        'title': title,
+        'content': content,
+        'category': category,
+        if (codeSnippet != null) 'code_snippet': codeSnippet,
+        if (codeLanguage != null) 'code_language': codeLanguage,
+        if (vscodeLiveshareUrl != null) 'vscode_liveshare_url': vscodeLiveshareUrl,
+      });
+      state = state.copyWith(
+        posts: state.posts.map((p) => p.id == postId ? updated : p).toList(),
+      );
+      return true;
+    } catch (_) {
+      // Optimistic local update
+      state = state.copyWith(
+        posts: state.posts.map((p) {
+          if (p.id == postId) {
+            return p.copyWith(
+              title: title,
+              content: content,
+              category: category,
+              codeSnippet: codeSnippet ?? p.codeSnippet,
+              codeLanguage: codeLanguage ?? p.codeLanguage,
+              vscodeLiveshareUrl: vscodeLiveshareUrl ?? p.vscodeLiveshareUrl,
+            );
+          }
+          return p;
+        }).toList(),
+      );
+      return true;
+    }
+  }
+
+  Future<bool> deletePost(int postId) async {
+    try {
+      await _repository.deletePost(postId);
+    } catch (_) {}
+    state = state.copyWith(
+      posts: state.posts.where((p) => p.id != postId).toList(),
+    );
+    return true;
+  }
+
   Future<void> toggleReaction(int postId) async {
     try {
       await _repository.reactToPost(postId);

@@ -15,6 +15,7 @@ class DashboardState {
   final List<Map<String, dynamic>> recentMaterials;
   final List<Map<String, dynamic>> leaderboardTopThree;
   final String aiRecommendation;
+  final int unreadNotifications;
   final bool isLoading;
   final String? error;
 
@@ -30,6 +31,7 @@ class DashboardState {
     this.recentMaterials = const [],
     this.leaderboardTopThree = const [],
     this.aiRecommendation = 'Maintain your study consistency. Review weak topics from recent quizzes to maximize retention.',
+    this.unreadNotifications = 0,
     this.isLoading = false,
     this.error,
   });
@@ -46,6 +48,7 @@ class DashboardState {
     List<Map<String, dynamic>>? recentMaterials,
     List<Map<String, dynamic>>? leaderboardTopThree,
     String? aiRecommendation,
+    int? unreadNotifications,
     bool? isLoading,
     String? error,
   }) {
@@ -61,6 +64,7 @@ class DashboardState {
       recentMaterials: recentMaterials ?? this.recentMaterials,
       leaderboardTopThree: leaderboardTopThree ?? this.leaderboardTopThree,
       aiRecommendation: aiRecommendation ?? this.aiRecommendation,
+      unreadNotifications: unreadNotifications ?? this.unreadNotifications,
       isLoading: isLoading ?? this.isLoading,
       error: error,
     );
@@ -87,6 +91,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     List<Map<String, dynamic>> classes = state.upcomingClasses;
     List<Map<String, dynamic>> materials = state.recentMaterials;
     List<Map<String, dynamic>> topThree = state.leaderboardTopThree;
+    int unreadNotifs = state.unreadNotifications;
 
     try {
       await Future.wait([
@@ -166,6 +171,17 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
             }
           } catch (_) {}
         }(),
+
+        // 7. Unread Notifications Count
+        () async {
+          try {
+            final notifRes = await _dioClient.get(ApiEndpoints.notifications);
+            if (notifRes.data is Map && notifRes.data['notifications'] is List) {
+              final list = notifRes.data['notifications'] as List;
+              unreadNotifs = list.where((n) => n is Map && n['is_read'] != true).length;
+            }
+          } catch (_) {}
+        }(),
       ]);
 
       state = state.copyWith(
@@ -179,6 +195,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
         upcomingClasses: classes,
         recentMaterials: materials,
         leaderboardTopThree: topThree,
+        unreadNotifications: unreadNotifs,
         isLoading: false,
         error: null,
       );
@@ -188,6 +205,14 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
         error: e.toString(),
       );
     }
+  }
+
+  void setUnreadNotifications(int count) {
+    state = state.copyWith(unreadNotifications: count);
+  }
+
+  void clearUnreadNotifications() {
+    state = state.copyWith(unreadNotifications: 0);
   }
 }
 

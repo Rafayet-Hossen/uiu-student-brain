@@ -6,6 +6,7 @@ import '../../../../core/constants/api_endpoints.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/student_brain_loader.dart';
 import '../../../planner/presentation/providers/planner_provider.dart';
+import '../providers/dashboard_provider.dart';
 
 class NotificationsSheet extends ConsumerStatefulWidget {
   const NotificationsSheet({super.key});
@@ -110,6 +111,7 @@ class _NotificationsSheetState extends ConsumerState<NotificationsSheet> {
       }
 
       final unread = allList.where((n) => n['is_read'] != true).length;
+      ref.read(dashboardProvider.notifier).setUnreadNotifications(unread);
 
       if (mounted) {
         setState(() {
@@ -145,6 +147,8 @@ class _NotificationsSheetState extends ConsumerState<NotificationsSheet> {
     try {
       await dio.post(ApiEndpoints.notifications, data: {'mark_all': true});
     } catch (_) {}
+
+    ref.read(dashboardProvider.notifier).clearUnreadNotifications();
 
     if (mounted) {
       setState(() {
@@ -321,6 +325,7 @@ class _NotificationsSheetState extends ConsumerState<NotificationsSheet> {
                                 item['is_read'] = true;
                                 _unreadCount = _notifications.where((n) => n['is_read'] != true).length;
                               });
+                              ref.read(dashboardProvider.notifier).setUnreadNotifications(_unreadCount);
                               if (link != null && link.isNotEmpty) {
                                 Navigator.pop(context);
                                 if (link.startsWith('/planner')) {

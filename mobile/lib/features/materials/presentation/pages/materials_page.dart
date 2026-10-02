@@ -11,7 +11,7 @@ import '../../../../core/widgets/responsive.dart';
 import '../../../../core/widgets/student_brain_loader.dart';
 import '../providers/materials_provider.dart';
 
-class MaterialsPage extends ConsumerWidget {
+class MaterialsPage extends ConsumerStatefulWidget {
   const MaterialsPage({super.key});
 
   static const List<String> categories = [
@@ -23,7 +23,43 @@ class MaterialsPage extends ConsumerWidget {
   ];
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MaterialsPage> createState() => _MaterialsPageState();
+}
+
+class _MaterialsPageState extends ConsumerState<MaterialsPage> with SingleTickerProviderStateMixin {
+  late final AnimationController _animController;
+  late final Animation<double> _fadeAnimation;
+  late final Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeOut,
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.02),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeOutCubic,
+    ));
+    _animController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final matState = ref.watch(materialsProvider);
     final notifier = ref.read(materialsProvider.notifier);
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -38,10 +74,14 @@ class MaterialsPage extends ConsumerWidget {
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () => notifier.loadMaterialsData(),
-        color: AppColors.primary,
-        child: SingleChildScrollView(
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: SlideTransition(
+          position: _slideAnimation,
+          child: RefreshIndicator(
+            onRefresh: () => notifier.loadMaterialsData(),
+            color: AppColors.primary,
+            child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: Responsive.padding(context),
           child: Center(
@@ -78,7 +118,7 @@ class MaterialsPage extends ConsumerWidget {
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
-                      children: categories.map((cat) {
+                      children: MaterialsPage.categories.map((cat) {
                         final isSelected = matState.selectedCategory == cat;
                         return Padding(
                           padding: const EdgeInsets.only(right: 8.0),
@@ -362,28 +402,37 @@ class MaterialsPage extends ConsumerWidget {
                         },
                       ),
                     ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 12),
 
                   // 4. Materials List Header with Filter Clear Option & Upload Material Button
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.menu_book_rounded, size: 16, color: AppColors.primary),
+                      ),
+                      const SizedBox(width: 8),
                       const Expanded(
                         child: Text(
                           'Course Documents & Cheat Sheets',
-                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                          style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const SizedBox(width: 8),
                       ElevatedButton.icon(
-                        icon: const Icon(Icons.upload_file_rounded, size: 14),
-                        label: const Text('Upload Material', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold)),
+                        icon: const Icon(Icons.upload_file_rounded, size: 13),
+                        label: const Text('Upload', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           elevation: 0,
                         ),
                         onPressed: () => _showUploadMaterialDialog(context, ref),
@@ -394,19 +443,19 @@ class MaterialsPage extends ConsumerWidget {
                           onTap: () => notifier.selectCourse(null),
                           borderRadius: BorderRadius.circular(6),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
                             decoration: BoxDecoration(
-                              color: AppColors.error.withValues(alpha: 0.1),
+                              color: AppColors.error.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.close_rounded, size: 12, color: AppColors.error),
-                                SizedBox(width: 4),
+                                Icon(Icons.close_rounded, size: 11, color: AppColors.error),
+                                SizedBox(width: 3),
                                 Text(
                                   'Clear',
-                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.error),
+                                  style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: AppColors.error),
                                 ),
                               ],
                             ),
@@ -520,7 +569,9 @@ class MaterialsPage extends ConsumerWidget {
           ),
         ),
       ),
-    );
+    ),
+  ),
+);
   }
 
   void _showAddSemesterDialog(BuildContext context, WidgetRef ref) {
@@ -896,7 +947,8 @@ class MaterialsPage extends ConsumerWidget {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisSize: isFullWidth ? MainAxisSize.min : MainAxisSize.max,
+          mainAxisAlignment: isFullWidth ? MainAxisAlignment.start : MainAxisAlignment.spaceBetween,
           children: [
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1005,6 +1057,7 @@ class MaterialsPage extends ConsumerWidget {
                 ),
               ],
             ),
+            if (isFullWidth) const SizedBox(height: 10),
             Row(
               children: [
                 InkWell(
