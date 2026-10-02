@@ -9,15 +9,49 @@ import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/responsive.dart';
 import '../../../../core/widgets/student_brain_loader.dart';
 import '../../../../core/widgets/user_avatar.dart';
+import '../../../../core/config/providers.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../auth/presentation/widgets/mandatory_onboarding_dialog.dart';
 import '../providers/dashboard_provider.dart';
 import '../widgets/notifications_sheet.dart';
 
-class DashboardPage extends ConsumerWidget {
+class DashboardPage extends ConsumerStatefulWidget {
   const DashboardPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DashboardPage> createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends ConsumerState<DashboardPage> {
+  bool _hasCheckedOnboarding = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAcademicOnboarding();
+    });
+  }
+
+  void _checkAcademicOnboarding() {
+    if (_hasCheckedOnboarding || !mounted) return;
+    final prefs = ref.read(sharedPreferencesProvider);
+    final user = ref.read(authProvider).user;
+    final isOnboardedPref = prefs.getBool('academic_onboarding_completed') ?? false;
+    final isOnboardedUser = user?.isOnboarded ?? false;
+
+    if (!isOnboardedPref && !isOnboardedUser && user != null) {
+      _hasCheckedOnboarding = true;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const MandatoryOnboardingDialog(),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final user = ref.watch(authProvider).user;
     final dashState = ref.watch(dashboardProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;

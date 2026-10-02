@@ -1,11 +1,11 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/data/courses_catalog.dart';
 import '../../../../core/widgets/app_button.dart';
-import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/responsive.dart';
 import '../providers/grades_provider.dart';
@@ -33,30 +33,6 @@ class GradesPage extends ConsumerStatefulWidget {
 }
 
 class _GradesPageState extends ConsumerState<GradesPage> {
-  final _formKey = GlobalKey<FormState>();
-  late TextEditingController _totalCreditsCtrl;
-  late TextEditingController _completedCreditsCtrl;
-  late TextEditingController _currentGpaCtrl;
-  late TextEditingController _targetGpaCtrl;
-  bool _isEditing = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _totalCreditsCtrl = TextEditingController(text: '140.0');
-    _completedCreditsCtrl = TextEditingController(text: '45.0');
-    _currentGpaCtrl = TextEditingController(text: '3.00');
-    _targetGpaCtrl = TextEditingController(text: '3.50');
-  }
-
-  @override
-  void dispose() {
-    _totalCreditsCtrl.dispose();
-    _completedCreditsCtrl.dispose();
-    _currentGpaCtrl.dispose();
-    _targetGpaCtrl.dispose();
-    super.dispose();
-  }
 
   Widget _buildFormattedMarkdownText(
     String rawText, {
@@ -112,40 +88,7 @@ class _GradesPageState extends ConsumerState<GradesPage> {
     );
   }
 
-  void _syncControllers(GradesState gradesState) {
-    if (gradesState.plan != null && !_isEditing) {
-      _totalCreditsCtrl.text = gradesState.plan!.totalCredits.toString();
-      _completedCreditsCtrl.text =
-          gradesState.plan!.completedCredits.toString();
-      _currentGpaCtrl.text = gradesState.plan!.currentGpa.toString();
-      _targetGpaCtrl.text = gradesState.plan!.targetGpa.toString();
-    }
-  }
 
-  Future<void> _handleSavePlan() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    final tCr = double.tryParse(_totalCreditsCtrl.text) ?? 140.0;
-    final cCr = double.tryParse(_completedCreditsCtrl.text) ?? 45.0;
-    final cGpa = double.tryParse(_currentGpaCtrl.text) ?? 3.00;
-    final tGpa = double.tryParse(_targetGpaCtrl.text) ?? 3.50;
-
-    final success = await ref.read(gradesProvider.notifier).updatePlan(
-          totalCredits: tCr,
-          completedCredits: cCr,
-          currentGpa: cGpa,
-          targetGpa: tGpa,
-        );
-
-    if (success) {
-      setState(() => _isEditing = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Degree targets updated successfully')),
-        );
-      }
-    }
-  }
 
   // ==========================================
   // ADD GRADE MANUALLY DIALOG WITH AUTOCOMPLETE
@@ -736,7 +679,6 @@ class _GradesPageState extends ConsumerState<GradesPage> {
   @override
   Widget build(BuildContext context) {
     final gradesState = ref.watch(gradesProvider);
-    _syncControllers(gradesState);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final plan = gradesState.plan;
@@ -756,11 +698,9 @@ class _GradesPageState extends ConsumerState<GradesPage> {
         title: const Text('Grade & GPA Planner'),
         actions: [
           IconButton(
-            tooltip: 'Edit GPA Targets',
-            icon: Icon(_isEditing ? Icons.close : Icons.edit_outlined),
-            onPressed: () {
-              setState(() => _isEditing = !_isEditing);
-            },
+            tooltip: 'Degree Targets & Profile',
+            icon: const Icon(Icons.tune_rounded),
+            onPressed: () => context.push('/profile'),
           ),
         ],
       ),
@@ -1582,89 +1522,7 @@ class _GradesPageState extends ConsumerState<GradesPage> {
                   ),
                   const SizedBox(height: 16),
 
-                  // ==========================================
-                  // 8. DEGREE TARGETS CONFIGURATION CARD
-                  // ==========================================
-                  GlassCard(
-                    padding: const EdgeInsets.all(20),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'Degree Target Configuration',
-                                style: TextStyle(
-                                    fontSize: 15, fontWeight: FontWeight.w800),
-                              ),
-                              if (!_isEditing)
-                                TextButton.icon(
-                                  icon: const Icon(Icons.edit, size: 15),
-                                  label: const Text('Edit'),
-                                  onPressed: () =>
-                                      setState(() => _isEditing = true),
-                                ),
-                            ],
-                          ),
-                          const SizedBox(height: 14),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: AppTextField(
-                                  label: 'Total Degree Credits',
-                                  controller: _totalCreditsCtrl,
-                                  keyboardType: TextInputType.number,
-                                  readOnly: !_isEditing,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: AppTextField(
-                                  label: 'Completed Credits',
-                                  controller: _completedCreditsCtrl,
-                                  keyboardType: TextInputType.number,
-                                  readOnly: !_isEditing,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: AppTextField(
-                                  label: 'Current CGPA',
-                                  controller: _currentGpaCtrl,
-                                  keyboardType: TextInputType.number,
-                                  readOnly: !_isEditing,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: AppTextField(
-                                  label: 'Target Graduation GPA',
-                                  controller: _targetGpaCtrl,
-                                  keyboardType: TextInputType.number,
-                                  readOnly: !_isEditing,
-                                ),
-                              ),
-                            ],
-                          ),
-                          if (_isEditing) ...[
-                            const SizedBox(height: 10),
-                            AppButton(
-                              label: 'Save Configuration',
-                              onPressed: _handleSavePlan,
-                              isLoading: gradesState.isLoading,
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),

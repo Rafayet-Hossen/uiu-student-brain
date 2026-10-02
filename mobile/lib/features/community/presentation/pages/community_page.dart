@@ -69,11 +69,6 @@ class _CommunityPageState extends ConsumerState<CommunityPage>
             tooltip: 'Leaderboard',
             onPressed: () => context.push('/community/leaderboard'),
           ),
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Refresh',
-            onPressed: () => notifier.loadCommunityData(),
-          ),
           Padding(
             padding: const EdgeInsets.only(right: 12.0, left: 4.0),
             child: InkWell(

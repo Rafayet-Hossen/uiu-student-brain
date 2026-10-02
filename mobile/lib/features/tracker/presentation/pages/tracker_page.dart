@@ -309,7 +309,7 @@ class TrackerPage extends ConsumerWidget {
                                   const SizedBox(width: 5),
                                   Expanded(
                                     child: Text(
-                                      '$displayDate$displayTime',
+                                      '$displayDate • $displayTime',
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
@@ -319,18 +319,10 @@ class TrackerPage extends ConsumerWidget {
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-
-                              // Duration and stats row
-                              Wrap(
-                                spacing: 8,
-                                runSpacing: 6,
-                                crossAxisAlignment: WrapCrossAlignment.center,
-                                children: [
+                                  const SizedBox(width: 8),
+                                  // Right-aligned focus duration badge
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                                     decoration: BoxDecoration(
                                       color: isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle,
                                       borderRadius: BorderRadius.circular(6),
@@ -341,36 +333,38 @@ class TrackerPage extends ConsumerWidget {
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Icon(Icons.hourglass_bottom_rounded, size: 12, color: AppColors.primary),
+                                        const Icon(Icons.hourglass_bottom_rounded, size: 11, color: AppColors.primary),
                                         const SizedBox(width: 4),
                                         Text(
                                           '${session.totalMinutes} min focus',
-                                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+                                          style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700),
                                         ),
                                       ],
                                     ),
                                   ),
-                                  if (session.quizTaken && session.quizScore != null)
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.accent.withValues(alpha: 0.15),
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          const Icon(Icons.stars_rounded, size: 12, color: AppColors.accent),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            'Diagnostic: ${session.quizScore!.toInt()}%',
-                                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.accent),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
                                 ],
                               ),
+                              if (session.quizTaken && session.quizScore != null) ...[
+                                const SizedBox(height: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.accent.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.stars_rounded, size: 12, color: AppColors.accent),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'Diagnostic: ${session.quizScore!.toInt()}%',
+                                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.accent),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
 
                               if (session.courseTitle != null || session.materialTitle != null) ...[
                                 const SizedBox(height: 6),

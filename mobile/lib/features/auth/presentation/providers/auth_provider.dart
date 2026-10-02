@@ -139,6 +139,29 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } catch (_) {}
   }
 
+  Future<bool> updateProfile(Map<String, dynamic> data) async {
+    try {
+      final user = await _repository.updateProfile(data);
+      state = state.copyWith(user: user);
+      return true;
+    } catch (_) {
+      if (state.user != null) {
+        final updated = state.user!.copyWith(
+          fullName: data['full_name'] as String?,
+          department: data['department'] as String?,
+          currentTrimester: data['current_trimester'] as String?,
+          currentGpa: (data['current_gpa'] != null) ? double.tryParse('${data['current_gpa']}') : null,
+          targetGpa: (data['target_gpa'] != null) ? double.tryParse('${data['target_gpa']}') : null,
+          targetDailyMinutes: data['target_daily_minutes'] as int?,
+          isOnboarded: data['is_onboarded'] as bool? ?? true,
+        );
+        state = state.copyWith(user: updated);
+        return true;
+      }
+      return false;
+    }
+  }
+
   void restoreUser(UserModel user) {
     state = state.copyWith(user: user, isAuthenticated: true);
   }

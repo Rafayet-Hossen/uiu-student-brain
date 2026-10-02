@@ -6,6 +6,11 @@ class UserModel {
   final String? institution;
   final String? studentId;
   final String? avatar;
+  final bool isOnboarded;
+  final String? currentTrimester;
+  final double? currentGpa;
+  final double? targetGpa;
+  final int? targetDailyMinutes;
 
   UserModel({
     required this.id,
@@ -15,6 +20,11 @@ class UserModel {
     this.institution,
     this.studentId,
     this.avatar,
+    this.isOnboarded = false,
+    this.currentTrimester,
+    this.currentGpa,
+    this.targetGpa,
+    this.targetDailyMinutes,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -26,6 +36,11 @@ class UserModel {
       institution: json['institution'] as String?,
       studentId: json['student_id'] as String?,
       avatar: json['avatar'] as String? ?? json['profile_image'] as String?,
+      isOnboarded: json['is_onboarded'] as bool? ?? false,
+      currentTrimester: json['current_trimester'] as String?,
+      currentGpa: (json['current_gpa'] != null) ? double.tryParse('${json['current_gpa']}') : null,
+      targetGpa: (json['target_gpa'] != null) ? double.tryParse('${json['target_gpa']}') : null,
+      targetDailyMinutes: json['target_daily_minutes'] as int?,
     );
   }
 
@@ -38,6 +53,41 @@ class UserModel {
       'institution': institution,
       'student_id': studentId,
       'avatar': avatar,
+      'is_onboarded': isOnboarded,
+      'current_trimester': currentTrimester,
+      'current_gpa': currentGpa,
+      'target_gpa': targetGpa,
+      'target_daily_minutes': targetDailyMinutes,
     };
+  }
+
+  UserModel copyWith({
+    int? id,
+    String? email,
+    String? fullName,
+    String? department,
+    String? institution,
+    String? studentId,
+    String? avatar,
+    bool? isOnboarded,
+    String? currentTrimester,
+    double? currentGpa,
+    double? targetGpa,
+    int? targetDailyMinutes,
+  }) {
+    return UserModel(
+      id: id ?? this.id,
+      email: email ?? this.email,
+      fullName: fullName ?? this.fullName,
+      department: department ?? this.department,
+      institution: institution ?? this.institution,
+      studentId: studentId ?? this.studentId,
+      avatar: avatar ?? this.avatar,
+      isOnboarded: isOnboarded ?? this.isOnboarded,
+      currentTrimester: currentTrimester ?? this.currentTrimester,
+      currentGpa: currentGpa ?? this.currentGpa,
+      targetGpa: targetGpa ?? this.targetGpa,
+      targetDailyMinutes: targetDailyMinutes ?? this.targetDailyMinutes,
+    );
   }
 }

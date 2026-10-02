@@ -8,6 +8,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/providers.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/widgets/app_button.dart';
+import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/responsive.dart';
 import '../../../../core/widgets/user_avatar.dart';
@@ -309,6 +311,201 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
     );
   }
 
+  void _showEditDegreeTargetsModal({
+    required BuildContext context,
+    required double totalCredits,
+    required double completedCredits,
+    required double currentGpa,
+    required double targetGpa,
+    required String trimester,
+    required int dailyGoalMinutes,
+  }) {
+    final formKey = GlobalKey<FormState>();
+    final totalCrCtrl = TextEditingController(text: totalCredits.toStringAsFixed(1).replaceAll('.0', ''));
+    final compCrCtrl = TextEditingController(text: completedCredits.toStringAsFixed(1).replaceAll('.0', ''));
+    final curGpaCtrl = TextEditingController(text: currentGpa.toStringAsFixed(2));
+    final tarGpaCtrl = TextEditingController(text: targetGpa.toStringAsFixed(2));
+    final trimCtrl = TextEditingController(text: trimester);
+    final dailyCtrl = TextEditingController(text: dailyGoalMinutes.toString());
+    bool isSaving = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (bCtx) => StatefulBuilder(
+        builder: (context, setModalState) {
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF161828) : Colors.white,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+              child: SingleChildScrollView(
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: const [
+                              Icon(Icons.tune_rounded, color: AppColors.primary, size: 22),
+                              SizedBox(width: 8),
+                              Text(
+                                'Degree Target Configuration',
+                                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+                              ),
+                            ],
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close_rounded, size: 20),
+                            onPressed: () => Navigator.pop(bCtx),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Tune your degree roadmap, GPA graduation ambitions, and daily study commitment.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: AppTextField(
+                              label: 'Total Degree Credits',
+                              controller: totalCrCtrl,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: AppTextField(
+                              label: 'Completed Credits',
+                              controller: compCrCtrl,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: AppTextField(
+                              label: 'Current CGPA',
+                              controller: curGpaCtrl,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: AppTextField(
+                              label: 'Target CGPA',
+                              controller: tarGpaCtrl,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: AppTextField(
+                              label: 'Current Trimester',
+                              controller: trimCtrl,
+                              hint: 'e.g. 5th Trimester',
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: AppTextField(
+                              label: 'Daily Focus (min)',
+                              controller: dailyCtrl,
+                              keyboardType: TextInputType.number,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+
+                      AppButton(
+                        label: 'Save Configuration',
+                        isLoading: isSaving,
+                        onPressed: isSaving
+                            ? null
+                            : () async {
+                                final totalCr = double.tryParse(totalCrCtrl.text.trim()) ?? totalCredits;
+                                final compCr = double.tryParse(compCrCtrl.text.trim()) ?? completedCredits;
+                                final cGpa = double.tryParse(curGpaCtrl.text.trim()) ?? currentGpa;
+                                final tGpa = double.tryParse(tarGpaCtrl.text.trim()) ?? targetGpa;
+                                final trim = trimCtrl.text.trim();
+                                final daily = int.tryParse(dailyCtrl.text.trim()) ?? dailyGoalMinutes;
+
+                                setModalState(() => isSaving = true);
+
+                                final prefs = ref.read(sharedPreferencesProvider);
+                                await prefs.setDouble('academic_total_credits', totalCr);
+                                await prefs.setDouble('academic_completed_credits', compCr);
+                                await prefs.setDouble('academic_current_gpa', cGpa);
+                                await prefs.setDouble('academic_target_gpa', tGpa);
+                                await prefs.setString('academic_trimester', trim);
+                                await prefs.setInt('academic_target_daily_minutes', daily);
+
+                                // Update grades provider
+                                await ref.read(gradesProvider.notifier).updatePlan(
+                                  totalCredits: totalCr,
+                                  completedCredits: compCr,
+                                  currentGpa: cGpa,
+                                  targetGpa: tGpa,
+                                );
+
+                                // Update auth provider
+                                await ref.read(authProvider.notifier).updateProfile({
+                                  'current_trimester': trim,
+                                  'current_gpa': cGpa,
+                                  'target_gpa': tGpa,
+                                  'target_daily_minutes': daily,
+                                });
+
+                                if (context.mounted) {
+                                  Navigator.pop(bCtx);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Academic targets saved successfully!'),
+                                      backgroundColor: AppColors.success,
+                                    ),
+                                  );
+                                }
+                              },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   void _exportJsonBackup({
     required dynamic user,
     required TrackerState tracker,
@@ -320,12 +517,16 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
   }) {
     final exportData = {
       'app': 'StudentBrain',
-      'version': '2.4.5',
+      'version': '2.5.2',
       'exported_at': DateTime.now().toIso8601String(),
       'user': {
         'name': user?.fullName,
         'email': user?.email,
         'department': user?.department,
+        'current_trimester': user?.currentTrimester,
+        'current_gpa': user?.currentGpa,
+        'target_gpa': user?.targetGpa,
+        'target_daily_minutes': user?.targetDailyMinutes,
       },
       'stats': {
         'current_cgpa': gpa,
@@ -340,6 +541,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
           ? {
               'current_gpa': grades.plan!.currentGpa,
               'target_gpa': grades.plan!.targetGpa,
+              'total_credits': grades.plan!.totalCredits,
               'completed_credits': grades.plan!.completedCredits,
               'remaining_credits': grades.plan!.remainingCredits,
             }
@@ -371,100 +573,296 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(
-          children: [
-            Icon(Icons.cloud_download_rounded, color: AppColors.primary, size: 24),
-            SizedBox(width: 8),
-            Text('Export Scholar Backup', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-          ],
-        ),
-        content: SizedBox(
-          width: 500,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text(
-                'This JSON contains all your study sessions, milestone badges, grade targets, and local study notes. Copy or save it so you can restore your data anytime!',
-                style: TextStyle(fontSize: 12, height: 1.4),
-              ),
-              const SizedBox(height: 12),
-              // Summary badges
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+      builder: (ctx) {
+        final isDark = Theme.of(ctx).brightness == Brightness.dark;
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          backgroundColor: isDark ? const Color(0xFF161828) : Colors.white,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: Padding(
+              padding: const EdgeInsets.all(22),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _backupStatBadge('${tracker.sessions.length}', 'Sessions'),
-                  _backupStatBadge('${materials.materials.length}', 'Materials'),
-                  _backupStatBadge('${grades.courses.length}', 'Courses'),
-                  _backupStatBadge('${_unlockedMilestones.length}', 'Badges'),
+                  // Header Row with glowing icon, title & close button
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [AppColors.primary, AppColors.secondary],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.35),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(Icons.cloud_download_rounded, color: Colors.white, size: 22),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Export Scholar Backup',
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Portable JSON • v2.5.2 format',
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded, size: 20),
+                        onPressed: () => Navigator.pop(ctx),
+                        splashRadius: 20,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Informational text
+                  Text(
+                    'Export all your local study sessions, diagnostic quiz scores, milestone achievements, and academic targets to an offline JSON backup.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      height: 1.4,
+                      color: isDark ? Colors.white70 : Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 4 Beautiful Stat Badges in a row
+                  Row(
+                    children: [
+                      _backupStatCard(
+                        count: '${tracker.sessions.length}',
+                        label: 'Sessions',
+                        icon: Icons.timer_rounded,
+                        color: AppColors.primary,
+                        isDark: isDark,
+                      ),
+                      const SizedBox(width: 8),
+                      _backupStatCard(
+                        count: '${materials.materials.length}',
+                        label: 'Materials',
+                        icon: Icons.folder_special_rounded,
+                        color: const Color(0xFF9D4EDD),
+                        isDark: isDark,
+                      ),
+                      const SizedBox(width: 8),
+                      _backupStatCard(
+                        count: '${grades.courses.length}',
+                        label: 'Courses',
+                        icon: Icons.school_rounded,
+                        color: AppColors.accent,
+                        isDark: isDark,
+                      ),
+                      const SizedBox(width: 8),
+                      _backupStatCard(
+                        count: '${_unlockedMilestones.length}',
+                        label: 'Badges',
+                        icon: Icons.workspace_premium_rounded,
+                        color: AppColors.gold,
+                        isDark: isDark,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Code preview box with custom toolbar
+                  Container(
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF0F101A) : const Color(0xFF1E2235),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.1),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Code bar
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(width: 8, height: 8, decoration: const BoxDecoration(color: Color(0xFFFF5F56), shape: BoxShape.circle)),
+                                  const SizedBox(width: 5),
+                                  Container(width: 8, height: 8, decoration: const BoxDecoration(color: Color(0xFFFFBD2E), shape: BoxShape.circle)),
+                                  const SizedBox(width: 5),
+                                  Container(width: 8, height: 8, decoration: const BoxDecoration(color: Color(0xFF27C93F), shape: BoxShape.circle)),
+                                  const SizedBox(width: 10),
+                                  const Text(
+                                    'student_brain_backup.json',
+                                    style: TextStyle(fontFamily: 'monospace', fontSize: 11, color: Colors.white70, fontWeight: FontWeight.w600),
+                                  ),
+                                ],
+                              ),
+                              InkWell(
+                                onTap: () {
+                                  Clipboard.setData(ClipboardData(text: jsonStr));
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('JSON copied to clipboard!'),
+                                      backgroundColor: AppColors.success,
+                                      duration: Duration(seconds: 2),
+                                    ),
+                                  );
+                                },
+                                borderRadius: BorderRadius.circular(6),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                  child: Row(
+                                    children: const [
+                                      Icon(Icons.copy_rounded, size: 12, color: Colors.white70),
+                                      SizedBox(width: 4),
+                                      Text('Copy', style: TextStyle(fontSize: 11, color: Colors.white70, fontWeight: FontWeight.w600)),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Divider(height: 1, color: Colors.white12),
+                        // Monospace text
+                        Container(
+                          height: 140,
+                          padding: const EdgeInsets.all(12),
+                          child: SingleChildScrollView(
+                            child: SelectableText(
+                              jsonStr,
+                              style: const TextStyle(
+                                fontFamily: 'monospace',
+                                fontSize: 11,
+                                color: Color(0xFF93C5FD),
+                                height: 1.35,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Actions
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            Clipboard.setData(ClipboardData(text: jsonStr));
+                            Navigator.pop(ctx);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('JSON Backup copied to clipboard!'),
+                                backgroundColor: AppColors.success,
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.content_copy_rounded, size: 16),
+                          label: const Text('Copy JSON'),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 13),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            _downloadJsonBackupFile(jsonStr);
+                          },
+                          icon: const Icon(Icons.file_download_rounded, size: 18),
+                          label: const Text('Download File'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 13),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            elevation: 2,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
-              const SizedBox(height: 12),
-              // JSON Preview
-              Container(
-                height: 150,
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.06),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
-                ),
-                child: SingleChildScrollView(
-                  child: Text(
-                    jsonStr,
-                    style: const TextStyle(fontFamily: 'monospace', fontSize: 10.5),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Close'),
-          ),
-          OutlinedButton.icon(
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: jsonStr));
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('JSON Backup copied to clipboard!'),
-                  backgroundColor: AppColors.success,
-                  duration: Duration(seconds: 2),
-                ),
-              );
-            },
-            icon: const Icon(Icons.copy_rounded, size: 15),
-            label: const Text('Copy'),
-          ),
-          ElevatedButton.icon(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _downloadJsonBackupFile(jsonStr);
-            },
-            icon: const Icon(Icons.download_rounded, size: 16),
-            label: const Text('Download File'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _backupStatBadge(String count, String label) {
-    return Column(
-      children: [
-        Text(count, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: AppColors.primary)),
-        Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey)),
-      ],
+  Widget _backupStatCard({
+    required String count,
+    required String label,
+    required IconData icon,
+    required Color color,
+    required bool isDark,
+  }) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: isDark ? 0.12 : 0.08),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withValues(alpha: 0.25)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, size: 16, color: color),
+            const SizedBox(height: 4),
+            Text(
+              count,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w900,
+                color: color,
+              ),
+            ),
+            const SizedBox(height: 2),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white60 : Colors.black54,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -612,6 +1010,14 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final streak = tracker.streaks['current_streak'] ?? 0;
+    final prefs = ref.watch(sharedPreferencesProvider);
+    final totalCredits = grades.plan?.totalCredits ?? prefs.getDouble('academic_total_credits') ?? 140.0;
+    final completedCredits = grades.plan?.completedCredits ?? prefs.getDouble('academic_completed_credits') ?? 45.0;
+    final remainingCredits = (totalCredits - completedCredits).clamp(0.0, 300.0);
+    final targetGpa = grades.plan?.targetGpa ?? user?.targetGpa ?? prefs.getDouble('academic_target_gpa') ?? 3.90;
+    final userTrimester = user?.currentTrimester ?? prefs.getString('academic_trimester') ?? 'Active Trimester';
+    final userDailyMinutes = user?.targetDailyMinutes ?? prefs.getInt('academic_target_daily_minutes') ?? 60;
+    final degreeProgress = totalCredits > 0 ? (completedCredits / totalCredits).clamp(0.0, 1.0) : 0.0;
     final totalHoursNum = (tracker.streaks['total_minutes'] ?? 0) / 60.0;
     final totalHours = totalHoursNum.toStringAsFixed(1);
     final gpa = grades.plan?.currentGpa.toStringAsFixed(2) ?? '3.80';
@@ -949,7 +1355,128 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
                 ),
                 const SizedBox(height: 16),
 
-                // 3. Milestone Badges Trophy Cabinet
+                // 3. Degree Target Configuration Card (Relocated from Grade Planner)
+                GlassCard(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Row(
+                            children: [
+                              Icon(Icons.tune_rounded, color: AppColors.primary, size: 20),
+                              SizedBox(width: 8),
+                              Text(
+                                'Degree Target Configuration',
+                                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                              ),
+                            ],
+                          ),
+                          TextButton.icon(
+                            onPressed: () => _showEditDegreeTargetsModal(
+                              context: context,
+                              totalCredits: totalCredits,
+                              completedCredits: completedCredits,
+                              currentGpa: gpaNum,
+                              targetGpa: targetGpa,
+                              trimester: userTrimester,
+                              dailyGoalMinutes: userDailyMinutes,
+                            ),
+                            icon: const Icon(Icons.edit_rounded, size: 14),
+                            label: const Text('Edit Targets'),
+                            style: TextButton.styleFrom(
+                              visualDensity: VisualDensity.compact,
+                              foregroundColor: AppColors.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      const Text(
+                        'Monitor your degree completion, graduation GPA ambition, and study pace.',
+                        style: TextStyle(fontSize: 11, color: Colors.grey),
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Degree Completion Progress
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Degree Completion: ${(degreeProgress * 100).toStringAsFixed(1)}%',
+                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                              ),
+                              Text(
+                                '${completedCredits.toStringAsFixed(1)} / ${totalCredits.toStringAsFixed(1)} Credits',
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: LinearProgressIndicator(
+                              value: degreeProgress,
+                              minHeight: 8,
+                              backgroundColor: isDark ? Colors.white10 : Colors.black12,
+                              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+
+                      // 4 Metric Pills
+                      Row(
+                        children: [
+                          _buildDegreeParamPill(
+                            title: 'Target CGPA',
+                            value: targetGpa.toStringAsFixed(2),
+                            icon: Icons.flag_rounded,
+                            color: AppColors.secondary,
+                            isDark: isDark,
+                          ),
+                          const SizedBox(width: 8),
+                          _buildDegreeParamPill(
+                            title: 'Remaining Cr',
+                            value: remainingCredits.toStringAsFixed(1),
+                            icon: Icons.pending_actions_rounded,
+                            color: AppColors.accent,
+                            isDark: isDark,
+                          ),
+                          const SizedBox(width: 8),
+                          _buildDegreeParamPill(
+                            title: 'Trimester',
+                            value: userTrimester,
+                            icon: Icons.calendar_today_rounded,
+                            color: AppColors.flame,
+                            isDark: isDark,
+                          ),
+                          const SizedBox(width: 8),
+                          _buildDegreeParamPill(
+                            title: 'Daily Goal',
+                            value: '$userDailyMinutes m',
+                            icon: Icons.alarm_rounded,
+                            color: AppColors.success,
+                            isDark: isDark,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // 4. Milestone Badges Trophy Cabinet
                 GlassCard(
                   padding: const EdgeInsets.all(18),
                   child: Column(
@@ -1233,6 +1760,52 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
             child: Text(title, style: const TextStyle(fontSize: 10.5, color: Colors.grey)),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDegreeParamPill({
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color color,
+    required bool isDark,
+  }) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+        decoration: BoxDecoration(
+          color: isDark ? Colors.white.withValues(alpha: 0.04) : Colors.black.withValues(alpha: 0.03),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isDark ? AppColors.borderDark : AppColors.borderLight,
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, size: 14, color: color),
+            const SizedBox(height: 3),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                value,
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w800,
+                  color: color,
+                ),
+              ),
+            ),
+            const SizedBox(height: 1),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                title,
+                style: const TextStyle(fontSize: 9.5, color: Colors.grey, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
