@@ -17,9 +17,9 @@ android {
     defaultConfig {
         applicationId = "com.uiu.studentbrain"
         minSdk = 26
-        targetSdk = 34
-        versionCode = 27
-        versionName = "2.4.2"
+        targetSdk = 35
+        versionCode = 40
+        versionName = "2.5.0"
     }
 
     signingConfigs {
@@ -55,8 +55,4 @@ flutter {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
-}
-
-tasks.matching { it.name.contains("AarMetadata") }.configureEach {
-    enabled = false
 }

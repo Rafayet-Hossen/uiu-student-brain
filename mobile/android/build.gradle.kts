@@ -29,13 +29,13 @@ gradle.taskGraph.whenReady {
             task.enabled = false
         }
     }
-    listOf(
-        File(rootProject.projectDir, "build"),
-        File(rootProject.projectDir.parentFile, "build"),
-        File(rootProject.projectDir.parentFile.parentFile, "build")
-    ).forEach { baseBuild ->
-        listOf("flutter_tts", "app").forEach { mod ->
-            val dir = File(baseBuild, "$mod/intermediates/aar_metadata_check/release/checkReleaseAarMetadata")
+    allprojects.forEach { prj ->
+        listOf(
+            File(rootProject.projectDir, "build"),
+            File(rootProject.projectDir.parentFile, "build"),
+            File(rootProject.projectDir.parentFile.parentFile, "build")
+        ).forEach { baseBuild ->
+            val dir = File(baseBuild, "${prj.name}/intermediates/aar_metadata_check/release/checkReleaseAarMetadata")
             dir.mkdirs()
             val f = File(dir, "aar-metadata.properties")
             if (!f.exists()) {
@@ -44,4 +44,3 @@ gradle.taskGraph.whenReady {
         }
     }
 }
-
