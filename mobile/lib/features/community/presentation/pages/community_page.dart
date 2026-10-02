@@ -1607,6 +1607,7 @@ class _CreateDiscussionDialogState extends ConsumerState<_CreateDiscussionDialog
   final _resourceLinkCtrl = TextEditingController();
 
   bool _isSubmitting = false;
+  String? _errorMessage;
 
   static const List<String> _categories = [
     'General',
@@ -1726,10 +1727,9 @@ class _CreateDiscussionDialogState extends ConsumerState<_CreateDiscussionDialog
       }
     }
 
+    setState(() => _errorMessage = null);
     if (finalTitle.isEmpty || finalContent.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in title and description fields.')),
-      );
+      setState(() => _errorMessage = 'Please fill in both title and description fields.');
       return;
     }
 
@@ -1753,6 +1753,8 @@ class _CreateDiscussionDialogState extends ConsumerState<_CreateDiscussionDialog
             backgroundColor: AppColors.primary,
           ),
         );
+      } else {
+        setState(() => _errorMessage = 'Could not publish discussion post. Please check required fields.');
       }
     }
   }
@@ -1803,6 +1805,33 @@ class _CreateDiscussionDialogState extends ConsumerState<_CreateDiscussionDialog
                   ),
                 ],
               ),
+              if (_errorMessage != null) ...[
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.error.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 16),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _errorMessage!,
+                          style: const TextStyle(color: AppColors.error, fontSize: 12, fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () => setState(() => _errorMessage = null),
+                        child: const Icon(Icons.close_rounded, size: 16, color: AppColors.error),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               const SizedBox(height: 12),
 
               // Category Selector Chips with Icons
@@ -2137,6 +2166,7 @@ class _CreateStudyEventDialogState extends ConsumerState<_CreateStudyEventDialog
   int? _maxParticipants; // null initially
   bool _isCustomCapacity = false;
   bool _isSubmitting = false;
+  String? _errorMessage;
   List<CatalogCourse> _courseSuggestions = [];
 
   @override
@@ -2237,63 +2267,48 @@ class _CreateStudyEventDialogState extends ConsumerState<_CreateStudyEventDialog
   }
 
   Future<void> _submit() async {
+    setState(() => _errorMessage = null);
     final title = _titleCtrl.text.trim();
     final subject = _subjectCtrl.text.trim();
     final location = _locationCtrl.text.trim();
     final desc = _descCtrl.text.trim();
 
     if (title.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter an event title.')),
-      );
+      setState(() => _errorMessage = 'Please enter an event title.');
       return;
     }
 
     if (subject.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please specify a subject or course code.')),
-      );
+      setState(() => _errorMessage = 'Please specify a subject or course code.');
       return;
     }
 
     if (_eventType == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select an event format (In-Person or Online).')),
-      );
+      setState(() => _errorMessage = 'Please select format (In-Person or Online).');
       return;
     }
 
     if (location.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_eventType == 'online'
-              ? 'Please provide an online meeting link or platform.'
-              : 'Please enter a campus room or location.'),
-        ),
-      );
+      setState(() => _errorMessage = _eventType == 'online'
+          ? 'Please provide an online meeting link or platform.'
+          : 'Please enter a campus room or location.');
       return;
     }
 
     if (_eventDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please choose an event date.')),
-      );
+      setState(() => _errorMessage = 'Please choose an event date.');
       return;
     }
 
     if (_startTime == null || _endTime == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select both start and end time.')),
-      );
+      setState(() => _errorMessage = 'Please select both start and end time.');
       return;
     }
 
     final startMinutes = _startTime!.hour * 60 + _startTime!.minute;
     final endMinutes = _endTime!.hour * 60 + _endTime!.minute;
     if (startMinutes >= endMinutes) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('End time must be after start time.')),
-      );
+      setState(() => _errorMessage = 'End time must be after start time.');
       return;
     }
 
@@ -2301,18 +2316,14 @@ class _CreateStudyEventDialogState extends ConsumerState<_CreateStudyEventDialog
     if (_isCustomCapacity) {
       final parsed = int.tryParse(_customCapacityCtrl.text.trim());
       if (parsed == null || parsed <= 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please enter a valid seat number.')),
-        );
+        setState(() => _errorMessage = 'Please enter a valid seat number.');
         return;
       }
       capacity = parsed;
     } else if (_maxParticipants != null) {
       capacity = _maxParticipants!;
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select attendee capacity or choose Unlimited.')),
-      );
+      setState(() => _errorMessage = 'Please select attendee capacity or choose Unlimited.');
       return;
     }
 
@@ -2359,12 +2370,7 @@ class _CreateStudyEventDialogState extends ConsumerState<_CreateStudyEventDialog
           ),
         );
       } else {
-        messenger.showSnackBar(
-          const SnackBar(
-            content: Text('Could not create study event. Please check required fields.'),
-            backgroundColor: AppColors.error,
-          ),
-        );
+        setState(() => _errorMessage = 'Could not create study event. Please check required fields.');
       }
     }
   }
@@ -2423,6 +2429,33 @@ class _CreateStudyEventDialogState extends ConsumerState<_CreateStudyEventDialog
                   ),
                 ],
               ),
+              if (_errorMessage != null) ...[
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.error.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 16),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _errorMessage!,
+                          style: const TextStyle(color: AppColors.error, fontSize: 12, fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () => setState(() => _errorMessage = null),
+                        child: const Icon(Icons.close_rounded, size: 16, color: AppColors.error),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               const SizedBox(height: 12),
 
               // Scrollable Form Fields

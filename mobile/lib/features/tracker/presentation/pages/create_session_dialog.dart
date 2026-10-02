@@ -27,6 +27,7 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   bool _isLoading = false;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -70,35 +71,24 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
   }
 
   Future<void> _handleSubmit() async {
-    if (!_formKey.currentState!.validate()) return;
+    setState(() => _errorMessage = null);
+    if (!_formKey.currentState!.validate()) {
+      setState(() => _errorMessage = 'Please provide a session subject / topic.');
+      return;
+    }
 
     if (_durationMinutes == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select a focus duration'),
-          backgroundColor: AppColors.error,
-        ),
-      );
+      setState(() => _errorMessage = 'Please select a focus duration.');
       return;
     }
 
     if (_selectedDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select session date'),
-          backgroundColor: AppColors.error,
-        ),
-      );
+      setState(() => _errorMessage = 'Please select session date.');
       return;
     }
 
     if (_selectedTime == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select session start time'),
-          backgroundColor: AppColors.error,
-        ),
-      );
+      setState(() => _errorMessage = 'Please select session start time.');
       return;
     }
 
@@ -114,9 +104,19 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
       if (_selectedMaterialId != null) 'material': _selectedMaterialId,
     });
 
-    setState(() => _isLoading = false);
-    if (success && mounted) {
-      Navigator.pop(context);
+    if (mounted) {
+      setState(() => _isLoading = false);
+      if (success) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Study session booked successfully!'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      } else {
+        setState(() => _errorMessage = 'Failed to book session. Please verify fields.');
+      }
     }
   }
 
@@ -209,6 +209,37 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                       ),
                     ],
                   ),
+                  if (_errorMessage != null) ...[
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: AppColors.error.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 16),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _errorMessage!,
+                              style: const TextStyle(
+                                color: AppColors.error,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          InkWell(
+                            onTap: () => setState(() => _errorMessage = null),
+                            child: const Icon(Icons.close_rounded, size: 16, color: AppColors.error),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 16),
 
                   // 1. Trimester Selector

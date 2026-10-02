@@ -21,6 +21,71 @@ class SettingsPage extends ConsumerStatefulWidget {
 }
 
 class _SettingsPageState extends ConsumerState<SettingsPage> {
+  Widget _buildGoalChip({
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required bool isDark,
+  }) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeInOut,
+          height: 38,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AppColors.primary
+                : (isDark
+                    ? AppColors.surfaceDarkSubtle
+                    : AppColors.surfaceLightSubtle),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isSelected
+                  ? AppColors.primary
+                  : (isDark ? AppColors.borderDark : AppColors.borderLight),
+              width: isSelected ? 1.5 : 1.0,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.28),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (isSelected) ...[
+                const Icon(Icons.check_rounded, size: 12, color: Colors.white),
+                const SizedBox(width: 4),
+              ],
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                    color: isSelected
+                        ? Colors.white
+                        : (isDark ? AppColors.textDark : AppColors.textLight),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
   final _targetGpaCtrl = TextEditingController();
   final _customGoalCtrl = TextEditingController();
 
@@ -124,11 +189,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               ),
             ),
             onPressed: () async {
+              final router = GoRouter.of(context);
               Navigator.pop(ctx);
               await ref.read(authProvider.notifier).logout();
-              if (mounted) {
-                context.go('/login');
-              }
+              router.go('/login');
             },
             child: const Text('Sign Out', style: TextStyle(fontWeight: FontWeight.w800)),
           ),
@@ -259,42 +323,68 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
+                      const SizedBox(height: 10),
+                      Row(
                         children: [
-                          ...[30, 45, 60, 90, 120].map((mins) {
-                            final isSel = !_isCustomGoal && _selectedDailyGoalMinutes == mins;
-                            return ChoiceChip(
-                              label: Text('${mins}m / day'),
-                              selected: isSel,
-                              selectedColor: AppColors.primary,
-                              labelStyle: TextStyle(
-                                color: isSel ? Colors.white : null,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 11,
-                              ),
-                              onSelected: (_) {
-                                setState(() {
-                                  _isCustomGoal = false;
-                                  _selectedDailyGoalMinutes = mins;
-                                });
-                              },
-                            );
-                          }),
-                          ChoiceChip(
-                            label: const Text('Custom'),
-                            selected: _isCustomGoal,
-                            selectedColor: AppColors.primary,
-                            labelStyle: TextStyle(
-                              color: _isCustomGoal ? Colors.white : null,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 11,
-                            ),
-                            onSelected: (_) {
-                              setState(() => _isCustomGoal = true);
-                            },
+                          _buildGoalChip(
+                            label: '30m / day',
+                            isSelected: !_isCustomGoal && _selectedDailyGoalMinutes == 30,
+                            onTap: () => setState(() {
+                              _isCustomGoal = false;
+                              _selectedDailyGoalMinutes = 30;
+                            }),
+                            isDark: isDark,
+                          ),
+                          const SizedBox(width: 8),
+                          _buildGoalChip(
+                            label: '45m / day',
+                            isSelected: !_isCustomGoal && _selectedDailyGoalMinutes == 45,
+                            onTap: () => setState(() {
+                              _isCustomGoal = false;
+                              _selectedDailyGoalMinutes = 45;
+                            }),
+                            isDark: isDark,
+                          ),
+                          const SizedBox(width: 8),
+                          _buildGoalChip(
+                            label: '60m / day',
+                            isSelected: !_isCustomGoal && _selectedDailyGoalMinutes == 60,
+                            onTap: () => setState(() {
+                              _isCustomGoal = false;
+                              _selectedDailyGoalMinutes = 60;
+                            }),
+                            isDark: isDark,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          _buildGoalChip(
+                            label: '90m / day',
+                            isSelected: !_isCustomGoal && _selectedDailyGoalMinutes == 90,
+                            onTap: () => setState(() {
+                              _isCustomGoal = false;
+                              _selectedDailyGoalMinutes = 90;
+                            }),
+                            isDark: isDark,
+                          ),
+                          const SizedBox(width: 8),
+                          _buildGoalChip(
+                            label: '120m / day',
+                            isSelected: !_isCustomGoal && _selectedDailyGoalMinutes == 120,
+                            onTap: () => setState(() {
+                              _isCustomGoal = false;
+                              _selectedDailyGoalMinutes = 120;
+                            }),
+                            isDark: isDark,
+                          ),
+                          const SizedBox(width: 8),
+                          _buildGoalChip(
+                            label: 'Custom',
+                            isSelected: _isCustomGoal,
+                            onTap: () => setState(() => _isCustomGoal = true),
+                            isDark: isDark,
                           ),
                         ],
                       ),
@@ -449,79 +539,64 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   padding: const EdgeInsets.all(16),
                   borderColor: AppColors.error.withValues(alpha: 0.3),
                   color: AppColors.error.withValues(alpha: 0.05),
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.error.withValues(alpha: 0.15),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.logout_rounded,
-                            color: AppColors.error, size: 20),
-                      ),
-                      const SizedBox(width: 12),
-                      const Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Account Sign Out',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.error,
-                              ),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.error.withValues(alpha: 0.15),
+                              shape: BoxShape.circle,
                             ),
-                            SizedBox(height: 2),
-                            Text(
-                              'Sign out of StudentBrain on this device',
-                              style: TextStyle(fontSize: 11, color: Colors.grey),
+                            child: const Icon(Icons.logout_rounded,
+                                color: AppColors.error, size: 20),
+                          ),
+                          const SizedBox(width: 12),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Account Sign Out',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.error,
+                                  ),
+                                ),
+                                SizedBox(height: 2),
+                                Text(
+                                  'Sign out of StudentBrain on this device',
+                                  style: TextStyle(fontSize: 11, color: Colors.grey),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.error,
-                          foregroundColor: Colors.white,
+                      const SizedBox(height: 14),
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.error,
+                          side: const BorderSide(color: AppColors.error, width: 1.5),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        icon: const Icon(Icons.logout_rounded, size: 18),
+                        label: const Text(
+                          'Sign Out of Account',
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
                         ),
                         onPressed: _confirmSignOut,
-                        child: const Text('Sign Out'),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
-
-                // 7. App Build Info
-                GlassCard(
-                  padding: const EdgeInsets.all(16),
-                  child: const Center(
-                    child: Column(
-                      children: [
-                        Text(
-                          'StudentBrain Android App',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
-                        ),
-                        SizedBox(height: 3),
-                        Text(
-                          'Version 1.0.4 (Production Release)',
-                          style: TextStyle(fontSize: 11, color: Colors.grey),
-                        ),
-                        SizedBox(height: 2),
-                        Text(
-                          'Package: com.uiu.studentbrain',
-                          style: TextStyle(fontSize: 10, color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 32),
               ],
             ),
           ),

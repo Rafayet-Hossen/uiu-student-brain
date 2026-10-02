@@ -1542,9 +1542,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
                                   Icon(Icons.edit_rounded, size: 13, color: AppColors.primary),
                                   SizedBox(width: 4),
                                   Text(
-                                    'Edit Targets',
+                                    'Edit',
                                     style: TextStyle(
-                                      fontSize: 11.5,
+                                      fontSize: 12,
                                       fontWeight: FontWeight.w700,
                                       color: AppColors.primary,
                                     ),

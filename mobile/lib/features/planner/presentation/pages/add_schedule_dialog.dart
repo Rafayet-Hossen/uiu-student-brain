@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/app_text_field.dart';
+import '../../../grades/presentation/providers/grades_provider.dart';
+import '../../../materials/presentation/providers/materials_provider.dart';
 import '../providers/planner_provider.dart';
 
 class AddScheduleDialog extends ConsumerStatefulWidget {
@@ -21,6 +23,7 @@ class _AddScheduleDialogState extends ConsumerState<AddScheduleDialog> {
   TimeOfDay? _endTime;
   final Set<String> _selectedDays = {};
   bool _isLoading = false;
+  String? _errorMessage;
 
   @override
   void dispose() {
@@ -37,25 +40,26 @@ class _AddScheduleDialogState extends ConsumerState<AddScheduleDialog> {
   }
 
   Future<void> _handleSubmit() async {
-    if (!_formKey.currentState!.validate()) return;
+    setState(() => _errorMessage = null);
+    if (!_formKey.currentState!.validate()) {
+      setState(() => _errorMessage = 'Please provide a subject or course name.');
+      return;
+    }
 
     if (_selectedDays.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select at least one routine day'),
-          backgroundColor: AppColors.error,
-        ),
-      );
+      setState(() => _errorMessage = 'Please select at least one routine day.');
       return;
     }
 
     if (_startTime == null || _endTime == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select both class start and end time'),
-          backgroundColor: AppColors.error,
-        ),
-      );
+      setState(() => _errorMessage = 'Please select both class start and end time.');
+      return;
+    }
+
+    final startMin = _startTime!.hour * 60 + _startTime!.minute;
+    final endMin = _endTime!.hour * 60 + _endTime!.minute;
+    if (startMin >= endMin) {
+      setState(() => _errorMessage = 'Class end time must be after start time.');
       return;
     }
 
@@ -74,10 +78,19 @@ class _AddScheduleDialogState extends ConsumerState<AddScheduleDialog> {
       'notes': notes.trim(),
     });
 
-    setState(() => _isLoading = false);
-
-    if (success && mounted) {
-      Navigator.pop(context);
+    if (mounted) {
+      setState(() => _isLoading = false);
+      if (success) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Class routine added to schedule!'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      } else {
+        setState(() => _errorMessage = 'Failed to save routine. Please try again.');
+      }
     }
   }
 
@@ -134,6 +147,23 @@ class _AddScheduleDialogState extends ConsumerState<AddScheduleDialog> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final materialsState = ref.watch(materialsProvider);
+    final gradesState = ref.watch(gradesProvider);
+    final schedules = ref.watch(plannerProvider).schedules;
+
+    final Set<String> courseSuggestions = {};
+    for (final c in materialsState.courses) {
+      final t = c['title']?.toString().trim();
+      if (t != null && t.isNotEmpty) courseSuggestions.add(t);
+    }
+    for (final g in gradesState.courses) {
+      if (g.courseName.isNotEmpty) courseSuggestions.add(g.courseName);
+    }
+    for (final s in schedules) {
+      if (s.subject.isNotEmpty && !s.subject.startsWith('[Event]')) {
+        courseSuggestions.add(s.subject);
+      }
+    }
 
     return Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
@@ -181,7 +211,38 @@ class _AddScheduleDialogState extends ConsumerState<AddScheduleDialog> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
+                  if (_errorMessage != null) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                      decoration: BoxDecoration(
+                        color: AppColors.error.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 16),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _errorMessage!,
+                              style: const TextStyle(
+                                color: AppColors.error,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          InkWell(
+                            onTap: () => setState(() => _errorMessage = null),
+                            child: const Icon(Icons.close_rounded, size: 16, color: AppColors.error),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
                   AppTextField(
                     label: 'Subject / Course Name *',
                     hint: 'e.g. Software Engineering',
@@ -190,6 +251,55 @@ class _AddScheduleDialogState extends ConsumerState<AddScheduleDialog> {
                         ? 'Subject is required'
                         : null,
                   ),
+                  if (courseSuggestions.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    SizedBox(
+                      height: 30,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: courseSuggestions.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 6),
+                        itemBuilder: (context, idx) {
+                          final suggestion = courseSuggestions.elementAt(idx);
+                          final isSelected = _subjectController.text == suggestion;
+                          return ActionChip(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            labelPadding: EdgeInsets.zero,
+                            visualDensity: VisualDensity.compact,
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            backgroundColor: isSelected
+                                ? AppColors.primary
+                                : (isDark
+                                    ? AppColors.surfaceDarkSubtle
+                                    : AppColors.surfaceLightSubtle),
+                            side: BorderSide(
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : (isDark ? AppColors.borderDark : AppColors.borderLight),
+                              width: 1,
+                            ),
+                            label: Text(
+                              suggestion,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                                color: isSelected
+                                    ? Colors.white
+                                    : (isDark ? AppColors.textDark : AppColors.textLight),
+                              ),
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _subjectController.text = suggestion;
+                                _errorMessage = null;
+                              });
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
                   AppTextField(
                     label: 'Room / Venue',
                     hint: 'e.g. Room 402, Campus Building A',
