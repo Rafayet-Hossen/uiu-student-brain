@@ -158,50 +158,64 @@ class DashboardPage extends ConsumerWidget {
                     children: [
                       // Streak Card
                       Expanded(
-                        child: GlassCard(
-                          padding: const EdgeInsets.all(14),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(16),
+                            onTap: () => context.push('/analytics'),
+                            child: GlassCard(
+                              padding: const EdgeInsets.all(14),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(6),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.flame.withValues(alpha: 0.15),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(Icons.local_fire_department_rounded, color: AppColors.flame, size: 18),
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.flame.withValues(alpha: 0.15),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(Icons.local_fire_department_rounded, color: AppColors.flame, size: 18),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          'Streak',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w700,
+                                            color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                                          ),
+                                        ),
+                                      ),
+                                      Icon(
+                                        Icons.arrow_forward_ios_rounded,
+                                        size: 11,
+                                        color: isDark ? AppColors.textDarkSubtle : AppColors.textLightSubtle,
+                                      ),
+                                    ],
                                   ),
-                                  const SizedBox(width: 8),
+                                  const SizedBox(height: 10),
                                   Text(
-                                    'Streak',
+                                    '${dashState.currentStreak} Days',
+                                    style: const TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w900,
+                                      color: AppColors.flame,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Record: ${dashState.longestStreak} days',
                                     style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
-                                      color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                                      fontSize: 11,
+                                      color: isDark ? AppColors.textDarkSubtle : AppColors.textLightSubtle,
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 10),
-                              Text(
-                                '${dashState.currentStreak} Days',
-                                style: const TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w900,
-                                  color: AppColors.flame,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'Record: ${dashState.longestStreak} days',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: isDark ? AppColors.textDarkSubtle : AppColors.textLightSubtle,
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
                       ),

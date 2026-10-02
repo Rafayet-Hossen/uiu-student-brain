@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/data/courses_catalog.dart';
+import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/error_card.dart';
 import '../../../../core/widgets/glass_card.dart';
@@ -1118,7 +1119,7 @@ class _CreateDiscussionDialog extends ConsumerStatefulWidget {
 }
 
 class _CreateDiscussionDialogState extends ConsumerState<_CreateDiscussionDialog> {
-  String? _category;
+  String _category = 'General';
 
   // Common / General
   final _titleCtrl = TextEditingController();
@@ -1139,7 +1140,7 @@ class _CreateDiscussionDialogState extends ConsumerState<_CreateDiscussionDialog
 
   // Study Group fields
   String _groupMode = 'In-Person';
-  final _groupLocationCtrl = TextEditingController();
+  final _groupLocationCtrl = TextEditingController(text: 'Campus Library 4th Floor');
   String _groupSize = '2-3 Members';
   final _groupScheduleCtrl = TextEditingController();
 
@@ -1222,13 +1223,6 @@ class _CreateDiscussionDialogState extends ConsumerState<_CreateDiscussionDialog
   }
 
   Future<void> _submit() async {
-    if (_category == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a category for your discussion.')),
-      );
-      return;
-    }
-
     String finalTitle = _titleCtrl.text.trim();
     String finalContent = _contentCtrl.text.trim();
     String? finalSnippet;
@@ -1285,7 +1279,7 @@ class _CreateDiscussionDialogState extends ConsumerState<_CreateDiscussionDialog
     final success = await ref.read(communityProvider.notifier).createPost(
           title: finalTitle,
           content: finalContent,
-          category: _category!,
+          category: _category,
           codeSnippet: finalSnippet,
           codeLanguage: finalLanguage,
           vscodeLiveshareUrl: finalLiveUrl,
@@ -1620,56 +1614,22 @@ class _CreateDiscussionDialogState extends ConsumerState<_CreateDiscussionDialog
               ),
               const SizedBox(height: 14),
 
-              // Pinned Bottom Actions Row
-              Container(
-                padding: const EdgeInsets.only(top: 10),
-                decoration: BoxDecoration(
-                  border: Border(
-                    top: BorderSide(
-                      color: isDark ? AppColors.borderDark.withValues(alpha: 0.5) : AppColors.borderLight,
-                    ),
+              // Action Buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel'),
                   ),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      flex: 1,
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.pop(context),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        ),
-                        child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.w700)),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      flex: 2,
-                      child: ElevatedButton.icon(
-                        onPressed: _isSubmitting ? null : _submit,
-                        icon: _isSubmitting
-                            ? const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                              )
-                            : const Icon(Icons.send_rounded, size: 18),
-                        label: Text(
-                          _isSubmitting ? 'Posting...' : 'Post Discussion',
-                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          elevation: 0,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                  const SizedBox(width: 8),
+                  AppButton(
+                    label: 'Publish Discussion',
+                    isLoading: _isSubmitting,
+                    onPressed: _submit,
+                    height: 40,
+                  ),
+                ],
               ),
             ],
           ),
@@ -1678,7 +1638,7 @@ class _CreateDiscussionDialogState extends ConsumerState<_CreateDiscussionDialog
     );
   }
 
-  String _getCategoryTitleHint(String? category) {
+  String _getCategoryTitleHint(String category) {
     switch (category) {
       case 'Code Help':
         return 'e.g. Segmentation fault in C++ graph traversal';

@@ -162,40 +162,106 @@ class MaterialsPage extends ConsumerWidget {
                             final isCurrent = sem['is_current'] == true;
                             final isSelected = matState.selectedSemesterId == semId;
 
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 8.0),
-                              child: GestureDetector(
-                                onLongPress: () => _showTrimesterOptionsBottomSheet(context, ref, sem),
-                                child: ChoiceChip(
-                                  avatar: isCurrent
-                                      ? Icon(
-                                          Icons.star_rounded,
-                                          size: 14,
-                                          color: isSelected ? AppColors.primary : AppColors.warning,
-                                        )
-                                      : null,
-                                  label: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(semName),
-                                      const SizedBox(width: 4),
-                                      InkWell(
-                                        onTap: () => _showTrimesterOptionsBottomSheet(context, ref, sem),
-                                        child: Icon(
-                                          Icons.more_vert_rounded,
-                                          size: 13,
-                                          color: isSelected ? AppColors.primary : (isDark ? AppColors.textDarkMuted : AppColors.textLightMuted),
+                            return Container(
+                              margin: const EdgeInsets.only(right: 8),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? AppColors.primary.withValues(alpha: 0.15)
+                                    : (isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : (isDark ? AppColors.borderDark : AppColors.borderLight),
+                                  width: isSelected ? 1.5 : 1.0,
+                                ),
+                              ),
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(20),
+                                  onTap: () => notifier.selectSemester(semId),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        if (isCurrent) ...[
+                                          const Icon(Icons.star_rounded, size: 14, color: AppColors.warning),
+                                          const SizedBox(width: 4),
+                                        ],
+                                        Text(
+                                          semName,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                                            color: isSelected
+                                                ? AppColors.primary
+                                                : (isDark ? AppColors.textDark : AppColors.textLight),
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                  selected: isSelected,
-                                  onSelected: (_) => notifier.selectSemester(semId),
-                                  selectedColor: AppColors.primary.withValues(alpha: 0.15),
-                                  labelStyle: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-                                    color: isSelected ? AppColors.primary : (isDark ? AppColors.textDarkMuted : AppColors.textLightMuted),
+                                        const SizedBox(width: 4),
+                                        PopupMenuButton<String>(
+                                          icon: Icon(
+                                            Icons.more_vert_rounded,
+                                            size: 15,
+                                            color: isSelected
+                                                ? AppColors.primary
+                                                : (isDark ? AppColors.textDarkMuted : AppColors.textLightMuted),
+                                          ),
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
+                                          onSelected: (val) {
+                                            if (val == 'edit') {
+                                              _showEditSemesterDialog(context, ref, sem);
+                                            } else if (val == 'toggle') {
+                                              ref.read(materialsProvider.notifier).updateSemester(semId!, isCurrent: !isCurrent);
+                                            } else if (val == 'delete') {
+                                              _confirmDeleteSemester(context, ref, sem);
+                                            }
+                                          },
+                                          itemBuilder: (ctx) => [
+                                            const PopupMenuItem(
+                                              value: 'edit',
+                                              child: Row(
+                                                children: [
+                                                  Icon(Icons.edit_outlined, size: 16),
+                                                  SizedBox(width: 8),
+                                                  Text('Edit Trimester', style: TextStyle(fontSize: 13)),
+                                                ],
+                                              ),
+                                            ),
+                                            PopupMenuItem(
+                                              value: 'toggle',
+                                              child: Row(
+                                                children: [
+                                                  Icon(
+                                                    isCurrent ? Icons.star_border_rounded : Icons.star_rounded,
+                                                    size: 16,
+                                                    color: AppColors.warning,
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  Text(
+                                                    isCurrent ? 'Unmark Active' : 'Set as Active',
+                                                    style: const TextStyle(fontSize: 13),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            const PopupMenuItem(
+                                              value: 'delete',
+                                              child: Row(
+                                                children: [
+                                                  Icon(Icons.delete_outline_rounded, size: 16, color: AppColors.error),
+                                                  SizedBox(width: 8),
+                                                  Text('Delete Trimester', style: TextStyle(fontSize: 13, color: AppColors.error)),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
@@ -226,7 +292,7 @@ class MaterialsPage extends ConsumerWidget {
                               children: [
                                 const Text('No Courses in this Trimester', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800)),
                                 Text(
-                                  'Tap "+ Course" above to organize classes for this trimester.',
+                                  'Tap "+ Course" to add subjects and link study documents.',
                                   style: TextStyle(
                                     fontSize: 11,
                                     color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
@@ -235,8 +301,31 @@ class MaterialsPage extends ConsumerWidget {
                               ],
                             ),
                           ),
+                          const SizedBox(width: 8),
+                          ElevatedButton.icon(
+                            onPressed: () => _showAddCourseDialog(context, ref, matState.semesters, initialSemesterId: matState.selectedSemesterId),
+                            icon: const Icon(Icons.add_rounded, size: 14),
+                            label: const Text('+ Course', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              elevation: 0,
+                            ),
+                          ),
                         ],
                       ),
+                    )
+                  else if (matState.semesterCourses.length == 1)
+                    _buildCourseCard(
+                      context,
+                      ref,
+                      matState.semesterCourses.first,
+                      matState,
+                      notifier,
+                      isDark,
+                      isFullWidth: true,
                     )
                   else
                     SizedBox(
@@ -246,173 +335,14 @@ class MaterialsPage extends ConsumerWidget {
                         itemCount: matState.semesterCourses.length,
                         separatorBuilder: (_, __) => const SizedBox(width: 10),
                         itemBuilder: (context, index) {
-                          final c = matState.semesterCourses[index];
-                          final courseId = c['id'] as int? ?? 1;
-                          final code = c['code']?.toString() ?? 'CSE';
-                          final title = c['title']?.toString() ?? 'Course';
-                          final semName = c['semester_name']?.toString();
-                          final isSelected = matState.selectedCourseId == courseId;
-
-                          return InkWell(
-                            onTap: () => notifier.selectCourse(courseId),
-                            borderRadius: BorderRadius.circular(16),
-                            child: Container(
-                              width: 240,
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? AppColors.primary.withValues(alpha: isDark ? 0.2 : 0.08)
-                                    : (isDark ? AppColors.surfaceDark : AppColors.surfaceLight),
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: isSelected
-                                      ? AppColors.primary
-                                      : (isDark ? AppColors.borderDark : AppColors.borderLight),
-                                  width: isSelected ? 1.8 : 1.0,
-                                ),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-                                            decoration: BoxDecoration(
-                                              color: isSelected
-                                                  ? AppColors.primary
-                                                  : AppColors.primary.withValues(alpha: 0.15),
-                                              borderRadius: BorderRadius.circular(6),
-                                            ),
-                                            child: Text(
-                                              code,
-                                              style: TextStyle(
-                                                fontSize: 10.5,
-                                                fontWeight: FontWeight.w800,
-                                                color: isSelected ? Colors.white : AppColors.primary,
-                                              ),
-                                            ),
-                                          ),
-                                          Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              if (isSelected)
-                                                Container(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-                                                  decoration: BoxDecoration(
-                                                    color: AppColors.primary.withValues(alpha: 0.15),
-                                                    borderRadius: BorderRadius.circular(4),
-                                                  ),
-                                                  child: const Row(
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    children: [
-                                                      Icon(Icons.check_circle_rounded, size: 10, color: AppColors.primary),
-                                                      SizedBox(width: 3),
-                                                      Text(
-                                                        'Filtered',
-                                                        style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w800, color: AppColors.primary),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                )
-                                              else if (semName != null && semName.isNotEmpty)
-                                                Text(
-                                                  semName,
-                                                  style: TextStyle(
-                                                    fontSize: 10,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
-                                                  ),
-                                                  overflow: TextOverflow.ellipsis,
-                                                ),
-                                              const SizedBox(width: 4),
-                                              PopupMenuButton<String>(
-                                                icon: Icon(
-                                                  Icons.more_vert_rounded,
-                                                  size: 16,
-                                                  color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
-                                                ),
-                                                padding: EdgeInsets.zero,
-                                                constraints: const BoxConstraints(),
-                                                itemBuilder: (_) => [
-                                                  const PopupMenuItem(
-                                                    value: 'edit',
-                                                    child: Row(
-                                                      children: [
-                                                        Icon(Icons.edit_outlined, size: 16),
-                                                        SizedBox(width: 8),
-                                                        Text('Edit Course', style: TextStyle(fontSize: 13)),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  const PopupMenuItem(
-                                                    value: 'delete',
-                                                    child: Row(
-                                                      children: [
-                                                        Icon(Icons.delete_outline_rounded, size: 16, color: AppColors.error),
-                                                        SizedBox(width: 8),
-                                                        Text('Delete Course', style: TextStyle(fontSize: 13, color: AppColors.error)),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ],
-                                                onSelected: (val) {
-                                                  if (val == 'edit') {
-                                                    _showEditCourseDialog(context, ref, c);
-                                                  } else if (val == 'delete') {
-                                                    _confirmDeleteCourse(context, ref, c);
-                                                  }
-                                                },
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 6),
-                                      Text(
-                                        title,
-                                        style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
-                                  ),
-                                  InkWell(
-                                    onTap: () {
-                                      context.push('/ai/chat/$courseId?title=$code - $title');
-                                    },
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4.5),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.primary.withValues(alpha: 0.12),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: const Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(Icons.auto_awesome_rounded, size: 13, color: AppColors.primary),
-                                          SizedBox(width: 5),
-                                          Text(
-                                            'Chat with Course AI',
-                                            style: TextStyle(
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.w800,
-                                              color: AppColors.primary,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                          return _buildCourseCard(
+                            context,
+                            ref,
+                            matState.semesterCourses[index],
+                            matState,
+                            notifier,
+                            isDark,
+                            isFullWidth: false,
                           );
                         },
                       ),
@@ -663,7 +593,7 @@ class MaterialsPage extends ConsumerWidget {
     );
   }
 
-  void _showAddCourseDialog(BuildContext context, WidgetRef ref, List<Map<String, dynamic>> semesters) {
+  void _showAddCourseDialog(BuildContext context, WidgetRef ref, List<Map<String, dynamic>> semesters, {int? initialSemesterId}) {
     if (semesters.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -675,7 +605,10 @@ class MaterialsPage extends ConsumerWidget {
       return;
     }
 
-    int selectedSemesterId = semesters.first['id'] as int? ?? 1;
+    int selectedSemesterId = initialSemesterId ?? (semesters.first['id'] as int? ?? 1);
+    if (!semesters.any((s) => s['id'] == selectedSemesterId)) {
+      selectedSemesterId = semesters.first['id'] as int? ?? 1;
+    }
     final codeCtrl = TextEditingController();
     final titleCtrl = TextEditingController();
     String selectedColor = '#2563eb';
@@ -912,87 +845,208 @@ class MaterialsPage extends ConsumerWidget {
     );
   }
 
-  void _showTrimesterOptionsBottomSheet(BuildContext context, WidgetRef ref, Map<String, dynamic> sem) {
-    final semId = sem['id'] as int;
-    final semName = sem['name']?.toString() ?? 'Trimester';
-    final isCurrent = sem['is_current'] == true;
+  Widget _buildCourseCard(
+    BuildContext context,
+    WidgetRef ref,
+    Map<String, dynamic> c,
+    MaterialsState matState,
+    MaterialsNotifier notifier,
+    bool isDark, {
+    required bool isFullWidth,
+  }) {
+    final courseId = c['id'] as int? ?? 1;
+    final code = c['code']?.toString() ?? 'CSE';
+    final title = c['title']?.toString() ?? 'Course';
+    final semName = c['semester_name']?.toString();
+    final isSelected = matState.selectedCourseId == courseId;
 
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (bCtx) => Container(
+    return InkWell(
+      onTap: () => notifier.selectCourse(courseId),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        width: isFullWidth ? double.infinity : 240,
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Theme.of(context).brightness == Brightness.dark ? AppColors.surfaceDark : AppColors.surfaceLight,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          color: isSelected
+              ? AppColors.primary.withValues(alpha: isDark ? 0.2 : 0.08)
+              : (isDark ? AppColors.surfaceDark : AppColors.surfaceLight),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected
+                ? AppColors.primary
+                : (isDark ? AppColors.borderDark : AppColors.borderLight),
+            width: isSelected ? 1.8 : 1.0,
+          ),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Center(
-              child: Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 14),
-            Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.school_rounded, color: AppColors.primary, size: 20),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    semName,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
-                  ),
-                ),
-                if (isCurrent)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppColors.primary
+                            : AppColors.primary.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        code,
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w800,
+                          color: isSelected ? Colors.white : AppColors.primary,
+                        ),
+                      ),
                     ),
-                    child: const Text('Active', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.primary)),
-                  ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (isSelected)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.check_circle_rounded, size: 10, color: AppColors.primary),
+                                SizedBox(width: 3),
+                                Text(
+                                  'Filtered',
+                                  style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w800, color: AppColors.primary),
+                                ),
+                              ],
+                            ),
+                          )
+                        else if (semName != null && semName.isNotEmpty)
+                          Text(
+                            semName,
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        const SizedBox(width: 4),
+                        PopupMenuButton<String>(
+                          icon: Icon(
+                            Icons.more_vert_rounded,
+                            size: 16,
+                            color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                          ),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          itemBuilder: (_) => [
+                            const PopupMenuItem(
+                              value: 'edit',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.edit_outlined, size: 16),
+                                  SizedBox(width: 8),
+                                  Text('Edit Course', style: TextStyle(fontSize: 13)),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuItem(
+                              value: 'delete',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.delete_outline_rounded, size: 16, color: AppColors.error),
+                                  SizedBox(width: 8),
+                                  Text('Delete Course', style: TextStyle(fontSize: 13, color: AppColors.error)),
+                                ],
+                              ),
+                            ),
+                          ],
+                          onSelected: (val) {
+                            if (val == 'edit') {
+                              _showEditCourseDialog(context, ref, c);
+                            } else if (val == 'delete') {
+                              _confirmDeleteCourse(context, ref, c);
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  title,
+                  style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
-            const SizedBox(height: 14),
-            const Divider(height: 1),
-            ListTile(
-              leading: const Icon(Icons.edit_outlined, color: AppColors.primary),
-              title: const Text('Edit Trimester Name', style: TextStyle(fontWeight: FontWeight.w600)),
-              onTap: () {
-                Navigator.pop(bCtx);
-                _showEditSemesterDialog(context, ref, sem);
-              },
-            ),
-            ListTile(
-              leading: Icon(
-                isCurrent ? Icons.star_border_rounded : Icons.star_rounded,
-                color: AppColors.warning,
-              ),
-              title: Text(
-                isCurrent ? 'Unmark as Active Trimester' : 'Set as Active Trimester',
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-              onTap: () async {
-                Navigator.pop(bCtx);
-                await ref.read(materialsProvider.notifier).updateSemester(semId, isCurrent: !isCurrent);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
-              title: const Text('Delete Trimester', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.error)),
-              onTap: () {
-                Navigator.pop(bCtx);
-                _confirmDeleteSemester(context, ref, sem);
-              },
+            Row(
+              children: [
+                InkWell(
+                  onTap: () => _showUploadMaterialDialog(context, ref, initialCourseId: courseId),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.add_rounded, size: 12, color: AppColors.primary),
+                        SizedBox(width: 3),
+                        Text(
+                          '+ Material',
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                InkWell(
+                  onTap: () {
+                    context.push('/ai/chat/$courseId?title=$code - $title');
+                  },
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.auto_awesome_rounded, size: 12, color: AppColors.primary),
+                        SizedBox(width: 4),
+                        Text(
+                          'Course AI',
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

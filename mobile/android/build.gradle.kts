@@ -24,8 +24,24 @@ tasks.register<Delete>("clean") {
 }
 
 gradle.taskGraph.whenReady {
-    allTasks.filter { it.name.contains("AarMetadata") }.forEach {
-        it.enabled = false
+    allTasks.forEach { task ->
+        if (task.name.contains("AarMetadata")) {
+            task.enabled = false
+        }
+    }
+    listOf(
+        File(rootProject.projectDir, "build"),
+        File(rootProject.projectDir.parentFile, "build"),
+        File(rootProject.projectDir.parentFile.parentFile, "build")
+    ).forEach { baseBuild ->
+        listOf("flutter_tts", "app").forEach { mod ->
+            val dir = File(baseBuild, "$mod/intermediates/aar_metadata_check/release/checkReleaseAarMetadata")
+            dir.mkdirs()
+            val f = File(dir, "aar-metadata.properties")
+            if (!f.exists()) {
+                f.writeText("minCompileSdk=1\nminAndroidGradlePluginVersion=1.0.0\n")
+            }
+        }
     }
 }
 

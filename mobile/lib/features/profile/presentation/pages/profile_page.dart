@@ -636,6 +636,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         title: const Text('Scholar Profile'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.insights_rounded),
+            tooltip: 'Study Analytics & Stats',
+            onPressed: () => context.push('/analytics'),
+          ),
+          IconButton(
             icon: const Icon(Icons.settings_outlined),
             tooltip: 'App Settings',
             onPressed: () => context.push('/settings'),
@@ -1053,22 +1058,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                         subtitle: const Text('Weekly focus histogram, subject investment & study audits', style: TextStyle(fontSize: 11)),
                         trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
                         onTap: () => context.push('/analytics'),
-                      ),
-                      const Divider(),
-                      ListTile(
-                        leading: const Icon(Icons.school_outlined, color: AppColors.primary),
-                        title: const Text('Grade Planner & Degree Targets', style: TextStyle(fontWeight: FontWeight.w700)),
-                        subtitle: const Text('Manage completed courses, import transcript & simulate CGPA', style: TextStyle(fontSize: 11)),
-                        trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
-                        onTap: () => context.push('/grades'),
-                      ),
-                      const Divider(),
-                      ListTile(
-                        leading: const Icon(Icons.timer_outlined, color: AppColors.accent),
-                        title: const Text('Live Focus Mode', style: TextStyle(fontWeight: FontWeight.w700)),
-                        subtitle: const Text('Start custom study sessions with focus stopwatch', style: TextStyle(fontSize: 11)),
-                        trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
-                        onTap: () => context.push('/tracker/live'),
                       ),
                       const Divider(),
                       ListTile(

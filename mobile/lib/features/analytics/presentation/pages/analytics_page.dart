@@ -7,7 +7,9 @@ import '../../../../core/widgets/error_card.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/responsive.dart';
 import '../../../../core/widgets/student_brain_loader.dart';
+import '../../../tracker/presentation/providers/tracker_provider.dart';
 import '../providers/analytics_provider.dart';
+import '../widgets/study_contribution_heatmap.dart';
 
 class AnalyticsPage extends ConsumerWidget {
   const AnalyticsPage({super.key});
@@ -24,6 +26,7 @@ class AnalyticsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(analyticsProvider);
+    final trackerState = ref.watch(trackerProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -32,12 +35,20 @@ class AnalyticsPage extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
-            onPressed: () => ref.read(analyticsProvider.notifier).loadAnalytics(),
+            onPressed: () {
+              ref.read(analyticsProvider.notifier).loadAnalytics();
+              ref.read(trackerProvider.notifier).loadTrackerData();
+            },
           ),
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () => ref.read(analyticsProvider.notifier).loadAnalytics(),
+        onRefresh: () async {
+          await Future.wait([
+            ref.read(analyticsProvider.notifier).loadAnalytics(),
+            ref.read(trackerProvider.notifier).loadTrackerData(),
+          ]);
+        },
         color: AppColors.primary,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -138,6 +149,10 @@ class AnalyticsPage extends ConsumerWidget {
                           ),
                         ],
                       ),
+                      const SizedBox(height: 18),
+
+                      // 1.5. GitHub-style Study Consistency Contribution Heatmap
+                      StudyContributionHeatmap(sessions: trackerState.sessions),
                       const SizedBox(height: 18),
 
                       // 2. Weekly Bar Chart (fl_chart) - Dynamic with Empty Placeholder Bars

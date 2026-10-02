@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -23,6 +24,12 @@ class _LiveFocusPageState extends ConsumerState<LiveFocusPage>
   int _initialSeconds = 25 * 60;
   bool _isRunning = false;
 
+  // Voice Coach System (Identical to Website SpeechSynthesis)
+  final FlutterTts _tts = FlutterTts();
+  bool _voiceCoachEnabled = true;
+  String? _currentVoiceText;
+  final Set<String> _announcedMilestones = {};
+
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
 
@@ -44,6 +51,8 @@ class _LiveFocusPageState extends ConsumerState<LiveFocusPage>
       _initialSeconds = _secondsRemaining;
     }
 
+    _initTts();
+
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
@@ -53,19 +62,49 @@ class _LiveFocusPageState extends ConsumerState<LiveFocusPage>
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
 
-    _startTimer();
+    _startTimer(isInitialStart: true);
+  }
+
+  void _initTts() async {
+    try {
+      await _tts.setLanguage("en-US");
+      await _tts.setSpeechRate(0.48);
+      await _tts.setVolume(1.0);
+      await _tts.setPitch(1.0);
+    } catch (_) {}
+  }
+
+  Future<void> _speak(String text) async {
+    if (!mounted) return;
+    setState(() => _currentVoiceText = text);
+    Future.delayed(const Duration(seconds: 4), () {
+      if (mounted && _currentVoiceText == text) {
+        setState(() => _currentVoiceText = null);
+      }
+    });
+
+    if (!_voiceCoachEnabled) return;
+    try {
+      await _tts.stop();
+      await _tts.speak(text);
+    } catch (_) {}
   }
 
   @override
   void dispose() {
     _timer?.cancel();
     _pulseController.dispose();
+    _tts.stop();
     super.dispose();
   }
 
-  void _startTimer() {
+  void _startTimer({bool isInitialStart = false}) {
     _isRunning = true;
     _timer?.cancel();
+    if (isInitialStart) {
+      final mins = (_secondsRemaining ~/ 60);
+      _speak("Focus session started for $mins minutes. Stay in flow.");
+    }
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_secondsRemaining > 0) {
         setState(() {
@@ -74,6 +113,19 @@ class _LiveFocusPageState extends ConsumerState<LiveFocusPage>
             _quoteIndex = (_quoteIndex + 1) % _quotes.length;
           }
         });
+
+        // Milestone voice announcements
+        if (_secondsRemaining == (_initialSeconds / 2).round() && !_announcedMilestones.contains('50')) {
+          _announcedMilestones.add('50');
+          final minsLeft = (_secondsRemaining ~/ 60);
+          _speak("50 percent completed. $minsLeft minutes remaining.");
+        } else if (_secondsRemaining == 60 && !_announcedMilestones.contains('60')) {
+          _announcedMilestones.add('60');
+          _speak("1 minute left. Begin wrapping up your thoughts.");
+        } else if (_secondsRemaining == 10 && !_announcedMilestones.contains('10')) {
+          _announcedMilestones.add('10');
+          _speak("10 seconds remaining.");
+        }
       } else {
         _timer?.cancel();
         setState(() => _isRunning = false);
@@ -87,8 +139,10 @@ class _LiveFocusPageState extends ConsumerState<LiveFocusPage>
       if (_isRunning) {
         _timer?.cancel();
         _isRunning = false;
+        _speak("Focus session paused.");
       } else {
         _startTimer();
+        _speak("Focus session resumed.");
       }
     });
   }
@@ -125,7 +179,9 @@ class _LiveFocusPageState extends ConsumerState<LiveFocusPage>
               setState(() {
                 _secondsRemaining = _initialSeconds;
                 _isRunning = false;
+                _announcedMilestones.clear();
               });
+              _speak("Timer reset.");
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Timer reset to starting duration'),
@@ -332,12 +388,13 @@ class _LiveFocusPageState extends ConsumerState<LiveFocusPage>
 
   void _applyCustomDuration(int minutes) {
     _timer?.cancel();
+    _announcedMilestones.clear();
     setState(() {
       _secondsRemaining = minutes * 60;
       _initialSeconds = minutes * 60;
       _isRunning = false;
     });
-    _startTimer();
+    _startTimer(isInitialStart: true);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Focus timer set to $minutes minutes'),
@@ -348,6 +405,7 @@ class _LiveFocusPageState extends ConsumerState<LiveFocusPage>
 
   Future<void> _handleFinishSession() async {
     _timer?.cancel();
+    _speak('Congratulations! Focus session complete. Outstanding focus work!');
     final active = ref.read(trackerProvider).activeSession;
     final sessionId = active?.id;
 
@@ -417,6 +475,23 @@ class _LiveFocusPageState extends ConsumerState<LiveFocusPage>
         title: const Text('Live Focus Mode'),
         actions: [
           IconButton(
+            icon: Icon(
+              _voiceCoachEnabled ? Icons.volume_up_rounded : Icons.volume_off_rounded,
+              color: _voiceCoachEnabled ? AppColors.primary : Colors.grey,
+            ),
+            tooltip: _voiceCoachEnabled ? 'Voice Coach Enabled (Tap to Mute)' : 'Voice Coach Muted (Tap to Enable)',
+            onPressed: () {
+              setState(() {
+                _voiceCoachEnabled = !_voiceCoachEnabled;
+              });
+              if (_voiceCoachEnabled) {
+                _speak('Voice coach enabled');
+              } else {
+                _tts.stop();
+              }
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.more_time_rounded),
             tooltip: 'Custom Duration',
             onPressed: _showCustomTimeDialog,
@@ -439,6 +514,36 @@ class _LiveFocusPageState extends ConsumerState<LiveFocusPage>
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const SizedBox(height: 8),
+
+                  if (_currentVoiceText != null) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.record_voice_over_rounded, size: 16, color: AppColors.primary),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              _currentVoiceText!,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primary,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
 
                   // Subject / Activity Chip
                   Container(
