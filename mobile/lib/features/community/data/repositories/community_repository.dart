@@ -66,6 +66,15 @@ class CommunityRepository {
     return StudyEventModel.fromJson(response.data as Map<String, dynamic>);
   }
 
+  Future<StudyEventModel> updateEvent(int eventId, Map<String, dynamic> data) async {
+    final response = await _dioClient.patch(ApiEndpoints.eventDetail(eventId), data: data);
+    return StudyEventModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<void> deleteEvent(int eventId) async {
+    await _dioClient.delete(ApiEndpoints.eventDetail(eventId));
+  }
+
   Future<Map<String, dynamic>> toggleFollowStudent(int studentId) async {
     final response = await _dioClient.post(ApiEndpoints.studentFollow(studentId));
     if (response.data is Map) {

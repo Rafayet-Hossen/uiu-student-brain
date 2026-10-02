@@ -813,37 +813,49 @@ class _GradesPageState extends ConsumerState<GradesPage> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Three Pillars: Baseline -> Target -> Projected
+                        // Three Pillars: Baseline -> Target -> Projected (Fluid & Fully Responsive)
                         Row(
                           children: [
                             // Pillar 1: Baseline
                             Expanded(
                               child: Container(
-                                padding: const EdgeInsets.all(12),
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                                 decoration: BoxDecoration(
                                   color: isDark
                                       ? Colors.white.withValues(alpha: 0.04)
                                       : Colors.grey.shade100,
                                   borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                                  ),
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text('Current CGPA',
-                                        style: TextStyle(
-                                            fontSize: 11, color: Colors.grey)),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      sim.baselineCgpa.toStringAsFixed(2),
-                                      style: const TextStyle(
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.w900),
+                                    const FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text('Current CGPA',
+                                          style: TextStyle(
+                                              fontSize: 11, color: Colors.grey, fontWeight: FontWeight.w600)),
+                                    ),
+                                    const SizedBox(height: 3),
+                                    FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        sim.baselineCgpa.toStringAsFixed(2),
+                                        style: const TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w900),
+                                      ),
                                     ),
                                     const SizedBox(height: 2),
-                                    Text(
-                                      '${retakeData['effective_credits'] ?? plan?.completedCredits ?? 45.0} cr completed',
-                                      style: const TextStyle(
-                                          fontSize: 10, color: Colors.grey),
+                                    FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        '${retakeData['effective_credits'] ?? plan?.completedCredits ?? 45.0} cr done',
+                                        style: const TextStyle(
+                                            fontSize: 9.5, color: Colors.grey),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -854,32 +866,44 @@ class _GradesPageState extends ConsumerState<GradesPage> {
                             // Pillar 2: Target
                             Expanded(
                               child: Container(
-                                padding: const EdgeInsets.all(12),
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                                 decoration: BoxDecoration(
                                   color: isDark
                                       ? Colors.white.withValues(alpha: 0.04)
                                       : Colors.grey.shade100,
                                   borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                                  ),
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text('Target Goal',
-                                        style: TextStyle(
-                                            fontSize: 11, color: Colors.grey)),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      sim.targetCgpa.toStringAsFixed(2),
-                                      style: const TextStyle(
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.w900,
-                                          color: AppColors.primary),
+                                    const FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text('Target Goal',
+                                          style: TextStyle(
+                                              fontSize: 11, color: Colors.grey, fontWeight: FontWeight.w600)),
+                                    ),
+                                    const SizedBox(height: 3),
+                                    FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        sim.targetCgpa.toStringAsFixed(2),
+                                        style: const TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w900,
+                                            color: AppColors.primary),
+                                      ),
                                     ),
                                     const SizedBox(height: 2),
-                                    Text(
-                                      'Gap: ${(sim.targetCgpa - sim.baselineCgpa).clamp(0.0, 4.0).toStringAsFixed(2)}',
-                                      style: const TextStyle(
-                                          fontSize: 10, color: Colors.grey),
+                                    FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        'Gap: ${(sim.targetCgpa - sim.baselineCgpa).clamp(0.0, 4.0).toStringAsFixed(2)}',
+                                        style: const TextStyle(
+                                            fontSize: 9.5, color: Colors.grey),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -890,44 +914,102 @@ class _GradesPageState extends ConsumerState<GradesPage> {
                             // Pillar 3: Projected Simulated
                             Expanded(
                               child: Container(
-                                padding: const EdgeInsets.all(12),
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                                 decoration: BoxDecoration(
-                                  color: AppColors.success.withValues(alpha: 0.1),
+                                  color: AppColors.success.withValues(alpha: 0.12),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
                                       color:
-                                          AppColors.success.withValues(alpha: 0.3)),
+                                          AppColors.success.withValues(alpha: 0.35)),
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text('Projected CGPA',
-                                        style: TextStyle(
-                                            fontSize: 11,
-                                            color: AppColors.success,
-                                            fontWeight: FontWeight.w700)),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      sim.projectedCgpa.toStringAsFixed(2),
-                                      style: const TextStyle(
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.w900,
-                                          color: AppColors.success),
+                                    const FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text('Projected CGPA',
+                                          style: TextStyle(
+                                              fontSize: 11,
+                                              color: AppColors.success,
+                                              fontWeight: FontWeight.w700)),
+                                    ),
+                                    const SizedBox(height: 3),
+                                    FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        sim.projectedCgpa.toStringAsFixed(2),
+                                        style: const TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w900,
+                                            color: AppColors.success),
+                                      ),
                                     ),
                                     const SizedBox(height: 2),
-                                    Text(
-                                      sim.selectedCount > 0
-                                          ? '${sim.gapClosedPercent}% gap closed'
-                                          : 'Select retakes below',
-                                      style: const TextStyle(
-                                          fontSize: 10,
-                                          color: AppColors.success),
+                                    FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        sim.selectedCount > 0
+                                            ? '${sim.gapClosedPercent}% closed'
+                                            : 'Select retakes',
+                                        style: const TextStyle(
+                                            fontSize: 9.5,
+                                            fontWeight: FontWeight.w600,
+                                            color: AppColors.success),
+                                      ),
                                     ),
                                   ],
                                 ),
                               ),
                             ),
                           ],
+                        ),
+
+                        // Interactive Gap Closure Tracker Bar
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: isDark ? Colors.white.withValues(alpha: 0.03) : Colors.black.withValues(alpha: 0.02),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                            ),
+                          ),
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    sim.selectedCount > 0
+                                        ? 'Simulation: ${sim.selectedCount} retake${sim.selectedCount > 1 ? "s" : ""} active'
+                                        : 'Simulation: Pick courses below to see CGPA boost',
+                                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+                                  ),
+                                  Text(
+                                    '${sim.gapClosedPercent}% Goal Reached',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w800,
+                                      color: sim.gapClosedPercent > 0 ? AppColors.success : AppColors.primary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(999),
+                                child: LinearProgressIndicator(
+                                  value: (sim.gapClosedPercent / 100.0).clamp(0.0, 1.0),
+                                  minHeight: 5,
+                                  backgroundColor: isDark ? Colors.white10 : Colors.black12,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    sim.gapClosedPercent > 0 ? AppColors.success : AppColors.primary,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),

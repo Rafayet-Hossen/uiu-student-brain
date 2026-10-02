@@ -47,7 +47,9 @@ class MaterialsPage extends ConsumerWidget {
           child: Center(
             child: ConstrainedBox(
               constraints: BoxConstraints(maxWidth: Responsive.maxContentWidth(context)),
-              child: Column(
+              child: SizedBox(
+                width: double.infinity,
+                child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // 1. Search Bar
@@ -274,7 +276,8 @@ class MaterialsPage extends ConsumerWidget {
 
                   if (matState.semesterCourses.isEmpty)
                     Container(
-                      padding: const EdgeInsets.all(16),
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
                       decoration: BoxDecoration(
                         color: isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle,
                         borderRadius: BorderRadius.circular(16),
@@ -282,35 +285,47 @@ class MaterialsPage extends ConsumerWidget {
                           color: isDark ? AppColors.borderDark : AppColors.borderLight,
                         ),
                       ),
-                      child: Row(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.school_outlined, size: 28, color: AppColors.primary),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text('No Courses in this Trimester', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800)),
-                                Text(
-                                  'Tap "+ Course" to add subjects and link study documents.',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
-                                  ),
-                                ),
-                              ],
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(alpha: 0.12),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.school_outlined, size: 28, color: AppColors.primary),
+                          ),
+                          const SizedBox(height: 10),
+                          const Text(
+                            'No Courses in this Trimester',
+                            style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Add your enrolled courses to link lecture notes, cheat sheets, and AI copilots.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(height: 14),
                           ElevatedButton.icon(
-                            onPressed: () => _showAddCourseDialog(context, ref, matState.semesters, initialSemesterId: matState.selectedSemesterId),
-                            icon: const Icon(Icons.add_rounded, size: 14),
-                            label: const Text('+ Course', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+                            onPressed: () => _showAddCourseDialog(
+                              context,
+                              ref,
+                              matState.semesters,
+                              initialSemesterId: matState.selectedSemesterId,
+                            ),
+                            icon: const Icon(Icons.add_rounded, size: 16),
+                            label: const Text('Add Course', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primary,
                               foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                               elevation: 0,
                             ),
                           ),
@@ -499,6 +514,7 @@ class MaterialsPage extends ConsumerWidget {
                     ),
                   const SizedBox(height: 24),
                 ],
+                ),
               ),
             ),
           ),

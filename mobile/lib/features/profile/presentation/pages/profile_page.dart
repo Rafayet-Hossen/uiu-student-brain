@@ -26,6 +26,134 @@ class ProfilePage extends ConsumerStatefulWidget {
 }
 
 class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProviderStateMixin {
+  Future<void> _pickAndSaveCustomAvatar() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        dialogTitle: 'Select Profile Picture',
+        type: FileType.image,
+        allowMultiple: false,
+      );
+      if (result != null && result.files.isNotEmpty) {
+        Uint8List? bytes = result.files.first.bytes;
+        if (bytes == null && result.files.first.path != null) {
+          bytes = await File(result.files.first.path!).readAsBytes();
+        }
+        if (bytes != null) {
+          final base64Str = base64Encode(bytes);
+          final prefs = ref.read(sharedPreferencesProvider);
+          await prefs.setString('user_custom_avatar_base64', base64Str);
+          if (mounted) {
+            setState(() {});
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Profile picture updated successfully!'),
+                backgroundColor: AppColors.success,
+              ),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update photo: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showProfilePhotoOptions() {
+    final prefs = ref.read(sharedPreferencesProvider);
+    final hasCustomPhoto = prefs.getString('user_custom_avatar_base64')?.isNotEmpty == true;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? const Color(0xFF161828) : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (bCtx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Scholar Profile Photo',
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Personalize your avatar. Saved locally and backed up with Export JSON.',
+                style: TextStyle(fontSize: 12, color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.photo_library_rounded, color: AppColors.primary),
+                ),
+                title: const Text('Choose Photo from Gallery', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                subtitle: const Text('Select a JPG/PNG image from your phone', style: TextStyle(fontSize: 11)),
+                onTap: () {
+                  Navigator.pop(bCtx);
+                  _pickAndSaveCustomAvatar();
+                },
+              ),
+              if (hasCustomPhoto)
+                ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.error.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
+                  ),
+                  title: const Text('Reset to Cartoon Avatar', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.error)),
+                  subtitle: const Text('Revert back to DiceBear Notionists avatar', style: TextStyle(fontSize: 11)),
+                  onTap: () async {
+                    Navigator.pop(bCtx);
+                    await prefs.remove('user_custom_avatar_base64');
+                    if (mounted) {
+                      setState(() {});
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Reverted to default cartoon avatar.'),
+                          backgroundColor: AppColors.primary,
+                        ),
+                      );
+                    }
+                  },
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
   Set<String> _unlockedMilestones = {};
   late AnimationController _animCtrl;
   late Animation<double> _fadeAnim;
@@ -111,6 +239,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
       }
 
       final prefs = ref.read(sharedPreferencesProvider);
+
+      if (data['custom_avatar_base64'] is String && (data['custom_avatar_base64'] as String).isNotEmpty) {
+        await prefs.setString('user_custom_avatar_base64', data['custom_avatar_base64']);
+        setState(() {});
+      }
 
       if (data['unlocked_milestones'] is List) {
         final List<String> list = (data['unlocked_milestones'] as List).map((e) => e.toString()).toList();
@@ -517,7 +650,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
   }) {
     final exportData = {
       'app': 'StudentBrain',
-      'version': '2.5.2',
+      'version': '2.5.3',
       'exported_at': DateTime.now().toIso8601String(),
       'user': {
         'name': user?.fullName,
@@ -535,6 +668,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
         'sessions_count': tracker.sessions.length,
         'materials_count': materials.materials.length,
       },
+      'custom_avatar_base64': ref.read(sharedPreferencesProvider).getString('user_custom_avatar_base64'),
       'unlocked_milestones': _unlockedMilestones.toList(),
       'sessions': tracker.sessions.map((s) => s.toJson()).toList(),
       'grades_plan': grades.plan != null
@@ -1208,11 +1342,38 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
                               ),
                             ),
                           ),
-                          UserAvatar(
-                            name: user?.fullName ?? 'Scholar',
-                            imageUrl: user?.avatar,
-                            seed: user?.email ?? user?.fullName,
-                            size: 80,
+                          GestureDetector(
+                            onTap: _showProfilePhotoOptions,
+                            child: UserAvatar(
+                              name: user?.fullName ?? 'Scholar',
+                              imageUrl: user?.avatar,
+                              seed: user?.email ?? user?.fullName,
+                              size: 80,
+                              customBase64Image: ref.watch(sharedPreferencesProvider).getString('user_custom_avatar_base64'),
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            left: 0,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: _showProfilePhotoOptions,
+                                borderRadius: BorderRadius.circular(999),
+                                child: Container(
+                                  padding: const EdgeInsets.all(5),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: isDark ? const Color(0xFF141526) : Colors.white,
+                                      width: 2.2,
+                                    ),
+                                  ),
+                                  child: const Icon(Icons.camera_alt_rounded, size: 13, color: Colors.white),
+                                ),
+                              ),
+                            ),
                           ),
                           Positioned(
                             bottom: 0,
@@ -1334,9 +1495,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
                         crossAxisCount: 2,
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        mainAxisSpacing: 10,
-                        crossAxisSpacing: 10,
-                        childAspectRatio: 1.8,
+                        mainAxisSpacing: 8,
+                        crossAxisSpacing: 8,
+                        childAspectRatio: 2.35,
                         children: statsWidgets,
                       );
                     } else {
@@ -1362,20 +1523,20 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Row(
-                            children: [
-                              Icon(Icons.tune_rounded, color: AppColors.primary, size: 20),
-                              SizedBox(width: 8),
-                              Text(
-                                'Degree Target Configuration',
-                                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
-                              ),
-                            ],
+                          const Icon(Icons.tune_rounded, color: AppColors.primary, size: 18),
+                          const SizedBox(width: 8),
+                          const Expanded(
+                            child: Text(
+                              'Degree Target Configuration',
+                              style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                          TextButton.icon(
-                            onPressed: () => _showEditDegreeTargetsModal(
+                          const SizedBox(width: 8),
+                          InkWell(
+                            onTap: () => _showEditDegreeTargetsModal(
                               context: context,
                               totalCredits: totalCredits,
                               completedCredits: completedCredits,
@@ -1384,11 +1545,28 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
                               trimester: userTrimester,
                               dailyGoalMinutes: userDailyMinutes,
                             ),
-                            icon: const Icon(Icons.edit_rounded, size: 14),
-                            label: const Text('Edit Targets'),
-                            style: TextButton.styleFrom(
-                              visualDensity: VisualDensity.compact,
-                              foregroundColor: AppColors.primary,
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.edit_rounded, size: 13, color: AppColors.primary),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'Edit Targets',
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],
@@ -1739,25 +1917,32 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
     required IconData icon,
   }) {
     return GlassCard(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 14, color: color),
+              Icon(icon, size: 13, color: color),
               const SizedBox(width: 4),
-              Text(
-                value,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: color),
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    value,
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: color),
+                  ),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 3),
+          const SizedBox(height: 2),
           FittedBox(
             fit: BoxFit.scaleDown,
-            child: Text(title, style: const TextStyle(fontSize: 10.5, color: Colors.grey)),
+            child: Text(title, style: const TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.w500)),
           ),
         ],
       ),

@@ -164,6 +164,7 @@ class StudyEventModel {
   final bool isAttending;
   final String? userRsvpStatus;
   final String? creatorName;
+  final int? creatorId;
 
   StudyEventModel({
     required this.id,
@@ -181,6 +182,7 @@ class StudyEventModel {
     this.isAttending = false,
     this.userRsvpStatus,
     this.creatorName,
+    this.creatorId,
   });
 
   StudyEventModel copyWith({
@@ -199,6 +201,7 @@ class StudyEventModel {
     bool? isAttending,
     String? userRsvpStatus,
     String? creatorName,
+    int? creatorId,
   }) {
     return StudyEventModel(
       id: id ?? this.id,
@@ -216,13 +219,18 @@ class StudyEventModel {
       isAttending: isAttending ?? this.isAttending,
       userRsvpStatus: userRsvpStatus ?? this.userRsvpStatus,
       creatorName: creatorName ?? this.creatorName,
+      creatorId: creatorId ?? this.creatorId,
     );
   }
 
   factory StudyEventModel.fromJson(Map<String, dynamic> json) {
     String? creator;
+    int? creatorId;
     if (json['creator'] is Map) {
       creator = json['creator']['full_name'] ?? json['creator']['username'] ?? json['creator']['email'];
+      creatorId = json['creator']['id'] as int?;
+    } else if (json['creator_id'] != null) {
+      creatorId = json['creator_id'] as int?;
     }
 
     final going = json['going_count'] as int? ?? 0;
@@ -246,6 +254,7 @@ class StudyEventModel {
       isAttending: json['is_attending'] as bool? ?? json['is_rsvped'] as bool? ?? (userStatus == 'going' || userStatus == 'interested'),
       userRsvpStatus: userStatus,
       creatorName: creator,
+      creatorId: creatorId,
     );
   }
 }

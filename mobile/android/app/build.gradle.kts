@@ -18,8 +18,8 @@ android {
         applicationId = "com.uiu.studentbrain"
         minSdk = 26
         targetSdk = 35
-        versionCode = 44
-        versionName = "2.5.2"
+        versionCode = 45
+        versionName = "2.5.3"
     }
 
     signingConfigs {

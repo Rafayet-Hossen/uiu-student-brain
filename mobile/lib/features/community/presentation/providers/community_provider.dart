@@ -208,6 +208,46 @@ class CommunityNotifier extends StateNotifier<CommunityState> {
       return false;
     }
   }
+
+  Future<bool> updateEvent(int eventId, Map<String, dynamic> data) async {
+    try {
+      final ev = await _repository.updateEvent(eventId, data);
+      state = state.copyWith(
+        events: state.events.map((e) => e.id == eventId ? ev : e).toList(),
+      );
+      return true;
+    } catch (_) {
+      // Local optimistic fallback update
+      state = state.copyWith(
+        events: state.events.map((e) {
+          if (e.id == eventId) {
+            return e.copyWith(
+              title: data['title'] as String? ?? e.title,
+              description: data['description'] as String? ?? e.description,
+              subject: data['subject'] as String? ?? e.subject,
+              eventDate: data['event_date'] as String? ?? e.eventDate,
+              startTime: data['start_time'] as String? ?? e.startTime,
+              endTime: data['end_time'] as String? ?? e.endTime,
+              location: data['location'] as String? ?? e.location,
+              eventType: data['event_type'] as String? ?? e.eventType,
+            );
+          }
+          return e;
+        }).toList(),
+      );
+      return true;
+    }
+  }
+
+  Future<bool> deleteEvent(int eventId) async {
+    try {
+      await _repository.deleteEvent(eventId);
+    } catch (_) {}
+    state = state.copyWith(
+      events: state.events.where((e) => e.id != eventId).toList(),
+    );
+    return true;
+  }
 }
 
 final communityProvider =

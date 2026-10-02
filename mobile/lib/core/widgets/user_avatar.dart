@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 
@@ -7,6 +8,7 @@ class UserAvatar extends StatelessWidget {
   final String? seed;
   final double size;
   final bool showBadge;
+  final String? customBase64Image;
 
   const UserAvatar({
     super.key,
@@ -15,6 +17,7 @@ class UserAvatar extends StatelessWidget {
     this.seed,
     this.size = 40.0,
     this.showBadge = false,
+    this.customBase64Image,
   });
 
   String _getInitials(String input) {
@@ -45,6 +48,41 @@ class UserAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (customBase64Image != null && customBase64Image!.trim().isNotEmpty) {
+      try {
+        final bytes = base64Decode(customBase64Image!.trim());
+        return Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.12),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: AppColors.primary.withValues(alpha: 0.35),
+              width: 1.5,
+            ),
+          ),
+          child: ClipOval(
+            child: Image.memory(
+              bytes,
+              width: size,
+              height: size,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Center(
+                child: Text(
+                  _getInitials(name),
+                  style: TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w800,
+                    fontSize: size * 0.38,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      } catch (_) {}
+    }
     final avatarUrl = _getEffectiveUrl();
 
     return Container(

@@ -1023,6 +1023,28 @@ class _CommunityEventCard extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isGoing = event.userRsvpStatus == 'going';
     final isInterested = event.userRsvpStatus == 'interested';
+    final user = ref.watch(authProvider).user;
+    final isCreator = user != null &&
+        ((event.creatorId != null && event.creatorId == user.id) ||
+         (event.creatorName != null &&
+             (event.creatorName == user.fullName || event.creatorName == user.email)));
+
+    final isOnline = event.eventType.toLowerCase().contains('online') ||
+        event.location.toLowerCase().contains('http') ||
+        event.location.toLowerCase().contains('meet.google') ||
+        event.location.toLowerCase().contains('zoom.us');
+
+    String? cleanUrl;
+    if (event.location.toLowerCase().contains('http')) {
+      final match = RegExp(r'https?:\/\/[^\s]+').firstMatch(event.location);
+      if (match != null) cleanUrl = match.group(0);
+    } else if (event.location.toLowerCase().contains('meet.google.com')) {
+      final match = RegExp(r'meet\.google\.com\/[^\s]+').firstMatch(event.location);
+      if (match != null) cleanUrl = 'https://${match.group(0)}';
+    } else if (event.location.toLowerCase().contains('zoom.us')) {
+      final match = RegExp(r'zoom\.us\/[^\s]+').firstMatch(event.location);
+      if (match != null) cleanUrl = 'https://${match.group(0)}';
+    }
 
     // Parse date for visual badge
     String monthStr = 'EVENT';
@@ -1097,43 +1119,125 @@ class _CommunityEventCard extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 4,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            event.subject,
-                            style: const TextStyle(
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.primary,
-                            ),
+                        Expanded(
+                          child: Wrap(
+                            spacing: 6,
+                            runSpacing: 4,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  event.subject,
+                                  style: const TextStyle(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                                decoration: BoxDecoration(
+                                  color: isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle,
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                                  ),
+                                ),
+                                child: Text(
+                                  event.eventType,
+                                  style: TextStyle(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-                          decoration: BoxDecoration(
-                            color: isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle,
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                              color: isDark ? AppColors.borderDark : AppColors.borderLight,
-                            ),
-                          ),
-                          child: Text(
-                            event.eventType,
-                            style: TextStyle(
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.w700,
+                        if (isCreator)
+                          PopupMenuButton<String>(
+                            icon: Icon(
+                              Icons.more_vert_rounded,
+                              size: 18,
                               color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
                             ),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            onSelected: (val) {
+                              if (val == 'edit') {
+                                showDialog(
+                                  context: context,
+                                  builder: (ctx) => _CreateStudyEventDialog(eventToEdit: event),
+                                );
+                              } else if (val == 'delete') {
+                                showDialog(
+                                  context: context,
+                                  builder: (dCtx) => AlertDialog(
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                    title: const Text('Delete Study Event?', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+                                    content: Text('Are you sure you want to delete "${event.title}"?'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(dCtx),
+                                        child: const Text('Cancel'),
+                                      ),
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: AppColors.error,
+                                          foregroundColor: Colors.white,
+                                        ),
+                                        onPressed: () async {
+                                          Navigator.pop(dCtx);
+                                          await ref.read(communityProvider.notifier).deleteEvent(event.id);
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(
+                                                content: Text('Study Event deleted.'),
+                                                backgroundColor: AppColors.error,
+                                              ),
+                                            );
+                                          }
+                                        },
+                                        child: const Text('Delete'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                            },
+                            itemBuilder: (ctx) => [
+                              const PopupMenuItem(
+                                value: 'edit',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.edit_outlined, size: 16),
+                                    SizedBox(width: 8),
+                                    Text('Edit Event', style: TextStyle(fontSize: 13)),
+                                  ],
+                                ),
+                              ),
+                              const PopupMenuItem(
+                                value: 'delete',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.delete_outline_rounded, size: 16, color: AppColors.error),
+                                    SizedBox(width: 8),
+                                    Text('Delete Event', style: TextStyle(fontSize: 13, color: AppColors.error)),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
                       ],
                     ),
                     const SizedBox(height: 6),
@@ -1172,14 +1276,46 @@ class _CommunityEventCard extends ConsumerWidget {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.location_on_outlined, size: 14, color: AppColors.primary),
+                    Icon(
+                      isOnline ? Icons.videocam_rounded : Icons.location_on_outlined,
+                      size: 14,
+                      color: isOnline ? AppColors.accent : AppColors.primary,
+                    ),
                     const SizedBox(width: 6),
                     Expanded(
-                      child: Text(
-                        event.location,
-                        style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600),
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      child: cleanUrl != null
+                          ? InkWell(
+                              onTap: () async {
+                                final uri = Uri.tryParse(cleanUrl!);
+                                if (uri != null) {
+                                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                }
+                              },
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      event.location,
+                                      style: const TextStyle(
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.accent,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  const Icon(Icons.open_in_new_rounded, size: 12, color: AppColors.accent),
+                                ],
+                              ),
+                            )
+                          : Text(
+                              event.location,
+                              style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                     ),
                   ],
                 ),
@@ -1241,7 +1377,7 @@ class _CommunityEventCard extends ConsumerWidget {
                     color: isGoing ? Colors.white : AppColors.success,
                   ),
                   label: Text(
-                    isGoing ? 'Going (In Planner)' : 'Going',
+                    'Going',
                     style: TextStyle(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w800,
@@ -1867,7 +2003,8 @@ class _CreateDiscussionDialogState extends ConsumerState<_CreateDiscussionDialog
 
 /// Dynamic Host Study Event & Meetup Dialog matching website EventForm
 class _CreateStudyEventDialog extends ConsumerStatefulWidget {
-  const _CreateStudyEventDialog();
+  final StudyEventModel? eventToEdit;
+  const _CreateStudyEventDialog({this.eventToEdit});
 
   @override
   ConsumerState<_CreateStudyEventDialog> createState() => _CreateStudyEventDialogState();
@@ -1888,6 +2025,38 @@ class _CreateStudyEventDialogState extends ConsumerState<_CreateStudyEventDialog
   bool _isCustomCapacity = false;
   bool _isSubmitting = false;
   List<CatalogCourse> _courseSuggestions = [];
+
+  @override
+  void initState() {
+    super.initState();
+    final ev = widget.eventToEdit;
+    if (ev != null) {
+      _titleCtrl.text = ev.title;
+      _subjectCtrl.text = ev.subject;
+      _locationCtrl.text = ev.location;
+      _descCtrl.text = ev.description;
+      _eventType = ev.eventType.toLowerCase().contains('online') ? 'online' : 'offline';
+      try {
+        if (ev.eventDate.isNotEmpty) {
+          _eventDate = DateTime.parse(ev.eventDate);
+        }
+      } catch (_) {}
+      try {
+        if (ev.startTime.isNotEmpty) {
+          final parts = ev.startTime.split(':');
+          if (parts.length >= 2) {
+            _startTime = TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+          }
+        }
+        if (ev.endTime.isNotEmpty) {
+          final parts = ev.endTime.split(':');
+          if (parts.length >= 2) {
+            _endTime = TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+          }
+        }
+      } catch (_) {}
+    }
+  }
 
   static const List<Map<String, dynamic>> _capacityPresets = [
     {'label': 'Unlimited', 'value': 0},
@@ -2046,7 +2215,8 @@ class _CreateStudyEventDialogState extends ConsumerState<_CreateStudyEventDialog
     setState(() => _isSubmitting = true);
     final messenger = ScaffoldMessenger.of(context);
 
-    final success = await ref.read(communityProvider.notifier).createEvent({
+    final isEditing = widget.eventToEdit != null;
+    final Map<String, dynamic> eventPayload = {
       'title': title,
       'subject': subject,
       'description': desc,
@@ -2054,16 +2224,24 @@ class _CreateStudyEventDialogState extends ConsumerState<_CreateStudyEventDialog
       'start_time': startStr,
       'end_time': endStr,
       'location': finalLocation,
+      'event_type': _eventType == 'online' ? 'Online' : 'In-Person',
       'max_participants': capacity,
-    });
+    };
+
+    final bool success;
+    if (isEditing) {
+      success = await ref.read(communityProvider.notifier).updateEvent(widget.eventToEdit!.id, eventPayload);
+    } else {
+      success = await ref.read(communityProvider.notifier).createEvent(eventPayload);
+    }
 
     if (mounted) {
       setState(() => _isSubmitting = false);
       if (success) {
         Navigator.pop(context);
         messenger.showSnackBar(
-          const SnackBar(
-            content: Text('Study Event published and synced to Scholar Community!'),
+          SnackBar(
+            content: Text(isEditing ? 'Study Event updated successfully!' : 'Study Event published and synced to Scholar Community!'),
             backgroundColor: AppColors.success,
           ),
         );
@@ -2111,14 +2289,14 @@ class _CreateStudyEventDialogState extends ConsumerState<_CreateStudyEventDialog
                         child: const Icon(Icons.event_available_rounded, color: AppColors.primary, size: 20),
                       ),
                       const SizedBox(width: 10),
-                      const Column(
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Host Study Event & Meetup',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                            widget.eventToEdit != null ? 'Edit Study Event & Meetup' : 'Host Study Event & Meetup',
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
                           ),
-                          Text(
+                          const Text(
                             'Invite batchmates for collaborative prep',
                             style: TextStyle(fontSize: 11, color: Colors.grey),
                           ),
@@ -2520,7 +2698,7 @@ class _CreateStudyEventDialogState extends ConsumerState<_CreateStudyEventDialog
                               )
                             : const Icon(Icons.check_circle_outline_rounded, size: 18),
                         label: Text(
-                          _isSubmitting ? 'Publishing...' : 'Publish Study Event',
+                          widget.eventToEdit != null ? (_isSubmitting ? 'Saving...' : 'Save Changes') : (_isSubmitting ? 'Publishing...' : 'Publish Study Event'),
                           style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
                         ),
                         style: ElevatedButton.styleFrom(
