@@ -1436,8 +1436,9 @@ class _GradesPageState extends ConsumerState<GradesPage> {
 
                                       // Delete Course Button
                                       IconButton(
-                                        icon: const Icon(Icons.delete_outline,
-                                            size: 16, color: Colors.grey),
+                                        icon: const Icon(Icons.delete_outline_rounded,
+                                            size: 18, color: Colors.redAccent),
+                                        tooltip: 'Delete Course',
                                         onPressed: () async {
                                           final confirm = await showDialog<bool>(
                                             context: context,
@@ -1457,15 +1458,25 @@ class _GradesPageState extends ConsumerState<GradesPage> {
                                                   child: const Text('Delete',
                                                       style: TextStyle(
                                                           color:
-                                                              AppColors.error)),
+                                                              AppColors.error,
+                                                          fontWeight: FontWeight.bold)),
                                                 ),
                                               ],
                                             ),
                                           );
-                                          if (confirm == true) {
-                                            await ref
+                                          if (confirm == true && context.mounted) {
+                                            final ok = await ref
                                                 .read(gradesProvider.notifier)
                                                 .deleteCourseGrade(course.id);
+                                            if (ok && context.mounted) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text('${course.courseCode} removed successfully'),
+                                                  backgroundColor: AppColors.success,
+                                                  duration: const Duration(seconds: 2),
+                                                ),
+                                              );
+                                            }
                                           }
                                         },
                                       ),

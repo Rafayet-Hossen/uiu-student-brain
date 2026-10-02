@@ -23,13 +23,176 @@ class ProfilePage extends ConsumerStatefulWidget {
   ConsumerState<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends ConsumerState<ProfilePage> {
+class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProviderStateMixin {
   Set<String> _unlockedMilestones = {};
+  late AnimationController _animCtrl;
+  late Animation<double> _fadeAnim;
 
   @override
   void initState() {
     super.initState();
+    _animCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 650));
+    _fadeAnim = CurvedAnimation(parent: _animCtrl, curve: Curves.easeOutCubic);
+    _animCtrl.forward();
     _loadAndSyncMilestones();
+  }
+
+  @override
+  void dispose() {
+    _animCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _downloadJsonBackupFile(String jsonStr) async {
+    try {
+      final now = DateTime.now();
+      final dateFormatted = "${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}_${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}";
+      final fileName = 'student_brain_backup_$dateFormatted.json';
+      final bytes = utf8.encode(jsonStr);
+
+      String? savePath = await FilePicker.platform.saveFile(
+        dialogTitle: 'Save StudentBrain Academic Backup',
+        fileName: fileName,
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+        bytes: Uint8List.fromList(bytes),
+      );
+
+      if (savePath != null) {
+        final f = File(savePath);
+        if (!await f.exists() || await f.length() == 0) {
+          await f.writeAsBytes(bytes);
+        }
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Backup saved successfully: $fileName'),
+              backgroundColor: AppColors.success,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        }
+      } else {
+        final downloadDir = Directory('/storage/emulated/0/Download');
+        if (await downloadDir.exists()) {
+          final fallbackFile = File('${downloadDir.path}/$fileName');
+          await fallbackFile.writeAsString(jsonStr);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Saved to Downloads: $fileName'),
+                backgroundColor: AppColors.success,
+                duration: const Duration(seconds: 4),
+              ),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      Clipboard.setData(ClipboardData(text: jsonStr));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Backup copied to clipboard (Direct save: $e)'),
+            backgroundColor: AppColors.primary,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<bool> _processRestoreJson(String input) async {
+    try {
+      final data = jsonDecode(input);
+      if (data is! Map<String, dynamic>) {
+        throw const FormatException('Invalid JSON root format.');
+      }
+
+      final prefs = ref.read(sharedPreferencesProvider);
+
+      if (data['unlocked_milestones'] is List) {
+        final List<String> list = (data['unlocked_milestones'] as List).map((e) => e.toString()).toList();
+        await prefs.setStringList('user_unlocked_milestones_v1', list);
+        setState(() {
+          _unlockedMilestones = list.toSet();
+        });
+      }
+
+      if (data['materials'] is List) {
+        await prefs.setString('offline_materials_v1', jsonEncode(data['materials']));
+        ref.invalidate(materialsProvider);
+      }
+
+      if (data['sessions'] is List) {
+        await prefs.setString('local_study_sessions_v1', jsonEncode(data['sessions']));
+        ref.invalidate(trackerProvider);
+      }
+      if (data['grades_courses'] is List) {
+        await prefs.setString('local_grades_courses_v1', jsonEncode(data['grades_courses']));
+        ref.invalidate(gradesProvider);
+      }
+
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (dCtx) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Row(
+              children: [
+                Icon(Icons.check_circle_rounded, color: AppColors.success, size: 26),
+                SizedBox(width: 10),
+                Text('Backup Restored!'),
+              ],
+            ),
+            content: Text(
+              'Data successfully restored from backup (App: ${data['app'] ?? 'StudentBrain'}).\n\n'
+              '• Milestones: ${_unlockedMilestones.length} unlocked\n'
+              '• Sessions: ${(data['sessions'] as List?)?.length ?? 0} loaded\n'
+              '• Courses: ${(data['grades_courses'] as List?)?.length ?? 0} loaded\n'
+              '• Materials: ${(data['materials'] as List?)?.length ?? 0} loaded',
+              style: const TextStyle(fontSize: 13, height: 1.4),
+            ),
+            actions: [
+              ElevatedButton(
+                onPressed: () => Navigator.pop(dCtx),
+                style: ElevatedButton.styleFrom(backgroundColor: AppColors.success),
+                child: const Text('Great!'),
+              ),
+            ],
+          ),
+        );
+      }
+      return true;
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to parse backup JSON: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+      return false;
+    }
+  }
+
+  Future<void> _directPickAndImportJson() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        dialogTitle: 'Select StudentBrain Backup JSON',
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+      if (result != null && result.files.single.path != null) {
+        final file = File(result.files.single.path!);
+        final content = await file.readAsString();
+        await _processRestoreJson(content);
+      }
+    } catch (e) {
+      if (mounted) {
+        _showImportJsonDialog();
+      }
+    }
   }
 
   void _loadAndSyncMilestones() {
@@ -263,20 +426,28 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             onPressed: () => Navigator.pop(ctx),
             child: const Text('Close'),
           ),
-          ElevatedButton.icon(
+          OutlinedButton.icon(
             onPressed: () {
               Clipboard.setData(ClipboardData(text: jsonStr));
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('JSON Backup successfully copied to clipboard!'),
+                  content: Text('JSON Backup copied to clipboard!'),
                   backgroundColor: AppColors.success,
-                  duration: Duration(seconds: 3),
+                  duration: Duration(seconds: 2),
                 ),
               );
             },
-            icon: const Icon(Icons.copy_rounded, size: 16),
-            label: const Text('Copy JSON Backup'),
+            icon: const Icon(Icons.copy_rounded, size: 15),
+            label: const Text('Copy'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _downloadJsonBackupFile(jsonStr);
+            },
+            icon: const Icon(Icons.download_rounded, size: 16),
+            label: const Text('Download File'),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
@@ -413,85 +584,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                       }
 
                       setDialogState(() => isProcessing = true);
-                      try {
-                        final data = jsonDecode(input);
-                        if (data is! Map<String, dynamic>) {
-                          throw const FormatException('Invalid JSON root format.');
-                        }
-
-                        final prefs = ref.read(sharedPreferencesProvider);
-
-                        // 1. Restore Milestones
-                        if (data['unlocked_milestones'] is List) {
-                          final List<String> list = (data['unlocked_milestones'] as List).map((e) => e.toString()).toList();
-                          await prefs.setStringList('user_unlocked_milestones_v1', list);
-                          setState(() {
-                            _unlockedMilestones = list.toSet();
-                          });
-                        }
-
-                        // 2. Restore Materials to local cache
-                        if (data['materials'] is List) {
-                          await prefs.setString('offline_materials_v1', jsonEncode(data['materials']));
-                          ref.invalidate(materialsProvider);
-                        }
-
-                        // 3. Restore Sessions & Grades
-                        if (data['sessions'] is List) {
-                          await prefs.setString('local_study_sessions_v1', jsonEncode(data['sessions']));
-                          ref.invalidate(trackerProvider);
-                        }
-                        if (data['grades_courses'] is List) {
-                          await prefs.setString('local_grades_courses_v1', jsonEncode(data['grades_courses']));
-                          ref.invalidate(gradesProvider);
-                        }
-
-                        if (context.mounted) {
-                          Navigator.pop(ctx);
-                          showDialog(
-                            context: context,
-                            builder: (sCtx) => AlertDialog(
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                              title: const Row(
-                                children: [
-                                  Icon(Icons.check_circle_rounded, color: AppColors.success, size: 26),
-                                  SizedBox(width: 10),
-                                  Text('Backup Restored!'),
-                                ],
-                              ),
-                              content: Text(
-                                'Data successfully restored from backup (App: ${data['app'] ?? 'StudentBrain'}).\n\n'
-                                '• Milestones: ${_unlockedMilestones.length} unlocked\n'
-                                '• Sessions: ${(data['sessions'] as List?)?.length ?? 0} loaded\n'
-                                '• Materials: ${(data['materials'] as List?)?.length ?? 0} synchronized\n'
-                                '• Courses: ${(data['grades_courses'] as List?)?.length ?? 0} restored',
-                                style: const TextStyle(fontSize: 13, height: 1.4),
-                              ),
-                              actions: [
-                                ElevatedButton(
-                                  onPressed: () => Navigator.pop(sCtx),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.success,
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                  ),
-                                  child: const Text('Awesome'),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
-                      } catch (e) {
-                        setDialogState(() => isProcessing = false);
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Failed to parse backup JSON: $e'),
-                              backgroundColor: AppColors.error,
-                            ),
-                          );
-                        }
-                      }
+                      Navigator.pop(ctx);
+                      await _processRestoreJson(input);
                     },
               icon: isProcessing
                   ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
@@ -647,7 +741,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
+      body: FadeTransition(
+        opacity: _fadeAnim,
+        child: SlideTransition(
+          position: Tween<Offset>(begin: const Offset(0, 0.025), end: Offset.zero).animate(_fadeAnim),
+          child: SingleChildScrollView(
         padding: Responsive.padding(context),
         child: Center(
           child: ConstrainedBox(
@@ -1028,7 +1126,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                           const SizedBox(width: 10),
                           Expanded(
                             child: OutlinedButton.icon(
-                              onPressed: _showImportJsonDialog,
+                              onPressed: _directPickAndImportJson,
                               icon: const Icon(Icons.upload_file_rounded, size: 17),
                               label: const FittedBox(
                                 fit: BoxFit.scaleDown,
@@ -1062,7 +1160,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                       const Divider(),
                       ListTile(
                         leading: const Icon(Icons.settings_outlined, color: AppColors.primary),
-                        title: const Text('App Settings & Backend Host', style: TextStyle(fontWeight: FontWeight.w700)),
+                        title: const Text('Preferences & Settings', style: TextStyle(fontWeight: FontWeight.w700)),
                         trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
                         onTap: () => context.push('/settings'),
                       ),
@@ -1099,6 +1197,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 const SizedBox(height: 24),
               ],
             ),
+          ),
+        ),
           ),
         ),
       ),

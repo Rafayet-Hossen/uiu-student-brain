@@ -11,6 +11,8 @@ final communityRepositoryProvider = Provider<CommunityRepository>((ref) {
 class CommunityState {
   final List<PostModel> posts;
   final List<StudyEventModel> events;
+  final List<StudentProfileModel> students;
+  final Set<int> followingIds;
   final String selectedCategory;
   final int activeTab;
   final bool isLoading;
@@ -19,6 +21,8 @@ class CommunityState {
   const CommunityState({
     this.posts = const [],
     this.events = const [],
+    this.students = const [],
+    this.followingIds = const {},
     this.selectedCategory = 'All',
     this.activeTab = 0,
     this.isLoading = false,
@@ -28,6 +32,8 @@ class CommunityState {
   CommunityState copyWith({
     List<PostModel>? posts,
     List<StudyEventModel>? events,
+    List<StudentProfileModel>? students,
+    Set<int>? followingIds,
     String? selectedCategory,
     int? activeTab,
     bool? isLoading,
@@ -36,6 +42,8 @@ class CommunityState {
     return CommunityState(
       posts: posts ?? this.posts,
       events: events ?? this.events,
+      students: students ?? this.students,
+      followingIds: followingIds ?? this.followingIds,
       selectedCategory: selectedCategory ?? this.selectedCategory,
       activeTab: activeTab ?? this.activeTab,
       isLoading: isLoading ?? this.isLoading,
@@ -59,11 +67,50 @@ class CommunityNotifier extends StateNotifier<CommunityState> {
   Future<void> loadCommunityData() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final p = await _repository.getPosts();
-      final e = await _repository.getEvents();
-      state = state.copyWith(posts: p, events: e, isLoading: false);
+      final results = await Future.wait([
+        _repository.getPosts(),
+        _repository.getEvents(),
+        _repository.getStudents(),
+      ]);
+      final p = results[0] as List<PostModel>;
+      final e = results[1] as List<StudyEventModel>;
+      final s = results[2] as List<StudentProfileModel>;
+
+      final followed = s.where((stud) => stud.isFollowing).map((stud) => stud.id).toSet();
+
+      state = state.copyWith(
+        posts: p,
+        events: e,
+        students: s,
+        followingIds: followed,
+        isLoading: false,
+      );
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  Future<bool> toggleFollow(int studentId) async {
+    try {
+      final res = await _repository.toggleFollowStudent(studentId);
+      final isNowFollowing = res['following'] as bool? ?? (!state.followingIds.contains(studentId));
+      final updated = Set<int>.from(state.followingIds);
+      if (isNowFollowing) {
+        updated.add(studentId);
+      } else {
+        updated.remove(studentId);
+      }
+      state = state.copyWith(followingIds: updated);
+      return isNowFollowing;
+    } catch (_) {
+      final updated = Set<int>.from(state.followingIds);
+      if (updated.contains(studentId)) {
+        updated.remove(studentId);
+      } else {
+        updated.add(studentId);
+      }
+      state = state.copyWith(followingIds: updated);
+      return updated.contains(studentId);
     }
   }
 

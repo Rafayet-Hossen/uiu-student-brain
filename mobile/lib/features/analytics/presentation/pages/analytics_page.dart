@@ -31,7 +31,7 @@ class AnalyticsPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Academic Analytics & Insights'),
+        title: const Text('Academic Analytics', overflow: TextOverflow.ellipsis),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
@@ -175,21 +175,25 @@ class AnalyticsPage extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Text(
-                                      'Weekly Focus Histogram (Last 7 Days)',
-                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                                    const Expanded(
+                                      child: Text(
+                                        'Weekly Focus Histogram',
+                                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
+                                    const SizedBox(width: 8),
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
                                       decoration: BoxDecoration(
                                         color: AppColors.primary.withValues(alpha: 0.12),
                                         borderRadius: BorderRadius.circular(6),
                                       ),
                                       child: const Text(
-                                        '7 Days Active',
-                                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.primary),
+                                        '7 Days Trend',
+                                        style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.primary),
                                       ),
                                     ),
                                   ],
@@ -290,21 +294,25 @@ class AnalyticsPage extends ConsumerWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        const Text(
-                                          'Subject Investment Allocation (Top 5)',
-                                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                                        const Expanded(
+                                          child: Text(
+                                            'Subject Investment Allocation',
+                                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                         ),
+                                        const SizedBox(width: 8),
                                         Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
                                           decoration: BoxDecoration(
                                             color: AppColors.primary.withValues(alpha: 0.12),
                                             borderRadius: BorderRadius.circular(6),
                                           ),
                                           child: Text(
                                             '${top5Subjects.length} Courses',
-                                            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.primary),
+                                            style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.primary),
                                           ),
                                         ),
                                       ],

@@ -4,6 +4,7 @@ class PostModel {
   final String content;
   final String category;
   final String authorName;
+  final int? authorId;
   final String? authorAvatar;
   final int reactionsCount;
   final int commentsCount;
@@ -20,6 +21,7 @@ class PostModel {
     required this.content,
     required this.category,
     required this.authorName,
+    this.authorId,
     this.authorAvatar,
     this.reactionsCount = 0,
     this.commentsCount = 0,
@@ -37,6 +39,7 @@ class PostModel {
     String? content,
     String? category,
     String? authorName,
+    int? authorId,
     String? authorAvatar,
     int? reactionsCount,
     int? commentsCount,
@@ -53,6 +56,7 @@ class PostModel {
       content: content ?? this.content,
       category: category ?? this.category,
       authorName: authorName ?? this.authorName,
+      authorId: authorId ?? this.authorId,
       authorAvatar: authorAvatar ?? this.authorAvatar,
       reactionsCount: reactionsCount ?? this.reactionsCount,
       commentsCount: commentsCount ?? this.commentsCount,
@@ -68,11 +72,16 @@ class PostModel {
   factory PostModel.fromJson(Map<String, dynamic> json) {
     String name = 'Scholar';
     String? avatar;
+    int? authorId;
     if (json['author'] is Map) {
       name = json['author']['full_name'] ?? json['author']['username'] ?? json['author']['email'] ?? 'Scholar';
       avatar = json['author']['avatar'];
+      authorId = json['author']['id'] as int?;
     } else if (json['author_name'] != null) {
       name = json['author_name'].toString();
+    }
+    if (authorId == null && json['author_id'] != null) {
+      authorId = json['author_id'] as int?;
     }
 
     return PostModel(
@@ -81,6 +90,7 @@ class PostModel {
       content: json['content'] as String? ?? '',
       category: json['category'] as String? ?? 'General',
       authorName: name,
+      authorId: authorId,
       authorAvatar: avatar,
       reactionsCount: json['reactions_count'] as int? ?? json['likes_count'] as int? ?? 0,
       commentsCount: json['comments_count'] as int? ?? 0,
@@ -236,6 +246,35 @@ class StudyEventModel {
       isAttending: json['is_attending'] as bool? ?? json['is_rsvped'] as bool? ?? (userStatus == 'going' || userStatus == 'interested'),
       userRsvpStatus: userStatus,
       creatorName: creator,
+    );
+  }
+}
+
+class StudentProfileModel {
+  final int id;
+  final String email;
+  final String fullName;
+  final int followersCount;
+  final int followingCount;
+  final bool isFollowing;
+
+  StudentProfileModel({
+    required this.id,
+    required this.email,
+    required this.fullName,
+    this.followersCount = 0,
+    this.followingCount = 0,
+    this.isFollowing = false,
+  });
+
+  factory StudentProfileModel.fromJson(Map<String, dynamic> json) {
+    return StudentProfileModel(
+      id: json['id'] as int? ?? 0,
+      email: json['email'] as String? ?? '',
+      fullName: json['full_name'] as String? ?? 'Scholar',
+      followersCount: json['followers_count'] as int? ?? 0,
+      followingCount: json['following_count'] as int? ?? 0,
+      isFollowing: json['is_following'] as bool? ?? false,
     );
   }
 }

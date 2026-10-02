@@ -21,7 +21,6 @@ class SettingsPage extends ConsumerStatefulWidget {
 }
 
 class _SettingsPageState extends ConsumerState<SettingsPage> {
-  final _urlCtrl = TextEditingController();
   final _targetGpaCtrl = TextEditingController();
   final _customGoalCtrl = TextEditingController();
 
@@ -39,33 +38,15 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   @override
   void initState() {
     super.initState();
-    final currentUrl = ref.read(secureStorageServiceProvider).getBaseUrl() ??
-        ApiEndpoints.defaultBaseUrl;
-    _urlCtrl.text = currentUrl;
-
     final gradePlan = ref.read(gradesProvider).plan;
     _targetGpaCtrl.text = (gradePlan?.targetGpa ?? 3.90).toStringAsFixed(2);
   }
 
   @override
   void dispose() {
-    _urlCtrl.dispose();
     _targetGpaCtrl.dispose();
     _customGoalCtrl.dispose();
     super.dispose();
-  }
-
-  void _saveUrl() {
-    final newUrl = _urlCtrl.text.trim();
-    if (newUrl.isNotEmpty) {
-      ref.read(dioClientProvider).updateBaseUrl(newUrl);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('API Backend Server URL updated successfully'),
-          backgroundColor: AppColors.success,
-        ),
-      );
-    }
   }
 
   Future<void> _saveStudyTargets() async {
@@ -457,64 +438,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                         value: _notifSound,
                         activeTrackColor: AppColors.primary,
                         onChanged: (val) => setState(() => _notifSound = val),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // 5. Backend Server Configuration
-                GlassCard(
-                  padding: const EdgeInsets.all(18),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Row(
-                        children: [
-                          Icon(Icons.dns_rounded, size: 18, color: AppColors.primary),
-                          SizedBox(width: 8),
-                          Text(
-                            'Backend API Server Host',
-                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      const Text(
-                        'Connected to StudentBrain live cloud API endpoint. You can switch between production or local emulator.',
-                        style: TextStyle(fontSize: 11, color: Colors.grey, height: 1.35),
-                      ),
-                      const SizedBox(height: 14),
-                      AppTextField(
-                        label: 'API Base URL',
-                        controller: _urlCtrl,
-                        hint: 'https://uiu-student-brain.onrender.com/api',
-                      ),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton(
-                              style: OutlinedButton.styleFrom(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              onPressed: () {
-                                _urlCtrl.text = ApiEndpoints.defaultBaseUrl;
-                                _saveUrl();
-                              },
-                              child: const Text('Reset Default'),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: AppButton(
-                              label: 'Save Host',
-                              height: 42,
-                              onPressed: _saveUrl,
-                            ),
-                          ),
-                        ],
                       ),
                     ],
                   ),

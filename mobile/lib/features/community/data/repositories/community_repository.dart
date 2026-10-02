@@ -65,4 +65,25 @@ class CommunityRepository {
     final response = await _dioClient.post(ApiEndpoints.events, data: data);
     return StudyEventModel.fromJson(response.data as Map<String, dynamic>);
   }
+
+  Future<Map<String, dynamic>> toggleFollowStudent(int studentId) async {
+    final response = await _dioClient.post(ApiEndpoints.studentFollow(studentId));
+    if (response.data is Map) {
+      return Map<String, dynamic>.from(response.data as Map);
+    }
+    return {};
+  }
+
+  Future<List<StudentProfileModel>> getStudents({String? search}) async {
+    final response = await _dioClient.get(
+      ApiEndpoints.students,
+      queryParameters: search != null && search.isNotEmpty ? {'search': search} : null,
+    );
+    if (response.data is List) {
+      return (response.data as List)
+          .map((e) => StudentProfileModel.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
+    return [];
+  }
 }

@@ -126,9 +126,14 @@ class GradesNotifier extends StateNotifier<GradesState> {
   Future<void> loadGradesData() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final plan = await _repository.getGradePlan();
-      final retake = await _repository.getRetakeAdvisor();
-      final courses = await _repository.getCourseGrades();
+      final results = await Future.wait([
+        _repository.getGradePlan(),
+        _repository.getRetakeAdvisor(),
+        _repository.getCourseGrades(),
+      ]);
+      final plan = results[0] as GradePlanModel?;
+      final retake = results[1] as Map<String, dynamic>;
+      final courses = results[2] as List<CourseGradeModel>;
 
       // Pre-select top single retake if available
       final initialSelected = <int>{};
@@ -173,6 +178,18 @@ class GradesNotifier extends StateNotifier<GradesState> {
   Future<bool> createCourseGrade(Map<String, dynamic> data) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
+      // If course code already exists, replace/overwrite it
+      final code = (data['course_code'] ?? '').toString().trim().toUpperCase();
+      if (code.isNotEmpty) {
+        final existing = state.courses
+            .where((c) => c.courseCode.trim().toUpperCase() == code)
+            .toList();
+        for (final oldCourse in existing) {
+          try {
+            await _repository.deleteCourseGrade(oldCourse.id);
+          } catch (_) {}
+        }
+      }
       await _repository.createCourseGrade(data);
       await loadGradesData();
       return true;

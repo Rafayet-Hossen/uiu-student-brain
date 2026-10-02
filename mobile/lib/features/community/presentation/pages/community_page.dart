@@ -15,6 +15,7 @@ import '../../../../core/widgets/student_brain_loader.dart';
 import '../../../../core/widgets/user_avatar.dart';
 import '../../data/models/community_models.dart';
 import '../providers/community_provider.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 
 class CommunityPage extends ConsumerStatefulWidget {
   const CommunityPage({super.key});
@@ -70,7 +71,26 @@ class _CommunityPageState extends ConsumerState<CommunityPage>
           ),
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
+            tooltip: 'Refresh',
             onPressed: () => notifier.loadCommunityData(),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 12.0, left: 4.0),
+            child: InkWell(
+              onTap: () => _showMyCommunityProfileModal(context, ref),
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.primary, width: 1.5),
+                ),
+                child: UserAvatar(
+                  name: ref.watch(authProvider).user?.fullName ?? 'Scholar',
+                  size: 28,
+                ),
+              ),
+            ),
           ),
         ],
         bottom: TabBar(
@@ -237,6 +257,136 @@ class _CommunityPageState extends ConsumerState<CommunityPage>
       builder: (ctx) => const _CreateStudyEventDialog(),
     );
   }
+
+  void _showMyCommunityProfileModal(BuildContext context, WidgetRef ref) {
+    final user = ref.read(authProvider).user;
+    final commState = ref.read(communityProvider);
+    final myPosts = commState.posts.where((p) {
+      if (user?.id != null && p.authorId == user!.id) return true;
+      final uName = (user?.fullName ?? user?.email ?? '').trim().toLowerCase();
+      return uName.isNotEmpty && p.authorName.trim().toLowerCase() == uName;
+    }).toList();
+
+    final studentRecord = commState.students.where((s) => s.id == user?.id).firstOrNull;
+    final followersCount = studentRecord?.followersCount ?? 0;
+    final followingCount = commState.followingIds.length;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.65,
+        minChildSize: 0.4,
+        maxChildSize: 0.9,
+        builder: (_, scrollCtrl) => Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.all(20),
+          child: ListView(
+            controller: scrollCtrl,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withValues(alpha: 0.4),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Row(
+                children: [
+                  UserAvatar(name: user?.fullName ?? 'Scholar', size: 54),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          user?.fullName ?? 'Scholar',
+                          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          user?.email ?? 'Campus Community Member',
+                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildStatCol('${myPosts.length}', 'Discussions'),
+                    Container(height: 30, width: 1, color: Colors.grey.withValues(alpha: 0.3)),
+                    _buildStatCol('$followersCount', 'Followers'),
+                    Container(height: 30, width: 1, color: Colors.grey.withValues(alpha: 0.3)),
+                    _buildStatCol('$followingCount', 'Following'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 22),
+              const Text(
+                'My Authored Discussions',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 12),
+              if (myPosts.isEmpty)
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  alignment: Alignment.center,
+                  child: const Column(
+                    children: [
+                      Icon(Icons.forum_outlined, size: 40, color: Colors.grey),
+                      SizedBox(height: 8),
+                      Text('You have not created any discussions yet.', style: TextStyle(color: Colors.grey)),
+                    ],
+                  ),
+                )
+              else
+                ...myPosts.map((p) => Card(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  child: ListTile(
+                    title: Text(p.title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5)),
+                    subtitle: Text('${p.category} • ${p.commentsCount} comments • ${p.reactionsCount} likes', style: const TextStyle(fontSize: 11)),
+                    trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                    },
+                  ),
+                )),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatCol(String val, String label) {
+    return Column(
+      children: [
+        Text(val, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.primary)),
+        const SizedBox(height: 2),
+        Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+      ],
+    );
+  }
 }
 
 /// Rich Post Card with Inline Comments, Share button, and Code viewer
@@ -365,9 +515,73 @@ class _CommunityPostCardState extends ConsumerState<_CommunityPostCard> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      post.authorName,
-                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            post.authorName,
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        Builder(
+                          builder: (context) {
+                            final commState = ref.watch(communityProvider);
+                            final authState = ref.watch(authProvider);
+                            final currentUserId = authState.user?.id;
+                            final currentUserName = (authState.user?.fullName ?? authState.user?.email ?? '').trim().toLowerCase();
+                            final isSelf = (post.authorId != null && post.authorId == currentUserId) ||
+                                (currentUserName.isNotEmpty && post.authorName.trim().toLowerCase() == currentUserName);
+                            final isFollowing = post.authorId != null && commState.followingIds.contains(post.authorId);
+                            final showFollowBtn = !isSelf && !isFollowing && post.authorId != null;
+
+                            if (!showFollowBtn) return const SizedBox.shrink();
+
+                            return Padding(
+                              padding: const EdgeInsets.only(left: 6.0),
+                              child: InkWell(
+                                onTap: () async {
+                                  await ref.read(communityProvider.notifier).toggleFollow(post.authorId!);
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('You are now following ${post.authorName}'),
+                                        duration: const Duration(seconds: 2),
+                                        backgroundColor: AppColors.primary,
+                                      ),
+                                    );
+                                  }
+                                },
+                                borderRadius: BorderRadius.circular(10),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary.withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.person_add_rounded, size: 10, color: AppColors.primary),
+                                      SizedBox(width: 3),
+                                      Text(
+                                        'Follow',
+                                        style: TextStyle(
+                                          fontSize: 9.5,
+                                          fontWeight: FontWeight.w800,
+                                          color: AppColors.primary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     ),
                     if (post.createdAt.isNotEmpty)
                       Text(

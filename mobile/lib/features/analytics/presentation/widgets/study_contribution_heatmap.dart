@@ -85,33 +85,33 @@ class StudyContributionHeatmap extends StatelessWidget {
 
     Color getLevelColor(int level) {
       if (level == 0) {
-        return isDark ? const Color(0xFF1E2430) : const Color(0xFFEBEDF0);
+        return isDark ? const Color(0xFF1E2430) : const Color(0xFFF1F5F9);
       }
       if (isDark) {
         switch (level) {
           case 1:
-            return const Color(0xFF0E4429);
+            return const Color(0xFF7C2D12);
           case 2:
-            return const Color(0xFF006D32);
+            return const Color(0xFFC2410C);
           case 3:
-            return const Color(0xFF26A641);
+            return const Color(0xFFEA580C);
           case 4:
-            return const Color(0xFF39D353);
+            return const Color(0xFFF97316);
           default:
             return const Color(0xFF1E2430);
         }
       } else {
         switch (level) {
           case 1:
-            return const Color(0xFF9BE9A8);
+            return const Color(0xFFFFEDD5);
           case 2:
-            return const Color(0xFF40C463);
+            return const Color(0xFFFDBA74);
           case 3:
-            return const Color(0xFF30A14E);
+            return const Color(0xFFFB923C);
           case 4:
-            return const Color(0xFF216E39);
+            return const Color(0xFFF26522);
           default:
-            return const Color(0xFFEBEDF0);
+            return const Color(0xFFF1F5F9);
         }
       }
     }
@@ -124,46 +124,54 @@ class StudyContributionHeatmap extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: AppColors.flame.withValues(alpha: 0.15),
-                      shape: BoxShape.circle,
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: (isDark ? const Color(0xFFF97316) : const Color(0xFFF26522)).withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.local_fire_department_rounded, color: isDark ? const Color(0xFFF97316) : const Color(0xFFF26522), size: 18),
                     ),
-                    child: const Icon(Icons.local_fire_department_rounded, color: AppColors.flame, size: 18),
-                  ),
-                  const SizedBox(width: 8),
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Study Consistency & Activity',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Study Consistency & Activity',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            'Academic consistency & activity tracker',
+                            style: TextStyle(fontSize: 10, color: Colors.grey),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
-                      Text(
-                        'GitHub-style academic contribution heatmap',
-                        style: TextStyle(fontSize: 10, color: Colors.grey),
-                      ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF26A641).withValues(alpha: 0.15),
+                  color: (isDark ? const Color(0xFFF97316) : const Color(0xFFF26522)).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  '$totalActiveDays Active Days',
-                  style: const TextStyle(
-                    fontSize: 11,
+                  '$totalActiveDays Active ${totalActiveDays == 1 ? "Day" : "Days"}',
+                  style: TextStyle(
+                    fontSize: 10.5,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF26A641),
+                    color: isDark ? const Color(0xFFF97316) : const Color(0xFFF26522),
                   ),
                 ),
               ),
