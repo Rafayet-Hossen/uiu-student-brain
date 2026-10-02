@@ -28,7 +28,6 @@ class _MaterialReaderPageState extends ConsumerState<MaterialReaderPage>
   bool _isAnalyzing = false;
   String? _error;
   double _fontSizeScale = 1.0;
-  bool _isBookmarked = false;
   final Set<int> _revealedAnswers = {};
 
   @override
@@ -148,6 +147,9 @@ class _MaterialReaderPageState extends ConsumerState<MaterialReaderPage>
 
       await _saveToCache(updated);
 
+      // Refresh library list in background so previous page is immediately up to date
+      ref.read(materialsProvider.notifier).loadMaterials();
+
       if (mounted) {
         setState(() {
           _material = updated;
@@ -220,6 +222,7 @@ class _MaterialReaderPageState extends ConsumerState<MaterialReaderPage>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isBookmarked = ref.watch(materialsProvider).bookmarkedIds.contains(widget.materialId.toString());
 
     return Scaffold(
       appBar: AppBar(
@@ -238,15 +241,15 @@ class _MaterialReaderPageState extends ConsumerState<MaterialReaderPage>
             ),
           IconButton(
             icon: Icon(
-              _isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
-              color: _isBookmarked ? AppColors.primary : null,
+              isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
+              color: isBookmarked ? AppColors.primary : null,
             ),
-            tooltip: 'Bookmark',
+            tooltip: isBookmarked ? 'Remove Bookmark' : 'Bookmark Material',
             onPressed: () {
-              setState(() => _isBookmarked = !_isBookmarked);
+              ref.read(materialsProvider.notifier).toggleBookmark(widget.materialId);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(_isBookmarked ? 'Bookmarked for revision' : 'Bookmark removed'),
+                  content: Text(!isBookmarked ? '🔖 Material bookmarked for revision' : 'Bookmark removed'),
                   duration: const Duration(seconds: 1),
                 ),
               );

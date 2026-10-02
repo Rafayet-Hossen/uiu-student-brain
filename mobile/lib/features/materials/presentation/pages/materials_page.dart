@@ -16,6 +16,7 @@ class MaterialsPage extends ConsumerStatefulWidget {
 
   static const List<String> categories = [
     'All',
+    'Bookmarked',
     'Lecture Note',
     'Cheat Sheet',
     'Textbook Chapter',
@@ -120,10 +121,20 @@ class _MaterialsPageState extends ConsumerState<MaterialsPage> with SingleTicker
                     child: Row(
                       children: MaterialsPage.categories.map((cat) {
                         final isSelected = matState.selectedCategory == cat;
+                        final isBookmarkCat = cat == 'Bookmarked';
                         return Padding(
                           padding: const EdgeInsets.only(right: 8.0),
                           child: FilterChip(
-                            label: Text(cat),
+                            avatar: isBookmarkCat
+                                ? Icon(
+                                    Icons.bookmark_rounded,
+                                    size: 14,
+                                    color: isSelected ? AppColors.primary : Colors.amber[600],
+                                  )
+                                : null,
+                            label: Text(
+                              isBookmarkCat ? 'Bookmarked (${matState.bookmarkedIds.length})' : cat,
+                            ),
                             selected: isSelected,
                             onSelected: (_) => notifier.selectCategory(cat),
                             selectedColor: AppColors.primary.withValues(alpha: 0.2),
@@ -180,24 +191,44 @@ class _MaterialsPageState extends ConsumerState<MaterialsPage> with SingleTicker
                   ),
                   const SizedBox(height: 8),
 
-                  // Trimester Pills Filter
+                  // Trimester Pills Filter (Compact, Modern, Responsive)
                   if (matState.semesters.isNotEmpty)
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
                       child: Row(
                         children: [
-                          ChoiceChip(
-                            label: const Text('All Terms'),
-                            selected: matState.selectedSemesterId == null,
-                            onSelected: (_) => notifier.selectSemester(null),
-                            selectedColor: AppColors.primary.withValues(alpha: 0.15),
-                            labelStyle: TextStyle(
-                              fontSize: 12,
-                              fontWeight: matState.selectedSemesterId == null ? FontWeight.w800 : FontWeight.w500,
-                              color: matState.selectedSemesterId == null ? AppColors.primary : (isDark ? AppColors.textDarkMuted : AppColors.textLightMuted),
+                          InkWell(
+                            onTap: () => notifier.selectSemester(null),
+                            borderRadius: BorderRadius.circular(10),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 180),
+                              padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: matState.selectedSemesterId == null
+                                    ? AppColors.primary.withValues(alpha: 0.16)
+                                    : (isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: matState.selectedSemesterId == null
+                                      ? AppColors.primary
+                                      : (isDark ? AppColors.borderDark : AppColors.borderLight),
+                                  width: matState.selectedSemesterId == null ? 1.4 : 1.0,
+                                ),
+                              ),
+                              child: Text(
+                                'All Terms',
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: matState.selectedSemesterId == null ? FontWeight.w800 : FontWeight.w600,
+                                  color: matState.selectedSemesterId == null
+                                      ? AppColors.primary
+                                      : (isDark ? AppColors.textDarkMuted : AppColors.textLightMuted),
+                                ),
+                              ),
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 6),
                           ...matState.semesters.map((sem) {
                             final semId = sem['id'] as int?;
                             final semName = sem['name']?.toString() ?? 'Term';
@@ -205,53 +236,56 @@ class _MaterialsPageState extends ConsumerState<MaterialsPage> with SingleTicker
                             final isSelected = matState.selectedSemesterId == semId;
 
                             return Container(
-                              margin: const EdgeInsets.only(right: 8),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? AppColors.primary.withValues(alpha: 0.15)
-                                    : (isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: isSelected
-                                      ? AppColors.primary
-                                      : (isDark ? AppColors.borderDark : AppColors.borderLight),
-                                  width: isSelected ? 1.5 : 1.0,
-                                ),
-                              ),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(20),
-                                  onTap: () => notifier.selectSemester(semId),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        if (isCurrent) ...[
-                                          const Icon(Icons.star_rounded, size: 14, color: AppColors.warning),
-                                          const SizedBox(width: 4),
-                                        ],
-                                        Text(
-                                          semName,
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-                                            color: isSelected
-                                                ? AppColors.primary
-                                                : (isDark ? AppColors.textDark : AppColors.textLight),
-                                          ),
+                              margin: const EdgeInsets.only(right: 6),
+                              child: InkWell(
+                                onTap: () => notifier.selectSemester(semId),
+                                borderRadius: BorderRadius.circular(10),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 180),
+                                  padding: const EdgeInsets.only(left: 9, right: 3, top: 4, bottom: 4),
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? AppColors.primary.withValues(alpha: 0.16)
+                                        : (isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? AppColors.primary
+                                          : (isDark ? AppColors.borderDark : AppColors.borderLight),
+                                      width: isSelected ? 1.4 : 1.0,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if (isCurrent) ...[
+                                        const Icon(Icons.star_rounded, size: 13, color: AppColors.warning),
+                                        const SizedBox(width: 3),
+                                      ],
+                                      Text(
+                                        semName,
+                                        style: TextStyle(
+                                          fontSize: 11.5,
+                                          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                                          color: isSelected
+                                              ? AppColors.primary
+                                              : (isDark ? AppColors.textDark : AppColors.textLight),
                                         ),
-                                        const SizedBox(width: 4),
-                                        PopupMenuButton<String>(
+                                      ),
+                                      const SizedBox(width: 2),
+                                      SizedBox(
+                                        width: 22,
+                                        height: 22,
+                                        child: PopupMenuButton<String>(
                                           icon: Icon(
                                             Icons.more_vert_rounded,
-                                            size: 15,
+                                            size: 13.5,
                                             color: isSelected
                                                 ? AppColors.primary
                                                 : (isDark ? AppColors.textDarkMuted : AppColors.textLightMuted),
                                           ),
                                           padding: EdgeInsets.zero,
+                                          splashRadius: 10,
                                           constraints: const BoxConstraints(),
                                           onSelected: (val) {
                                             if (val == 'edit') {
@@ -282,7 +316,7 @@ class _MaterialsPageState extends ConsumerState<MaterialsPage> with SingleTicker
                                                     size: 16,
                                                     color: AppColors.warning,
                                                   ),
-                                                  const SizedBox(width: 8),
+                                                  SizedBox(width: 8),
                                                   Text(
                                                     isCurrent ? 'Unmark Active' : 'Set as Active',
                                                     style: const TextStyle(fontSize: 13),
@@ -302,8 +336,8 @@ class _MaterialsPageState extends ConsumerState<MaterialsPage> with SingleTicker
                                             ),
                                           ],
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -479,10 +513,16 @@ class _MaterialsPageState extends ConsumerState<MaterialsPage> with SingleTicker
                       onRetry: () => notifier.loadMaterialsData(),
                     )
                   else if (matState.filteredMaterials.isEmpty)
-                    const EmptyState(
-                      icon: Icons.folder_open_outlined,
-                      title: 'No Materials Found',
-                      subtitle: 'Try changing your search keywords or filter category.',
+                    EmptyState(
+                      icon: matState.selectedCategory == 'Bookmarked'
+                          ? Icons.bookmark_border_rounded
+                          : Icons.folder_open_outlined,
+                      title: matState.selectedCategory == 'Bookmarked'
+                          ? 'No Bookmarked Materials Yet'
+                          : 'No Materials Found',
+                      subtitle: matState.selectedCategory == 'Bookmarked'
+                          ? 'Tap the bookmark icon on any course material or syllabus note to save it here for quick exam revision.'
+                          : 'Try changing your search keywords or filter category.',
                     )
                   else
                     ListView.separated(
@@ -492,6 +532,7 @@ class _MaterialsPageState extends ConsumerState<MaterialsPage> with SingleTicker
                       separatorBuilder: (_, __) => const SizedBox(height: 10),
                       itemBuilder: (context, index) {
                         final item = matState.filteredMaterials[index];
+                        final isBookmarked = matState.bookmarkedIds.contains(item.id.toString());
 
                         return GlassCard(
                           onTap: () {
@@ -506,11 +547,13 @@ class _MaterialsPageState extends ConsumerState<MaterialsPage> with SingleTicker
                                   Container(
                                     padding: const EdgeInsets.all(8),
                                     decoration: BoxDecoration(
-                                      color: AppColors.primary.withValues(alpha: 0.12),
+                                      color: isBookmarked
+                                          ? AppColors.primary.withValues(alpha: 0.16)
+                                          : AppColors.primary.withValues(alpha: 0.12),
                                       borderRadius: BorderRadius.circular(10),
                                     ),
-                                    child: const Icon(
-                                      Icons.description_outlined,
+                                    child: Icon(
+                                      isBookmarked ? Icons.bookmark_rounded : Icons.description_outlined,
                                       color: AppColors.primary,
                                       size: 20,
                                     ),
@@ -520,9 +563,34 @@ class _MaterialsPageState extends ConsumerState<MaterialsPage> with SingleTicker
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          item.title,
-                                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                item.title,
+                                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                                              ),
+                                            ),
+                                            if (isBookmarked) ...[
+                                              const SizedBox(width: 6),
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                                decoration: BoxDecoration(
+                                                  color: AppColors.primary.withValues(alpha: 0.12),
+                                                  borderRadius: BorderRadius.circular(4),
+                                                ),
+                                                child: const Text(
+                                                  'SAVED',
+                                                  style: TextStyle(
+                                                    fontSize: 9,
+                                                    fontWeight: FontWeight.w900,
+                                                    color: AppColors.primary,
+                                                    letterSpacing: 0.4,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ],
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
@@ -535,12 +603,38 @@ class _MaterialsPageState extends ConsumerState<MaterialsPage> with SingleTicker
                                       ],
                                     ),
                                   ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete_outline, size: 18, color: Colors.grey),
-                                      tooltip: 'Delete Material',
-                                      onPressed: () => _confirmDeleteMaterial(context, ref, item),
+                                  IconButton(
+                                    icon: Icon(
+                                      isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
+                                      size: 19,
+                                      color: isBookmarked ? AppColors.primary : Colors.grey,
                                     ),
-                                    const Icon(Icons.arrow_forward_ios_rounded, size: 13, color: AppColors.primary),
+                                    tooltip: isBookmarked ? 'Remove Bookmark' : 'Save Bookmark',
+                                    splashRadius: 16,
+                                    onPressed: () async {
+                                      final nowBookmarked = await notifier.toggleBookmark(item.id);
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              nowBookmarked
+                                                  ? 'Saved "${item.title}" to Bookmarks'
+                                                  : 'Removed from Bookmarks',
+                                            ),
+                                            duration: const Duration(seconds: 1),
+                                            behavior: SnackBarBehavior.floating,
+                                          ),
+                                        );
+                                      }
+                                    },
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_outline, size: 18, color: Colors.grey),
+                                    tooltip: 'Delete Material',
+                                    splashRadius: 16,
+                                    onPressed: () => _confirmDeleteMaterial(context, ref, item),
+                                  ),
+                                  const Icon(Icons.arrow_forward_ios_rounded, size: 13, color: AppColors.primary),
                                 ],
                               ),
                               if (item.summary.isNotEmpty) ...[
@@ -1075,7 +1169,7 @@ class _MaterialsPageState extends ConsumerState<MaterialsPage> with SingleTicker
                         Icon(Icons.add_rounded, size: 12, color: AppColors.primary),
                         SizedBox(width: 3),
                         Text(
-                          '+ Material',
+                          'Material',
                           style: TextStyle(
                             fontSize: 10.5,
                             fontWeight: FontWeight.w700,

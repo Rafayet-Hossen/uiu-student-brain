@@ -822,85 +822,69 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
                   ),
                   const SizedBox(height: 16),
 
-                  // Code preview box with custom toolbar
+                  // Backup file card (replaces unnecessary raw JSON code block)
                   Container(
+                    padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF0F101A) : const Color(0xFF1E2235),
+                      color: isDark ? const Color(0xFF0F101A) : const Color(0xFFF1F5F9),
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.1),
+                        color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.06),
                       ),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                    child: Row(
                       children: [
-                        // Code bar
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(Icons.description_rounded, color: AppColors.primary, size: 22),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
-                                children: [
-                                  Container(width: 8, height: 8, decoration: const BoxDecoration(color: Color(0xFFFF5F56), shape: BoxShape.circle)),
-                                  const SizedBox(width: 5),
-                                  Container(width: 8, height: 8, decoration: const BoxDecoration(color: Color(0xFFFFBD2E), shape: BoxShape.circle)),
-                                  const SizedBox(width: 5),
-                                  Container(width: 8, height: 8, decoration: const BoxDecoration(color: Color(0xFF27C93F), shape: BoxShape.circle)),
-                                  const SizedBox(width: 10),
-                                  const Text(
-                                    'student_brain_backup.json',
-                                    style: TextStyle(fontFamily: 'monospace', fontSize: 11, color: Colors.white70, fontWeight: FontWeight.w600),
-                                  ),
-                                ],
+                              const Text(
+                                'student_brain_backup.json',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w800,
+                                ),
                               ),
-                              InkWell(
-                                onTap: () {
-                                  Clipboard.setData(ClipboardData(text: jsonStr));
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('JSON copied to clipboard!'),
-                                      backgroundColor: AppColors.success,
-                                      duration: Duration(seconds: 2),
-                                    ),
-                                  );
-                                },
-                                borderRadius: BorderRadius.circular(6),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                                  child: Row(
-                                    children: const [
-                                      Icon(Icons.copy_rounded, size: 12, color: Colors.white70),
-                                      SizedBox(width: 4),
-                                      Text('Copy', style: TextStyle(fontSize: 11, color: Colors.white70, fontWeight: FontWeight.w600)),
-                                    ],
-                                  ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '${(jsonStr.length / 1024).toStringAsFixed(1)} KB • Encrypted Local Storage Backup',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        const Divider(height: 1, color: Colors.white12),
-                        // Monospace text
                         Container(
-                          height: 140,
-                          padding: const EdgeInsets.all(12),
-                          child: SingleChildScrollView(
-                            child: SelectableText(
-                              jsonStr,
-                              style: const TextStyle(
-                                fontFamily: 'monospace',
-                                fontSize: 11,
-                                color: Color(0xFF93C5FD),
-                                height: 1.35,
-                              ),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.success.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Text(
+                            'READY',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.success,
+                              letterSpacing: 0.5,
                             ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 18),
 
                   // Actions
                   Row(

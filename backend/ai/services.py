@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional
 from django.core.cache import cache
 from google.genai import types
 
-from .client import FALLBACK_MODEL, PRIMARY_MODEL, get_gemini_client
+from .client import FALLBACK_MODEL, MODELS_CASCADE, PRIMARY_MODEL, get_gemini_client
 from .schemas import (
     AcademicRiskAssessmentResult,
     QuizGenerationResult,
@@ -29,11 +29,7 @@ def _call_gemini_structured(
     if client is None:
         raise ValueError("Google GenAI client is not initialized.")
 
-    models_to_try = models or [
-        PRIMARY_MODEL,
-        FALLBACK_MODEL,
-        "gemini-2.5-flash",
-    ]
+    models_to_try = models or MODELS_CASCADE
 
     for model_name in models_to_try:
         try:
@@ -69,7 +65,7 @@ def test_ai_connectivity() -> Dict[str, Any]:
                 "active_model": "heuristic_fallback_engine",
                 "message": "StudentBrain Deterministic AI Engine is operational.",
             }
-        for model_name in [PRIMARY_MODEL, FALLBACK_MODEL, "gemini-2.5-flash"]:
+        for model_name in MODELS_CASCADE:
             try:
                 response = client.models.generate_content(
                     model=model_name,
@@ -298,7 +294,7 @@ def generate_topic_quiz(
             response_schema=QuizGenerationResult,
             system_instruction="You are an expert university examiner generating concise, high-yield diagnostic questions. Keep questions, options, and explanations brief and direct for rapid evaluation.",
             temperature=0.1,
-            models=[PRIMARY_MODEL, FALLBACK_MODEL, "gemini-2.5-flash"],
+            models=MODELS_CASCADE,
         )
         if result and result.get("questions") and len(result["questions"]) >= 3:
             cache.set(cache_key, result, timeout=86400 * 7)
@@ -398,7 +394,7 @@ def generate_smart_revision_schedule(
             contents=prompt,
             response_schema=RevisionPlanResult,
             temperature=0.2,
-            models=[PRIMARY_MODEL, FALLBACK_MODEL, "gemini-2.5-flash"],
+            models=MODELS_CASCADE,
         )
     except Exception as e:
         logger.warning(f"AI Revision Schedule fallback triggered: {e}")
@@ -463,7 +459,7 @@ def assess_student_academic_risk(
             contents=prompt,
             response_schema=AcademicRiskAssessmentResult,
             temperature=0.2,
-            models=[PRIMARY_MODEL, FALLBACK_MODEL, "gemini-2.5-flash"],
+            models=MODELS_CASCADE,
         )
     except Exception as e:
         logger.warning(f"AI Risk Assessment fallback triggered: {e}")
@@ -525,7 +521,7 @@ Provide a clear, engaging, and pedagogically sound response. Format with clear h
 """
 
     if client:
-        models_to_try = [PRIMARY_MODEL, FALLBACK_MODEL, "gemini-2.5-flash"]
+        models_to_try = MODELS_CASCADE
         system_instruction = (
             f"You are an expert university academic tutor and professor for '{course_title}'. "
             "Your goal is to help the student deeply understand concepts, solve problems step-by-step, "

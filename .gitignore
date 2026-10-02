@@ -23,5 +23,8 @@ frontend/dist/
 .coverage
 API.txt
 bin/
+build/
+mobile/build/
+mobile/android/build/
 # APK releases
 *.apk

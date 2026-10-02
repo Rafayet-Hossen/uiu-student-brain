@@ -62,6 +62,7 @@ class _CourseChatPageState extends ConsumerState<CourseChatPage> {
   @override
   void initState() {
     super.initState();
+    _textController.addListener(() => setState(() {}));
     _loadChatHistory();
   }
 
@@ -496,63 +497,155 @@ class _CourseChatPageState extends ConsumerState<CourseChatPage> {
                     ),
                   ],
 
-                  // Input Bar
+                  // Modern Input Bar (Vibrant, Responsive, Sleek)
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
-                      color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+                      color: isDark ? const Color(0xFF131620) : Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.06),
+                          blurRadius: 16,
+                          offset: const Offset(0, -4),
+                        ),
+                      ],
                       border: Border(
                         top: BorderSide(
-                          color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                          color: isDark ? const Color(0xFF262C3A) : const Color(0xFFE2E8F0),
+                          width: 1,
                         ),
                       ),
                     ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Expanded(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: isDark ? const Color(0xFF1A1E26) : const Color(0xFFF8FAFC),
-                              borderRadius: BorderRadius.circular(24),
-                              border: Border.all(
-                                color: isDark ? const Color(0xFF2C3240) : const Color(0xFFE2E8F0),
-                              ),
-                            ),
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: TextField(
-                              controller: _textController,
-                              minLines: 1,
-                              maxLines: 5,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: isDark ? AppColors.textDark : AppColors.textLight,
-                              ),
-                              decoration: InputDecoration(
-                                hintText: 'Ask Gemini anything about this course...',
-                                hintStyle: TextStyle(
-                                  fontSize: 13,
-                                  color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                    child: SafeArea(
+                      top: false,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: isDark ? const Color(0xFF1B202D) : const Color(0xFFF1F5F9),
+                                borderRadius: BorderRadius.circular(26),
+                                border: Border.all(
+                                  color: _textController.text.isNotEmpty
+                                      ? AppColors.primary.withValues(alpha: 0.6)
+                                      : (isDark ? const Color(0xFF2E364A) : const Color(0xFFCBD5E1)),
+                                  width: _textController.text.isNotEmpty ? 1.3 : 1.0,
                                 ),
-                                border: InputBorder.none,
-                                isDense: true,
-                                contentPadding: const EdgeInsets.symmetric(vertical: 12),
                               ),
-                              onSubmitted: (_) => _sendMessage(),
+                              padding: const EdgeInsets.symmetric(horizontal: 14),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 8),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(5),
+                                      decoration: BoxDecoration(
+                                        gradient: const LinearGradient(
+                                          colors: [Color(0xFF4285F4), Color(0xFF9B72CF)],
+                                        ),
+                                        borderRadius: BorderRadius.circular(7),
+                                      ),
+                                      child: const Icon(Icons.auto_awesome_rounded, size: 12, color: Colors.white),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: TextField(
+                                      controller: _textController,
+                                      minLines: 1,
+                                      maxLines: 4,
+                                      style: TextStyle(
+                                        fontSize: 13.5,
+                                        color: isDark ? AppColors.textDark : AppColors.textLight,
+                                      ),
+                                      decoration: InputDecoration(
+                                        hintText: 'Ask Gemini anything about this course...',
+                                        hintStyle: TextStyle(
+                                          fontSize: 12.5,
+                                          color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                                        ),
+                                        border: InputBorder.none,
+                                        isDense: true,
+                                        contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                                      ),
+                                      onSubmitted: (_) => _sendMessage(),
+                                    ),
+                                  ),
+                                  if (_textController.text.isNotEmpty)
+                                    GestureDetector(
+                                      onTap: () {
+                                        _textController.clear();
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(left: 4),
+                                        child: Icon(
+                                          Icons.cancel_rounded,
+                                          size: 17,
+                                          color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        IconButton.filled(
-                          onPressed: _isTyping ? null : () => _sendMessage(),
-                          style: IconButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.all(12),
+                          const SizedBox(width: 8),
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                colors: _textController.text.trim().isEmpty || _isTyping
+                                    ? [
+                                        (isDark ? const Color(0xFF2E364A) : const Color(0xFFCBD5E1)),
+                                        (isDark ? const Color(0xFF262C3A) : const Color(0xFF94A3B8)),
+                                      ]
+                                    : [
+                                        AppColors.primary,
+                                        const Color(0xFF9B72CF),
+                                      ],
+                              ),
+                              boxShadow: _textController.text.trim().isNotEmpty && !_isTyping
+                                  ? [
+                                      BoxShadow(
+                                        color: AppColors.primary.withValues(alpha: 0.4),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ]
+                                  : null,
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              shape: const CircleBorder(),
+                              child: InkWell(
+                                customBorder: const CircleBorder(),
+                                onTap: (_isTyping || _textController.text.trim().isEmpty)
+                                    ? null
+                                    : () => _sendMessage(),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(11),
+                                  child: _isTyping
+                                      ? const SizedBox(
+                                          width: 18,
+                                          height: 18,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white70),
+                                          ),
+                                        )
+                                      : const Icon(
+                                          Icons.arrow_upward_rounded,
+                                          size: 20,
+                                          color: Colors.white,
+                                        ),
+                                ),
+                              ),
+                            ),
                           ),
-                          icon: const Icon(Icons.arrow_upward_rounded, size: 20),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ],

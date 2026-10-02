@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/config/providers.dart';
 import '../../data/models/material_model.dart';
 import '../../data/repositories/materials_repository.dart';
@@ -16,6 +17,7 @@ class MaterialsState {
   final int? selectedCourseId;
   final String searchQuery;
   final String selectedCategory;
+  final Set<String> bookmarkedIds;
   final bool isLoading;
   final String? error;
 
@@ -27,6 +29,7 @@ class MaterialsState {
     this.selectedCourseId,
     this.searchQuery = '',
     this.selectedCategory = 'All',
+    this.bookmarkedIds = const {},
     this.isLoading = false,
     this.error,
   });
@@ -39,6 +42,7 @@ class MaterialsState {
     int? Function()? selectedCourseId,
     String? searchQuery,
     String? selectedCategory,
+    Set<String>? bookmarkedIds,
     bool? isLoading,
     String? error,
   }) {
@@ -50,6 +54,7 @@ class MaterialsState {
       selectedCourseId: selectedCourseId != null ? selectedCourseId() : this.selectedCourseId,
       searchQuery: searchQuery ?? this.searchQuery,
       selectedCategory: selectedCategory ?? this.selectedCategory,
+      bookmarkedIds: bookmarkedIds ?? this.bookmarkedIds,
       isLoading: isLoading ?? this.isLoading,
       error: error,
     );
@@ -66,8 +71,10 @@ class MaterialsState {
           m.title.toLowerCase().contains(searchQuery.toLowerCase()) ||
           m.summary.toLowerCase().contains(searchQuery.toLowerCase()) ||
           (m.courseCode != null && m.courseCode!.toLowerCase().contains(searchQuery.toLowerCase()));
-      final matchesCat =
-          selectedCategory == 'All' || m.category == selectedCategory;
+      final matchesCat = selectedCategory == 'All' ||
+          (selectedCategory == 'Bookmarked'
+              ? bookmarkedIds.contains(m.id.toString())
+              : m.category == selectedCategory);
       final matchesCourse = selectedCourseId == null || m.courseId == selectedCourseId;
 
       bool matchesSemester = true;
@@ -88,9 +95,38 @@ class MaterialsState {
 
 class MaterialsNotifier extends StateNotifier<MaterialsState> {
   final MaterialsRepository _repository;
+  static const String _bookmarksKey = 'bookmarked_material_ids';
 
   MaterialsNotifier(this._repository) : super(const MaterialsState()) {
     loadMaterialsData();
+    loadBookmarks();
+  }
+
+  Future<void> loadMaterials() => loadMaterialsData();
+
+  Future<void> loadBookmarks() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final list = prefs.getStringList(_bookmarksKey) ?? [];
+      state = state.copyWith(bookmarkedIds: list.toSet());
+    } catch (_) {}
+  }
+
+  Future<bool> toggleBookmark(int materialId) async {
+    final idStr = materialId.toString();
+    final updated = Set<String>.from(state.bookmarkedIds);
+    final isAdded = !updated.contains(idStr);
+    if (isAdded) {
+      updated.add(idStr);
+    } else {
+      updated.remove(idStr);
+    }
+    state = state.copyWith(bookmarkedIds: updated);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(_bookmarksKey, updated.toList());
+    } catch (_) {}
+    return isAdded;
   }
 
   Future<void> loadMaterialsData() async {
