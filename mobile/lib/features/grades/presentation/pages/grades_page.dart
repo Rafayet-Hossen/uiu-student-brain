@@ -58,6 +58,60 @@ class _GradesPageState extends ConsumerState<GradesPage> {
     super.dispose();
   }
 
+  Widget _buildFormattedMarkdownText(
+    String rawText, {
+    TextStyle? baseStyle,
+  }) {
+    final cleanText = rawText.trim();
+    if (cleanText.isEmpty) return const SizedBox.shrink();
+
+    // Pattern to parse **bold** or *italic* or regular text chunks
+    final regex = RegExp(r'(\*\*([^*]+)\*\*)|(\*([^*]+)\*)|([^*]+)');
+    final matches = regex.allMatches(cleanText);
+
+    final defaultStyle = baseStyle ?? const TextStyle(fontSize: 13, height: 1.4);
+
+    final spans = <TextSpan>[];
+    for (final match in matches) {
+      if (match.group(1) != null) {
+        // Bold chunk inside **...**
+        final boldContent = match.group(2) ?? '';
+        spans.add(
+          TextSpan(
+            text: boldContent,
+            style: defaultStyle.copyWith(
+              fontWeight: FontWeight.w800,
+              color: defaultStyle.color,
+            ),
+          ),
+        );
+      } else if (match.group(3) != null) {
+        // Italic chunk inside *...*
+        final italicContent = match.group(4) ?? '';
+        spans.add(
+          TextSpan(
+            text: italicContent,
+            style: defaultStyle.copyWith(
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        );
+      } else if (match.group(5) != null) {
+        // Normal text chunk
+        spans.add(
+          TextSpan(
+            text: match.group(5)!,
+            style: defaultStyle,
+          ),
+        );
+      }
+    }
+
+    return Text.rich(
+      TextSpan(children: spans),
+    );
+  }
+
   void _syncControllers(GradesState gradesState) {
     if (gradesState.plan != null && !_isEditing) {
       _totalCreditsCtrl.text = gradesState.plan!.totalCredits.toString();
@@ -774,10 +828,15 @@ class _GradesPageState extends ConsumerState<GradesPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        Wrap(
+                          alignment: WrapAlignment.spaceBetween,
+                          runAlignment: WrapAlignment.center,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: 8,
+                          runSpacing: 8,
                           children: [
                             const Row(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(Icons.timeline_rounded,
                                     color: AppColors.primary, size: 20),
@@ -968,9 +1027,9 @@ class _GradesPageState extends ConsumerState<GradesPage> {
                             ],
                           ),
                           const SizedBox(height: 10),
-                          Text(
+                          _buildFormattedMarkdownText(
                             narrative['summary']?.toString() ?? '',
-                            style: TextStyle(
+                            baseStyle: TextStyle(
                               fontSize: 13,
                               height: 1.4,
                               color: isDark
@@ -997,9 +1056,9 @@ class _GradesPageState extends ConsumerState<GradesPage> {
                                             color: AppColors.primary,
                                             fontWeight: FontWeight.bold)),
                                     Expanded(
-                                      child: Text(
+                                      child: _buildFormattedMarkdownText(
                                         step.toString(),
-                                        style: TextStyle(
+                                        baseStyle: TextStyle(
                                           fontSize: 12,
                                           height: 1.3,
                                           color: isDark
@@ -1031,9 +1090,9 @@ class _GradesPageState extends ConsumerState<GradesPage> {
                                       color: AppColors.warning, size: 16),
                                   const SizedBox(width: 6),
                                   Expanded(
-                                    child: Text(
+                                    child: _buildFormattedMarkdownText(
                                       narrative['workload_warning'].toString(),
-                                      style: const TextStyle(
+                                      baseStyle: const TextStyle(
                                           fontSize: 11,
                                           color: AppColors.warning,
                                           fontWeight: FontWeight.w600),
@@ -1058,8 +1117,11 @@ class _GradesPageState extends ConsumerState<GradesPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          Wrap(
+                            alignment: WrapAlignment.spaceBetween,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 8,
+                            runSpacing: 6,
                             children: [
                               Container(
                                 padding: const EdgeInsets.symmetric(
@@ -1095,17 +1157,18 @@ class _GradesPageState extends ConsumerState<GradesPage> {
                                 fontSize: 15, fontWeight: FontWeight.w800),
                           ),
                           const SizedBox(height: 6),
-                          Row(
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 4,
+                            crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
                               Text(
                                 'Current: ${topSingle['current_grade_letter']} (${topSingle['current_grade_point']})',
                                 style: const TextStyle(
                                     fontSize: 12, color: Colors.grey),
                               ),
-                              const SizedBox(width: 8),
                               const Icon(Icons.arrow_forward,
                                   size: 14, color: AppColors.primary),
-                              const SizedBox(width: 8),
                               Text(
                                 'Target A (4.00) ➔ ${topSingle['projected_cgpa_4']} CGPA',
                                 style: const TextStyle(
@@ -1138,10 +1201,14 @@ class _GradesPageState extends ConsumerState<GradesPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          Wrap(
+                            alignment: WrapAlignment.spaceBetween,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 8,
+                            runSpacing: 6,
                             children: [
                               const Row(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(Icons.hub_outlined,
                                       size: 18, color: AppColors.primary),
@@ -1164,9 +1231,9 @@ class _GradesPageState extends ConsumerState<GradesPage> {
                             ],
                           ),
                           const SizedBox(height: 8),
-                          Text(
+                          _buildFormattedMarkdownText(
                             'Retaking both courses elevates your cumulative CGPA to ${duoData['projected_cgpa']} (${duoData['target_gap_closed_percent']}% of target gap closed).',
-                            style: TextStyle(
+                            baseStyle: TextStyle(
                               fontSize: 12,
                               color: isDark
                                   ? AppColors.textDarkMuted

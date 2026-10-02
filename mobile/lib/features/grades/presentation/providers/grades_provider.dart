@@ -239,6 +239,18 @@ class GradesNotifier extends StateNotifier<GradesState> {
       return false;
     }
   }
+
+  void restoreData({
+    GradePlanModel? plan,
+    List<CourseGradeModel>? courses,
+    Map<String, dynamic>? retakeData,
+  }) {
+    state = state.copyWith(
+      plan: plan ?? state.plan,
+      courses: courses ?? state.courses,
+      retakeData: retakeData ?? state.retakeData,
+    );
+  }
 }
 
 final gradesProvider =

@@ -154,6 +154,18 @@ class TrackerNotifier extends StateNotifier<TrackerState> {
       return false;
     }
   }
+
+  void restoreData({
+    List<StudySessionModel>? sessions,
+    Map<String, dynamic>? streaks,
+    Map<String, dynamic>? rewards,
+  }) {
+    state = state.copyWith(
+      sessions: sessions ?? state.sessions,
+      streaks: streaks ?? state.streaks,
+      rewards: rewards ?? state.rewards,
+    );
+  }
 }
 
 final trackerProvider =

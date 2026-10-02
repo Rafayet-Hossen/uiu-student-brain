@@ -17,7 +17,6 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
   final _subjectCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
 
-  int? _selectedSemesterId;
   int? _selectedCourseId;
   int? _selectedMaterialId;
 
@@ -27,19 +26,6 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   bool _isLoading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    final materialsState = ref.read(materialsProvider);
-    if (materialsState.semesters.isNotEmpty) {
-      final cur = materialsState.semesters.firstWhere(
-        (s) => s['is_current'] == true,
-        orElse: () => materialsState.semesters.first,
-      );
-      _selectedSemesterId = cur['id'] as int?;
-    }
-  }
 
   @override
   void dispose() {
@@ -210,140 +196,73 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                     ],
                   ),
                   const SizedBox(height: 16),
-
-                  // 1. Trimester Selector
-                  if (materialsState.semesters.isNotEmpty) ...[
-                    DropdownButtonFormField<int?>(
-                      initialValue: _selectedSemesterId,
-                      isExpanded: true,
-                      decoration: InputDecoration(
-                        labelText: 'Select Trimester',
-                        prefixIcon: const Icon(Icons.calendar_month_outlined, size: 18),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                      ),
-                      items: materialsState.semesters.map((s) {
-                        final id = s['id'] as int?;
-                        final name = s['name']?.toString() ?? 'Semester $id';
-                        final isCurrent = s['is_current'] == true;
-                        return DropdownMenuItem<int?>(
-                          value: id,
-                          child: Text(
-                            isCurrent ? '$name (Active)' : name,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w500,
-                              color: isCurrent ? AppColors.primary : null,
-                            ),
-                          ),
+                  // Course Selector (Default Trimester Courses)
+                  if (materialsState.courses.isNotEmpty) ...[
+                    Builder(
+                      builder: (context) {
+                        final defaultSemester = materialsState.semesters.firstWhere(
+                          (s) => s['is_current'] == true,
+                          orElse: () => materialsState.semesters.isNotEmpty ? materialsState.semesters.first : {},
                         );
-                      }).toList(),
-                      onChanged: (val) {
-                        setState(() {
-                          _selectedSemesterId = val;
-                          _selectedCourseId = null;
-                          _selectedMaterialId = null;
-                        });
+                        final defaultSemesterId = defaultSemester['id'] as int?;
+                        final defaultSemesterName = defaultSemester['name']?.toString();
+
+                        final trimesterCourses = defaultSemesterId != null
+                            ? materialsState.courses.where((c) => c['semester'] == defaultSemesterId || c['semester_id'] == defaultSemesterId).toList()
+                            : materialsState.courses;
+                        final coursesToShow = trimesterCourses.isNotEmpty ? trimesterCourses : materialsState.courses;
+
+                        return DropdownButtonFormField<int?>(
+                          initialValue: _selectedCourseId,
+                          isExpanded: true,
+                          decoration: InputDecoration(
+                            labelText: defaultSemesterName != null
+                                ? 'Course ($defaultSemesterName)'
+                                : 'Select Course (Optional)',
+                            prefixIcon: const Icon(Icons.school_outlined, size: 18),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          ),
+                          hint: const Text('Choose Course', style: TextStyle(fontSize: 13)),
+                          items: [
+                            const DropdownMenuItem<int?>(
+                              value: null,
+                              child: Text('General / Non-course study', style: TextStyle(fontSize: 13)),
+                            ),
+                            ...coursesToShow.map((c) {
+                              final id = c['id'] as int;
+                              final code = c['code']?.toString() ?? '';
+                              final title = c['title']?.toString() ?? 'Course $id';
+                              return DropdownMenuItem<int?>(
+                                value: id,
+                                child: Text(
+                                  code.isNotEmpty ? '[$code] $title' : title,
+                                  style: const TextStyle(fontSize: 13),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              );
+                            }),
+                          ],
+                          onChanged: (val) {
+                            setState(() {
+                              _selectedCourseId = val;
+                              _selectedMaterialId = null;
+                            });
+                          },
+                        );
                       },
                     ),
                     const SizedBox(height: 12),
                   ],
 
-                  // 2. Course Selector (Strictly filtered to selected trimester, NO falling back to all courses)
-                  Builder(
-                    builder: (context) {
-                      final selectedSem = materialsState.semesters.firstWhere(
-                        (s) => s['id'] == _selectedSemesterId,
-                        orElse: () => {},
-                      );
-                      final semName = selectedSem['name']?.toString() ?? 'Selected Trimester';
-
-                      final trimesterCourses = _selectedSemesterId != null
-                          ? materialsState.courses.where((c) => c['semester'] == _selectedSemesterId || c['semester_id'] == _selectedSemesterId).toList()
-                          : materialsState.courses;
-
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          DropdownButtonFormField<int?>(
-                            initialValue: _selectedCourseId,
-                            isExpanded: true,
-                            decoration: InputDecoration(
-                              labelText: 'Course in $semName',
-                              prefixIcon: const Icon(Icons.school_outlined, size: 18),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                            ),
-                            hint: const Text('Choose Course', style: TextStyle(fontSize: 13)),
-                            items: [
-                              const DropdownMenuItem<int?>(
-                                value: null,
-                                child: Text('General / Non-course study', style: TextStyle(fontSize: 13)),
-                              ),
-                              ...trimesterCourses.map((c) {
-                                final id = c['id'] as int;
-                                final code = c['code']?.toString() ?? '';
-                                final title = c['title']?.toString() ?? 'Course $id';
-                                return DropdownMenuItem<int?>(
-                                  value: id,
-                                  child: Text(
-                                    code.isNotEmpty ? '[$code] $title' : title,
-                                    style: const TextStyle(fontSize: 13),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                );
-                              }),
-                            ],
-                            onChanged: (val) {
-                              setState(() {
-                                _selectedCourseId = val;
-                                _selectedMaterialId = null;
-                                if (val != null) {
-                                  final crs = trimesterCourses.firstWhere((c) => c['id'] == val, orElse: () => {});
-                                  if (_subjectCtrl.text.trim().isEmpty) {
-                                    _subjectCtrl.text = crs['title']?.toString() ?? crs['code']?.toString() ?? '';
-                                  }
-                                }
-                              });
-                            },
-                          ),
-                          if (trimesterCourses.isEmpty) ...[
-                            const SizedBox(height: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: AppColors.warning.withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.info_outline, size: 14, color: AppColors.warning),
-                                  const SizedBox(width: 6),
-                                  Expanded(
-                                    child: Text(
-                                      'No courses added in $semName yet. You can study in General mode or add courses in the Library tab.',
-                                      style: const TextStyle(fontSize: 11, color: AppColors.warning, fontWeight: FontWeight.w600),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ],
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 12),
-
-                  // 3. Document / Material Selector (suggested based on selected course)
+                  // Document / Material Selector (suggested based on selected course)
                   Builder(
                     builder: (context) {
                       final availableMats = _selectedCourseId != null
                           ? materialsState.materials.where((m) => m.courseId == _selectedCourseId).toList()
                           : materialsState.materials;
 
-                      if (availableMats.isEmpty && _selectedCourseId == null) return const SizedBox.shrink();
+                      if (availableMats.isEmpty) return const SizedBox.shrink();
 
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -357,12 +276,7 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                             ),
-                            hint: Text(
-                              availableMats.isEmpty
-                                  ? 'No documents uploaded for this course yet (Optional)'
-                                  : 'Select uploaded document...',
-                              style: const TextStyle(fontSize: 13),
-                            ),
+                            hint: const Text('Select uploaded document...', style: TextStyle(fontSize: 13)),
                             items: [
                               const DropdownMenuItem<int?>(
                                 value: null,
@@ -384,8 +298,9 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                                 _selectedMaterialId = val;
                                 if (val != null) {
                                   final chosen = availableMats.firstWhere((m) => m.id == val);
-                                  if (_subjectCtrl.text.trim().isEmpty) {
-                                    _subjectCtrl.text = chosen.title;
+                                  _subjectCtrl.text = chosen.title;
+                                  if (_selectedCourseId == null && chosen.courseId != null) {
+                                    _selectedCourseId = chosen.courseId;
                                   }
                                 }
                               });

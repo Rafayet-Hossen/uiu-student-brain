@@ -1667,15 +1667,15 @@ class _CreateStudyEventDialog extends ConsumerStatefulWidget {
 class _CreateStudyEventDialogState extends ConsumerState<_CreateStudyEventDialog> {
   final _titleCtrl = TextEditingController();
   final _subjectCtrl = TextEditingController();
-  final _locationCtrl = TextEditingController();
+  final _locationCtrl = TextEditingController(text: 'Campus Library 4th Floor (Quiet Study Room)');
   final _descCtrl = TextEditingController();
-  final _customCapacityCtrl = TextEditingController();
+  final _customCapacityCtrl = TextEditingController(text: '15');
 
-  String? _eventType; // null initially - user chooses In-Person or Online
-  DateTime? _eventDate; // null initially - user selects date
-  TimeOfDay? _startTime; // null initially
-  TimeOfDay? _endTime; // null initially
-  int? _maxParticipants; // null initially
+  String _eventType = 'offline'; // 'offline' or 'online'
+  DateTime _eventDate = DateTime.now();
+  TimeOfDay _startTime = const TimeOfDay(hour: 14, minute: 0);
+  TimeOfDay _endTime = const TimeOfDay(hour: 16, minute: 0);
+  int _maxParticipants = 20;
   bool _isCustomCapacity = false;
   bool _isSubmitting = false;
   List<CatalogCourse> _courseSuggestions = [];
@@ -1705,20 +1705,18 @@ class _CreateStudyEventDialogState extends ConsumerState<_CreateStudyEventDialog
     });
   }
 
-  String _formatTimeDisplay(TimeOfDay? time) {
-    if (time == null) return 'Select time';
+  String _formatTimeDisplay(TimeOfDay time) {
     final now = DateTime.now();
     final dt = DateTime(now.year, now.month, now.day, time.hour, time.minute);
     return DateFormat('h:mm a').format(dt);
   }
 
   Future<void> _pickDate() async {
-    final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
-      initialDate: _eventDate ?? now,
-      firstDate: now.subtract(const Duration(days: 1)),
-      lastDate: now.add(const Duration(days: 180)),
+      initialDate: _eventDate,
+      firstDate: DateTime.now().subtract(const Duration(days: 1)),
+      lastDate: DateTime.now().add(const Duration(days: 180)),
     );
     if (picked != null) {
       setState(() => _eventDate = picked);
@@ -1728,7 +1726,7 @@ class _CreateStudyEventDialogState extends ConsumerState<_CreateStudyEventDialog
   Future<void> _pickStartTime() async {
     final picked = await showTimePicker(
       context: context,
-      initialTime: _startTime ?? const TimeOfDay(hour: 14, minute: 0),
+      initialTime: _startTime,
     );
     if (picked != null) {
       setState(() => _startTime = picked);
@@ -1738,7 +1736,7 @@ class _CreateStudyEventDialogState extends ConsumerState<_CreateStudyEventDialog
   Future<void> _pickEndTime() async {
     final picked = await showTimePicker(
       context: context,
-      initialTime: _endTime ?? const TimeOfDay(hour: 16, minute: 0),
+      initialTime: _endTime,
     );
     if (picked != null) {
       setState(() => _endTime = picked);
@@ -1751,54 +1749,15 @@ class _CreateStudyEventDialogState extends ConsumerState<_CreateStudyEventDialog
     final location = _locationCtrl.text.trim();
     final desc = _descCtrl.text.trim();
 
-    if (title.isEmpty) {
+    if (title.isEmpty || subject.isEmpty || location.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter an event title.')),
+        const SnackBar(content: Text('Please fill in Title, Subject, and Location/Link.')),
       );
       return;
     }
 
-    if (subject.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please specify a subject or course code.')),
-      );
-      return;
-    }
-
-    if (_eventType == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select an event format (In-Person or Online).')),
-      );
-      return;
-    }
-
-    if (location.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_eventType == 'online'
-              ? 'Please provide an online meeting link or platform.'
-              : 'Please enter a campus room or location.'),
-        ),
-      );
-      return;
-    }
-
-    if (_eventDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please choose an event date.')),
-      );
-      return;
-    }
-
-    if (_startTime == null || _endTime == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select both start and end time.')),
-      );
-      return;
-    }
-
-    final startMinutes = _startTime!.hour * 60 + _startTime!.minute;
-    final endMinutes = _endTime!.hour * 60 + _endTime!.minute;
+    final startMinutes = _startTime.hour * 60 + _startTime.minute;
+    final endMinutes = _endTime.hour * 60 + _endTime.minute;
     if (startMinutes >= endMinutes) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('End time must be after start time.')),
@@ -1806,28 +1765,14 @@ class _CreateStudyEventDialogState extends ConsumerState<_CreateStudyEventDialog
       return;
     }
 
-    int capacity = 0;
+    int capacity = _maxParticipants;
     if (_isCustomCapacity) {
-      final parsed = int.tryParse(_customCapacityCtrl.text.trim());
-      if (parsed == null || parsed <= 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please enter a valid seat number.')),
-        );
-        return;
-      }
-      capacity = parsed;
-    } else if (_maxParticipants != null) {
-      capacity = _maxParticipants!;
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select attendee capacity or choose Unlimited.')),
-      );
-      return;
+      capacity = int.tryParse(_customCapacityCtrl.text.trim()) ?? 20;
     }
 
-    final dateStr = DateFormat('yyyy-MM-dd').format(_eventDate!);
-    final startStr = '${_startTime!.hour.toString().padLeft(2, '0')}:${_startTime!.minute.toString().padLeft(2, '0')}';
-    final endStr = '${_endTime!.hour.toString().padLeft(2, '0')}:${_endTime!.minute.toString().padLeft(2, '0')}';
+    final dateStr = DateFormat('yyyy-MM-dd').format(_eventDate);
+    final startStr = '${_startTime.hour.toString().padLeft(2, '0')}:${_startTime.minute.toString().padLeft(2, '0')}';
+    final endStr = '${_endTime.hour.toString().padLeft(2, '0')}:${_endTime.minute.toString().padLeft(2, '0')}';
 
     String finalLocation = location;
     if (_eventType == 'online' && !finalLocation.toLowerCase().startsWith('http') && !finalLocation.toLowerCase().startsWith('online')) {
@@ -1872,17 +1817,16 @@ class _CreateStudyEventDialogState extends ConsumerState<_CreateStudyEventDialog
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isToday = _eventDate != null && DateUtils.isSameDay(_eventDate!, DateTime.now());
-    final isTomorrow = _eventDate != null && DateUtils.isSameDay(_eventDate!, DateTime.now().add(const Duration(days: 1)));
-    final screenHeight = MediaQuery.of(context).size.height;
+    final isToday = DateUtils.isSameDay(_eventDate, DateTime.now());
+    final isTomorrow = DateUtils.isSameDay(_eventDate, DateTime.now().add(const Duration(days: 1)));
 
     return Dialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 20),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: 580, maxHeight: screenHeight * 0.88),
+        constraints: const BoxConstraints(maxWidth: 580, maxHeight: 720),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
+          padding: const EdgeInsets.all(20.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1923,7 +1867,7 @@ class _CreateStudyEventDialogState extends ConsumerState<_CreateStudyEventDialog
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
 
               // Scrollable Form Fields
               Expanded(
@@ -1980,16 +1924,13 @@ class _CreateStudyEventDialogState extends ConsumerState<_CreateStudyEventDialog
                       ],
                       const SizedBox(height: 12),
 
-                      // Event Format (In-Person vs Online) - Responsive Row with FittedBox
+                      // Event Format (In-Person vs Online)
                       Row(
                         children: [
                           Expanded(
                             child: ChoiceChip(
                               avatar: const Icon(Icons.location_on_outlined, size: 16),
-                              label: const FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Text('In-Person (Campus)'),
-                              ),
+                              label: const Text('In-Person (Campus)'),
                               selected: _eventType == 'offline',
                               selectedColor: AppColors.primary,
                               labelStyle: TextStyle(
@@ -1999,6 +1940,9 @@ class _CreateStudyEventDialogState extends ConsumerState<_CreateStudyEventDialog
                               ),
                               onSelected: (_) => setState(() {
                                 _eventType = 'offline';
+                                if (_locationCtrl.text.startsWith('http') || _locationCtrl.text.startsWith('Online')) {
+                                  _locationCtrl.text = 'Campus Library 4th Floor (Quiet Study Room)';
+                                }
                               }),
                             ),
                           ),
@@ -2006,10 +1950,7 @@ class _CreateStudyEventDialogState extends ConsumerState<_CreateStudyEventDialog
                           Expanded(
                             child: ChoiceChip(
                               avatar: const Icon(Icons.videocam_outlined, size: 16),
-                              label: const FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Text('Online Meetup'),
-                              ),
+                              label: const Text('Online Meetup'),
                               selected: _eventType == 'online',
                               selectedColor: AppColors.primary,
                               labelStyle: TextStyle(
@@ -2019,6 +1960,9 @@ class _CreateStudyEventDialogState extends ConsumerState<_CreateStudyEventDialog
                               ),
                               onSelected: (_) => setState(() {
                                 _eventType = 'online';
+                                if (_locationCtrl.text.contains('Library')) {
+                                  _locationCtrl.text = 'Google Meet / Zoom Meeting Link';
+                                }
                               }),
                             ),
                           ),
@@ -2030,12 +1974,8 @@ class _CreateStudyEventDialogState extends ConsumerState<_CreateStudyEventDialog
                       TextField(
                         controller: _locationCtrl,
                         decoration: InputDecoration(
-                          labelText: _eventType == 'online'
-                              ? 'Meeting Link / Platform *'
-                              : (_eventType == 'offline' ? 'Campus Location / Room *' : 'Location or Meeting Link *'),
-                          hintText: _eventType == 'online'
-                              ? 'e.g. Google Meet link or Zoom URL'
-                              : 'e.g. Room 412 or Library 4th Floor',
+                          labelText: _eventType == 'online' ? 'Meeting Link / Platform *' : 'Campus Location / Room *',
+                          hintText: _eventType == 'online' ? 'https://meet.google.com/xyz-abc' : 'e.g. Room 412 or Library 4th Floor',
                           prefixIcon: Icon(_eventType == 'online' ? Icons.link : Icons.place_outlined, size: 18),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                           contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -2076,14 +2016,9 @@ class _CreateStudyEventDialogState extends ConsumerState<_CreateStudyEventDialog
                             child: OutlinedButton.icon(
                               onPressed: _pickDate,
                               icon: const Icon(Icons.calendar_month, size: 14),
-                              label: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Text(
-                                  _eventDate != null
-                                      ? DateFormat('EEE, MMM d').format(_eventDate!)
-                                      : 'Select Date',
-                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
-                                ),
+                              label: Text(
+                                DateFormat('EEE, MMM d').format(_eventDate),
+                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
                               ),
                               style: OutlinedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
@@ -2117,14 +2052,7 @@ class _CreateStudyEventDialogState extends ConsumerState<_CreateStudyEventDialog
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           const Text('Start Time', style: TextStyle(fontSize: 10, color: Colors.grey)),
-                                          Text(
-                                            _formatTimeDisplay(_startTime),
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w800,
-                                              color: _startTime == null ? Colors.grey : null,
-                                            ),
-                                          ),
+                                          Text(_formatTimeDisplay(_startTime), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800)),
                                         ],
                                       ),
                                     ),
@@ -2153,14 +2081,7 @@ class _CreateStudyEventDialogState extends ConsumerState<_CreateStudyEventDialog
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           const Text('End Time', style: TextStyle(fontSize: 10, color: Colors.grey)),
-                                          Text(
-                                            _formatTimeDisplay(_endTime),
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w800,
-                                              color: _endTime == null ? Colors.grey : null,
-                                            ),
-                                          ),
+                                          Text(_formatTimeDisplay(_endTime), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800)),
                                         ],
                                       ),
                                     ),
@@ -2207,7 +2128,7 @@ class _CreateStudyEventDialogState extends ConsumerState<_CreateStudyEventDialog
                       const SizedBox(height: 14),
 
                       // Slot Capacity
-                      const Text('Total Seats / Capacity *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                      const Text('Total Seats / Capacity', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
                       const SizedBox(height: 6),
                       Wrap(
                         spacing: 6,
@@ -2263,7 +2184,7 @@ class _CreateStudyEventDialogState extends ConsumerState<_CreateStudyEventDialog
                         controller: _descCtrl,
                         maxLines: 3,
                         decoration: InputDecoration(
-                          labelText: 'Event Details & Guidelines (Optional)',
+                          labelText: 'Event Details & Guidelines',
                           hintText: 'What will be covered, prerequisites, or what to bring (e.g. Bring laptop)...',
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                           contentPadding: const EdgeInsets.all(12),
@@ -2273,58 +2194,24 @@ class _CreateStudyEventDialogState extends ConsumerState<_CreateStudyEventDialog
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
 
-              // Pinned Bottom Actions Row
-              Container(
-                padding: const EdgeInsets.only(top: 10),
-                decoration: BoxDecoration(
-                  border: Border(
-                    top: BorderSide(
-                      color: isDark ? AppColors.borderDark.withValues(alpha: 0.5) : AppColors.borderLight,
-                    ),
+              // Buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel'),
                   ),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      flex: 1,
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.pop(context),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        ),
-                        child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.w700)),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      flex: 2,
-                      child: ElevatedButton.icon(
-                        onPressed: _isSubmitting ? null : _submit,
-                        icon: _isSubmitting
-                            ? const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                              )
-                            : const Icon(Icons.check_circle_outline_rounded, size: 18),
-                        label: Text(
-                          _isSubmitting ? 'Publishing...' : 'Publish Study Event',
-                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          elevation: 1,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                  const SizedBox(width: 8),
+                  AppButton(
+                    label: 'Publish Meetup Event',
+                    isLoading: _isSubmitting,
+                    onPressed: _submit,
+                    height: 40,
+                  ),
+                ],
               ),
             ],
           ),

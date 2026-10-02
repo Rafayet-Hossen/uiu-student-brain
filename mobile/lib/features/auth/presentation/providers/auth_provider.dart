@@ -138,6 +138,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(user: user);
     } catch (_) {}
   }
+
+  void restoreUser(UserModel user) {
+    state = state.copyWith(user: user, isAuthenticated: true);
+  }
 }
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
