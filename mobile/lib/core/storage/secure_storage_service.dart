@@ -13,23 +13,42 @@ class SecureStorageService {
   SecureStorageService(this._secureStorage, this._prefs);
 
   Future<void> saveTokens({required String access, String? refresh}) async {
-    await _secureStorage.write(key: _accessTokenKey, value: access);
+    try {
+      await _secureStorage.write(key: _accessTokenKey, value: access);
+      if (refresh != null && refresh.isNotEmpty) {
+        await _secureStorage.write(key: _refreshTokenKey, value: refresh);
+      }
+    } catch (_) {}
+    // Also save in SharedPreferences as backup
+    await _prefs.setString(_accessTokenKey, access);
     if (refresh != null && refresh.isNotEmpty) {
-      await _secureStorage.write(key: _refreshTokenKey, value: refresh);
+      await _prefs.setString(_refreshTokenKey, refresh);
     }
   }
 
   Future<String?> getAccessToken() async {
-    return await _secureStorage.read(key: _accessTokenKey);
+    try {
+      final token = await _secureStorage.read(key: _accessTokenKey);
+      if (token != null && token.isNotEmpty) return token;
+    } catch (_) {}
+    return _prefs.getString(_accessTokenKey);
   }
 
   Future<String?> getRefreshToken() async {
-    return await _secureStorage.read(key: _refreshTokenKey);
+    try {
+      final token = await _secureStorage.read(key: _refreshTokenKey);
+      if (token != null && token.isNotEmpty) return token;
+    } catch (_) {}
+    return _prefs.getString(_refreshTokenKey);
   }
 
   Future<void> clearTokens() async {
-    await _secureStorage.delete(key: _accessTokenKey);
-    await _secureStorage.delete(key: _refreshTokenKey);
+    try {
+      await _secureStorage.delete(key: _accessTokenKey);
+      await _secureStorage.delete(key: _refreshTokenKey);
+    } catch (_) {}
+    await _prefs.remove(_accessTokenKey);
+    await _prefs.remove(_refreshTokenKey);
   }
 
   // Base URL config

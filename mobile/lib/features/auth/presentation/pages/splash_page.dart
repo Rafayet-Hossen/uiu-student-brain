@@ -16,6 +16,21 @@ class _SplashPageState extends ConsumerState<SplashPage>
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
+  bool _hasNavigated = false;
+
+  void _navigateToNext(AuthState auth) {
+    if (_hasNavigated || !mounted) return;
+    _hasNavigated = true;
+
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (!mounted || !context.mounted) return;
+      if (auth.isAuthenticated) {
+        context.go('/dashboard');
+      } else {
+        context.go('/login');
+      }
+    });
+  }
 
   @override
   void initState() {
@@ -31,6 +46,22 @@ class _SplashPageState extends ConsumerState<SplashPage>
       CurvedAnimation(parent: _controller, curve: Curves.easeIn),
     );
     _controller.forward();
+
+    // Check immediately on first frame in case authProvider already completed check
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _hasNavigated) return;
+      final currentAuth = ref.read(authProvider);
+      if (currentAuth.isInitialCheckDone) {
+        _navigateToNext(currentAuth);
+      }
+    });
+
+    // Hard fallback: after 2.5 seconds, if still on splash screen, navigate!
+    Future.delayed(const Duration(milliseconds: 2500), () {
+      if (!mounted || _hasNavigated) return;
+      final currentAuth = ref.read(authProvider);
+      _navigateToNext(currentAuth);
+    });
   }
 
   @override
@@ -41,18 +72,18 @@ class _SplashPageState extends ConsumerState<SplashPage>
 
   @override
   Widget build(BuildContext context) {
-    ref.listen(authProvider, (previous, next) {
+    ref.listen<AuthState>(authProvider, (previous, next) {
       if (next.isInitialCheckDone) {
-        Future.delayed(const Duration(milliseconds: 400), () {
-          if (!mounted || !context.mounted) return;
-          if (next.isAuthenticated) {
-            context.go('/dashboard');
-          } else {
-            context.go('/login');
-          }
-        });
+        _navigateToNext(next);
       }
     });
+
+    final currentAuth = ref.watch(authProvider);
+    if (currentAuth.isInitialCheckDone && !_hasNavigated) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _navigateToNext(currentAuth);
+      });
+    }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 

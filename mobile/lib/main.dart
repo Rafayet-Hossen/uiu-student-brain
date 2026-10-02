@@ -24,10 +24,15 @@ Future<void> main() async {
   // Initialize SharedPreferences
   final sharedPreferences = await SharedPreferences.getInstance();
 
-  // Initialize local notifications service
+  // Initialize local notifications service with non-blocking timeout
   try {
     final notificationService = NotificationService();
-    await notificationService.init();
+    await notificationService.init().timeout(
+      const Duration(seconds: 2),
+      onTimeout: () {
+        debugPrint('NotificationService init timed out, proceeding gracefully');
+      },
+    );
   } catch (e) {
     debugPrint('NotificationService init error (graceful fallback): $e');
   }
