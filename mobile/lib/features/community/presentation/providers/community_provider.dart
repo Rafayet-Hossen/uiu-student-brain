@@ -13,6 +13,7 @@ class CommunityState {
   final List<StudyEventModel> events;
   final List<StudentProfileModel> students;
   final Set<int> followingIds;
+  final Set<String> followingAuthorNames;
   final String selectedCategory;
   final int activeTab;
   final bool isLoading;
@@ -23,6 +24,7 @@ class CommunityState {
     this.events = const [],
     this.students = const [],
     this.followingIds = const {},
+    this.followingAuthorNames = const {},
     this.selectedCategory = 'All',
     this.activeTab = 0,
     this.isLoading = false,
@@ -34,6 +36,7 @@ class CommunityState {
     List<StudyEventModel>? events,
     List<StudentProfileModel>? students,
     Set<int>? followingIds,
+    Set<String>? followingAuthorNames,
     String? selectedCategory,
     int? activeTab,
     bool? isLoading,
@@ -44,6 +47,7 @@ class CommunityState {
       events: events ?? this.events,
       students: students ?? this.students,
       followingIds: followingIds ?? this.followingIds,
+      followingAuthorNames: followingAuthorNames ?? this.followingAuthorNames,
       selectedCategory: selectedCategory ?? this.selectedCategory,
       activeTab: activeTab ?? this.activeTab,
       isLoading: isLoading ?? this.isLoading,
@@ -77,12 +81,18 @@ class CommunityNotifier extends StateNotifier<CommunityState> {
       final s = results[2] as List<StudentProfileModel>;
 
       final followed = s.where((stud) => stud.isFollowing).map((stud) => stud.id).toSet();
+      final followedNames = s
+          .where((stud) => stud.isFollowing)
+          .map((stud) => stud.fullName.trim().toLowerCase())
+          .where((n) => n.isNotEmpty)
+          .toSet();
 
       state = state.copyWith(
         posts: p,
         events: e,
         students: s,
         followingIds: followed,
+        followingAuthorNames: followedNames,
         isLoading: false,
       );
     } catch (e) {
@@ -90,38 +100,61 @@ class CommunityNotifier extends StateNotifier<CommunityState> {
     }
   }
 
-  Future<bool> toggleFollow(int studentId) async {
+  Future<bool> toggleFollow(int studentId, {String? authorName}) async {
     final wasFollowing = state.followingIds.contains(studentId);
-    // 1. Instant optimistic update so the UI hides the button in 0ms!
+    final normName = authorName?.trim().toLowerCase();
+    // 1. Instant optimistic update across all posts and profile in 0ms!
     final optimistic = Set<int>.from(state.followingIds);
+    final optimisticNames = Set<String>.from(state.followingAuthorNames);
     if (wasFollowing) {
       optimistic.remove(studentId);
+      if (normName != null && normName.isNotEmpty) {
+        optimisticNames.remove(normName);
+      }
     } else {
       optimistic.add(studentId);
+      if (normName != null && normName.isNotEmpty) {
+        optimisticNames.add(normName);
+      }
     }
-    state = state.copyWith(followingIds: optimistic);
+    state = state.copyWith(
+      followingIds: optimistic,
+      followingAuthorNames: optimisticNames,
+    );
 
     // 2. Network synchronization
     try {
       final res = await _repository.toggleFollowStudent(studentId);
       final isNowFollowing = res['following'] as bool? ?? (!wasFollowing);
       final confirmed = Set<int>.from(state.followingIds);
+      final confirmedNames = Set<String>.from(state.followingAuthorNames);
       if (isNowFollowing) {
         confirmed.add(studentId);
+        if (normName != null && normName.isNotEmpty) confirmedNames.add(normName);
       } else {
         confirmed.remove(studentId);
+        if (normName != null && normName.isNotEmpty) confirmedNames.remove(normName);
       }
-      state = state.copyWith(followingIds: confirmed);
+      state = state.copyWith(
+        followingIds: confirmed,
+        followingAuthorNames: confirmedNames,
+      );
       return isNowFollowing;
     } catch (_) {
       // Revert if network error
       final reverted = Set<int>.from(state.followingIds);
+      final revertedNames = Set<String>.from(state.followingAuthorNames);
       if (wasFollowing) {
         reverted.add(studentId);
+        if (normName != null && normName.isNotEmpty) revertedNames.add(normName);
       } else {
         reverted.remove(studentId);
+        if (normName != null && normName.isNotEmpty) revertedNames.remove(normName);
       }
-      state = state.copyWith(followingIds: reverted);
+      state = state.copyWith(
+        followingIds: reverted,
+        followingAuthorNames: revertedNames,
+      );
       return wasFollowing;
     }
   }

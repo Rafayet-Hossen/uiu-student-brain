@@ -183,7 +183,14 @@ def generate_session_quiz(*, session: StudySession, force_refresh: bool = False)
             subject = material.title
     elif session.course:
         subject = session.course.title
-        topics = [session.subject]
+        course_materials = session.course.materials.all()
+        for cm in course_materials:
+            if cm.key_topics:
+                topics.extend([str(t) for t in cm.key_topics if str(t).strip()])
+            elif cm.title:
+                topics.append(cm.title)
+        if not topics and session.subject:
+            topics = [session.subject]
     else:
         topics = [session.subject]
 

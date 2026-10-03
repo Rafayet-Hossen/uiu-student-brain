@@ -142,11 +142,26 @@ class MaterialsNotifier extends StateNotifier<MaterialsState> {
         initialSemId = cur['id'] as int?;
       }
 
+      // Prune stale bookmarks
+      Set<String> validBookmarks = state.bookmarkedIds;
+      if (mats.isNotEmpty && state.bookmarkedIds.isNotEmpty) {
+        final currentIds = mats.map((m) => m.id.toString()).toSet();
+        final pruned = state.bookmarkedIds.intersection(currentIds);
+        if (pruned.length != state.bookmarkedIds.length) {
+          validBookmarks = pruned;
+          try {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setStringList(_bookmarksKey, pruned.toList());
+          } catch (_) {}
+        }
+      }
+
       state = state.copyWith(
         materials: mats,
         courses: crs,
         semesters: sems,
         selectedSemesterId: () => initialSemId,
+        bookmarkedIds: validBookmarks,
         isLoading: false,
       );
     } catch (e) {
@@ -305,8 +320,14 @@ class MaterialsNotifier extends StateNotifier<MaterialsState> {
     try {
       await _repository.deleteMaterial(id);
     } catch (_) {}
+    final updatedBookmarks = Set<String>.from(state.bookmarkedIds)..remove(id.toString());
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(_bookmarksKey, updatedBookmarks.toList());
+    } catch (_) {}
     state = state.copyWith(
       materials: state.materials.where((m) => m.id != id).toList(),
+      bookmarkedIds: updatedBookmarks,
     );
     return true;
   }

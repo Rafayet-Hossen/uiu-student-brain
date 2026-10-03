@@ -9,6 +9,8 @@ import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/responsive.dart';
 import '../providers/tracker_provider.dart';
+import '../../../materials/presentation/providers/materials_provider.dart';
+import '../../../materials/data/models/material_model.dart';
 
 class LiveFocusPage extends ConsumerStatefulWidget {
   const LiveFocusPage({super.key});
@@ -23,6 +25,11 @@ class _LiveFocusPageState extends ConsumerState<LiveFocusPage>
   int _secondsRemaining = 25 * 60; // 25 mins default
   int _initialSeconds = 25 * 60;
   bool _isRunning = false;
+
+  int? _selectedCourseId;
+  String? _selectedCourseName;
+  int? _selectedMaterialId;
+  String? _selectedMaterialName;
 
   // Voice Coach System (Identical to Website SpeechSynthesis)
   final FlutterTts _tts = FlutterTts();
@@ -49,6 +56,10 @@ class _LiveFocusPageState extends ConsumerState<LiveFocusPage>
     if (active != null) {
       _secondsRemaining = active.totalMinutes * 60;
       _initialSeconds = _secondsRemaining;
+      _selectedCourseId = active.courseId;
+      _selectedCourseName = active.courseTitle;
+      _selectedMaterialId = active.materialId;
+      _selectedMaterialName = active.materialTitle;
     }
 
     _initTts();
@@ -62,7 +73,8 @@ class _LiveFocusPageState extends ConsumerState<LiveFocusPage>
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
 
-    _startTimer(isInitialStart: true);
+    // Live focus timer starts in paused state until user explicitly taps Play button!
+    _isRunning = false;
   }
 
   void _initTts() async {
@@ -405,9 +417,25 @@ class _LiveFocusPageState extends ConsumerState<LiveFocusPage>
 
   Future<void> _handleFinishSession() async {
     _timer?.cancel();
-    _speak('Congratulations! Focus session complete. Outstanding focus work!');
+    // Dynamic varied voice congratulations
+    final congratsVoiceLines = [
+      'Outstanding work! You completed your focus session with sheer academic brilliance.',
+      'Magnificent effort! Another focused milestone conquered on your scholar journey.',
+      'Congratulations! Your dedication, stamina, and intellectual flow today are truly inspiring.',
+      'Bravo! Deep focus session completed. You are building exceptional intellectual mastery.',
+      'Incredible discipline! You conquered distractions and stayed in deep productive flow.',
+      'Well done, scholar! Excellence is an everyday habit, and you demonstrated it today.',
+    ];
+    final randomVoiceLine = congratsVoiceLines[DateTime.now().millisecondsSinceEpoch % congratsVoiceLines.length];
+    _speak(randomVoiceLine);
+
     final active = ref.read(trackerProvider).activeSession;
     final sessionId = active?.id;
+
+    final hasMaterial = (_selectedMaterialId != null || active?.materialId != null);
+    final hasCourse = (_selectedCourseId != null || active?.courseId != null);
+    final materialTitle = _selectedMaterialName ?? active?.materialTitle;
+    final courseTitle = _selectedCourseName ?? active?.courseTitle;
 
     final success = await ref.read(trackerProvider.notifier).completeActiveSession();
     if (success && mounted) {
@@ -418,40 +446,208 @@ class _LiveFocusPageState extends ConsumerState<LiveFocusPage>
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
           title: const Row(
             children: [
-              Icon(Icons.celebration_rounded, color: AppColors.primary, size: 24),
+              Icon(Icons.celebration_rounded, color: AppColors.primary, size: 26),
               SizedBox(width: 8),
-              Expanded(child: Text('Focus Session Completed!')),
+              Expanded(child: Text('ðŸŽ‰ Focus Completed!')),
             ],
           ),
-          content: const Text(
-            'Incredible focus! Would you like to verify concept mastery with an instant AI Diagnostic Assessment?',
+          content: Text(
+            hasMaterial
+                ? 'Outstanding focus on "$materialTitle"! Would you like to verify concept mastery with an instant AI Diagnostic Quiz on this material?'
+                : (hasCourse
+                    ? 'Outstanding focus on "$courseTitle"! Would you like to take an AI Quiz generated from all course materials to test your understanding?'
+                    : 'Congratulations! You maintained deep intellectual stamina and conquered your focus session.'),
+            style: const TextStyle(fontSize: 14, height: 1.4),
           ),
           actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(ctx);
-                context.pop();
-              },
-              child: const Text('Later'),
-            ),
-            AppButton(
-              label: 'Launch AI Quiz',
-              height: 40,
-              onPressed: () {
-                Navigator.pop(ctx);
-                if (sessionId != null) {
-                  context.pushReplacement('/ai/quiz/$sessionId');
-                } else {
+            if (hasMaterial || hasCourse) ...[
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
                   context.pop();
-                }
-              },
-            ),
+                },
+                child: const Text('Later'),
+              ),
+              AppButton(
+                label: hasMaterial ? 'Take Material Quiz' : 'Take Course Quiz',
+                height: 40,
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  if (sessionId != null) {
+                    context.pushReplacement('/ai/quiz/$sessionId');
+                  } else {
+                    context.pop();
+                  }
+                },
+              ),
+            ] else ...[
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  context.pop();
+                },
+                child: const Text('Great!'),
+              ),
+            ],
           ],
         ),
       );
     } else if (mounted) {
       context.pop();
     }
+  }
+
+  void _showCourseMaterialPicker() {
+    final materialsState = ref.read(materialsProvider);
+    final courses = materialsState.courses;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            final courseMaterials = _selectedCourseId != null
+                ? materialsState.materials.where((m) => m.courseId == _selectedCourseId).toList()
+                : <StudyMaterialModel>[];
+
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Select Course & Study Material',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  const Text('Select Course:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 8),
+                  if (courses.isEmpty)
+                    const Text('No courses found for active trimester.', style: TextStyle(fontSize: 12, color: Colors.grey))
+                  else
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: courses.map((c) {
+                        final isSel = _selectedCourseId == c['id'];
+                        final title = (c['code'] != null && c['code'].toString().isNotEmpty)
+                            ? '$c["code"]'
+                            : (c['title'] ?? 'Course');
+                        return ChoiceChip(
+                          label: Text(title.toString()),
+                          selected: isSel,
+                          onSelected: (val) {
+                            setSheetState(() {
+                              if (val) {
+                                _selectedCourseId = c['id'] as int?;
+                                _selectedCourseName = (c['title'] ?? c['code'] ?? 'Course').toString();
+                                _selectedMaterialId = null;
+                                _selectedMaterialName = null;
+                              } else {
+                                _selectedCourseId = null;
+                                _selectedCourseName = null;
+                                _selectedMaterialId = null;
+                                _selectedMaterialName = null;
+                              }
+                            });
+                            setState(() {});
+                          },
+                        );
+                      }).toList(),
+                    ),
+                  if (_selectedCourseId != null) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      'Select Material (Optional):',
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 8),
+                    if (courseMaterials.isEmpty)
+                      const Text('No uploaded materials for this course yet.', style: TextStyle(fontSize: 12, color: Colors.grey))
+                    else
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxHeight: 180),
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          itemCount: courseMaterials.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 6),
+                          itemBuilder: (_, idx) {
+                            final m = courseMaterials[idx];
+                            final isSel = _selectedMaterialId == m.id;
+                            return ListTile(
+                              dense: true,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                side: BorderSide(
+                                  color: isSel ? AppColors.primary : Colors.grey.withValues(alpha: 0.2),
+                                ),
+                              ),
+                              tileColor: isSel ? AppColors.primary.withValues(alpha: 0.08) : null,
+                              leading: Icon(
+                                Icons.menu_book_rounded,
+                                size: 18,
+                                color: isSel ? AppColors.primary : Colors.grey,
+                              ),
+                              title: Text(m.title, style: TextStyle(fontSize: 12, fontWeight: isSel ? FontWeight.w800 : FontWeight.w500)),
+                              trailing: isSel ? const Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 18) : null,
+                              onTap: () {
+                                setSheetState(() {
+                                  if (isSel) {
+                                    _selectedMaterialId = null;
+                                    _selectedMaterialName = null;
+                                  } else {
+                                    _selectedMaterialId = m.id;
+                                    _selectedMaterialName = m.title;
+                                  }
+                                });
+                                setState(() {});
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                  ],
+                  const SizedBox(height: 18),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: () => Navigator.pop(ctx),
+                    child: const Text('Confirm Selection', style: TextStyle(fontWeight: FontWeight.w700)),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   String _formatTime() {
@@ -515,63 +711,90 @@ class _LiveFocusPageState extends ConsumerState<LiveFocusPage>
                 children: [
                   const SizedBox(height: 8),
 
-                  if (_currentVoiceText != null) ...[
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      margin: const EdgeInsets.only(bottom: 12),
+                  // Fixed-Height Voice Assistant Indicator (prevents all screen jumping/layout shifts)
+                  SizedBox(
+                    height: 42,
+                    child: Center(
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 250),
+                        child: _currentVoiceText != null
+                            ? Container(
+                                key: ValueKey<String>(_currentVoiceText!),
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.record_voice_over_rounded, size: 16, color: AppColors.primary),
+                                    const SizedBox(width: 8),
+                                    Flexible(
+                                      child: Text(
+                                        _currentVoiceText!,
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.primary,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Course & Material Selector Bar (Interactive, Dynamic Responsive)
+                  GestureDetector(
+                    onTap: _showCourseMaterialPicker,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                        color: isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: _selectedCourseId != null
+                              ? AppColors.primary.withValues(alpha: 0.4)
+                              : (isDark ? AppColors.borderDark : AppColors.borderLight),
+                        ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.record_voice_over_rounded, size: 16, color: AppColors.primary),
+                          Icon(
+                            _selectedMaterialId != null
+                                ? Icons.menu_book_rounded
+                                : (_selectedCourseId != null ? Icons.school_rounded : Icons.tune_rounded),
+                            size: 16,
+                            color: _selectedCourseId != null ? AppColors.primary : Colors.grey,
+                          ),
                           const SizedBox(width: 8),
                           Flexible(
                             child: Text(
-                              _currentVoiceText!,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.primary,
+                              _selectedMaterialName != null
+                                  ? ': '
+                                  : (_selectedCourseName != null
+                                      ? 'Course: '
+                                      : (active?.subject ?? 'Select Course / Material for Focus & Quiz')),
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: _selectedCourseId != null ? AppColors.primary : (isDark ? AppColors.textDark : AppColors.textLight),
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
+                          const SizedBox(width: 6),
+                          const Icon(Icons.arrow_drop_down_rounded, size: 18, color: Colors.grey),
                         ],
                       ),
-                    ),
-                  ],
-
-                  // Subject / Activity Chip
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(9999),
-                      border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.3),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.local_library_rounded, size: 14, color: AppColors.primary),
-                        const SizedBox(width: 6),
-                        Flexible(
-                          child: Text(
-                            active?.subject ?? 'Deep Academic Focus',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.primary,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
                     ),
                   ),
                   const SizedBox(height: 28),

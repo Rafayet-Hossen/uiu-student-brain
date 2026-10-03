@@ -133,7 +133,7 @@ class _MaterialsPageState extends ConsumerState<MaterialsPage> with SingleTicker
                                   )
                                 : null,
                             label: Text(
-                              isBookmarkCat ? 'Bookmarked (${matState.bookmarkedIds.length})' : cat,
+                              isBookmarkCat ? (matState.materials.where((m) => matState.bookmarkedIds.contains(m.id.toString())).isNotEmpty ? 'Bookmarked (${matState.materials.where((m) => matState.bookmarkedIds.contains(m.id.toString())).length})' : 'Bookmarked') : cat,
                             ),
                             selected: isSelected,
                             onSelected: (_) => notifier.selectCategory(cat),

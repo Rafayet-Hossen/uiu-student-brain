@@ -562,14 +562,11 @@ def get_course_retake_analysis(user) -> Dict[str, Any]:
     study habits from tracker sessions, calculates exact mathematical CGPA jumps,
     and returns an AI strategic advisor recovery plan.
     """
-    # 1. Ensure courses exist
-    seed_initial_courses_for_user(user)
-
     courses_qs = CourseGrade.objects.filter(user=user).order_by("grade_point")
     plan = GradePlan.objects.filter(user=user).first()
 
-    target_gpa = float(plan.target_gpa) if plan else 3.50
-    plan_total_credits = float(plan.total_credits) if plan else 140.0
+    target_gpa = float(plan.target_gpa) if plan else 0.0
+    plan_total_credits = float(plan.total_credits) if plan else 0.0
 
     # 2. Gather student study logs per subject
     # 1. Gather student study logs per subject

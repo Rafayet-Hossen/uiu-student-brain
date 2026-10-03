@@ -4,11 +4,11 @@ import Input from "../../../components/Input";
 import FormError from "../../../components/FormError";
 
 const initialForm = {
-  name: "Undergraduate Degree Plan",
-  target_gpa: "3.50",
-  total_credits: "120",
-  completed_credits: "0",
-  current_gpa: "3.00",
+  name: "",
+  target_gpa: "",
+  total_credits: "",
+  completed_credits: "",
+  current_gpa: "",
 };
 
 export default function GradePlanForm({ onSubmit, submitting, onCancel }) {

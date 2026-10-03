@@ -106,22 +106,26 @@ class CommunityRepository {
   }
 
   Future<List<StudentProfileModel>> getFollowers() async {
-    final response = await _dioClient.get(ApiEndpoints.followers);
-    if (response.data is List) {
-      return (response.data as List)
-          .map((e) => StudentProfileModel.fromJson(e as Map<String, dynamic>))
-          .toList();
-    }
+    try {
+      final response = await _dioClient.get(ApiEndpoints.followers);
+      if (response.data is List) {
+        return (response.data as List)
+            .map((e) => StudentProfileModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+      }
+    } catch (_) {}
     return [];
   }
 
   Future<List<StudentProfileModel>> getFollowing() async {
-    final response = await _dioClient.get(ApiEndpoints.following);
-    if (response.data is List) {
-      return (response.data as List)
-          .map((e) => StudentProfileModel.fromJson(e as Map<String, dynamic>))
-          .toList();
-    }
+    try {
+      final response = await _dioClient.get(ApiEndpoints.following);
+      if (response.data is List) {
+        return (response.data as List)
+            .map((e) => StudentProfileModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+      }
+    } catch (_) {}
     return [];
   }
 

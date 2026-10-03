@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/data/courses_catalog.dart';
-import '../../../../core/widgets/app_button.dart';
+// app_button
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/error_card.dart';
 import '../../../../core/widgets/glass_card.dart';
@@ -254,23 +254,25 @@ class _CommunityPageState extends ConsumerState<CommunityPage>
   }
 
   void _showMyCommunityProfileModal(BuildContext context, WidgetRef ref) {
-    final user = ref.read(authProvider).user;
-    final commState = ref.read(communityProvider);
-    final myPosts = commState.posts.where((p) {
-      if (user?.id != null && p.authorId == user!.id) return true;
-      final uName = (user?.fullName ?? user?.email ?? '').trim().toLowerCase();
-      return uName.isNotEmpty && p.authorName.trim().toLowerCase() == uName;
-    }).toList();
-
-    final studentRecord = commState.students.where((s) => s.id == user?.id).firstOrNull;
-    final followersCount = studentRecord?.followersCount ?? 0;
-    final followingCount = commState.followingIds.length;
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => DraggableScrollableSheet(
+      builder: (ctx) => Consumer(
+        builder: (ctx, ref, _) {
+          final user = ref.watch(authProvider).user;
+          final commState = ref.watch(communityProvider);
+          final myPosts = commState.posts.where((p) {
+            if (user?.id != null && p.authorId == user!.id) return true;
+            final uName = (user?.fullName ?? user?.email ?? '').trim().toLowerCase();
+            return uName.isNotEmpty && p.authorName.trim().toLowerCase() == uName;
+          }).toList();
+
+          final studentRecord = commState.students.where((s) => s.id == user?.id).firstOrNull;
+          final followersCount = studentRecord?.followersCount ?? 0;
+          final followingCount = commState.followingIds.length;
+
+          return DraggableScrollableSheet(
         initialChildSize: 0.65,
         minChildSize: 0.4,
         maxChildSize: 0.9,
@@ -389,6 +391,8 @@ class _CommunityPageState extends ConsumerState<CommunityPage>
             ],
           ),
         ),
+      );
+      },
       ),
     );
   }
@@ -426,7 +430,7 @@ class _CommunityPostCardState extends ConsumerState<_CommunityPostCard> {
   bool _isCommentsExpanded = false;
   bool _isLoadingComments = false;
   bool _isPostingComment = false;
-  bool _hasLocallyFollowed = false;
+  // locally followed synced globally
   List<CommentModel> _comments = [];
   final TextEditingController _commentCtrl = TextEditingController();
 
@@ -558,7 +562,8 @@ class _CommunityPostCardState extends ConsumerState<_CommunityPostCard> {
                             final currentUserName = (authState.user?.fullName ?? authState.user?.email ?? '').trim().toLowerCase();
                             final isSelf = (post.authorId != null && post.authorId == currentUserId) ||
                                 (currentUserName.isNotEmpty && post.authorName.trim().toLowerCase() == currentUserName);
-                            final isFollowing = (post.authorId != null && commState.followingIds.contains(post.authorId)) || _hasLocallyFollowed;
+                            final isFollowing = (post.authorId != null && commState.followingIds.contains(post.authorId)) ||
+                                (post.authorName.isNotEmpty && commState.followingAuthorNames.contains(post.authorName.trim().toLowerCase()));
                             final showFollowBtn = !isSelf && !isFollowing && post.authorId != null;
 
                             if (!showFollowBtn) return const SizedBox.shrink();
@@ -567,9 +572,7 @@ class _CommunityPostCardState extends ConsumerState<_CommunityPostCard> {
                               padding: const EdgeInsets.only(left: 6.0),
                               child: InkWell(
                                 onTap: () {
-                                  // Instantly hide the button in 0ms!
-                                  setState(() => _hasLocallyFollowed = true);
-                                  ref.read(communityProvider.notifier).toggleFollow(post.authorId!);
+                                  ref.read(communityProvider.notifier).toggleFollow(post.authorId!, authorName: post.authorName);
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: Text('You are now following ${post.authorName}'),
@@ -2142,20 +2145,43 @@ class _CreateDiscussionDialogState extends ConsumerState<_CreateDiscussionDialog
               ),
               const SizedBox(height: 14),
 
-              // Action Buttons
+              // Action Buttons (Full-Width Responsive Bar)
               Row(
-                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancel'),
+                  Expanded(
+                    flex: 1,
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.w700)),
+                    ),
                   ),
-                  const SizedBox(width: 8),
-                  AppButton(
-                    label: 'Publish Discussion',
-                    isLoading: _isSubmitting,
-                    onPressed: _submit,
-                    height: 40,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 2,
+                    child: ElevatedButton.icon(
+                      onPressed: _isSubmitting ? null : _submit,
+                      icon: _isSubmitting
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Icon(Icons.send_rounded, size: 18, color: Colors.white),
+                      label: Text(
+                        widget.postToEdit != null ? 'Update Post' : 'Publish Discussion',
+                        style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5, color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 2,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -2933,16 +2959,34 @@ class _NetworkMembersSheetState extends ConsumerState<_NetworkMembersSheet> with
   }
 
   Future<void> _loadData() async {
-    final notifier = ref.read(communityProvider.notifier);
-    final f = await notifier.fetchFollowers();
-    final ing = await notifier.fetchFollowing();
-    if (mounted) {
-      setState(() {
-        _followers = f;
-        _following = ing;
-        _isLoadingFollowers = false;
-        _isLoadingFollowing = false;
-      });
+    try {
+      final notifier = ref.read(communityProvider.notifier);
+      final commState = ref.read(communityProvider);
+      
+      // Immediate local pre-fill from community state
+      _following = commState.students
+          .where((s) => s.isFollowing || commState.followingIds.contains(s.id))
+          .toList();
+
+      final f = await notifier.fetchFollowers().timeout(const Duration(seconds: 4), onTimeout: () => []);
+      final ing = await notifier.fetchFollowing().timeout(const Duration(seconds: 4), onTimeout: () => []);
+
+      if (mounted) {
+        setState(() {
+          _followers = f;
+          if (ing.isNotEmpty) {
+            _following = ing;
+          }
+        });
+      }
+    } catch (_) {
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingFollowers = false;
+          _isLoadingFollowing = false;
+        });
+      }
     }
   }
 

@@ -353,7 +353,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
     updated.add('first_step'); // Logged into StudentBrain
     if (streak >= 3) updated.add('ignition_flame');
     if (streak >= 7) updated.add('unstoppable');
-    if (streak >= 14 || gpa >= 3.80) updated.add('academic_master');
+    if (streak >= 14 || (gpa >= 3.80 && gpa > 0)) updated.add('academic_master');
     if (totalHours >= 5.0) updated.add('deep_scholar');
     if (totalHours >= 20.0 || sessionCount >= 20) updated.add('centurion');
     if (hasQuiz) updated.add('quiz_ace');
@@ -1129,17 +1129,17 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
 
     final streak = tracker.streaks['current_streak'] ?? 0;
     final prefs = ref.watch(sharedPreferencesProvider);
-    final totalCredits = grades.plan?.totalCredits ?? prefs.getDouble('academic_total_credits') ?? 140.0;
-    final completedCredits = grades.plan?.completedCredits ?? prefs.getDouble('academic_completed_credits') ?? 45.0;
+    final totalCredits = grades.plan?.totalCredits ?? prefs.getDouble('academic_total_credits') ?? 0.0;
+    final completedCredits = grades.plan?.completedCredits ?? prefs.getDouble('academic_completed_credits') ?? 0.0;
     final remainingCredits = (totalCredits - completedCredits).clamp(0.0, 300.0);
-    final targetGpa = grades.plan?.targetGpa ?? user?.targetGpa ?? prefs.getDouble('academic_target_gpa') ?? 3.90;
+    final targetGpa = grades.plan?.targetGpa ?? user?.targetGpa ?? prefs.getDouble('academic_target_gpa') ?? 0.0;
     final userTrimester = user?.currentTrimester ?? prefs.getString('academic_trimester') ?? 'Active Trimester';
     final userDailyMinutes = user?.targetDailyMinutes ?? prefs.getInt('academic_target_daily_minutes') ?? 60;
     final degreeProgress = totalCredits > 0 ? (completedCredits / totalCredits).clamp(0.0, 1.0) : 0.0;
     final totalHoursNum = (tracker.streaks['total_minutes'] ?? 0) / 60.0;
     final totalHours = totalHoursNum.toStringAsFixed(1);
-    final gpa = grades.plan?.currentGpa.toStringAsFixed(2) ?? '3.80';
-    final gpaNum = double.tryParse(gpa) ?? 3.80;
+    final gpa = grades.plan != null ? grades.plan!.currentGpa.toStringAsFixed(2) : '0.00';
+    final gpaNum = grades.plan?.currentGpa ?? 0.0;
     final hasQuiz = tracker.sessions.any((s) => s.quizScore != null && s.quizScore! > 0);
 
     // Sync unlocked milestones dynamically with user activity

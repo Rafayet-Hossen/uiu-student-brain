@@ -682,9 +682,9 @@ class _GradesPageState extends ConsumerState<GradesPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final plan = gradesState.plan;
-    final requiredGpa = plan?.calculatedRequiredGpa ?? 3.94;
+    final requiredGpa = plan?.calculatedRequiredGpa ?? 0.0;
     final isFeasible = plan?.isFeasible ?? true;
-    final remainingCredits = plan?.remainingCredits ?? 95.0;
+    final remainingCredits = plan?.remainingCredits ?? 0.0;
 
     final sim = gradesState.simulation;
     final retakeData = gradesState.retakeData;

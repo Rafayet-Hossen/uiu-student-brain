@@ -402,8 +402,8 @@ export default function CourseRetakeAdvisor({
     if (!data || !data.all_courses) return null;
 
     const baseCgpa = data.baseline_cgpa || 0;
-    const effectiveCredits = data.effective_credits || 18.0;
-    const targetGpa = data.target_gpa || 3.5;
+    const effectiveCredits = data.effective_credits || 0.0;
+    const targetGpa = data.target_gpa || 0.0;
 
     const selectedCourses = data.all_courses.filter((c) =>
       selectedCourseIds.includes(c.id),

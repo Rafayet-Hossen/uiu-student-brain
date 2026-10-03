@@ -47,14 +47,14 @@ class GradesState {
   GradesSimulationResult get simulation {
     final double baseline = (retakeData['baseline_cgpa'] as num?)?.toDouble() ??
         plan?.currentGpa ??
-        2.80;
+        0.0;
     final double target = (retakeData['target_gpa'] as num?)?.toDouble() ??
         plan?.targetGpa ??
-        3.50;
+        0.0;
     final double effCredits =
         (retakeData['effective_credits'] as num?)?.toDouble() ??
             plan?.completedCredits ??
-            45.0;
+            0.0;
 
     if (selectedRetakeIds.isEmpty || effCredits <= 0) {
       return GradesSimulationResult(
