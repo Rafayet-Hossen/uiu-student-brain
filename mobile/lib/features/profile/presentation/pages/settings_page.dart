@@ -160,45 +160,31 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     }
   }
 
-  void _confirmSignOut() {
-    showDialog(
+  void _confirmSignOut() async {
+    final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-        title: const Row(
-          children: [
-            Icon(Icons.logout_rounded, color: AppColors.error),
-            SizedBox(width: 8),
-            Text('Sign Out?'),
-          ],
-        ),
-        content: const Text(
-          'Are you sure you want to sign out of StudentBrain on this device?',
-        ),
+        title: const Text('Confirm Logout'),
+        content: const Text('Are you sure you want to log out of StudentBrain?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx),
+            onPressed: () => Navigator.pop(ctx, false),
             child: const Text('Cancel'),
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            onPressed: () async {
-              final router = GoRouter.of(context);
-              Navigator.pop(ctx);
-              await ref.read(authProvider.notifier).logout();
-              router.go('/login');
-            },
-            child: const Text('Sign Out', style: TextStyle(fontWeight: FontWeight.w800)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Logout', style: TextStyle(color: AppColors.error)),
           ),
         ],
       ),
     );
+    if (confirm == true && mounted) {
+      final router = GoRouter.of(context);
+      await ref.read(authProvider.notifier).logout();
+      if (mounted) {
+        router.go('/login');
+      }
+    }
   }
 
   @override
@@ -559,7 +545,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Account Sign Out',
+                                  'Log Out',
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w800,
@@ -568,7 +554,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                                 ),
                                 SizedBox(height: 2),
                                 Text(
-                                  'Sign out of StudentBrain on this device',
+                                  'Log out of StudentBrain on this device',
                                   style: TextStyle(fontSize: 11, color: Colors.grey),
                                 ),
                               ],
@@ -588,7 +574,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                         ),
                         icon: const Icon(Icons.logout_rounded, size: 18),
                         label: const Text(
-                          'Sign Out of Account',
+                          'Log Out',
                           style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
                         ),
                         onPressed: _confirmSignOut,

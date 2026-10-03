@@ -106,43 +106,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ],
                   ),
                   const SizedBox(height: 10),
-
-                  // Server Status Pill Badge
-                  Center(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: AppColors.primary.withValues(alpha: 0.25),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 6,
-                            height: 6,
-                            decoration: const BoxDecoration(
-                              color: AppColors.success,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          const Text(
-                            'Live Cloud Backend Connected • v1.0.2',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
 
                   // Login Form Card
                   GlassCard(
@@ -320,34 +284,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                 _noticeMessage = 'Google Sign-In integration is coming soon. Please sign in with your email and password.';
                               });
                             },
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Security info note
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle,
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                color: isDark ? AppColors.borderDark : AppColors.borderLight,
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.lock_rounded, size: 14, color: AppColors.primary),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    'Secure SSL access with encrypted JWT tokens.',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
                           ),
                           const SizedBox(height: 16),
 

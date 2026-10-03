@@ -1778,27 +1778,42 @@ class _CreateDiscussionDialogState extends ConsumerState<_CreateDiscussionDialog
     }
 
     setState(() => _isSubmitting = true);
-    final success = await ref.read(communityProvider.notifier).createPost(
-          title: finalTitle,
-          content: finalContent,
-          category: _category,
-          codeSnippet: finalSnippet,
-          codeLanguage: finalLanguage,
-          vscodeLiveshareUrl: finalLiveUrl,
-        );
+    final isEditing = widget.postToEdit != null;
+    final success = isEditing
+        ? await ref.read(communityProvider.notifier).updatePost(
+              widget.postToEdit!.id,
+              title: finalTitle,
+              content: finalContent,
+              category: _category,
+              codeSnippet: finalSnippet,
+              codeLanguage: finalLanguage,
+              vscodeLiveshareUrl: finalLiveUrl,
+            )
+        : await ref.read(communityProvider.notifier).createPost(
+              title: finalTitle,
+              content: finalContent,
+              category: _category,
+              codeSnippet: finalSnippet,
+              codeLanguage: finalLanguage,
+              vscodeLiveshareUrl: finalLiveUrl,
+            );
 
     if (mounted) {
       setState(() => _isSubmitting = false);
       if (success) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Discussion post published successfully!'),
+          SnackBar(
+            content: Text(isEditing
+                ? 'Discussion post updated successfully!'
+                : 'Discussion post published successfully!'),
             backgroundColor: AppColors.primary,
           ),
         );
       } else {
-        setState(() => _errorMessage = 'Could not publish discussion post. Please check required fields.');
+        setState(() => _errorMessage = isEditing
+            ? 'Could not update discussion post. Please check required fields.'
+            : 'Could not publish discussion post. Please check required fields.');
       }
     }
   }
@@ -3167,33 +3182,60 @@ class _NetworkMembersSheetState extends ConsumerState<_NetworkMembersSheet> with
                             )
                           : ListView.separated(
                               controller: scrollCtrl,
+                              padding: const EdgeInsets.symmetric(vertical: 8),
                               itemCount: _followers.length,
-                              separatorBuilder: (_, __) => const Divider(height: 1, indent: 60),
+                              separatorBuilder: (_, __) => const SizedBox(height: 8),
                               itemBuilder: (ctx, i) {
                                 final student = _followers[i];
-                                return ListTile(
-                                  contentPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
-                                  leading: UserAvatar(name: student.fullName, size: 40),
-                                  title: Text(
-                                    student.fullName,
-                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
-                                  ),
-                                  subtitle: Text(
-                                    student.email,
-                                    style: const TextStyle(fontSize: 11, color: Colors.grey),
-                                  ),
-                                  trailing: OutlinedButton.icon(
-                                    onPressed: () => _handleRemoveFollower(student),
-                                    icon: const Icon(Icons.person_remove_rounded, size: 14, color: AppColors.error),
-                                    label: const Text(
-                                      'Remove',
-                                      style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: AppColors.error),
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle,
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                      color: isDark ? AppColors.borderDark : AppColors.borderLight,
                                     ),
-                                    style: OutlinedButton.styleFrom(
-                                      side: BorderSide(color: AppColors.error.withValues(alpha: 0.4)),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      UserAvatar(name: student.fullName, size: 40),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                              student.fullName,
+                                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              student.email,
+                                              style: const TextStyle(fontSize: 11, color: Colors.grey),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      OutlinedButton.icon(
+                                        onPressed: () => _handleRemoveFollower(student),
+                                        icon: const Icon(Icons.person_remove_rounded, size: 14, color: AppColors.error),
+                                        label: const Text(
+                                          'Remove',
+                                          style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: AppColors.error),
+                                        ),
+                                        style: OutlinedButton.styleFrom(
+                                          side: BorderSide(color: AppColors.error.withValues(alpha: 0.4)),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 );
                               },
@@ -3227,33 +3269,60 @@ class _NetworkMembersSheetState extends ConsumerState<_NetworkMembersSheet> with
                             )
                           : ListView.separated(
                               controller: scrollCtrl,
+                              padding: const EdgeInsets.symmetric(vertical: 8),
                               itemCount: _following.length,
-                              separatorBuilder: (_, __) => const Divider(height: 1, indent: 60),
+                              separatorBuilder: (_, __) => const SizedBox(height: 8),
                               itemBuilder: (ctx, i) {
                                 final student = _following[i];
-                                return ListTile(
-                                  contentPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
-                                  leading: UserAvatar(name: student.fullName, size: 40),
-                                  title: Text(
-                                    student.fullName,
-                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
-                                  ),
-                                  subtitle: Text(
-                                    student.email,
-                                    style: const TextStyle(fontSize: 11, color: Colors.grey),
-                                  ),
-                                  trailing: OutlinedButton.icon(
-                                    onPressed: () => _handleUnfollow(student),
-                                    icon: const Icon(Icons.check_rounded, size: 14, color: AppColors.primary),
-                                    label: const Text(
-                                      'Following',
-                                      style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: AppColors.primary),
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle,
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                      color: isDark ? AppColors.borderDark : AppColors.borderLight,
                                     ),
-                                    style: OutlinedButton.styleFrom(
-                                      side: BorderSide(color: AppColors.primary.withValues(alpha: 0.4)),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      UserAvatar(name: student.fullName, size: 40),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                              student.fullName,
+                                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              student.email,
+                                              style: const TextStyle(fontSize: 11, color: Colors.grey),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      OutlinedButton.icon(
+                                        onPressed: () => _handleUnfollow(student),
+                                        icon: const Icon(Icons.check_rounded, size: 14, color: AppColors.primary),
+                                        label: const Text(
+                                          'Following',
+                                          style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: AppColors.primary),
+                                        ),
+                                        style: OutlinedButton.styleFrom(
+                                          side: BorderSide(color: AppColors.primary.withValues(alpha: 0.4)),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 );
                               },

@@ -210,7 +210,7 @@ class LeaderboardPage extends ConsumerWidget {
                                   Text(
                                     state.timeframe == 'streak'
                                         ? '🔥 ${entry.currentStreak}d'
-                                        : 'â±ï¸ ${entry.studyHours}h',
+                                        : '⏱ ${entry.studyHours}h',
                                     style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
                                   ),
                                   Text(
