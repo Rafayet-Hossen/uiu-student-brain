@@ -48,6 +48,9 @@ class ApiEndpoints {
   static String eventRsvp(int id) => '/community/events/$id/rsvp/';
   static const String students = '/community/students/';
   static String studentFollow(int id) => '/community/students/$id/follow/';
+  static const String followers = '/community/followers/';
+  static String followerRemove(int id) => '/community/followers/$id/remove/';
+  static const String following = '/community/following/';
   static const String leaderboard = '/community/leaderboard/';
   static const String leaderboardStatus = '/community/leaderboard/status/';
   static const String leaderboardOptIn = '/community/leaderboard/opt-in/';

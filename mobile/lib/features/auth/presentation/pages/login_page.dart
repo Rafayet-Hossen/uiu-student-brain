@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/widgets/google_logo.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/glass_card.dart';
@@ -313,7 +314,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           AppButton(
                             label: 'Continue with Google',
                             variant: AppButtonVariant.secondary,
-                            icon: const Icon(Icons.g_mobiledata_rounded, size: 24, color: Colors.red),
+                            icon: const GoogleLogo(size: 20),
                             onPressed: () {
                               setState(() {
                                 _noticeMessage = 'Google Sign-In integration is coming soon. Please sign in with your email and password.';

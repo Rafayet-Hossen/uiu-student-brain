@@ -104,4 +104,32 @@ class CommunityRepository {
     }
     return [];
   }
+
+  Future<List<StudentProfileModel>> getFollowers() async {
+    final response = await _dioClient.get(ApiEndpoints.followers);
+    if (response.data is List) {
+      return (response.data as List)
+          .map((e) => StudentProfileModel.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
+    return [];
+  }
+
+  Future<List<StudentProfileModel>> getFollowing() async {
+    final response = await _dioClient.get(ApiEndpoints.following);
+    if (response.data is List) {
+      return (response.data as List)
+          .map((e) => StudentProfileModel.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
+    return [];
+  }
+
+  Future<bool> removeFollower(int followerId) async {
+    final response = await _dioClient.post(ApiEndpoints.followerRemove(followerId));
+    if (response.data is Map) {
+      return response.data['removed'] as bool? ?? true;
+    }
+    return true;
+  }
 }

@@ -12,6 +12,9 @@ from .views import (
     PostReactionToggleView,
     StudentFollowToggleView,
     StudentListView,
+    FollowersListView,
+    FollowingListView,
+    FollowerRemoveView,
     StudyEventDetailView,
     StudyEventListCreateView,
     StudyEventRSVPToggleView,
@@ -34,6 +37,9 @@ urlpatterns = [
     # Student Network
     path("students/", StudentListView.as_view(), name="community-student-list"),
     path("students/<int:pk>/follow/", StudentFollowToggleView.as_view(), name="community-student-follow"),
+    path("followers/", FollowersListView.as_view(), name="community-followers-list"),
+    path("followers/<int:pk>/remove/", FollowerRemoveView.as_view(), name="community-follower-remove"),
+    path("following/", FollowingListView.as_view(), name="community-following-list"),
 
     # Leaderboard & Opt-in
     path("leaderboard/", LeaderboardView.as_view(), name="community-leaderboard"),

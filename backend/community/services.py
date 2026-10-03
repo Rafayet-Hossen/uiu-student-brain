@@ -315,6 +315,37 @@ def toggle_follow_student(*, follower, target_user_id: int) -> dict:
     return {"following": following, "followers_count": followers_count}
 
 
+def list_user_followers(*, user) -> list:
+    """Returns students who follow the given user."""
+    follower_ids = Follow.objects.filter(following=user).values_list("follower_id", flat=True)
+    return User.objects.filter(id__in=follower_ids).annotate(
+        followers_count=Count("followers_set", distinct=True),
+        following_count=Count("following_set", distinct=True),
+        is_following=Exists(
+            Follow.objects.filter(follower=user, following=OuterRef("pk"))
+        ),
+    ).order_by("full_name")
+
+
+def list_user_following(*, user) -> list:
+    """Returns students the given user is following."""
+    following_ids = Follow.objects.filter(follower=user).values_list("following_id", flat=True)
+    return User.objects.filter(id__in=following_ids).annotate(
+        followers_count=Count("followers_set", distinct=True),
+        following_count=Count("following_set", distinct=True),
+        is_following=Exists(
+            Follow.objects.filter(follower=user, following=OuterRef("pk"))
+        ),
+    ).order_by("full_name")
+
+
+def remove_follower(*, user, follower_id: int) -> dict:
+    """Removes a follower from following the user."""
+    deleted_count, _ = Follow.objects.filter(follower_id=follower_id, following=user).delete()
+    followers_count = Follow.objects.filter(following=user).count()
+    return {"removed": deleted_count > 0, "followers_count": followers_count}
+
+
 # ============================================================
 # LEADERBOARD SERVICES
 # ============================================================

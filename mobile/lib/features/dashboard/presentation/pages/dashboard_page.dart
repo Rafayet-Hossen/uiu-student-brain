@@ -44,7 +44,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       _hasCheckedOnboarding = true;
       showDialog(
         context: context,
+        useRootNavigator: true,
         barrierDismissible: false,
+        barrierColor: Colors.black.withValues(alpha: 0.85),
         builder: (_) => const MandatoryOnboardingDialog(),
       );
     }

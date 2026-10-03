@@ -329,9 +329,29 @@ class _CommunityPageState extends ConsumerState<CommunityPage>
                   children: [
                     _buildStatCol('${myPosts.length}', 'Discussions'),
                     Container(height: 30, width: 1, color: Colors.grey.withValues(alpha: 0.3)),
-                    _buildStatCol('$followersCount', 'Followers'),
+                    InkWell(
+                      borderRadius: BorderRadius.circular(10),
+                      onTap: () {
+                        Navigator.of(ctx).pop();
+                        _showNetworkMembersModal(context, initialTab: 0);
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        child: _buildStatCol('$followersCount', 'Followers'),
+                      ),
+                    ),
                     Container(height: 30, width: 1, color: Colors.grey.withValues(alpha: 0.3)),
-                    _buildStatCol('$followingCount', 'Following'),
+                    InkWell(
+                      borderRadius: BorderRadius.circular(10),
+                      onTap: () {
+                        Navigator.of(ctx).pop();
+                        _showNetworkMembersModal(context, initialTab: 1);
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        child: _buildStatCol('$followingCount', 'Following'),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -382,6 +402,15 @@ class _CommunityPageState extends ConsumerState<CommunityPage>
       ],
     );
   }
+
+  void _showNetworkMembersModal(BuildContext context, {int initialTab = 0}) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _NetworkMembersSheet(initialTab: initialTab),
+    );
+  }
 }
 
 /// Rich Post Card with Inline Comments, Share button, and Code viewer
@@ -397,6 +426,7 @@ class _CommunityPostCardState extends ConsumerState<_CommunityPostCard> {
   bool _isCommentsExpanded = false;
   bool _isLoadingComments = false;
   bool _isPostingComment = false;
+  bool _hasLocallyFollowed = false;
   List<CommentModel> _comments = [];
   final TextEditingController _commentCtrl = TextEditingController();
 
@@ -528,7 +558,7 @@ class _CommunityPostCardState extends ConsumerState<_CommunityPostCard> {
                             final currentUserName = (authState.user?.fullName ?? authState.user?.email ?? '').trim().toLowerCase();
                             final isSelf = (post.authorId != null && post.authorId == currentUserId) ||
                                 (currentUserName.isNotEmpty && post.authorName.trim().toLowerCase() == currentUserName);
-                            final isFollowing = post.authorId != null && commState.followingIds.contains(post.authorId);
+                            final isFollowing = (post.authorId != null && commState.followingIds.contains(post.authorId)) || _hasLocallyFollowed;
                             final showFollowBtn = !isSelf && !isFollowing && post.authorId != null;
 
                             if (!showFollowBtn) return const SizedBox.shrink();
@@ -536,17 +566,17 @@ class _CommunityPostCardState extends ConsumerState<_CommunityPostCard> {
                             return Padding(
                               padding: const EdgeInsets.only(left: 6.0),
                               child: InkWell(
-                                onTap: () async {
-                                  await ref.read(communityProvider.notifier).toggleFollow(post.authorId!);
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('You are now following ${post.authorName}'),
-                                        duration: const Duration(seconds: 2),
-                                        backgroundColor: AppColors.primary,
-                                      ),
-                                    );
-                                  }
+                                onTap: () {
+                                  // Instantly hide the button in 0ms!
+                                  setState(() => _hasLocallyFollowed = true);
+                                  ref.read(communityProvider.notifier).toggleFollow(post.authorId!);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('You are now following ${post.authorName}'),
+                                      duration: const Duration(seconds: 2),
+                                      backgroundColor: AppColors.primary,
+                                    ),
+                                  );
                                 },
                                 borderRadius: BorderRadius.circular(10),
                                 child: Container(
@@ -2872,6 +2902,322 @@ class _CreateStudyEventDialogState extends ConsumerState<_CreateStudyEventDialog
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+
+/// Modal bottom sheet displaying Followers and Following with Remove & Unfollow controls
+class _NetworkMembersSheet extends ConsumerStatefulWidget {
+  final int initialTab;
+  const _NetworkMembersSheet({this.initialTab = 0});
+
+  @override
+  ConsumerState<_NetworkMembersSheet> createState() => _NetworkMembersSheetState();
+}
+
+class _NetworkMembersSheetState extends ConsumerState<_NetworkMembersSheet> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  List<StudentProfileModel> _followers = [];
+  List<StudentProfileModel> _following = [];
+  bool _isLoadingFollowers = true;
+  bool _isLoadingFollowing = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this, initialIndex: widget.initialTab);
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    final notifier = ref.read(communityProvider.notifier);
+    final f = await notifier.fetchFollowers();
+    final ing = await notifier.fetchFollowing();
+    if (mounted) {
+      setState(() {
+        _followers = f;
+        _following = ing;
+        _isLoadingFollowers = false;
+        _isLoadingFollowing = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleRemoveFollower(StudentProfileModel student) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Remove Follower?'),
+        content: Text('Are you sure you want to remove ${student.fullName} from your followers list?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Remove', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      setState(() {
+        _followers.removeWhere((s) => s.id == student.id);
+      });
+      await ref.read(communityProvider.notifier).removeFollower(student.id);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Removed ${student.fullName} from followers.'),
+            duration: const Duration(seconds: 2),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleUnfollow(StudentProfileModel student) async {
+    setState(() {
+      _following.removeWhere((s) => s.id == student.id);
+    });
+    await ref.read(communityProvider.notifier).toggleFollow(student.id);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Unfollowed ${student.fullName}.'),
+          duration: const Duration(seconds: 2),
+          backgroundColor: AppColors.warning,
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.75,
+      minChildSize: 0.45,
+      maxChildSize: 0.95,
+      builder: (ctx, scrollCtrl) => Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border.all(
+            color: isDark ? AppColors.borderDark : AppColors.borderLight,
+            width: 1.2,
+          ),
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+        child: Column(
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 14),
+                decoration: BoxDecoration(
+                  color: Colors.grey.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.people_alt_rounded, color: AppColors.primary, size: 20),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Scholar Network',
+                        style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
+                      ),
+                      Text(
+                        'Manage your followers and peers you follow',
+                        style: TextStyle(fontSize: 11, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close_rounded, size: 20),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Container(
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: TabBar(
+                controller: _tabController,
+                indicatorSize: TabBarIndicatorSize.tab,
+                indicator: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                labelColor: Colors.white,
+                unselectedLabelColor: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+                tabs: [
+                  Tab(text: 'Followers (${_followers.length})'),
+                  Tab(text: 'Following (${_following.length})'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  // Tab 0: Followers
+                  _isLoadingFollowers
+                      ? const Center(child: StudentBrainLoader(size: 44, message: 'Loading followers...'))
+                      : _followers.isEmpty
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.person_outline_rounded, size: 48, color: Colors.grey.withValues(alpha: 0.4)),
+                                  const SizedBox(height: 12),
+                                  const Text(
+                                    'No Followers Yet',
+                                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  const Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 32),
+                                    child: Text(
+                                      'Participate in discussions and meetups to build your campus study network!',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : ListView.separated(
+                              controller: scrollCtrl,
+                              itemCount: _followers.length,
+                              separatorBuilder: (_, __) => const Divider(height: 1, indent: 60),
+                              itemBuilder: (ctx, i) {
+                                final student = _followers[i];
+                                return ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                                  leading: UserAvatar(name: student.fullName, size: 40),
+                                  title: Text(
+                                    student.fullName,
+                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                                  ),
+                                  subtitle: Text(
+                                    student.email,
+                                    style: const TextStyle(fontSize: 11, color: Colors.grey),
+                                  ),
+                                  trailing: OutlinedButton.icon(
+                                    onPressed: () => _handleRemoveFollower(student),
+                                    icon: const Icon(Icons.person_remove_rounded, size: 14, color: AppColors.error),
+                                    label: const Text(
+                                      'Remove',
+                                      style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: AppColors.error),
+                                    ),
+                                    style: OutlinedButton.styleFrom(
+                                      side: BorderSide(color: AppColors.error.withValues(alpha: 0.4)),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+
+                  // Tab 1: Following
+                  _isLoadingFollowing
+                      ? const Center(child: StudentBrainLoader(size: 44, message: 'Loading following...'))
+                      : _following.isEmpty
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.person_search_rounded, size: 48, color: Colors.grey.withValues(alpha: 0.4)),
+                                  const SizedBox(height: 12),
+                                  const Text(
+                                    'Not Following Anyone Yet',
+                                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  const Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 32),
+                                    child: Text(
+                                      'Follow fellow scholars from campus discussions to keep track of their contributions!',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : ListView.separated(
+                              controller: scrollCtrl,
+                              itemCount: _following.length,
+                              separatorBuilder: (_, __) => const Divider(height: 1, indent: 60),
+                              itemBuilder: (ctx, i) {
+                                final student = _following[i];
+                                return ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                                  leading: UserAvatar(name: student.fullName, size: 40),
+                                  title: Text(
+                                    student.fullName,
+                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                                  ),
+                                  subtitle: Text(
+                                    student.email,
+                                    style: const TextStyle(fontSize: 11, color: Colors.grey),
+                                  ),
+                                  trailing: OutlinedButton.icon(
+                                    onPressed: () => _handleUnfollow(student),
+                                    icon: const Icon(Icons.check_rounded, size: 14, color: AppColors.primary),
+                                    label: const Text(
+                                      'Following',
+                                      style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: AppColors.primary),
+                                    ),
+                                    style: OutlinedButton.styleFrom(
+                                      side: BorderSide(color: AppColors.primary.withValues(alpha: 0.4)),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

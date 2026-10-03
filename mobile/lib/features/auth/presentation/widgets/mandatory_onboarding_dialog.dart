@@ -25,8 +25,8 @@ class _MandatoryOnboardingDialogState extends ConsumerState<MandatoryOnboardingD
   late TextEditingController _targetGpaCtrl;
   late TextEditingController _dailyMinutesCtrl;
 
-  String _department = 'Computer Science & Engineering (CSE)';
-  String _currentTrimester = '5th Trimester';
+  String? _department;
+  String? _currentTrimester;
   bool _isSubmitting = false;
 
   final List<String> _departments = [
@@ -65,24 +65,19 @@ class _MandatoryOnboardingDialogState extends ConsumerState<MandatoryOnboardingD
     final prefs = ref.read(sharedPreferencesProvider);
 
     final savedName = user?.fullName ?? prefs.getString('academic_full_name') ?? '';
-    final savedTotalCr = prefs.getDouble('academic_total_credits') ?? 140.0;
-    final savedCompCr = prefs.getDouble('academic_completed_credits') ?? 45.0;
-    final savedCurGpa = user?.currentGpa ?? prefs.getDouble('academic_current_gpa') ?? 3.80;
-    final savedTarGpa = user?.targetGpa ?? prefs.getDouble('academic_target_gpa') ?? 3.90;
-    final savedDaily = user?.targetDailyMinutes ?? prefs.getInt('academic_target_daily_minutes') ?? 60;
-
+    // Start with blank text fields so user enters their own authentic academic values
     _nameCtrl = TextEditingController(text: savedName);
-    _totalCreditsCtrl = TextEditingController(text: savedTotalCr.toStringAsFixed(1).replaceAll('.0', ''));
-    _completedCreditsCtrl = TextEditingController(text: savedCompCr.toStringAsFixed(1).replaceAll('.0', ''));
-    _currentGpaCtrl = TextEditingController(text: savedCurGpa.toStringAsFixed(2));
-    _targetGpaCtrl = TextEditingController(text: savedTarGpa.toStringAsFixed(2));
-    _dailyMinutesCtrl = TextEditingController(text: savedDaily.toString());
+    _totalCreditsCtrl = TextEditingController();
+    _completedCreditsCtrl = TextEditingController();
+    _currentGpaCtrl = TextEditingController();
+    _targetGpaCtrl = TextEditingController();
+    _dailyMinutesCtrl = TextEditingController();
 
-    if (user?.department != null && _departments.contains(user!.department)) {
-      _department = user.department!;
+    if (user != null && user.department != null && _departments.contains(user.department)) {
+      _department = user.department;
     }
-    if (user?.currentTrimester != null && _trimesters.contains(user!.currentTrimester)) {
-      _currentTrimester = user.currentTrimester!;
+    if (user != null && user.currentTrimester != null && _trimesters.contains(user.currentTrimester)) {
+      _currentTrimester = user.currentTrimester;
     }
   }
 
@@ -99,6 +94,26 @@ class _MandatoryOnboardingDialogState extends ConsumerState<MandatoryOnboardingD
 
   Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) return;
+
+    if (_department == null || _department!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select your department / major'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    if (_currentTrimester == null || _currentTrimester!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select your current trimester / level'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
 
     final name = _nameCtrl.text.trim();
     final totalCredits = double.tryParse(_totalCreditsCtrl.text.trim()) ?? 140.0;
@@ -133,8 +148,8 @@ class _MandatoryOnboardingDialogState extends ConsumerState<MandatoryOnboardingD
       final prefs = ref.read(sharedPreferencesProvider);
       await prefs.setBool('academic_onboarding_completed', true);
       await prefs.setString('academic_full_name', name);
-      await prefs.setString('academic_department', _department);
-      await prefs.setString('academic_trimester', _currentTrimester);
+      await prefs.setString('academic_department', _department!);
+      await prefs.setString('academic_trimester', _currentTrimester!);
       await prefs.setDouble('academic_current_gpa', currentGpa);
       await prefs.setDouble('academic_target_gpa', targetGpa);
       await prefs.setDouble('academic_completed_credits', completedCredits);
@@ -152,8 +167,8 @@ class _MandatoryOnboardingDialogState extends ConsumerState<MandatoryOnboardingD
       // Update Auth Profile Provider
       await ref.read(authProvider.notifier).updateProfile({
         'full_name': name,
-        'department': _department,
-        'current_trimester': _currentTrimester,
+        'department': _department!,
+        'current_trimester': _currentTrimester!,
         'current_gpa': currentGpa,
         'target_gpa': targetGpa,
         'target_daily_minutes': dailyMinutes,
@@ -273,9 +288,17 @@ class _MandatoryOnboardingDialogState extends ConsumerState<MandatoryOnboardingD
                     ),
                     const SizedBox(height: 12),
 
-                    // 2. Department
+                    // 2. Department (Responsive, No Overflow, Blank Default)
                     DropdownButtonFormField<String>(
+                      isExpanded: true,
                       initialValue: _department,
+                      hint: Text(
+                        'Select Department / Major',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                        ),
+                      ),
                       decoration: InputDecoration(
                         labelText: 'Department / Major',
                         prefixIcon: const Icon(Icons.account_balance_rounded, size: 18),
@@ -292,18 +315,32 @@ class _MandatoryOnboardingDialogState extends ConsumerState<MandatoryOnboardingD
                       items: _departments.map((dep) {
                         return DropdownMenuItem(
                           value: dep,
-                          child: Text(dep, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                          child: Text(
+                            dep,
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
                         );
                       }).toList(),
+                      validator: (val) => (val == null || val.isEmpty) ? 'Please select your department' : null,
                       onChanged: (val) {
                         if (val != null) setState(() => _department = val);
                       },
                     ),
                     const SizedBox(height: 12),
 
-                    // 3. Current Trimester Level
+                    // 3. Current Trimester Level (Responsive, Blank Default)
                     DropdownButtonFormField<String>(
+                      isExpanded: true,
                       initialValue: _currentTrimester,
+                      hint: Text(
+                        'Select Current Trimester / Level',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted,
+                        ),
+                      ),
                       decoration: InputDecoration(
                         labelText: 'Current Trimester / Level',
                         prefixIcon: const Icon(Icons.calendar_today_rounded, size: 18),
@@ -320,9 +357,15 @@ class _MandatoryOnboardingDialogState extends ConsumerState<MandatoryOnboardingD
                       items: _trimesters.map((t) {
                         return DropdownMenuItem(
                           value: t,
-                          child: Text(t, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                          child: Text(
+                            t,
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
                         );
                       }).toList(),
+                      validator: (val) => (val == null || val.isEmpty) ? 'Please select your trimester' : null,
                       onChanged: (val) {
                         if (val != null) setState(() => _currentTrimester = val);
                       },
@@ -335,6 +378,7 @@ class _MandatoryOnboardingDialogState extends ConsumerState<MandatoryOnboardingD
                         Expanded(
                           child: AppTextField(
                             label: 'Current CGPA',
+                            hint: 'e.g. 3.75',
                             controller: _currentGpaCtrl,
                             keyboardType: const TextInputType.numberWithOptions(decimal: true),
                             prefixIcon: const Icon(Icons.grade_rounded, size: 18),
@@ -350,6 +394,7 @@ class _MandatoryOnboardingDialogState extends ConsumerState<MandatoryOnboardingD
                         Expanded(
                           child: AppTextField(
                             label: 'Target CGPA',
+                            hint: 'e.g. 3.85',
                             controller: _targetGpaCtrl,
                             keyboardType: const TextInputType.numberWithOptions(decimal: true),
                             prefixIcon: const Icon(Icons.flag_rounded, size: 18),
@@ -371,6 +416,7 @@ class _MandatoryOnboardingDialogState extends ConsumerState<MandatoryOnboardingD
                         Expanded(
                           child: AppTextField(
                             label: 'Completed Credits',
+                            hint: 'e.g. 45',
                             controller: _completedCreditsCtrl,
                             keyboardType: const TextInputType.numberWithOptions(decimal: true),
                             prefixIcon: const Icon(Icons.check_circle_outline_rounded, size: 18),
@@ -386,6 +432,7 @@ class _MandatoryOnboardingDialogState extends ConsumerState<MandatoryOnboardingD
                         Expanded(
                           child: AppTextField(
                             label: 'Total Degree Credits',
+                            hint: 'e.g. 138 or 140',
                             controller: _totalCreditsCtrl,
                             keyboardType: const TextInputType.numberWithOptions(decimal: true),
                             prefixIcon: const Icon(Icons.timeline_rounded, size: 18),

@@ -91,26 +91,58 @@ class CommunityNotifier extends StateNotifier<CommunityState> {
   }
 
   Future<bool> toggleFollow(int studentId) async {
+    final wasFollowing = state.followingIds.contains(studentId);
+    // 1. Instant optimistic update so the UI hides the button in 0ms!
+    final optimistic = Set<int>.from(state.followingIds);
+    if (wasFollowing) {
+      optimistic.remove(studentId);
+    } else {
+      optimistic.add(studentId);
+    }
+    state = state.copyWith(followingIds: optimistic);
+
+    // 2. Network synchronization
     try {
       final res = await _repository.toggleFollowStudent(studentId);
-      final isNowFollowing = res['following'] as bool? ?? (!state.followingIds.contains(studentId));
-      final updated = Set<int>.from(state.followingIds);
+      final isNowFollowing = res['following'] as bool? ?? (!wasFollowing);
+      final confirmed = Set<int>.from(state.followingIds);
       if (isNowFollowing) {
-        updated.add(studentId);
+        confirmed.add(studentId);
       } else {
-        updated.remove(studentId);
+        confirmed.remove(studentId);
       }
-      state = state.copyWith(followingIds: updated);
+      state = state.copyWith(followingIds: confirmed);
       return isNowFollowing;
     } catch (_) {
-      final updated = Set<int>.from(state.followingIds);
-      if (updated.contains(studentId)) {
-        updated.remove(studentId);
+      // Revert if network error
+      final reverted = Set<int>.from(state.followingIds);
+      if (wasFollowing) {
+        reverted.add(studentId);
       } else {
-        updated.add(studentId);
+        reverted.remove(studentId);
       }
-      state = state.copyWith(followingIds: updated);
-      return updated.contains(studentId);
+      state = state.copyWith(followingIds: reverted);
+      return wasFollowing;
+    }
+  }
+
+  Future<List<StudentProfileModel>> fetchFollowers() async {
+    return _repository.getFollowers();
+  }
+
+  Future<List<StudentProfileModel>> fetchFollowing() async {
+    return _repository.getFollowing();
+  }
+
+  Future<bool> removeFollower(int followerId) async {
+    try {
+      final success = await _repository.removeFollower(followerId);
+      _repository.getStudents().then((s) {
+        state = state.copyWith(students: s);
+      }).catchError((_) {});
+      return success;
+    } catch (_) {
+      return false;
     }
   }
 

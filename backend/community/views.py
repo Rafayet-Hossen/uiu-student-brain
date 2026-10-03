@@ -155,6 +155,30 @@ class StudentFollowToggleView(APIView):
         return Response(result, status=status.HTTP_200_OK)
 
 
+class FollowersListView(generics.ListAPIView):
+    serializer_class = StudentProfileSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return services.list_user_followers(user=self.request.user)
+
+
+class FollowingListView(generics.ListAPIView):
+    serializer_class = StudentProfileSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return services.list_user_following(user=self.request.user)
+
+
+class FollowerRemoveView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        result = services.remove_follower(user=request.user, follower_id=pk)
+        return Response(result, status=status.HTTP_200_OK)
+
+
 class LeaderboardView(APIView):
     permission_classes = [IsAuthenticated]
 
