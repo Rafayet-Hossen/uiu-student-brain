@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
+from rest_framework_simplejwt.tokens import RefreshToken
 
 User = get_user_model()
 
@@ -12,6 +13,37 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = User
         fields = ["id", "email", "password", "full_name"]
         read_only_fields = ["id"]
+
+
+class CustomTokenObtainPairSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+
+    def validate(self, attrs):
+        email = attrs.get("email", "").strip().lower()
+        password = attrs.get("password")
+
+        if not email or not password:
+            raise serializers.ValidationError({"detail": "Email and password are required."})
+
+        # Instant database lookup without unnecessary hashing delay
+        user = User.objects.filter(email__iexact=email).first()
+        if not user:
+            raise serializers.ValidationError({"detail": "No account found with this email address."})
+
+        if not user.check_password(password):
+            raise serializers.ValidationError({"detail": "Incorrect password. Please try again."})
+
+        if not user.is_active:
+            raise serializers.ValidationError({"detail": "This user account is inactive."})
+
+        refresh = RefreshToken.for_user(user)
+
+        return {
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+            "user": UserSerializer(user).data,
+        }
 
 
 class UserSerializer(serializers.ModelSerializer):

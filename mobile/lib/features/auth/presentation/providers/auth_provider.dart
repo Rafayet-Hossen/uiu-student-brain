@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/config/providers.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../data/models/user_model.dart';
 import '../../data/repositories/auth_repository.dart';
 
@@ -84,9 +85,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
       );
       return true;
     } catch (e) {
+      final errorMessage = e is ApiException ? e.message : e.toString().replaceFirst('Exception: ', '');
       state = state.copyWith(
         isLoading: false,
-        error: e.toString(),
+        error: errorMessage,
       );
       return false;
     }
@@ -115,9 +117,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
       );
       return true;
     } catch (e) {
+      final errorMessage = e is ApiException ? e.message : e.toString().replaceFirst('Exception: ', '');
       state = state.copyWith(
         isLoading: false,
-        error: e.toString(),
+        error: errorMessage,
       );
       return false;
     }

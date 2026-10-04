@@ -46,26 +46,38 @@ class ApiException implements Exception {
         }
 
         if (statusCode == 401) {
+          final msg = (extractedMsg != 'An unexpected error occurred.')
+              ? extractedMsg
+              : 'Invalid credentials or session expired. Please try again.';
           return ApiException(
-            message: 'Session expired. Please log in again.',
+            message: msg,
             statusCode: 401,
             data: responseData,
           );
         } else if (statusCode == 403) {
+          final msg = (extractedMsg != 'An unexpected error occurred.')
+              ? extractedMsg
+              : 'You do not have permission to perform this action.';
           return ApiException(
-            message: 'You do not have permission to perform this action.',
+            message: msg,
             statusCode: 403,
             data: responseData,
           );
         } else if (statusCode == 404) {
+          final msg = (extractedMsg != 'An unexpected error occurred.')
+              ? extractedMsg
+              : 'Requested resource not found.';
           return ApiException(
-            message: 'Requested resource not found.',
+            message: msg,
             statusCode: 404,
             data: responseData,
           );
         } else if (statusCode != null && statusCode >= 500) {
+          final msg = (extractedMsg != 'An unexpected error occurred.')
+              ? extractedMsg
+              : 'Server error. Please try again later.';
           return ApiException(
-            message: 'Server error. Please try again later.',
+            message: msg,
             statusCode: statusCode,
             data: responseData,
           );

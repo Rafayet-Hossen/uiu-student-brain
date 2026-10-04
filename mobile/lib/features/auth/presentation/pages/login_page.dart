@@ -188,7 +188,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
                           AppTextField(
                             label: 'Student / University Email',
-                            hint: 'Enter your password',
+                            hint: 'e.g. 0112... or name@bscse.uiu.ac.bd',
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
                             prefixIcon: const Icon(Icons.email_outlined, size: 20),

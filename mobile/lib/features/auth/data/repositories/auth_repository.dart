@@ -26,6 +26,12 @@ class AuthRepository {
     final refresh = data['refresh'] as String?;
 
     await _storageService.saveTokens(access: access, refresh: refresh);
+
+    // Fast-path: return user embedded directly in the login response
+    if (data['user'] != null && data['user'] is Map<String, dynamic>) {
+      return UserModel.fromJson(data['user'] as Map<String, dynamic>);
+    }
+
     return await getMe();
   }
 

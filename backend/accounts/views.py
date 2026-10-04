@@ -4,12 +4,37 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .serializers import (
+    CustomTokenObtainPairSerializer,
     ProfileSummarySerializer,
     RegisterSerializer,
     UpdateProfileSerializer,
     UserSerializer,
 )
 from .services import get_user_profile_summary, register_user, update_user_profile
+
+
+class CustomTokenObtainPairView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = CustomTokenObtainPairSerializer(data=request.data)
+        if not serializer.is_valid():
+            errors = serializer.errors
+            detail = "Invalid credentials."
+            if "detail" in errors:
+                d = errors["detail"]
+                detail = d[0] if isinstance(d, list) and d else str(d)
+            elif "non_field_errors" in errors:
+                d = errors["non_field_errors"]
+                detail = d[0] if isinstance(d, list) and d else str(d)
+            else:
+                first_key = next(iter(errors.keys()), None)
+                if first_key:
+                    val = errors[first_key]
+                    detail = val[0] if isinstance(val, list) and val else str(val)
+            return Response({"detail": detail}, status=status.HTTP_401_UNAUTHORIZED)
+
+        return Response(serializer.validated_data, status=status.HTTP_200_OK)
 
 
 class RegisterView(APIView):

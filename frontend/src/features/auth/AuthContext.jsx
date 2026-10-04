@@ -21,10 +21,11 @@ export function AuthProvider({ children }) {
   }, []);
 
   async function login(credentials) {
-    const { access, refresh } = await loginRequest(credentials);
+    const data = await loginRequest(credentials);
+    const { access, refresh, user } = data;
     localStorage.setItem("access_token", access);
     localStorage.setItem("refresh_token", refresh);
-    const me = await getMe();
+    const me = user || (await getMe());
     setUser(me);
     return me;
   }
