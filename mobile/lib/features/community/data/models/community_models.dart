@@ -277,10 +277,34 @@ class StudentProfileModel {
   });
 
   factory StudentProfileModel.fromJson(Map<String, dynamic> json) {
+    final rawName = (json['full_name'] as String? ??
+            json['name'] as String? ??
+            json['author_name'] as String? ??
+            json['username'] as String? ??
+            '')
+        .trim();
+    final rawEmail = (json['email'] as String? ?? '').trim();
+
+    String effectiveName = rawName;
+    if (effectiveName.isEmpty && rawEmail.isNotEmpty) {
+      final handle = rawEmail.split('@').first;
+      // Convert e.g. "baitun.bithy" to "Baitun Bithy"
+      effectiveName = handle
+          .replaceAll('.', ' ')
+          .replaceAll('_', ' ')
+          .split(' ')
+          .where((p) => p.isNotEmpty)
+          .map((p) => p[0].toUpperCase() + p.substring(1))
+          .join(' ');
+    }
+    if (effectiveName.isEmpty) {
+      effectiveName = 'Scholar Student';
+    }
+
     return StudentProfileModel(
-      id: json['id'] as int? ?? 0,
-      email: json['email'] as String? ?? '',
-      fullName: json['full_name'] as String? ?? 'Scholar',
+      id: json['id'] as int? ?? (json['user_id'] as int? ?? 0),
+      email: rawEmail.isNotEmpty ? rawEmail : 'student@uiu.ac.bd',
+      fullName: effectiveName,
       followersCount: json['followers_count'] as int? ?? 0,
       followingCount: json['following_count'] as int? ?? 0,
       isFollowing: json['is_following'] as bool? ?? false,

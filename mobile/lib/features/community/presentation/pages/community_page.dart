@@ -2983,15 +2983,13 @@ class _NetworkMembersSheetState extends ConsumerState<_NetworkMembersSheet> with
           .where((s) => s.isFollowing || commState.followingIds.contains(s.id))
           .toList();
 
-      final f = await notifier.fetchFollowers().timeout(const Duration(seconds: 4), onTimeout: () => []);
-      final ing = await notifier.fetchFollowing().timeout(const Duration(seconds: 4), onTimeout: () => []);
+      final f = await notifier.fetchFollowers().timeout(const Duration(seconds: 5), onTimeout: () => _followers);
+      final ing = await notifier.fetchFollowing().timeout(const Duration(seconds: 5), onTimeout: () => _following);
 
       if (mounted) {
         setState(() {
           _followers = f;
-          if (ing.isNotEmpty) {
-            _following = ing;
-          }
+          _following = ing;
         });
       }
     } catch (_) {
@@ -3052,7 +3050,7 @@ class _NetworkMembersSheetState extends ConsumerState<_NetworkMembersSheet> with
     setState(() {
       _following.removeWhere((s) => s.id == student.id);
     });
-    await ref.read(communityProvider.notifier).toggleFollow(student.id);
+    await ref.read(communityProvider.notifier).toggleFollow(student.id, authorName: student.fullName);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -3187,18 +3185,24 @@ class _NetworkMembersSheetState extends ConsumerState<_NetworkMembersSheet> with
                               separatorBuilder: (_, __) => const SizedBox(height: 8),
                               itemBuilder: (ctx, i) {
                                 final student = _followers[i];
+                                final displayName = student.fullName.trim().isNotEmpty
+                                    ? student.fullName.trim()
+                                    : 'Scholar Student';
+                                final displayEmail = student.email.trim().isNotEmpty
+                                    ? student.email.trim()
+                                    : 'scholar@uiu.ac.bd';
                                 return Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                                   decoration: BoxDecoration(
-                                    color: isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle,
+                                    color: isDark ? const Color(0xFF1E293B) : Colors.white,
                                     borderRadius: BorderRadius.circular(14),
                                     border: Border.all(
-                                      color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                                      color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
                                     ),
                                   ),
                                   child: Row(
                                     children: [
-                                      UserAvatar(name: student.fullName, size: 40),
+                                      UserAvatar(name: displayName, size: 42),
                                       const SizedBox(width: 12),
                                       Expanded(
                                         child: Column(
@@ -3206,15 +3210,22 @@ class _NetworkMembersSheetState extends ConsumerState<_NetworkMembersSheet> with
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             Text(
-                                              student.fullName,
-                                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                                              displayName,
+                                              style: TextStyle(
+                                                fontSize: 14.5,
+                                                fontWeight: FontWeight.w800,
+                                                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                              ),
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
                                             ),
                                             const SizedBox(height: 2),
                                             Text(
-                                              student.email,
-                                              style: const TextStyle(fontSize: 11, color: Colors.grey),
+                                              displayEmail,
+                                              style: TextStyle(
+                                                fontSize: 11.5,
+                                                color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                              ),
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
                                             ),
@@ -3222,17 +3233,36 @@ class _NetworkMembersSheetState extends ConsumerState<_NetworkMembersSheet> with
                                         ),
                                       ),
                                       const SizedBox(width: 8),
-                                      OutlinedButton.icon(
-                                        onPressed: () => _handleRemoveFollower(student),
-                                        icon: const Icon(Icons.person_remove_rounded, size: 14, color: AppColors.error),
-                                        label: const Text(
-                                          'Remove',
-                                          style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: AppColors.error),
-                                        ),
-                                        style: OutlinedButton.styleFrom(
-                                          side: BorderSide(color: AppColors.error.withValues(alpha: 0.4)),
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      Material(
+                                        color: Colors.transparent,
+                                        child: InkWell(
+                                          onTap: () => _handleRemoveFollower(student),
+                                          borderRadius: BorderRadius.circular(8),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                            decoration: BoxDecoration(
+                                              color: AppColors.error.withValues(alpha: isDark ? 0.15 : 0.08),
+                                              borderRadius: BorderRadius.circular(8),
+                                              border: Border.all(
+                                                color: AppColors.error.withValues(alpha: 0.35),
+                                              ),
+                                            ),
+                                            child: const Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(Icons.person_remove_rounded, size: 13, color: AppColors.error),
+                                                SizedBox(width: 4),
+                                                Text(
+                                                  'Remove',
+                                                  style: TextStyle(
+                                                    fontSize: 11.5,
+                                                    fontWeight: FontWeight.w800,
+                                                    color: AppColors.error,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -3274,18 +3304,24 @@ class _NetworkMembersSheetState extends ConsumerState<_NetworkMembersSheet> with
                               separatorBuilder: (_, __) => const SizedBox(height: 8),
                               itemBuilder: (ctx, i) {
                                 final student = _following[i];
+                                final displayName = student.fullName.trim().isNotEmpty
+                                    ? student.fullName.trim()
+                                    : 'Scholar Student';
+                                final displayEmail = student.email.trim().isNotEmpty
+                                    ? student.email.trim()
+                                    : 'scholar@uiu.ac.bd';
                                 return Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                                   decoration: BoxDecoration(
-                                    color: isDark ? AppColors.surfaceDarkSubtle : AppColors.surfaceLightSubtle,
+                                    color: isDark ? const Color(0xFF1E293B) : Colors.white,
                                     borderRadius: BorderRadius.circular(14),
                                     border: Border.all(
-                                      color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                                      color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
                                     ),
                                   ),
                                   child: Row(
                                     children: [
-                                      UserAvatar(name: student.fullName, size: 40),
+                                      UserAvatar(name: displayName, size: 42),
                                       const SizedBox(width: 12),
                                       Expanded(
                                         child: Column(
@@ -3293,15 +3329,22 @@ class _NetworkMembersSheetState extends ConsumerState<_NetworkMembersSheet> with
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             Text(
-                                              student.fullName,
-                                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                                              displayName,
+                                              style: TextStyle(
+                                                fontSize: 14.5,
+                                                fontWeight: FontWeight.w800,
+                                                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                              ),
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
                                             ),
                                             const SizedBox(height: 2),
                                             Text(
-                                              student.email,
-                                              style: const TextStyle(fontSize: 11, color: Colors.grey),
+                                              displayEmail,
+                                              style: TextStyle(
+                                                fontSize: 11.5,
+                                                color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                              ),
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
                                             ),
@@ -3309,17 +3352,40 @@ class _NetworkMembersSheetState extends ConsumerState<_NetworkMembersSheet> with
                                         ),
                                       ),
                                       const SizedBox(width: 8),
-                                      OutlinedButton.icon(
-                                        onPressed: () => _handleUnfollow(student),
-                                        icon: const Icon(Icons.check_rounded, size: 14, color: AppColors.primary),
-                                        label: const Text(
-                                          'Following',
-                                          style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: AppColors.primary),
-                                        ),
-                                        style: OutlinedButton.styleFrom(
-                                          side: BorderSide(color: AppColors.primary.withValues(alpha: 0.4)),
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      Material(
+                                        color: Colors.transparent,
+                                        child: InkWell(
+                                          onTap: () => _handleUnfollow(student),
+                                          borderRadius: BorderRadius.circular(8),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                            decoration: BoxDecoration(
+                                              color: (isDark ? Colors.white : AppColors.textLight).withValues(alpha: 0.08),
+                                              borderRadius: BorderRadius.circular(8),
+                                              border: Border.all(
+                                                color: (isDark ? Colors.white : AppColors.textLight).withValues(alpha: 0.25),
+                                              ),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(
+                                                  Icons.person_remove_outlined,
+                                                  size: 13,
+                                                  color: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626),
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  'Unfollow',
+                                                  style: TextStyle(
+                                                    fontSize: 11.5,
+                                                    fontWeight: FontWeight.w800,
+                                                    color: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ],

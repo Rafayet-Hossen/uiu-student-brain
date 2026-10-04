@@ -108,11 +108,17 @@ class CommunityRepository {
   Future<List<StudentProfileModel>> getFollowers() async {
     try {
       final response = await _dioClient.get(ApiEndpoints.followers);
+      List<dynamic> listData = [];
       if (response.data is List) {
-        return (response.data as List)
-            .map((e) => StudentProfileModel.fromJson(e as Map<String, dynamic>))
-            .toList();
+        listData = response.data as List;
+      } else if (response.data is Map && response.data['results'] is List) {
+        listData = response.data['results'] as List;
+      } else if (response.data is Map && response.data['data'] is List) {
+        listData = response.data['data'] as List;
       }
+      return listData
+          .map((e) => StudentProfileModel.fromJson(e as Map<String, dynamic>))
+          .toList();
     } catch (_) {}
     return [];
   }
@@ -120,11 +126,17 @@ class CommunityRepository {
   Future<List<StudentProfileModel>> getFollowing() async {
     try {
       final response = await _dioClient.get(ApiEndpoints.following);
+      List<dynamic> listData = [];
       if (response.data is List) {
-        return (response.data as List)
-            .map((e) => StudentProfileModel.fromJson(e as Map<String, dynamic>))
-            .toList();
+        listData = response.data as List;
+      } else if (response.data is Map && response.data['results'] is List) {
+        listData = response.data['results'] as List;
+      } else if (response.data is Map && response.data['data'] is List) {
+        listData = response.data['data'] as List;
       }
+      return listData
+          .map((e) => StudentProfileModel.fromJson(e as Map<String, dynamic>))
+          .toList();
     } catch (_) {}
     return [];
   }

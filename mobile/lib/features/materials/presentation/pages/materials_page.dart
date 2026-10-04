@@ -582,25 +582,7 @@ class _MaterialsPageState extends ConsumerState<MaterialsPage> with SingleTicker
                                                   overflow: TextOverflow.ellipsis,
                                                 ),
                                               ),
-                                              if (isBookmarked) ...[
-                                                const SizedBox(width: 6),
-                                                Container(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                                                  decoration: BoxDecoration(
-                                                    color: AppColors.accent.withValues(alpha: 0.15),
-                                                    borderRadius: BorderRadius.circular(4),
-                                                  ),
-                                                  child: const Text(
-                                                    'SAVED',
-                                                    style: TextStyle(
-                                                      fontSize: 8.5,
-                                                      fontWeight: FontWeight.w900,
-                                                      color: AppColors.accent,
-                                                      letterSpacing: 0.4,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
+                                              
                                             ],
                                           ),
                                         ],
