@@ -22,12 +22,6 @@ class TrackerPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Study Tracker & Focus Sessions'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            onPressed: () => ref.read(trackerProvider.notifier).loadTrackerData(),
-          ),
-        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => showDialog(

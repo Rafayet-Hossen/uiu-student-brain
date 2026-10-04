@@ -353,7 +353,7 @@ def remove_follower(*, user, follower_id: int) -> dict:
 def get_or_create_leaderboard_profile(*, user) -> LeaderboardProfile:
     profile, _ = LeaderboardProfile.objects.get_or_create(
         user=user,
-        defaults={"is_opted_in": False, "custom_quote": ""},
+        defaults={"is_opted_in": True, "custom_quote": ""},
     )
     return profile
 
@@ -395,22 +395,22 @@ def get_leaderboard(
 
     user_profile = get_or_create_leaderboard_profile(user=user)
 
-    opted_in_profiles = LeaderboardProfile.objects.filter(is_opted_in=True).select_related("user")
-    opted_in_user_ids = set(opted_in_profiles.values_list("user_id", flat=True))
-
-    if user_profile.is_opted_in:
-        opted_in_user_ids.add(user.id)
+    # All users are opted in by default unless explicitly opted out
+    opted_out_user_ids = set(
+        LeaderboardProfile.objects.filter(is_opted_in=False).values_list("user_id", flat=True)
+    )
+    if not user_profile.is_opted_in:
+        opted_out_user_ids.add(user.id)
 
     following_ids = set(
         Follow.objects.filter(follower=user).values_list("following_id", flat=True)
     )
 
-    quotes_map = {p.user_id: p.custom_quote for p in opted_in_profiles}
-    if user_profile.is_opted_in:
-        quotes_map[user.id] = user_profile.custom_quote
+    profiles = LeaderboardProfile.objects.all()
+    quotes_map = {p.user_id: p.custom_quote for p in profiles if p.custom_quote}
 
     week_start = reference_date - timedelta(days=6)
-    users = User.objects.filter(id__in=opted_in_user_ids)
+    users = User.objects.exclude(id__in=opted_out_user_ids)
 
     entries: List[Dict[str, Any]] = []
     for u in users:

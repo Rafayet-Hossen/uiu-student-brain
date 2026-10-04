@@ -321,6 +321,10 @@ class _NotificationsSheetState extends ConsumerState<NotificationsSheet> {
 
                           return InkWell(
                             onTap: () {
+                              final notifId = item['id'];
+                              if (notifId != null) {
+                                ref.read(dioClientProvider).post(ApiEndpoints.notifications, data: {'read_id': notifId}).ignore();
+                              }
                               setState(() {
                                 item['is_read'] = true;
                                 _unreadCount = _notifications.where((n) => n['is_read'] != true).length;

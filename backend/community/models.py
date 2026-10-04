@@ -156,7 +156,7 @@ class LeaderboardProfile(models.Model):
         on_delete=models.CASCADE,
         related_name="leaderboard_profile",
     )
-    is_opted_in = models.BooleanField(default=False)
+    is_opted_in = models.BooleanField(default=True)
     custom_quote = models.CharField(max_length=255, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

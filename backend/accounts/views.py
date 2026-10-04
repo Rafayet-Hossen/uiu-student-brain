@@ -122,12 +122,74 @@ class NotificationStateView(APIView):
             # Non-blocking check
             pass
 
+    def _check_event_alerts(self, user):
+        """Auto-detect study events scheduled for tomorrow (1 day before) and starting in <=60m today, issuing persistent alerts."""
+        try:
+            from datetime import timedelta
+            from django.utils import timezone
+            from django.db.models import Q
+            from community.models import StudyEvent, EventRSVP
+            from .models import create_user_notification
+
+            now_dt = timezone.localtime(timezone.now())
+            today_date = now_dt.date()
+            tomorrow_date = today_date + timedelta(days=1)
+
+            relevant_event_ids = set(
+                EventRSVP.objects.filter(user=user, status__in=["going", "interested"]).values_list("event_id", flat=True)
+            )
+            created_event_ids = set(
+                StudyEvent.objects.filter(creator=user).values_list("id", flat=True)
+            )
+            all_target_ids = relevant_event_ids | created_event_ids
+            events_qs = StudyEvent.objects.filter(
+                Q(id__in=all_target_ids) | Q(event_date__in=[today_date, tomorrow_date])
+            ).distinct()
+
+            for evt in events_qs:
+                if evt.event_date == tomorrow_date:
+                    time_str = evt.start_time.strftime("%I:%M %p") if evt.start_time else "Scheduled Time"
+                    loc_str = evt.location or "Campus Room"
+                    create_user_notification(
+                        recipient=user,
+                        category="event",
+                        title=f"🗓️ Event Tomorrow: {evt.title}",
+                        message=f"Reminder: '{evt.title}' takes place tomorrow at {time_str}. Location: {loc_str}.",
+                        link="/community?tab=events",
+                        metadata={
+                            "dedup_key": f"event_tomorrow_{evt.id}_{evt.event_date}_{user.id}",
+                            "event_id": evt.id,
+                        },
+                    )
+                elif evt.event_date == today_date and evt.start_time:
+                    sh = evt.start_time.hour
+                    sm = evt.start_time.minute
+                    evt_start_dt = now_dt.replace(hour=sh, minute=sm, second=0, microsecond=0)
+                    diff_minutes = (evt_start_dt - now_dt).total_seconds() / 60.0
+                    if 0 <= diff_minutes <= 60:
+                        mins_left = int(max(1, round(diff_minutes)))
+                        loc_str = evt.location or "Campus Room"
+                        create_user_notification(
+                            recipient=user,
+                            category="event",
+                            title=f"⏰ Event in {mins_left}m: {evt.title}",
+                            message=f"Campus event '{evt.title}' begins in {mins_left} minutes at {loc_str}. Get ready!",
+                            link="/community?tab=events",
+                            metadata={
+                                "dedup_key": f"event_1hr_{evt.id}_{evt.event_date}_{user.id}",
+                                "event_id": evt.id,
+                            },
+                        )
+        except Exception:
+            pass
+
     def get(self, request):
         from .models import Notification, UserNotificationState
         from .serializers import NotificationSerializer
 
-        # 1. Trigger session-based alerts
+        # 1. Trigger session-based and event alerts
         self._check_session_alerts(request.user)
+        self._check_event_alerts(request.user)
 
         state, _ = UserNotificationState.objects.get_or_create(user=request.user)
 

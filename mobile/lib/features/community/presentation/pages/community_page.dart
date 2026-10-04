@@ -254,6 +254,7 @@ class _CommunityPageState extends ConsumerState<CommunityPage>
   }
 
   void _showMyCommunityProfileModal(BuildContext context, WidgetRef ref) {
+    ref.read(communityProvider.notifier).refreshFollowers();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -268,9 +269,12 @@ class _CommunityPageState extends ConsumerState<CommunityPage>
             return uName.isNotEmpty && p.authorName.trim().toLowerCase() == uName;
           }).toList();
 
-          final studentRecord = commState.students.where((s) => s.id == user?.id).firstOrNull;
-          final followersCount = studentRecord?.followersCount ?? 0;
-          final followingCount = commState.followingIds.length;
+          final followersCount = (commState.followersCount > 0)
+              ? commState.followersCount
+              : (user?.followersCount ?? commState.followers.length);
+          final followingCount = (commState.followingCount > 0)
+              ? commState.followingCount
+              : (user?.followingCount ?? commState.followingIds.length);
 
           return DraggableScrollableSheet(
         initialChildSize: 0.65,

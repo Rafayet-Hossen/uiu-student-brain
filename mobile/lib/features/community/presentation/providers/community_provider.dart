@@ -12,6 +12,10 @@ class CommunityState {
   final List<PostModel> posts;
   final List<StudyEventModel> events;
   final List<StudentProfileModel> students;
+  final List<StudentProfileModel> followers;
+  final List<StudentProfileModel> following;
+  final int followersCount;
+  final int followingCount;
   final Set<int> followingIds;
   final Set<String> followingAuthorNames;
   final String selectedCategory;
@@ -23,6 +27,10 @@ class CommunityState {
     this.posts = const [],
     this.events = const [],
     this.students = const [],
+    this.followers = const [],
+    this.following = const [],
+    this.followersCount = 0,
+    this.followingCount = 0,
     this.followingIds = const {},
     this.followingAuthorNames = const {},
     this.selectedCategory = 'All',
@@ -35,6 +43,10 @@ class CommunityState {
     List<PostModel>? posts,
     List<StudyEventModel>? events,
     List<StudentProfileModel>? students,
+    List<StudentProfileModel>? followers,
+    List<StudentProfileModel>? following,
+    int? followersCount,
+    int? followingCount,
     Set<int>? followingIds,
     Set<String>? followingAuthorNames,
     String? selectedCategory,
@@ -46,6 +58,10 @@ class CommunityState {
       posts: posts ?? this.posts,
       events: events ?? this.events,
       students: students ?? this.students,
+      followers: followers ?? this.followers,
+      following: following ?? this.following,
+      followersCount: followersCount ?? this.followersCount,
+      followingCount: followingCount ?? this.followingCount,
       followingIds: followingIds ?? this.followingIds,
       followingAuthorNames: followingAuthorNames ?? this.followingAuthorNames,
       selectedCategory: selectedCategory ?? this.selectedCategory,
@@ -75,22 +91,35 @@ class CommunityNotifier extends StateNotifier<CommunityState> {
         _repository.getPosts(),
         _repository.getEvents(),
         _repository.getStudents(),
+        _repository.getFollowers().catchError((_) => <StudentProfileModel>[]),
+        _repository.getFollowing().catchError((_) => <StudentProfileModel>[]),
       ]);
       final p = results[0] as List<PostModel>;
       final e = results[1] as List<StudyEventModel>;
       final s = results[2] as List<StudentProfileModel>;
+      final followers = results[3] as List<StudentProfileModel>;
+      final following = results[4] as List<StudentProfileModel>;
 
-      final followed = s.where((stud) => stud.isFollowing).map((stud) => stud.id).toSet();
-      final followedNames = s
-          .where((stud) => stud.isFollowing)
+      final followed = following.map((stud) => stud.id).toSet();
+      followed.addAll(s.where((stud) => stud.isFollowing).map((stud) => stud.id));
+
+      final followedNames = following
           .map((stud) => stud.fullName.trim().toLowerCase())
           .where((n) => n.isNotEmpty)
           .toSet();
+      followedNames.addAll(s
+          .where((stud) => stud.isFollowing)
+          .map((stud) => stud.fullName.trim().toLowerCase())
+          .where((n) => n.isNotEmpty));
 
       state = state.copyWith(
         posts: p,
         events: e,
         students: s,
+        followers: followers,
+        following: following,
+        followersCount: followers.length,
+        followingCount: followed.length,
         followingIds: followed,
         followingAuthorNames: followedNames,
         isLoading: false,
@@ -100,19 +129,43 @@ class CommunityNotifier extends StateNotifier<CommunityState> {
     }
   }
 
+  Future<void> refreshFollowers() async {
+    try {
+      final results = await Future.wait([
+        _repository.getFollowers().catchError((_) => <StudentProfileModel>[]),
+        _repository.getFollowing().catchError((_) => <StudentProfileModel>[]),
+      ]);
+      final followers = results[0];
+      final following = results[1];
+
+      final followed = Set<int>.from(state.followingIds);
+      followed.addAll(following.map((s) => s.id));
+
+      state = state.copyWith(
+        followers: followers,
+        following: following,
+        followersCount: followers.length,
+        followingCount: followed.length,
+      );
+    } catch (_) {}
+  }
+
   Future<bool> toggleFollow(int studentId, {String? authorName}) async {
     final wasFollowing = state.followingIds.contains(studentId);
     final normName = authorName?.trim().toLowerCase();
     // 1. Instant optimistic update across all posts and profile in 0ms!
     final optimistic = Set<int>.from(state.followingIds);
     final optimisticNames = Set<String>.from(state.followingAuthorNames);
+    int newFollowingCount = state.followingCount;
     if (wasFollowing) {
       optimistic.remove(studentId);
+      if (newFollowingCount > 0) newFollowingCount--;
       if (normName != null && normName.isNotEmpty) {
         optimisticNames.remove(normName);
       }
     } else {
       optimistic.add(studentId);
+      newFollowingCount++;
       if (normName != null && normName.isNotEmpty) {
         optimisticNames.add(normName);
       }
@@ -120,6 +173,7 @@ class CommunityNotifier extends StateNotifier<CommunityState> {
     state = state.copyWith(
       followingIds: optimistic,
       followingAuthorNames: optimisticNames,
+      followingCount: newFollowingCount,
     );
 
     // 2. Network synchronization
@@ -168,6 +222,14 @@ class CommunityNotifier extends StateNotifier<CommunityState> {
   }
 
   Future<bool> removeFollower(int followerId) async {
+    final prevFollowers = state.followers;
+    final prevCount = state.followersCount;
+    final newFollowers = state.followers.where((s) => s.id != followerId).toList();
+    final newCount = (state.followersCount > 0) ? state.followersCount - 1 : 0;
+    state = state.copyWith(
+      followers: newFollowers,
+      followersCount: newCount,
+    );
     try {
       final success = await _repository.removeFollower(followerId);
       _repository.getStudents().then((s) {
@@ -175,6 +237,10 @@ class CommunityNotifier extends StateNotifier<CommunityState> {
       }).catchError((_) {});
       return success;
     } catch (_) {
+      state = state.copyWith(
+        followers: prevFollowers,
+        followersCount: prevCount,
+      );
       return false;
     }
   }

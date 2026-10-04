@@ -15,6 +15,9 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    followers_count = serializers.SerializerMethodField()
+    following_count = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = [
@@ -31,9 +34,23 @@ class UserSerializer(serializers.ModelSerializer):
             "current_trimester",
             "opt_in_leaderboard",
             "is_onboarded",
+            "followers_count",
+            "following_count",
             "date_joined",
         ]
-        read_only_fields = ["id", "email", "date_joined"]
+        read_only_fields = ["id", "email", "date_joined", "followers_count", "following_count"]
+
+    def get_followers_count(self, obj):
+        try:
+            return obj.followers_set.count()
+        except Exception:
+            return 0
+
+    def get_following_count(self, obj):
+        try:
+            return obj.following_set.count()
+        except Exception:
+            return 0
 
 
 class UpdateProfileSerializer(serializers.ModelSerializer):

@@ -11,6 +11,8 @@ class UserModel {
   final double? currentGpa;
   final double? targetGpa;
   final int? targetDailyMinutes;
+  final int followersCount;
+  final int followingCount;
 
   UserModel({
     required this.id,
@@ -25,6 +27,8 @@ class UserModel {
     this.currentGpa,
     this.targetGpa,
     this.targetDailyMinutes,
+    this.followersCount = 0,
+    this.followingCount = 0,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -41,6 +45,8 @@ class UserModel {
       currentGpa: (json['current_gpa'] != null) ? double.tryParse('${json['current_gpa']}') : null,
       targetGpa: (json['target_gpa'] != null) ? double.tryParse('${json['target_gpa']}') : null,
       targetDailyMinutes: json['target_daily_minutes'] as int?,
+      followersCount: json['followers_count'] as int? ?? 0,
+      followingCount: json['following_count'] as int? ?? 0,
     );
   }
 

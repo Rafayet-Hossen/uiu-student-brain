@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/responsive.dart';
+import '../../../tracker/presentation/providers/tracker_provider.dart';
+import '../../../dashboard/presentation/providers/dashboard_provider.dart';
+import '../../../planner/presentation/providers/planner_provider.dart';
+import '../../../community/presentation/providers/community_provider.dart';
+import '../../../materials/presentation/providers/materials_provider.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 
-class MainShellPage extends StatelessWidget {
+class MainShellPage extends ConsumerWidget {
   final StatefulNavigationShell navigationShell;
 
   const MainShellPage({
@@ -11,15 +18,39 @@ class MainShellPage extends StatelessWidget {
     required this.navigationShell,
   });
 
-  void _onTap(int index) {
+  void _onTap(WidgetRef ref, int index) {
+    final isAlreadySelected = (index == navigationShell.currentIndex);
     navigationShell.goBranch(
       index,
-      initialLocation: index == navigationShell.currentIndex,
+      initialLocation: isAlreadySelected,
     );
+
+    // Auto-reload data when Focus tab is tapped or when re-tapping current tab
+    if (index == 2) {
+      ref.read(trackerProvider.notifier).loadTrackerData();
+    } else if (isAlreadySelected) {
+      switch (index) {
+        case 0:
+          ref.read(dashboardProvider.notifier).loadDashboard();
+          break;
+        case 1:
+          ref.read(plannerProvider.notifier).loadSchedules();
+          break;
+        case 3:
+          ref.read(materialsProvider.notifier).loadMaterials();
+          break;
+        case 4:
+          ref.read(communityProvider.notifier).loadCommunityData();
+          break;
+        case 6:
+          ref.read(authProvider.notifier).checkAuthStatus();
+          break;
+      }
+    }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isTablet = Responsive.isTablet(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -74,7 +105,7 @@ class MainShellPage extends StatelessWidget {
           children: [
             NavigationRail(
               selectedIndex: navigationShell.currentIndex,
-              onDestinationSelected: _onTap,
+              onDestinationSelected: (idx) => _onTap(ref, idx),
               labelType: NavigationRailLabelType.selected,
               backgroundColor: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
               selectedIconTheme: const IconThemeData(color: AppColors.primary),
@@ -150,7 +181,7 @@ class MainShellPage extends StatelessWidget {
                 ),
                 child: NavigationBar(
                   selectedIndex: navigationShell.currentIndex,
-                  onDestinationSelected: _onTap,
+                  onDestinationSelected: (idx) => _onTap(ref, idx),
                   height: 60,
                   elevation: 0,
                   backgroundColor: Colors.transparent,
